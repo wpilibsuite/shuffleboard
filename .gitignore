@@ -4,6 +4,10 @@
 # Intellij
 .idea/
 
+# Gradle
+.gradle/
+build/
+
 # Log file
 *.log
 
