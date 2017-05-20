@@ -1,0 +1,187 @@
+/*
+ * main.css
+ *
+ * This is the main css file that determines the default styles for everything in the app. Controls and views
+ * that override these default settings should define them in their own css files.
+ */
+
+/* Global constants */
+
+* {
+    -fx-text-fill: text-light;
+    -fx-font-family: "Roboto";
+    wpi-red: #AC2B37;
+    text-dark: #111111;
+    text-light: #fefefe;
+    base: derive(black, 30%);
+    base-light: derive(base, 20%);
+    highlight: wpi-red;
+}
+
+/* Global settings */
+
+.root {
+    -fx-background-color: base;
+}
+
+/* Main split pane */
+
+.split-pane {
+    -fx-background-color: base;
+}
+
+.split-pane-divider {
+    -fx-background-color: highlight;
+    /* Bring the divider to the edges and make it a bit taller than default */
+    -fx-padding: -0.125em 0.5em -0.125em 0.5em;
+}
+
+.split-pane-divider:hover, .split-pane-divider:pressed {
+    -fx-background-color: #b743ff;
+}
+
+/* Menu styles */
+
+.menu-bar {
+    -fx-background-color: base-light;
+}
+
+.menu-item {
+    -fx-background-color: base;
+}
+
+.menu:hover, .menu:selected {
+    -fx-background-color: #b743ff;
+}
+
+.menu .label {
+    -fx-text-fill: text-light;
+}
+
+.context-menu {
+    -fx-background-color: base;
+}
+
+.menu-item:hover, .menu-item:focused {
+    -fx-background-color: #b743ff;
+}
+
+.menu-item:hover .label {
+    -fx-text-fill: text-light;
+}
+
+/* Subsystem styles */
+
+.system-pane {
+    -fx-background-color: base;
+    -fx-max-height: infinity;
+    -fx-border-width: 0.25em;
+    -fx-padding: -1 -1 -1 -1;
+    -fx-border-color: highlight;
+    -fx-border-radius: 0;
+    -fx-background-radius: 0;
+    -fx-background-insets: 0;
+}
+
+.system-pane:hover {
+    -fx-border-color: #b743ff;
+}
+
+.system-pane > .title {
+    -fx-background-color: base-light;
+    -fx-background-radius: 0;
+    -fx-border-color: base-light;
+    -fx-border-width: 5;
+}
+
+.system-pane > * {
+    -fx-background-color: base;
+    -fx-border-width: 0;
+    -fx-border-radius: 0;
+    -fx-border-insets: 0;
+    -fx-background-radius: 0;
+    -fx-background-insets: 0;
+}
+
+/* Miscellaneous controls */
+
+
+/* TextField, TextArea */
+
+.text-field, .text-area {
+    -fx-text-fill: #111111;
+}
+
+/* Button, toggle button */
+
+.button, .toggle-button {
+    -fx-background-color: base-light;
+    -fx-background-radius: 0;
+}
+
+.button:pressed {
+    -fx-background-color: wpi-red;
+}
+
+.toggle-button:pressed {
+    -fx-background-color: derive(wpi-red, 40%);
+}
+
+.toggle-button:selected {
+    -fx-background-color: wpi-red;
+}
+
+/* Toggle switch */
+
+.toggle-switch > .thumb-area {
+    -fx-background-color: derive(base, -25%);
+}
+
+.toggle-switch > .thumb {
+    -fx-background-color: base-light;
+}
+
+.toggle-switch:selected > .thumb-area {
+    -fx-background-color: wpi-red;
+}
+
+/* Tree table */
+
+.tree-table-view * {
+    -fx-border-color: transparent;
+}
+
+.tree-table-view {
+    -fx-background-color: darkslateblue;
+}
+
+.tree-table-view .column-header {
+    -fx-background-color: slateblue;
+}
+
+.column-header-background {
+    -fx-background-color: #333333;
+}
+
+.tree-table-row-cell {
+    -fx-background-color: #111;
+    -fx-border-color: transparent;
+}
+
+.tree-table-row-cell:selected {
+    -fx-background-color: orangered;
+}
+
+.tree-table-row-cell:collapsed > .tree-disclosure-node > .arrow {
+    -fx-background-color: white;
+}
+
+/* Tiles */
+
+.tile {
+    -fx-background-color: slateblue;
+}
+
+.tile:selected {
+    -fx-background-color: orangered;
+}
