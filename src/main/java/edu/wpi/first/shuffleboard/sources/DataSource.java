@@ -12,9 +12,13 @@ import javafx.beans.value.ObservableValue;
  */
 public interface DataSource<T> {
 
+  /**
+   * Creates a data source with no name, no data, and is never active. This should be used in place of {@code null}.
+   *
+   * @param <T> the type of the data in the source
+   */
   static <T> DataSource<T> none() {
-    return new AbstractDataSource<T>() {
-    };
+    return new EmptyDataSource<>();
   }
 
   /**
@@ -30,6 +34,9 @@ public interface DataSource<T> {
 
   ObservableValue<String> nameProperty();
 
+  /**
+   * Gets the name of this data source. This is typically a unique identifier for the data backed by this source.
+   */
   default String getName() {
     return nameProperty().getValue();
   }

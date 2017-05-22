@@ -3,7 +3,10 @@ package edu.wpi.first.shuffleboard.util;
 import edu.wpi.first.shuffleboard.sources.DataSource;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
+import javafx.beans.binding.When;
 import javafx.beans.property.Property;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.value.ObservableBooleanValue;
 import javafx.collections.ObservableMap;
 
 import java.util.concurrent.CompletableFuture;
@@ -79,6 +82,22 @@ public final class FxUtils {
    */
   public static <T> void bindBidirectional(Property<T> property, DataSource<T> dataSource) {
     property.bindBidirectional(dataSource.dataProperty());
+  }
+
+  /**
+   * A more general version of {@link Bindings#when(ObservableBooleanValue)} that can accept general boolean
+   * properties as conditions.
+   *
+   * @param condition the condition to bind to
+   * @see Bindings#when(ObservableBooleanValue)
+   */
+  public static When when(Property<Boolean> condition) {
+    if (condition instanceof ObservableBooleanValue) {
+      return Bindings.when((ObservableBooleanValue) condition);
+    }
+    SimpleBooleanProperty o = new SimpleBooleanProperty();
+    o.bind(condition);
+    return Bindings.when(o);
   }
 
 }

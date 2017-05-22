@@ -72,8 +72,11 @@ public class Widget<T> {
   }
 
   /**
-   * Configures this widget with the given configuration function. The function should specify
+   * Configures this widget with the given configuration function. The function should specify all the properties of
+   * the widget: set the name, specify which data types it supports, and define how it should be viewed at
+   * different sizes.
    */
+  // TODO this should probably be part of a configurable subclass
   public void configure(Consumer<Widget<T>> configuration) {
     configuration.accept(this);
   }
@@ -109,7 +112,7 @@ public class Widget<T> {
 
   /**
    * Creates a simple (single data point) widget with the given configuration function. This function should set up the
-   * widget as laid out {@link #Widget(Consumer) here}.
+   * widget as laid out {@link #configure(Consumer) here}.
    *
    * @param configure a function used to define and configure the widget
    * @param <T>       the type (or super type if supporting multiple disparate types like Text and Number) of data the
@@ -126,7 +129,7 @@ public class Widget<T> {
 
   /**
    * Creates a composite widget with the given configuration function. This function should set up the widget as laid
-   * out {@link #Widget(Consumer) here}.
+   * out {@link #configure(Consumer) here}.
    *
    * @param configure a function used to define and configure the widget
    */
