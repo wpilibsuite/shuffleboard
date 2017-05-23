@@ -9,7 +9,7 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 
-public class Main extends Application {
+public class ShuffleBoard extends Application {
 
   public static void main(String[] args) {
     NetworkTable.setClientMode();
