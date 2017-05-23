@@ -56,7 +56,7 @@ public class MainWindowController {
   @FXML
   private BorderPane root;
   @FXML
-  private GridPane views;
+  private GridPane tileGrid;
   @FXML
   private TreeTableView<NetworkTableEntry> networkTables;
   @FXML
@@ -73,19 +73,22 @@ public class MainWindowController {
   private static final int colWidth = 128;
   private static final int rowHeight = colWidth; // square tiles
 
-  private static final class ViewHandle {
-    private final Widget view;
+  // Keep track of the widgets and corresponding UI elements
+  private final List<WidgetHandle> widgetHandles = new ArrayList<>();
+
+  private static final class WidgetHandle {
+    private final Widget widget;
     private Size currentSize;
     private String sourceName;
     private Node uiElement;
 
-    public ViewHandle(Widget view) {
-      this.view = view;
-      sourceName = view.getSource().getName();
+    public WidgetHandle(Widget widget) {
+      this.widget = widget;
+      sourceName = widget.getSource().getName();
     }
 
-    public Widget getView() {
-      return view;
+    public Widget getWidget() {
+      return widget;
     }
 
     public Size getCurrentSize() {
@@ -113,8 +116,6 @@ public class MainWindowController {
     }
   }
 
-  private final List<ViewHandle> viewHandles = new ArrayList<>();
-
   @FXML
   public void initialize() throws IOException {
     // Show network table data in the sidebar
@@ -127,18 +128,18 @@ public class MainWindowController {
     numCols = 8;
     numRows = 6;
     for (int i = 0; i < numCols; i++) {
-      views.getColumnConstraints().add(new ColumnConstraints(colWidth, colWidth, Double.POSITIVE_INFINITY, Priority.ALWAYS, HPos.CENTER, true));
+      tileGrid.getColumnConstraints().add(new ColumnConstraints(colWidth, colWidth, Double.POSITIVE_INFINITY, Priority.ALWAYS, HPos.CENTER, true));
     }
     for (int i = 0; i < numRows; i++) {
-      views.getRowConstraints().add(new RowConstraints(rowHeight, rowHeight, Double.POSITIVE_INFINITY, Priority.ALWAYS, VPos.CENTER, true));
+      tileGrid.getRowConstraints().add(new RowConstraints(rowHeight, rowHeight, Double.POSITIVE_INFINITY, Priority.ALWAYS, VPos.CENTER, true));
     }
-    views.setGridLinesVisible(false);
+    tileGrid.setGridLinesVisible(false);
 
     // NetworkTable view init
     keyColumn.setCellValueFactory(f -> new ReadOnlyStringWrapper(simpleKey(f.getValue().getValue().getKey())));
     valueColumn.setCellValueFactory(f -> new ReadOnlyStringWrapper(f.getValue().getValue().getValue())); // lol
 
-    networkTables.setSortPolicy(view -> {
+    networkTables.setSortPolicy(t -> {
       sort(networktableRoot);
       return true;
     });
@@ -159,9 +160,9 @@ public class MainWindowController {
       // Press ESC to clear selection
       if (event.getCharacter().charAt(0) == 27) {
         networkTables.getSelectionModel().select(null);
-        viewHandles.stream()
-                   .map(ViewHandle::getUiElement)
-                   .forEach(n -> n.pseudoClassStateChanged(PseudoClass.getPseudoClass("selected"), false));
+        widgetHandles.stream()
+                     .map(WidgetHandle::getUiElement)
+                     .forEach(n -> n.pseudoClassStateChanged(PseudoClass.getPseudoClass("selected"), false));
       }
     });
 
@@ -173,15 +174,15 @@ public class MainWindowController {
 
       String key = normalizeKey(selectedItem.getValue().getKey()).substring(1);
 
-      List<String> viewNames = viewNamesFor(key);
-      if (viewNames.isEmpty()) {
-        // No known views that can show this data
+      List<String> widgetNames = widgetNamesFor(key);
+      if (widgetNames.isEmpty()) {
+        // No known widgets that can show this data
         return;
       }
 
       ContextMenu menu = new ContextMenu();
-      for (String viewName : viewNames) {
-        MenuItem mi = new MenuItem("Show as: " + viewName);
+      for (String widgetName : widgetNames) {
+        MenuItem mi = new MenuItem("Show as: " + widgetName);
         mi.setOnAction(a -> {
           DataSource<?> source;
           if (rootTable.containsSubTable(key)) {
@@ -192,7 +193,8 @@ public class MainWindowController {
             // It's a single key-value pair
             source = new SingleKeyNetworkTableSource<>(rootTable, key, rootTable.getValue(key).getClass());
           }
-          Widgets.createWidget(viewName, source).ifPresent(this::addWidget);
+          Widgets.createWidget(widgetName, source)
+                 .ifPresent(this::addWidget);
         });
         menu.getItems().add(mi);
       }
@@ -201,24 +203,24 @@ public class MainWindowController {
   }
 
   private void highlight(TreeItem<NetworkTableEntry> prev, boolean doHighlight) {
-    findViews(prev.getValue().getKey())
+    findWidgets(prev.getValue().getKey())
         .forEach(handle -> handle.getUiElement().pseudoClassStateChanged(PseudoClass.getPseudoClass("selected"), doHighlight));
     if (!prev.isLeaf()) {
-      // Highlight all child views
-      viewHandles.stream()
-                 .filter(h -> h.getSourceName().startsWith(prev.getValue().getKey().substring(1)))
-                 .forEach(h -> h.getUiElement().pseudoClassStateChanged(PseudoClass.getPseudoClass("selected"), doHighlight));
+      // Highlight all child widgets
+      widgetHandles.stream()
+                   .filter(h -> h.getSourceName().startsWith(prev.getValue().getKey().substring(1)))
+                   .forEach(h -> h.getUiElement().pseudoClassStateChanged(PseudoClass.getPseudoClass("selected"), doHighlight));
     }
   }
 
-  private List<ViewHandle> findViews(String fullTableKey) {
+  private List<WidgetHandle> findWidgets(String fullTableKey) {
     String k = normalizeKey(fullTableKey).substring(1);
-    return viewHandles.stream()
-                      .filter(h -> h.sourceName.equals(k))
-                      .collect(Collectors.toList());
+    return widgetHandles.stream()
+                        .filter(h -> h.sourceName.equals(k))
+                        .collect(Collectors.toList());
   }
 
-  public List<String> viewNamesFor(String fullTableKey) {
+  public List<String> widgetNamesFor(String fullTableKey) {
     fullTableKey = normalizeKey(fullTableKey).substring(1);
     if (rootTable.containsKey(fullTableKey)) {
       // Queried a key-value
@@ -244,7 +246,7 @@ public class MainWindowController {
         return Collections.emptyList();
       }
     } else {
-      // No possible views
+      // No possible widgets
       log.warning("No table element corresponding to key '" + fullTableKey + "'");
       return Collections.emptyList();
     }
@@ -298,7 +300,10 @@ public class MainWindowController {
       String pathElement = pathElements.get(i);
       k.append("/").append(pathElement);
       parent = current;
-      current = current.getChildren().stream().filter(item -> item.getValue().getKey().equals(k.toString())).findFirst().orElse(null);
+      current = current.getChildren().stream()
+                       .filter(item -> item.getValue().getKey().equals(k.toString()))
+                       .findFirst()
+                       .orElse(null);
       if (deleted) {
         if (current == null) {
           break;
@@ -360,22 +365,22 @@ public class MainWindowController {
     });
   }
 
-  public void addWidget(Widget<?> view) {
-    addWidget(view, view.getPreferredSize());
+  public void addWidget(Widget<?> widget) {
+    addWidget(widget, widget.getPreferredSize());
   }
 
   public void addWidget(Widget<?> view, Size size) {
-    ViewHandle handle = new ViewHandle(view);
+    WidgetHandle handle = new WidgetHandle(view);
     handle.setCurrentSize(size);
-    viewHandles.add(handle);
+    widgetHandles.add(handle);
     Pane control = view.getViews().get(size).get();
     AtomicReference<Node> uiElement = new AtomicReference<>(addTile(control, size));
     control.setOnContextMenuRequested(e -> {
       ContextMenu menu = new ContextMenu();
       MenuItem remove = new MenuItem("Remove");
       remove.setOnAction(a -> {
-        views.getChildren().remove(uiElement.get());
-        viewHandles.remove(handle);
+        tileGrid.getChildren().remove(uiElement.get());
+        widgetHandles.remove(handle);
       });
       if (view.getViews().size() > 1) {
         // Add menu items for changing the size
@@ -386,8 +391,8 @@ public class MainWindowController {
             sizeItem.setGraphic(new Label("✓"));
           }
           sizeItem.setOnAction(a -> {
-            viewHandles.remove(handle);
-            views.getChildren().remove(uiElement.get());
+            widgetHandles.remove(handle);
+            tileGrid.getChildren().remove(uiElement.get());
             addWidget(view, s);
           });
           changeSize.getItems().add(sizeItem);
@@ -403,8 +408,8 @@ public class MainWindowController {
                } else {
                  // only need to change if it's to another type
                  changeItem.setOnAction(a -> {
-                   viewHandles.remove(handle);
-                   views.getChildren().remove(uiElement.get());
+                   widgetHandles.remove(handle);
+                   tileGrid.getChildren().remove(uiElement.get());
                    Widgets.createWidget(name, view.getSource()).ifPresent(this::addWidget);
                  });
                }
@@ -456,7 +461,7 @@ public class MainWindowController {
     StackPane wrapper = new StackPane(node);
     wrapper.getStyleClass().add("tile");
 
-    views.add(wrapper, placement.col, placement.row, width, height);
+    tileGrid.add(wrapper, placement.col, placement.row, width, height);
     return wrapper;
   }
 
@@ -497,7 +502,7 @@ public class MainWindowController {
     int width;
     int height;
 
-    for (Node tile : views.getChildren()) {
+    for (Node tile : tileGrid.getChildren()) {
       try {
         x = GridPane.getColumnIndex(tile);
         y = GridPane.getRowIndex(tile);

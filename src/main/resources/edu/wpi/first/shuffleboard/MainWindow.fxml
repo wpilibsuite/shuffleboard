@@ -23,7 +23,7 @@
         </MenuBar>
     </top>
     <center>
-        <GridPane fx:id="views" hgap="8" vgap="8">
+        <GridPane fx:id="tileGrid" hgap="8" vgap="8">
             <properties dropTarget="true"/>
             <padding>
                 <Insets topRightBottomLeft="10"/>
