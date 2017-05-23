@@ -11,6 +11,8 @@ import java.io.IOException;
 
 public class ShuffleBoard extends Application {
 
+  private Pane mainPane;
+
   public static void main(String[] args) {
     NetworkTable.setClientMode();
     NetworkTable.setIPAddress("localhost"); // for local testing
@@ -18,10 +20,14 @@ public class ShuffleBoard extends Application {
   }
 
   @Override
-  public void start(Stage primaryStage) throws IOException {
+  public void init() throws Exception {
     StockWidgets.init();
 
-    Pane mainPane = FXMLLoader.load(MainWindowController.class.getResource("MainWindow.fxml"));
+    mainPane = FXMLLoader.load(MainWindowController.class.getResource("MainWindow.fxml"));
+  }
+
+  @Override
+  public void start(Stage primaryStage) throws IOException {
     primaryStage.setScene(new Scene(mainPane));
     primaryStage.show();
   }
