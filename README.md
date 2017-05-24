@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/wpilibsuite/shuffleboard.svg?token=fZbCZqHZXBEsYFUSBifL&branch=master)](https://travis-ci.com/wpilibsuite/shuffleboard)
+
 # shuffleboard
 
 ## Running
