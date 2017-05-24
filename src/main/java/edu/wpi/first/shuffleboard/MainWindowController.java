@@ -38,10 +38,10 @@ import javafx.scene.layout.StackPane;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -116,13 +116,15 @@ public class MainWindowController {
     }
   }
 
+  private static final int NT_NOTIFY_ALL = 0xFF;
+
   @FXML
   public void initialize() throws IOException {
     // Show network table data in the sidebar
     NetworkTablesJNI.addEntryListener(
         "",
         (uid, key, value, flags) -> makeBranches(key, value, flags),
-        ITable.NOTIFY_IMMEDIATE | ITable.NOTIFY_LOCAL | ITable.NOTIFY_NEW | ITable.NOTIFY_DELETE | ITable.NOTIFY_UPDATE);
+        NT_NOTIFY_ALL);
 
     // init grid
     numCols = 8;
@@ -136,8 +138,8 @@ public class MainWindowController {
     tileGrid.setGridLinesVisible(false);
 
     // NetworkTable view init
-    keyColumn.setCellValueFactory(f -> new ReadOnlyStringWrapper(simpleKey(f.getValue().getValue().getKey())));
-    valueColumn.setCellValueFactory(f -> new ReadOnlyStringWrapper(f.getValue().getValue().getValue())); // lol
+    keyColumn.setCellValueFactory(f -> new ReadOnlyStringWrapper(simpleKey(getEntry(f).getKey())));
+    valueColumn.setCellValueFactory(f -> new ReadOnlyStringWrapper(getEntry(f).getValue()));
 
     networkTables.setSortPolicy(t -> {
       sort(networktableRoot);
@@ -200,6 +202,10 @@ public class MainWindowController {
       }
       menu.show(root.getScene().getWindow(), e.getScreenX(), e.getScreenY());
     });
+  }
+
+  private NetworkTableEntry getEntry(TreeTableColumn.CellDataFeatures<NetworkTableEntry, String> features) {
+    return features.getValue().getValue();
   }
 
   private void highlight(TreeItem<NetworkTableEntry> prev, boolean doHighlight) {
@@ -278,9 +284,7 @@ public class MainWindowController {
    * Normalizes a network table key to start with exactly one leading slash ("/").
    */
   private static String normalizeKey(String key) {
-    while (key.startsWith("//")) {
-      key = key.substring(1);
-    }
+    key = key.replaceAll("/{2,}", "/");
     if (!key.startsWith("/")) {
       key = "/" + key;
     }
@@ -295,20 +299,22 @@ public class MainWindowController {
                                       .collect(Collectors.toList());
     TreeItem<NetworkTableEntry> current = networktableRoot;
     TreeItem<NetworkTableEntry> parent;
-    StringBuilder k = new StringBuilder();
+    StringBuilder currentKey = new StringBuilder();
+    // Add, remove or update nodes in the tree as necessary
     for (int i = 0; i < pathElements.size(); i++) {
       String pathElement = pathElements.get(i);
-      k.append("/").append(pathElement);
+      currentKey.append("/").append(pathElement);
       parent = current;
       current = current.getChildren().stream()
-                       .filter(item -> item.getValue().getKey().equals(k.toString()))
+                       .filter(item -> item.getValue().getKey().equals(currentKey.toString()))
                        .findFirst()
                        .orElse(null);
       if (deleted) {
         if (current == null) {
+          // Nothing to remove
           break;
         } else if (i == pathElements.size() - 1) {
-          // last
+          // Remove the final node
           parent.getChildren().remove(current);
         }
       } else if (i == pathElements.size() - 1) {
@@ -323,7 +329,7 @@ public class MainWindowController {
         }
       } else if (current == null) {
         // It's a branch (subtable); expand it
-        current = new TreeItem<>(new NetworkTableEntry(k.toString(), ""));
+        current = new TreeItem<>(new NetworkTableEntry(currentKey.toString(), ""));
         current.setExpanded(true);
         parent.getChildren().add(current);
       }
@@ -337,18 +343,21 @@ public class MainWindowController {
   }
 
   private String asString(Object o) {
-    String s = o.toString();
-    if (o.getClass().isArray()) {
-      if (!s.equals("[]")) {
-        s = s.substring(1, s.length());
-      }
+    if (o instanceof double[]) {
+      return Arrays.toString((double[]) o);
     }
-    return s;
+    if (o instanceof String[]) {
+      return Arrays.toString((String[]) o);
+    }
+    if (o instanceof boolean[]) {
+      return Arrays.toString((boolean[]) o);
+    }
+    return o.toString();
   }
 
   @FXML
   public void close() {
-    System.out.println("Exiting");
+    log.info("Exiting app");
     System.exit(0);
   }
 
@@ -369,59 +378,69 @@ public class MainWindowController {
     addWidget(widget, widget.getPreferredSize());
   }
 
-  public void addWidget(Widget<?> view, Size size) {
-    WidgetHandle handle = new WidgetHandle(view);
+  public void addWidget(Widget<?> widget, Size size) {
+    WidgetHandle handle = new WidgetHandle(widget);
     handle.setCurrentSize(size);
     widgetHandles.add(handle);
-    Pane control = view.getViews().get(size).get();
-    AtomicReference<Node> uiElement = new AtomicReference<>(addTile(control, size));
+    Pane control = widget.getViews().get(size).get();
+    Node uiElement = addTile(control, size);
     control.setOnContextMenuRequested(e -> {
       ContextMenu menu = new ContextMenu();
       MenuItem remove = new MenuItem("Remove");
       remove.setOnAction(a -> {
-        tileGrid.getChildren().remove(uiElement.get());
+        tileGrid.getChildren().remove(uiElement);
         widgetHandles.remove(handle);
       });
-      if (view.getViews().size() > 1) {
-        // Add menu items for changing the size
-        Menu changeSize = new Menu("Resize...");
-        for (Size s : view.getViews().keySet()) {
-          MenuItem sizeItem = new MenuItem(s.getWidth() + " by " + s.getHeight());
-          if (handle.getCurrentSize().equals(s)) {
-            sizeItem.setGraphic(new Label("✓"));
-          }
-          sizeItem.setOnAction(a -> {
-            widgetHandles.remove(handle);
-            tileGrid.getChildren().remove(uiElement.get());
-            addWidget(view, s);
-          });
-          changeSize.getItems().add(sizeItem);
-        }
-        menu.getItems().add(changeSize);
-      }
-      Menu changeView = new Menu("Show as...");
-      Widgets.widgetNamesForType(DataType.valueOf(view.getSource().getData().getClass()))
-             .forEach(name -> {
-               MenuItem changeItem = new MenuItem(name);
-               if (name.equals(view.getName())) {
-                 changeItem.setGraphic(new Label("✓"));
-               } else {
-                 // only need to change if it's to another type
-                 changeItem.setOnAction(a -> {
-                   widgetHandles.remove(handle);
-                   tileGrid.getChildren().remove(uiElement.get());
-                   Widgets.createWidget(name, view.getSource()).ifPresent(this::addWidget);
-                 });
-               }
-               changeView.getItems().add(changeItem);
-             });
-      menu.getItems().add(changeView);
+      addResizeMenus(menu, widget, handle, uiElement);
+      addChangeMenus(menu, widget, handle, uiElement);
       menu.getItems().add(new SeparatorMenuItem());
       menu.getItems().add(remove);
       menu.show(root.getScene().getWindow(), e.getScreenX(), e.getScreenY());
     });
-    handle.setUiElement(uiElement.get());
+    handle.setUiElement(uiElement);
     handle.getUiElement().pseudoClassStateChanged(PseudoClass.getPseudoClass("selected"), true);
+  }
+
+  private void addResizeMenus(ContextMenu menu, Widget<?> widget, WidgetHandle handle, Node uiElement) {
+    if (widget.getViews().size() > 1) {
+      Menu changeSize = new Menu("Resize...");
+      for (Size s : widget.getViews().keySet()) {
+        MenuItem sizeItem = new MenuItem(s.getWidth() + " by " + s.getHeight());
+        if (handle.getCurrentSize().equals(s)) {
+          sizeItem.setGraphic(new Label("✓"));
+        }
+        sizeItem.setOnAction(a -> {
+          widgetHandles.remove(handle);
+          tileGrid.getChildren().remove(uiElement);
+          addWidget(widget, s);
+        });
+        changeSize.getItems().add(sizeItem);
+      }
+      menu.getItems().add(changeSize);
+    }
+  }
+
+  private void addChangeMenus(ContextMenu menu, Widget<?> widget, WidgetHandle handle, Node uiElement) {
+    Menu changeView = new Menu("Show as...");
+    Widgets.widgetNamesForType(DataType.valueOf(widget.getSource().getData().getClass()))
+           .stream()
+           .sorted()
+           .forEach(name -> {
+             MenuItem changeItem = new MenuItem(name);
+             if (name.equals(widget.getName())) {
+               changeItem.setGraphic(new Label("✓"));
+             } else {
+               // only need to change if it's to another type
+               changeItem.setOnAction(a -> {
+                 widgetHandles.remove(handle);
+                 tileGrid.getChildren().remove(uiElement);
+                 Widgets.createWidget(name, widget.getSource())
+                        .ifPresent(this::addWidget);
+               });
+             }
+             changeView.getItems().add(changeItem);
+           });
+    menu.getItems().add(changeView);
   }
 
   private Node addTile(Node node, Size size) {
@@ -522,25 +541,6 @@ public class MainWindowController {
     }
 
     return true;
-  }
-
-
-  private static class Point {
-    private final int col, row;
-
-    private Point(int col, int row) {
-      this.col = col;
-      this.row = row;
-    }
-
-    public int getCol() {
-      return col;
-    }
-
-    public int getRow() {
-      return row;
-    }
-
   }
 
 }

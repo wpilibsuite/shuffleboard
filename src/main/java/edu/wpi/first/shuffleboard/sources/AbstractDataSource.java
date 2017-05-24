@@ -2,6 +2,7 @@ package edu.wpi.first.shuffleboard.sources;
 
 import edu.wpi.first.shuffleboard.properties.ThreadSafeProperty;
 import javafx.beans.property.Property;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
 
@@ -14,7 +15,7 @@ import javafx.beans.value.ObservableValue;
 public abstract class AbstractDataSource<T> implements DataSource<T> {
 
   protected final Property<String> name = new SimpleStringProperty(this, "name", "");
-  protected final Property<Boolean> active = new ThreadSafeProperty<>(this, "active", false);
+  protected final Property<Boolean> active = new SimpleBooleanProperty(this, "active", false);
   protected final Property<T> data = new ThreadSafeProperty<>(this, "data", null);
 
   @Override
@@ -40,4 +41,8 @@ public abstract class AbstractDataSource<T> implements DataSource<T> {
     this.active.setValue(active);
   }
 
+  @Override
+  public String toString() {
+    return String.format("%s(name=%s, active=%s, data=%s)", getClass().getSimpleName(), getName(), isActive(), getData());
+  }
 }
