@@ -11,7 +11,7 @@ import javafx.stage.Stage;
 import java.io.IOException;
 
 @SuppressWarnings("JavadocMethod")
-public class ShuffleBoard extends Application {
+public class Shuffleboard extends Application {
 
   private Pane mainPane;
 

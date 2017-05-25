@@ -3,8 +3,8 @@ package edu.wpi.first.shuffleboard.properties;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.WeakHashMap;
 
 import static edu.wpi.first.shuffleboard.util.FxUtils.runOnFxThread;
 
@@ -12,24 +12,24 @@ import static edu.wpi.first.shuffleboard.util.FxUtils.runOnFxThread;
  * A thread-safe implementation of a property. Any changes to the value will execute on the JavaFX
  * application thread.
  */
-public class ThreadSafeProperty<T> extends SimpleObjectProperty<T> {
+public class AsyncProperty<T> extends SimpleObjectProperty<T> {
 
   private final Map<ChangeListener<? super T>, ChangeListener<? super T>> wrappers
-      = new HashMap<>();
+      = new WeakHashMap<>();
 
-  public ThreadSafeProperty() {
+  public AsyncProperty() {
     super();
   }
 
-  public ThreadSafeProperty(T initialValue) {
+  public AsyncProperty(T initialValue) {
     super(initialValue);
   }
 
-  public ThreadSafeProperty(Object bean, String name) {
+  public AsyncProperty(Object bean, String name) {
     super(bean, name);
   }
 
-  public ThreadSafeProperty(Object bean, String name, T initialValue) {
+  public AsyncProperty(Object bean, String name, T initialValue) {
     super(bean, name, initialValue);
   }
 

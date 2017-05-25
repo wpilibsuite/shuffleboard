@@ -1,5 +1,7 @@
 package edu.wpi.first.shuffleboard.widget;
 
+import java.util.stream.Stream;
+
 /**
  * An enum representing all the possible types of data that widgets can handle.
  */
@@ -65,7 +67,7 @@ public enum DataType {
   /**
    * A generic data type encompassing all composite types (ie types with more than a single value).
    */
-  Composite("Composite"),
+  Map("Map"),
 
   RobotDrive("RobotDrive"),
 
@@ -93,8 +95,24 @@ public enum DataType {
     this.name = name;
   }
 
+  /**
+   * Gets the name of this data type.
+   *
+   * <p><i>Not to be confused with {@link #name()}, which gets
+   * the name of the enum constant.</i>
+   */
   public String getName() {
     return name;
+  }
+
+  /**
+   * Gets the data type with the given name, or {@link #Unknown} if no such data type exists.
+   */
+  public static DataType forName(String name) {
+    return Stream.of(values())
+                 .filter(dataType -> dataType.name.equals(name))
+                 .findFirst()
+                 .orElse(Unknown);
   }
 
   /**

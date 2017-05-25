@@ -5,7 +5,7 @@ import java.util.Objects;
 /**
  * Represents the size of a tile in a grid.
  */
-public class Size implements Comparable<Size> {
+public class TileSize {
 
   private final int width;
   private final int height;
@@ -13,7 +13,7 @@ public class Size implements Comparable<Size> {
   /**
    * Creates a size with the given width and height. These must both be positive values.
    */
-  public Size(int width, int height) {
+  public TileSize(int width, int height) {
     this.width = width;
     this.height = height;
   }
@@ -27,21 +27,6 @@ public class Size implements Comparable<Size> {
   }
 
   @Override
-  public int compareTo(Size o) {
-    if (width < o.width) {
-      return -1;
-    } else if (width > o.width) {
-      return 1;
-    } else if (height < o.height) {
-      return -1;
-    } else if (height > o.height) {
-      return 1;
-    } else {
-      return 0;
-    }
-  }
-
-  @Override
   public boolean equals(Object o) {
     if (this == o) {
       return true;
@@ -50,7 +35,7 @@ public class Size implements Comparable<Size> {
       return false;
     }
 
-    Size size = (Size) o;
+    TileSize size = (TileSize) o;
 
     return width == size.width && height == size.height;
   }
@@ -62,6 +47,6 @@ public class Size implements Comparable<Size> {
 
   @Override
   public String toString() {
-    return String.format("Size(width=%d, height=%d)", width, height);
+    return String.format("TileSize(width=%d, height=%d)", width, height);
   }
 }

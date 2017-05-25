@@ -1,12 +1,12 @@
 package edu.wpi.first.shuffleboard;
 
-import edu.wpi.first.shuffleboard.elements.NetworkTableTree;
-import edu.wpi.first.shuffleboard.elements.TilePane;
-import edu.wpi.first.shuffleboard.sources.CompositeNetworkTableSource;
+import edu.wpi.first.shuffleboard.components.NetworkTableTree;
+import edu.wpi.first.shuffleboard.components.TilePane;
 import edu.wpi.first.shuffleboard.sources.DataSource;
-import edu.wpi.first.shuffleboard.sources.SingleKeyNetworkTableSource;
+import edu.wpi.first.shuffleboard.sources.NetworkTableSource;
+import edu.wpi.first.shuffleboard.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.widget.DataType;
-import edu.wpi.first.shuffleboard.widget.Size;
+import edu.wpi.first.shuffleboard.widget.TileSize;
 import edu.wpi.first.shuffleboard.widget.Widget;
 import edu.wpi.first.shuffleboard.widget.Widgets;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
@@ -25,12 +25,10 @@ import javafx.scene.layout.Pane;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import static edu.wpi.first.shuffleboard.util.NetworkTableUtils.normalizeKey;
 
 /**
  * Controller for the main UI window.
@@ -48,31 +46,31 @@ public class MainWindowController {
 
   private final ITable rootTable = NetworkTable.getTable("");
 
-  // Keep track of the widgets and corresponding UI elements
+  // Keep track of the widgets and corresponding UI components
   private final List<WidgetHandle> widgetHandles = new ArrayList<>();
 
   private static final PseudoClass selectedPseudoClass = PseudoClass.getPseudoClass("selected");
 
   private static final class WidgetHandle {
     private final Widget widget;
-    private Size currentSize;
+    private TileSize currentSize;
     private String sourceName;
     private Node uiElement;
 
     public WidgetHandle(Widget widget) {
       this.widget = widget;
-      sourceName = widget.getSource().getName();
+      sourceName = widget.getSourceName();
     }
 
     public Widget getWidget() {
       return widget;
     }
 
-    public Size getCurrentSize() {
+    public TileSize getCurrentSize() {
       return currentSize;
     }
 
-    public void setCurrentSize(Size currentSize) {
+    public void setCurrentSize(TileSize currentSize) {
       this.currentSize = currentSize;
     }
 
@@ -117,11 +115,16 @@ public class MainWindowController {
       // Press ESC to clear selection
       if (event.getCharacter().charAt(0) == 27) {
         networkTables.getSelectionModel().select(null);
-        widgetHandles.stream()
-                     .map(WidgetHandle::getUiElement)
-                     .forEach(n -> n.pseudoClassStateChanged(selectedPseudoClass, false));
       }
     });
+
+    networkTables.getSelectionModel()
+                 .selectedItemProperty()
+                 .addListener((__, __o, newValue) -> {
+                   if (newValue == null) {
+                     deselectAllWidgets();
+                   }
+                 });
 
     networkTables.setOnContextMenuRequested(e -> {
       TreeItem<NetworkTableEntry> selectedItem =
@@ -130,94 +133,68 @@ public class MainWindowController {
         return;
       }
 
-      String key = normalizeKey(selectedItem.getValue().getKey()).substring(1);
+      String key = NetworkTableUtils.normalizeKey(selectedItem.getValue().getKey(), false);
 
-      List<String> widgetNames = widgetNamesFor(key);
+      List<String> widgetNames = Widgets.widgetNamesForSource(NetworkTableSource.forKey(key));
       if (widgetNames.isEmpty()) {
         // No known widgets that can show this data
         return;
       }
 
+      DataSource<?> source = NetworkTableSource.forKey(key);
+
       ContextMenu menu = new ContextMenu();
-      for (String widgetName : widgetNames) {
-        MenuItem mi = new MenuItem("Show as: " + widgetName);
-        mi.setOnAction(a -> {
-          DataSource<?> source;
-          if (rootTable.containsSubTable(key)) {
-            // It's a composite data type like a motor controller
-            ITable table = rootTable.getSubTable(key);
-            source = new CompositeNetworkTableSource(
-                table, DataType.valueOf(table.getString("~METADATA~/Type", null)));
-          } else {
-            // It's a single key-value pair
-            source = new SingleKeyNetworkTableSource<>(
-                rootTable, key, rootTable.getValue(key).getClass());
-          }
-          Widgets.createWidget(widgetName, source)
-                 .ifPresent(this::addWidget);
-        });
-        menu.getItems().add(mi);
-      }
+      widgetNames.stream()
+                 .map(name -> createShowAsMenuItem(name, source))
+                 .forEach(menu.getItems()::add);
+
       menu.show(root.getScene().getWindow(), e.getScreenX(), e.getScreenY());
     });
   }
 
-  private void highlight(TreeItem<NetworkTableEntry> prev, boolean doHighlight) {
-    findWidgets(prev.getValue().getKey())
-        .forEach(handle -> handle.getUiElement()
-                                 .pseudoClassStateChanged(selectedPseudoClass, doHighlight));
-    if (!prev.isLeaf()) {
+  private MenuItem createShowAsMenuItem(String widgetName, DataSource<?> source) {
+    MenuItem menuItem = new MenuItem("Show as: " + widgetName);
+    menuItem.setOnAction(action -> {
+      Widgets.createWidget(widgetName, source)
+             .ifPresent(this::addWidget);
+    });
+    return menuItem;
+  }
+
+  private void highlight(TreeItem<NetworkTableEntry> node, boolean doHighlight) {
+    findWidgets(node.getValue().getKey())
+        .forEach(handle -> highlight(handle.getUiElement(), doHighlight));
+
+    if (!node.isLeaf()) {
       // Highlight all child widgets
       widgetHandles.stream()
-                   .filter(h -> h.getSourceName().startsWith(prev.getValue().getKey().substring(1)))
-                   .forEach(h -> h.getUiElement()
-                                  .pseudoClassStateChanged(selectedPseudoClass, doHighlight));
+                   .filter(handle -> handle.getSourceName()
+                                           .startsWith(node.getValue().getKey().substring(1)))
+                   .forEach(handle -> highlight(handle.getUiElement(), doHighlight));
     }
   }
 
-  private List<WidgetHandle> findWidgets(String fullTableKey) {
-    String k = normalizeKey(fullTableKey).substring(1);
-    return widgetHandles.stream()
-                        .filter(h -> h.sourceName.equals(k))
-                        .collect(Collectors.toList());
+  private void highlight(Node tile, boolean doHighlight) {
+    tile.pseudoClassStateChanged(selectedPseudoClass, doHighlight);
   }
 
   /**
-   * Gets a list of the names of all widgets that can display the data associated with the given
-   * network table key.
-   *
-   * @param fullTableKey the full network table key (ie "/a/b/c" instead of just "c")
+   * Deselects all widgets in the tile view.
    */
-  public List<String> widgetNamesFor(String fullTableKey) {
-    String key = normalizeKey(fullTableKey).substring(1);
-    if (rootTable.containsKey(key)) {
-      // Queried a key-value
-      return Widgets.widgetNamesForType(
-          DataType.valueOf(rootTable.getValue(key).getClass()));
-    } else if (rootTable.containsSubTable(key)) {
-      // Queried a subtable (composite type)
-      ITable table = rootTable.getSubTable(key);
-      if (table.containsSubTable("~METADATA~")) {
-        // check for metadata that describes the type
-        String type = table.getSubTable("~METADATA~").getString("Type", null);
-        DataType dataType = DataType.valueOf(type);
-        if (type == null) {
-          log.warning("No type specified in metadata table");
-          dataType = DataType.Composite;
-        } else if (dataType == DataType.Unknown) {
-          log.warning("Unknown data type '" + type + "'"); //NOPMD
-          dataType = DataType.Composite;
-        }
-        return Widgets.widgetNamesForType(dataType);
-      } else {
-        log.warning("No metadata table for table " + key); //NOPMD
-        return Collections.emptyList();
-      }
-    } else {
-      // No possible widgets
-      log.warning("No table element corresponding to key '" + key + "'"); //NOPMD
-      return Collections.emptyList();
-    }
+  private void deselectAllWidgets() {
+    widgetHandles.stream()
+                 .map(WidgetHandle::getUiElement)
+                 .forEach(node -> highlight(node, false));
+  }
+
+  /**
+   * Finds all widgets in the tile grid that are associated with the given network table key.
+   */
+  private List<WidgetHandle> findWidgets(String fullTableKey) {
+    String key = NetworkTableUtils.normalizeKey(fullTableKey, false);
+    return widgetHandles.stream()
+                        .filter(handle -> handle.sourceName.equals(key))
+                        .collect(Collectors.toList());
   }
 
   @FXML
@@ -233,9 +210,11 @@ public class MainWindowController {
    */
   public void addWidget(Widget<?> widget) {
     Pane view = widget.getView();
-    double w = Math.max(tileGrid.getTileSize(), view.getPrefWidth());
-    double h = Math.max(tileGrid.getTileSize(), view.getPrefHeight());
-    Size size = new Size((int) (w / tileGrid.getTileSize()), (int) (h / tileGrid.getTileSize()));
+    double width = Math.max(tileGrid.getTileSize(), view.getPrefWidth());
+    double height = Math.max(tileGrid.getTileSize(), view.getPrefHeight());
+
+    TileSize size = new TileSize((int) (width / tileGrid.getTileSize()),
+                                 (int) (height / tileGrid.getTileSize()));
     addWidget(widget, size);
   }
 
@@ -246,32 +225,52 @@ public class MainWindowController {
    * @param widget the widget to add
    * @param size   the size of the tile used to display the widget
    */
-  public void addWidget(Widget<?> widget, Size size) {
+  public void addWidget(Widget<?> widget, TileSize size) {
     WidgetHandle handle = new WidgetHandle(widget);
     handle.setCurrentSize(size);
     widgetHandles.add(handle);
     Pane control = widget.getView();
     Node uiElement = tileGrid.addTile(control, size);
+    handle.setUiElement(uiElement);
     control.setOnContextMenuRequested(e -> {
-      ContextMenu menu = new ContextMenu();
-      MenuItem remove = new MenuItem("Remove");
-      remove.setOnAction(a -> {
-        tileGrid.getChildren().remove(uiElement);
-        widgetHandles.remove(handle);
-      });
-      addChangeMenus(menu, widget, handle, uiElement);
-      menu.getItems().add(new SeparatorMenuItem());
-      menu.getItems().add(remove);
+      ContextMenu menu = createContextMenu(handle);
       menu.show(root.getScene().getWindow(), e.getScreenX(), e.getScreenY());
     });
-    handle.setUiElement(uiElement);
     handle.getUiElement().pseudoClassStateChanged(selectedPseudoClass, true);
   }
 
-  private void addChangeMenus(ContextMenu menu,
-                              Widget<?> widget,
-                              WidgetHandle handle,
-                              Node uiElement) {
+  /**
+   * Removes a widget from the view.
+   *
+   * @param widget the widget to remove
+   */
+  public void removeWidget(Widget<?> widget) {
+    widgetHandles.stream()
+                 .filter(h -> h.getWidget() == widget)
+                 .findFirst()
+                 .ifPresent(this::removeWidget);
+  }
+
+  /**
+   * Removes a widget from the view.
+   *
+   * @param handle the handle for the widget to remove
+   */
+  private void removeWidget(WidgetHandle handle) {
+    tileGrid.getChildren().remove(handle.getUiElement());
+    widgetHandles.remove(handle);
+  }
+
+  private ContextMenu createContextMenu(WidgetHandle handle) {
+    ContextMenu menu = new ContextMenu();
+    MenuItem remove = new MenuItem("Remove");
+    remove.setOnAction(__ -> removeWidget(handle));
+    menu.getItems().addAll(createChangeMenus(handle), new SeparatorMenuItem(), remove);
+    return menu;
+  }
+
+  private MenuItem createChangeMenus(WidgetHandle handle) {
+    Widget<?> widget = handle.getWidget();
     Menu changeView = new Menu("Show as...");
     Widgets.widgetNamesForType(DataType.valueOf(widget.getSource().getData().getClass()))
            .stream()
@@ -282,16 +281,16 @@ public class MainWindowController {
                changeItem.setGraphic(new Label("✓"));
              } else {
                // only need to change if it's to another type
-               changeItem.setOnAction(a -> {
-                 widgetHandles.remove(handle);
-                 tileGrid.getChildren().remove(uiElement);
+               changeItem.setOnAction(__ -> {
+                 // TODO this has a lot of room for improvement
+                 removeWidget(handle);
                  Widgets.createWidget(name, widget.getSource())
                         .ifPresent(this::addWidget);
                });
              }
              changeView.getItems().add(changeItem);
            });
-    menu.getItems().add(changeView);
+    return changeView;
   }
 
 }

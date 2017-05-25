@@ -1,6 +1,8 @@
 package edu.wpi.first.shuffleboard;
 
 
+import edu.wpi.first.shuffleboard.util.NetworkTableUtils;
+
 import java.util.Objects;
 
 /**
@@ -22,6 +24,10 @@ public final class NetworkTableEntry {
 
   public String getKey() {
     return key;
+  }
+
+  public String simpleKey() {
+    return NetworkTableUtils.simpleKey(key);
   }
 
   public String getValue() {

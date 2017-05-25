@@ -1,11 +1,11 @@
-package edu.wpi.first.shuffleboard;
+package edu.wpi.first.shuffleboard.util;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
 /**
  * Represents a point in a grid.
  */
-public class Point {
+public class GridPoint {
 
   public final int col;
   public final int row;
@@ -13,7 +13,7 @@ public class Point {
   /**
    * Creates a point at the given column and row indices.
    */
-  public Point(int col, int row) {
+  public GridPoint(int col, int row) {
     checkArgument(col >= 0, "Column index must be non-negative, was " + col);
     checkArgument(row >= 0, "Row index must be non-negative, was " + row);
     this.col = col;

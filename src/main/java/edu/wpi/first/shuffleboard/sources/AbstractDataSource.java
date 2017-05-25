@@ -1,6 +1,6 @@
 package edu.wpi.first.shuffleboard.sources;
 
-import edu.wpi.first.shuffleboard.properties.ThreadSafeProperty;
+import edu.wpi.first.shuffleboard.properties.AsyncProperty;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -16,7 +16,7 @@ public abstract class AbstractDataSource<T> implements DataSource<T> {
 
   protected final Property<String> name = new SimpleStringProperty(this, "name", "");
   protected final Property<Boolean> active = new SimpleBooleanProperty(this, "active", false);
-  protected final Property<T> data = new ThreadSafeProperty<>(this, "data", null);
+  protected final Property<T> data = new AsyncProperty<>(this, "data", null);
 
   @Override
   public ObservableValue<String> nameProperty() {

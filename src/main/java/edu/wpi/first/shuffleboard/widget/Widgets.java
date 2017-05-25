@@ -111,9 +111,16 @@ public final class Widgets {
   public static List<String> widgetNamesForType(DataType type) {
     return widgets.keySet().stream()
                   .filter(d -> d.getDataTypes().contains(DataType.All)
-                      || d.getDataTypes().contains(type))
+                               || d.getDataTypes().contains(type))
                   .map(WidgetDescription::getName)
                   .collect(Collectors.toList());
+  }
+
+  /**
+   * Gets the names of all the possible widgets than can display the data in a given source.
+   */
+  public static List<String> widgetNamesForSource(DataSource<?> source) {
+    return widgetNamesForType(DataType.valueOf(source.getData().getClass()));
   }
 
 }

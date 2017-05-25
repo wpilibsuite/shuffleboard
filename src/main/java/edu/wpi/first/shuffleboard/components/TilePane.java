@@ -1,7 +1,7 @@
-package edu.wpi.first.shuffleboard.elements;
+package edu.wpi.first.shuffleboard.components;
 
-import edu.wpi.first.shuffleboard.Point;
-import edu.wpi.first.shuffleboard.widget.Size;
+import edu.wpi.first.shuffleboard.util.GridPoint;
+import edu.wpi.first.shuffleboard.widget.TileSize;
 import javafx.beans.DefaultProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
@@ -17,6 +17,8 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.StackPane;
 
+import java.util.stream.IntStream;
+
 import static com.google.common.base.Preconditions.checkArgument;
 
 /**
@@ -25,20 +27,20 @@ import static com.google.common.base.Preconditions.checkArgument;
 @DefaultProperty("children")
 public class TilePane extends GridPane {
 
-  private static final int DEFAULT_COL_COUNT = 0;
-  private static final int DEFAULT_ROW_COUNT = 0;
-  private static final double MIN_TILE_SIZE = 32;
+  private static final int DEFAULT_COL_COUNT = 1;
+  private static final int DEFAULT_ROW_COUNT = 1;
+  private static final double MIN_TILE_SIZE = 32; // pixels
   private static final double DEFAULT_TILE_SIZE = 128; // pixels
 
-  private final ObjectProperty<Integer> cols =
-      new SimpleObjectProperty<>(this, "cols", DEFAULT_COL_COUNT);
-  private final ObjectProperty<Integer> rows =
-      new SimpleObjectProperty<>(this, "rows", DEFAULT_ROW_COUNT);
+  private final ObjectProperty<Integer> numColumns =
+      new SimpleObjectProperty<>(this, "numColumns", DEFAULT_COL_COUNT);
+  private final ObjectProperty<Integer> numRows =
+      new SimpleObjectProperty<>(this, "numRows", DEFAULT_ROW_COUNT);
   private final DoubleProperty tileSize =
       new SimpleDoubleProperty(this, "tileSize", DEFAULT_TILE_SIZE);
 
   /**
-   * Creates a tile pane with no rows or columns.
+   * Creates a tile pane with one row and one column.
    */
   public TilePane() {
     this(DEFAULT_COL_COUNT, DEFAULT_ROW_COUNT);
@@ -47,81 +49,85 @@ public class TilePane extends GridPane {
   /**
    * Creates a tile pane with the given number of columns and rows.
    *
-   * @param cols the number of columns in the grid. Must be >= 1
-   * @param rows the number of rows in the grid. Must be >= 1
+   * @param numColumns the number of columns in the grid. Must be >= 1
+   * @param numRows    the number of rows in the grid. Must be >= 1
    */
   @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
-  public TilePane(int cols, int rows) {
-    this.cols.addListener((obs, o, n) -> {
-      if (n > o) {
-        for (int i = 0; i < n - o; i++) {
-          ColumnConstraints c = new ColumnConstraints(
-              MIN_TILE_SIZE, getTileSize(), 1e3, Priority.ALWAYS, HPos.LEFT, true);
-          c.prefWidthProperty().bind(tileSize);
-          getColumnConstraints().add(c);
-        }
+  public TilePane(int numColumns, int numRows) {
+    this.numColumns.addListener((obs, oldCount, newCount) -> {
+      if (newCount > oldCount) {
+        IntStream.range(oldCount, newCount)
+                 .mapToObj(__ -> createColumnConstraints())
+                 .forEach(getColumnConstraints()::add);
       } else {
-        getColumnConstraints().remove(n, o);
+        getColumnConstraints().remove(newCount, oldCount);
       }
     });
 
-    this.rows.addListener((obs, o, n) -> {
-      if (n > o) {
-        for (int i = 0; i < n - o; i++) {
-          RowConstraints c = new RowConstraints(
-              MIN_TILE_SIZE, getTileSize(), 1e4, Priority.ALWAYS, VPos.CENTER, true);
-          c.prefHeightProperty().bind(tileSize);
-          getRowConstraints().add(c);
-        }
+    this.numRows.addListener((obs, oldCount, newCount) -> {
+      if (newCount > oldCount) {
+        IntStream.range(oldCount, newCount)
+                 .mapToObj(__ -> createRowConstraints())
+                 .forEach(getRowConstraints()::add);
       } else {
-        getRowConstraints().remove(n, o);
+        getRowConstraints().remove(newCount, oldCount);
       }
     });
 
-    if (cols > 0) {
-      setCols(cols);
-    }
-    if (rows > 0) {
-      setRows(rows);
-    }
+    setNumColumns(numColumns);
+    setNumRows(numRows);
   }
 
-  public final Property<Integer> colsProperty() {
-    return cols;
+  private ColumnConstraints createColumnConstraints() {
+    ColumnConstraints constraints = new ColumnConstraints(
+        MIN_TILE_SIZE, getTileSize(), 1e3, Priority.ALWAYS, HPos.LEFT, true);
+    constraints.prefWidthProperty().bind(tileSize);
+    return constraints;
+  }
+
+  private RowConstraints createRowConstraints() {
+    RowConstraints constraints = new RowConstraints(
+        MIN_TILE_SIZE, getTileSize(), 1e3, Priority.ALWAYS, VPos.CENTER, true);
+    constraints.prefHeightProperty().bind(tileSize);
+    return constraints;
+  }
+
+  public final Property<Integer> numColumnsProperty() {
+    return numColumns;
   }
 
   /**
    * Gets the number of columns in the grid.
    */
-  public final int getCols() {
-    return cols.get();
+  public final int getNumColumns() {
+    return numColumns.get();
   }
 
   /**
    * Sets the number of columns in the grid.
    */
-  public final void setCols(int cols) {
-    checkArgument(cols > 0, "There must be at least one column");
-    this.cols.set(cols);
+  public final void setNumColumns(int numColumns) {
+    checkArgument(numColumns > 0, "There must be at least one column");
+    this.numColumns.set(numColumns);
   }
 
-  public final Property<Integer> rowsProperty() {
-    return rows;
+  public final Property<Integer> numRowsProperty() {
+    return numRows;
   }
 
   /**
    * Gets the number of rows in the grid.
    */
-  public final int getRows() {
-    return rows.get();
+  public final int getNumRows() {
+    return numRows.get();
   }
 
   /**
    * Sets the number of rows in the grid. This must be a positive number.
    */
-  public final void setRows(int rows) {
-    checkArgument(rows > 0, "There must be at least one row");
-    this.rows.set(rows);
+  public final void setNumRows(int numRows) {
+    checkArgument(numRows > 0, "There must be at least one row");
+    this.numRows.set(numRows);
   }
 
   public final DoubleProperty tileSizeProperty() {
@@ -144,7 +150,7 @@ public class TilePane extends GridPane {
     this.tileSize.set(tileSize);
   }
 
-  public Node addTile(Node node, Size size) {
+  public Node addTile(Node node, TileSize size) {
     return addTile(node, size.getWidth(), size.getHeight());
   }
 
@@ -172,7 +178,7 @@ public class TilePane extends GridPane {
       // Illegal dimensions
       return null;
     }
-    Point placement = firstPoint(width, height);
+    GridPoint placement = firstPoint(width, height);
     if (placement == null) {
       // Nowhere to place the node
       return null;
@@ -192,13 +198,13 @@ public class TilePane extends GridPane {
    * @param width  the width of the tile trying to be added
    * @param height the height of the tile trying to be added
    */
-  public Point firstPoint(int width, int height) {
+  public GridPoint firstPoint(int width, int height) {
     // outer row, inner col to add tiles left-to-right in the upper rows
     // outer col, inner row would add tiles top-to-bottom from the left-hand columns (not intuitive)
-    for (int row = 0; row < getRows(); row++) {
-      for (int col = 0; col < getCols(); col++) {
+    for (int row = 0; row < getNumRows(); row++) {
+      for (int col = 0; col < getNumColumns(); col++) {
         if (isOpen(col, row, width, height)) {
-          return new Point(col, row);
+          return new GridPoint(col, row);
         }
       }
     }
@@ -214,7 +220,7 @@ public class TilePane extends GridPane {
    * @param tileHeight the height of the tile
    */
   public boolean isOpen(int col, int row, int tileWidth, int tileHeight) {
-    if (col + tileWidth > getCols() || row + tileHeight > getRows()) {
+    if (col + tileWidth > getNumColumns() || row + tileHeight > getNumRows()) {
       return false;
     }
 

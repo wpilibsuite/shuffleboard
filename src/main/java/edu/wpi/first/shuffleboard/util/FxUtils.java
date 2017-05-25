@@ -12,6 +12,8 @@ import javafx.collections.ObservableMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
+import static java.util.Objects.requireNonNull;
+
 /**
  * Utility methods for JavaFX not available in the standard library.
  */
@@ -31,10 +33,7 @@ public final class FxUtils {
    * @return a completable future that will have a result of {@code true} once the task has run
    */
   public static CompletableFuture<Boolean> runOnFxThread(Runnable task) {
-    if (task == null) {
-      // Nothing to run and don't want a NPE on another thread (hard to debug)
-      return CompletableFuture.completedFuture(false);
-    }
+    requireNonNull(task, "task");
 
     final CompletableFuture<Boolean> future = new CompletableFuture<>();
     if (Platform.isFxApplicationThread()) {

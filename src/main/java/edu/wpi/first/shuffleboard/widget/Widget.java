@@ -12,8 +12,10 @@ import java.util.Set;
 
 /**
  * A widget is a UI element that displays data from a {@link DataSource} and has the ability to
- * modify that data. Simple widgets can display singular data points (eg some text, a number,
- * a boolean value, etc); composite widgets display complex data like subsystems or sensors.
+ * modify that data. It is up to the widget implementation to modify the backing data; some sources
+ * (for example, a graph widget) may be read-only. Simple widgets can display singular data points
+ * (eg some text, a number, a boolean value, etc); composite widgets display complex data like
+ * subsystems or sensors.
  *
  * <p>Widget subclasses should have the {@link Description @Description} annotation that specifies
  * the name, summary, and supported data types. Additionally, subclasses that are FXML controllers
@@ -42,7 +44,7 @@ import java.util.Set;
  * handles. More information about data sources can be found {@link DataSource here}.
  *
  * <p>A widget has a single method {@link #getView()} that returns a JavaFX pane that contains all
- * the UI elements that display information about the widget.
+ * the UI components that display information about the widget.
  *
  * @param <T> the type of data the widget supports. For composite widgets, this is always
  *            {@link ObservableMap ObservableMap&lt;String, Object&gt;}.

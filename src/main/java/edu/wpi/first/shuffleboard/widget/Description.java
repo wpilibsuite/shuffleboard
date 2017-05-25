@@ -25,7 +25,7 @@ public @interface Description {
   String summary() default "";
 
   /**
-   * The types of data the widget can handle.
+   * The types for the sources the widget can handle.
    */
   DataType[] dataTypes();
 

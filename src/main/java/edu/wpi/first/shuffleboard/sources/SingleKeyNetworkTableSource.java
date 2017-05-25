@@ -1,43 +1,42 @@
 package edu.wpi.first.shuffleboard.sources;
 
+import edu.wpi.first.shuffleboard.util.NetworkTableUtils;
+import edu.wpi.first.shuffleboard.widget.DataType;
 import edu.wpi.first.wpilibj.tables.ITable;
 
 /**
  * A data source backed by a single key-value pair in a network table.
  */
-public class SingleKeyNetworkTableSource<T> extends AbstractDataSource<T> {
+public class SingleKeyNetworkTableSource<T> extends NetworkTableSource<T> {
 
   /**
    * Creates a single-key network table source backed by the value in the given table
    * associated with the given key.
    *
-   * @param table     the table backing the source
-   * @param key       the key associated with the data
-   * @param dataTypes the allowable data types. A value that is not an instance of one of these
-   *                  types is considered "null" and will make the source inactive
+   * @param table    the table backing the source
+   * @param key      the key associated with the data
+   * @param dataType the allowable data type. A value that is not an instance of this
+   *                 type is considered "null" and will make the source inactive
    */
-  public SingleKeyNetworkTableSource(ITable table, String key, Class<?>... dataTypes) {
+  public SingleKeyNetworkTableSource(ITable table, String key, DataType dataType) {
+    super(key);
     setName(key);
-    table.addTableListenerEx(key, (source, k, v, isNew) -> {
-      boolean correctType = false;
-      for (Class<?> type : dataTypes) {
-        if (type.isInstance(v)) {
-          correctType = true;
-          break;
-        }
-      }
-      active.setValue(correctType);
+    setTableListener((__, value, flags) -> {
+      boolean deleted = NetworkTableUtils.isDelete(flags);
+      setActive(!deleted && dataType == DataType.valueOf(value.getClass()));
 
       if (isActive()) {
-        setData(isActive() ? (T) v : null);
+        setData((T) value);
+      } else {
+        setData(null);
       }
-    }, ITable.NOTIFY_IMMEDIATE | ITable.NOTIFY_LOCAL | ITable.NOTIFY_NEW | ITable.NOTIFY_UPDATE);
+    });
 
-    table.addTableListenerEx(key, (s, k, v, n) -> active.setValue(false), ITable.NOTIFY_DELETE);
-
-    data.addListener((obs, prev, cur) -> {
+    data.addListener((__, oldValue, newValue) -> {
       if (isActive()) {
-        table.putValue(key, cur);
+        table.putValue(key, newValue);
+      } else {
+        setData(oldValue);
       }
     });
   }
