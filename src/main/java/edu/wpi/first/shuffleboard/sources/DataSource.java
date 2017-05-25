@@ -4,16 +4,18 @@ import javafx.beans.property.Property;
 import javafx.beans.value.ObservableValue;
 
 /**
- * A data source provides some kind of data that widgets can display and manipulate. It can be active or inactive;
- * active sources may update at any time, while inactive sources are guaranteed to never update. This can be useful
- * if a widget wants to disable user control while the source can't handle it.
+ * A data source provides some kind of data that widgets can display and manipulate. It can be
+ * active or inactive; active sources may update at any time, while inactive sources are guaranteed
+ * to never update. This can be useful if a widget wants to disable user control while the source
+ * can't handle it.
  *
  * @param <T> the type of data provided
  */
 public interface DataSource<T> {
 
   /**
-   * Creates a data source with no name, no data, and is never active. This should be used in place of {@code null}.
+   * Creates a data source with no name, no data, and is never active.
+   * This should be used in place of {@code null}.
    *
    * @param <T> the type of the data in the source
    */
@@ -35,7 +37,8 @@ public interface DataSource<T> {
   ObservableValue<String> nameProperty();
 
   /**
-   * Gets the name of this data source. This is typically a unique identifier for the data backed by this source.
+   * Gets the name of this data source. This is typically a unique identifier for the data
+   * backed by this source.
    */
   default String getName() {
     return nameProperty().getValue();
@@ -44,8 +47,8 @@ public interface DataSource<T> {
   Property<T> dataProperty();
 
   /**
-   * Gets the current value of this data source. May return {@code null} if this source isn't active,
-   * but may also just return the most recent value.
+   * Gets the current value of this data source. May return {@code null}
+   * if this source isn't active, but may also just return the most recent value.
    */
   default T getData() {
     return dataProperty().getValue();

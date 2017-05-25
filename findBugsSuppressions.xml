@@ -1,1 +1,7 @@
-<FindBugsFilter />
+<FindBugsFilter>
+    <Match>
+        <Class name="edu.wpi.first.shuffleboard.MainWindowController"/>
+        <Method name="close"/>
+        <Bug pattern="DM_EXIT"/>
+    </Match>
+</FindBugsFilter>

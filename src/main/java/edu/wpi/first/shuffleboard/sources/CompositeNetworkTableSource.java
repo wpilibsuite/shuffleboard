@@ -8,19 +8,22 @@ import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableMap;
 
 /**
- * A network table source for composite data, ie data stored in multiple key-value pairs or nested tables. The data
- * is represented as a single map of keys (which may be multi-level ie "foo" or "a/b" or "a/b/c/.../") to their values
- * in the tables. This takes advantage of the fact that network tables is a flat namespace and that a subtable
- * is really just a shortcut for finding data under a certain nested namespace.
+ * A network table source for composite data, ie data stored in multiple key-value pairs or nested
+ * tables. The data is represented as a single map of keys (which may be multi-level ie "foo" or
+ * "a/b" or "a/b/c/.../") to their values in the tables. This takes advantage of the fact that
+ * network tables is a flat namespace and that a subtable is really just a shortcut for finding data
+ * under a certain nested namespace.
  */
 public class CompositeNetworkTableSource extends AbstractDataSource<ObservableMap<String, Object>> {
 
   /**
-   * Creates a composite network table source provided by the given table and with the given data type.
+   * Creates a composite network table source provided by the given table and with the given data
+   * type.
    *
    * @param root     the root table providing all the data for the source
    * @param dataType the type of data being provided
    */
+  @SuppressWarnings("PMD")
   public CompositeNetworkTableSource(ITable root, DataType dataType) {
     String path = root.toString().substring("Networktable: ".length());
     setName(path.substring(1)); // remove leading "/"
@@ -41,15 +44,15 @@ public class CompositeNetworkTableSource extends AbstractDataSource<ObservableMa
           } else {
             getData().put(shortKey, value);
           }
-          if (shortKey.equals("~METADATA~/Type")) {
-            if (!dataType.getName().equals(value)) {
-              setActive(false);
-            } else {
+          if ("~METADATA~/Type".equals(shortKey)) {
+            if (dataType.getName().equals(value)) {
               setActive(!delete);
+            } else {
+              setActive(false);
             }
           }
         },
-        ITable.NOTIFY_IMMEDIATE | ITable.NOTIFY_LOCAL | ITable.NOTIFY_NEW | ITable.NOTIFY_DELETE | ITable.NOTIFY_UPDATE);
+        0xFF);
     getData().addListener((MapChangeListener<String, Object>) change -> {
       if (!isActive()) {
         return;
@@ -68,7 +71,8 @@ public class CompositeNetworkTableSource extends AbstractDataSource<ObservableMa
    */
   @Override
   public void setData(ObservableMap<String, Object> newValue) {
-    throw new UnsupportedOperationException("The data cannot be set directly. Set a value using getData() instead");
+    throw new UnsupportedOperationException(
+        "The data cannot be set directly. Set a value using getData() instead");
   }
 
 }

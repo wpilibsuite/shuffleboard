@@ -7,6 +7,15 @@ import edu.wpi.first.wpilibj.tables.ITable;
  */
 public class SingleKeyNetworkTableSource<T> extends AbstractDataSource<T> {
 
+  /**
+   * Creates a single-key network table source backed by the value in the given table
+   * associated with the given key.
+   *
+   * @param table     the table backing the source
+   * @param key       the key associated with the data
+   * @param dataTypes the allowable data types. A value that is not an instance of one of these
+   *                  types is considered "null" and will make the source inactive
+   */
   public SingleKeyNetworkTableSource(ITable table, String key, Class<?>... dataTypes) {
     setName(key);
     table.addTableListenerEx(key, (source, k, v, isNew) -> {

@@ -8,7 +8,7 @@ import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 
 /**
- *
+ * A binding used to bind to the value of a specific key in a map.
  */
 public class MapEntryBinding<K, V> extends ObjectBinding<V> {
 
@@ -16,6 +16,12 @@ public class MapEntryBinding<K, V> extends ObjectBinding<V> {
   private final K key;
   private final ObservableList<?> dependencies;
 
+  /**
+   * Creates binding to the value of the given key in the given map.
+   *
+   * @param map the map to bind to
+   * @param key the key associated with the value to bind to
+   */
   public MapEntryBinding(ObservableMap<K, V> map, K key) {
     this.map = map;
     this.key = key;

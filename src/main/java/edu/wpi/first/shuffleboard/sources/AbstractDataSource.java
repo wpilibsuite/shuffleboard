@@ -7,8 +7,8 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
 
 /**
- * Abstract implementation of DataSource that defines properties for {@link #nameProperty()} , {@link #activeProperty()},
- * and {@link #dataProperty()} for subclasses.
+ * Abstract implementation of DataSource that defines properties for {@link #nameProperty()},
+ * {@link #activeProperty()}, and {@link #dataProperty()} for subclasses.
  *
  * @param <T> the type of data this source provides
  */
@@ -43,6 +43,10 @@ public abstract class AbstractDataSource<T> implements DataSource<T> {
 
   @Override
   public String toString() {
-    return String.format("%s(name=%s, active=%s, data=%s)", getClass().getSimpleName(), getName(), isActive(), getData());
+    return String.format("%s(name=%s, active=%s, data=%s)",
+                         getClass().getSimpleName(),
+                         getName(),
+                         isActive(),
+                         getData());
   }
 }

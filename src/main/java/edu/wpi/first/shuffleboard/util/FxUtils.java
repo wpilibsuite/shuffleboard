@@ -22,10 +22,12 @@ public final class FxUtils {
   }
 
   /**
-   * Runs a task on the JavaFX application thread as soon as possible. If this is called from the application
-   * thread, the task will be run <i>immediately</i>. Otherwise, it will be run at some later point.
+   * Runs a task on the JavaFX application thread as soon as possible. If this is called from the
+   * application thread, the task will be run <i>immediately</i>. Otherwise, it will be run at
+   * some later point.
    *
-   * @param task the task to run. If null, the method will return immediately and no action will be taken.
+   * @param task the task to run. If null, the method will return immediately and no action
+   *             will be taken.
    * @return a completable future that will have a result of {@code true} once the task has run
    */
   public static CompletableFuture<Boolean> runOnFxThread(Runnable task) {
@@ -58,7 +60,10 @@ public final class FxUtils {
    * @param <V>       the type of values in the map
    * @param <T>       the type of data in the property
    */
-  public static <K, V, T> void bind(Property<T> property, ObservableMap<K, V> map, K key, Function<V, T> converter) {
+  public static <K, V, T> void bind(Property<T> property,
+                                    ObservableMap<K, V> map,
+                                    K key,
+                                    Function<V, T> converter) {
     property.bind(Bindings.createObjectBinding(() -> converter.apply(map.get(key)), map));
   }
 
@@ -85,8 +90,8 @@ public final class FxUtils {
   }
 
   /**
-   * A more general version of {@link Bindings#when(ObservableBooleanValue)} that can accept general boolean
-   * properties as conditions.
+   * A more general version of {@link Bindings#when(ObservableBooleanValue)}
+   * that can accept general boolean properties as conditions.
    *
    * @param condition the condition to bind to
    * @see Bindings#when(ObservableBooleanValue)

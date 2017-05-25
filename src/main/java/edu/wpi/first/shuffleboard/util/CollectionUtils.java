@@ -8,6 +8,13 @@ import java.util.List;
  */
 public final class CollectionUtils {
 
+  private CollectionUtils() {
+  }
+
+  /**
+   * Gets the element at the given index in the given iterable, or null if the index
+   * is out of bounds.
+   */
   public static <T> T elementAt(Iterable<? extends T> iterable, int index) {
     if (iterable instanceof List) {
       return ((List<T>) iterable).get(index);

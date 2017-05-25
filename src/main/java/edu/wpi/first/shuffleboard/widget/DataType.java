@@ -1,21 +1,9 @@
 package edu.wpi.first.shuffleboard.widget;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 /**
- *
+ * An enum representing all the possible types of data that widgets can handle.
  */
-public final class DataType {
-
-  private final String name;
-
-  public String getName() {
-    return name;
-  }
+public enum DataType {
 
   // Wildcard types
 
@@ -23,12 +11,12 @@ public final class DataType {
   /**
    * An unknown data type. Equivalent to null.
    */
-  public static final DataType Unknown = new DataType("Unknown");
+  Unknown("Unknown"),
 
   /**
    * Matches all known data types.
    */
-  public static final DataType All = new DataType("All");
+  All("All"),
 
 
   // Single key-value types
@@ -37,38 +25,38 @@ public final class DataType {
   /**
    * Data type for a text string.
    */
-  public static final DataType Text = new DataType("Text");
+  String("String"),
 
   /**
    * Data type for a single numeric value.
    */
-  public static final DataType Number = new DataType("Number");
+  Number("Number"),
 
   /**
    * Data type for a single boolean value.
    */
-  public static final DataType Boolean = new DataType("Boolean");
+  Boolean("Boolean"),
 
   /**
    * Data type for an array of strings.
    */
-  public static final DataType TextArray = new DataType("TextArray");
+  StringArray("StringArray"),
 
   /**
    * Data type for an array of numbers.
    */
-  public static final DataType NumberArray = new DataType("NumberArray");
+  NumberArray("NumberArray"),
 
   /**
    * Data type for an array of booleans.
    */
-  public static final DataType BooleanArray = new DataType("BooleanArray");
+  BooleanArray("BooleanArray"),
 
   /**
    * Data type for an array of bytes that can be deserialized to some arbitrary
    * type by a consumer.
    */
-  public static final DataType RawBytes = new DataType("RawBytes");
+  RawBytes("RawBytes"),
 
 
   // Composite types
@@ -77,59 +65,51 @@ public final class DataType {
   /**
    * A generic data type encompassing all composite types (ie types with more than a single value).
    */
-  public static final DataType Composite = new DataType("Composite");
-  public static final DataType RobotDrive = new DataType("RobotDrive");
-  public static final DataType MotorController = new DataType("MotorController");
-  public static final DataType Sensor = new DataType("Sensor");
-  public static final DataType DigitalInput = new DataType("DigitalInput");
-  public static final DataType AnalogInput = new DataType("AnalogInput");
-  public static final DataType Gyro = new DataType("Gyro");
-  public static final DataType Encoder = new DataType("Encoder");
-  public static final DataType Command = new DataType("Command");
-  public static final DataType SendableChooser = new DataType("SendableChooser");
-  public static final DataType CameraServerCamera = new DataType("CameraServerCamera");
+  Composite("Composite"),
 
-  private DataType(String name) {
+  RobotDrive("RobotDrive"),
+
+  MotorController("MotorController"),
+
+  Sensor("Sensor"),
+
+  DigitalInput("DigitalInput"),
+
+  AnalogInput("AnalogInput"),
+
+  Gyro("Gyro"),
+
+  Encoder("Encoder"),
+
+  Command("Command"),
+
+  SendableChooser("SendableChooser"),
+
+  CameraServerCamera("CameraServerCamera");
+
+  private final String name;
+
+  DataType(String name) {
     this.name = name;
   }
 
-  private static final Map<String, DataType> fieldConstants;
-
-  static {
-    fieldConstants = Arrays.stream(DataType.class.getDeclaredFields())
-                           .filter(f -> Modifier.isStatic(f.getModifiers()))
-                           .filter(f -> f.getType() == DataType.class)
-                           .peek(f -> f.setAccessible(true))
-                           .map(DataType::safeGet)
-                           .collect(Collectors.toMap(DataType::getName, d -> d));
+  public String getName() {
+    return name;
   }
 
-  private static DataType safeGet(Field f) {
-    try {
-      return (DataType) f.get(null);
-    } catch (IllegalAccessException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  public static DataType of(String name) {
-    return fieldConstants.computeIfAbsent(name, DataType::new);
-  }
-
-  public static DataType valueOf(String name) {
-    return fieldConstants.getOrDefault(name, Unknown);
-  }
-
+  /**
+   * Gets the data type most closely associated with the given class.
+   */
   public static DataType valueOf(Class<?> type) {
     if (type == String.class) {
-      return Text;
+      return String;
     } else if (Number.class.isAssignableFrom(type)
         || type == double.class || type == int.class || type == long.class) {
       return Number;
     } else if (type == Boolean.class || type == boolean.class) {
       return Boolean;
     } else if (type == String[].class) {
-      return TextArray;
+      return StringArray;
     } else if (type == double[].class || type == Double[].class) {
       return NumberArray;
     } else if (type == boolean[].class || type == Boolean[].class) {

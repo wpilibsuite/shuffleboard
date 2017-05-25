@@ -18,15 +18,14 @@ import javafx.fxml.FXML;
 import javafx.geometry.HPos;
 import javafx.geometry.VPos;
 import javafx.scene.Node;
-import javafx.scene.Parent;
 import javafx.scene.control.ContextMenu;
-import javafx.scene.control.Control;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableColumn;
+import javafx.scene.control.TreeTableColumn.CellDataFeatures;
 import javafx.scene.control.TreeTableView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.ColumnConstraints;
@@ -49,6 +48,7 @@ import java.util.stream.Stream;
 /**
  * Controller for the main UI window.
  */
+@SuppressWarnings("PMD.GodClass")
 public class MainWindowController {
 
   private static final Logger log = Logger.getLogger(MainWindowController.class.getName());
@@ -66,7 +66,7 @@ public class MainWindowController {
   @FXML
   private TreeItem<NetworkTableEntry> networktableRoot;
 
-  private ITable rootTable = NetworkTable.getTable("");
+  private final ITable rootTable = NetworkTable.getTable("");
 
   private int numCols;
   private int numRows;
@@ -75,6 +75,8 @@ public class MainWindowController {
 
   // Keep track of the widgets and corresponding UI elements
   private final List<WidgetHandle> widgetHandles = new ArrayList<>();
+
+  private static final PseudoClass selectedPseudoClass = PseudoClass.getPseudoClass("selected");
 
   private static final class WidgetHandle {
     private final Widget widget;
@@ -116,24 +118,26 @@ public class MainWindowController {
     }
   }
 
-  private static final int NT_NOTIFY_ALL = 0xFF;
 
   @FXML
-  public void initialize() throws IOException {
+  @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
+  private void initialize() throws IOException {
     // Show network table data in the sidebar
     NetworkTablesJNI.addEntryListener(
         "",
         (uid, key, value, flags) -> makeBranches(key, value, flags),
-        NT_NOTIFY_ALL);
+        0xFF);
 
-    // init grid
+    // init grid TODO this should be in its own class
     numCols = 8;
     numRows = 6;
     for (int i = 0; i < numCols; i++) {
-      tileGrid.getColumnConstraints().add(new ColumnConstraints(colWidth, colWidth, Double.POSITIVE_INFINITY, Priority.ALWAYS, HPos.CENTER, true));
+      tileGrid.getColumnConstraints().add(new ColumnConstraints(
+          colWidth, colWidth, Double.POSITIVE_INFINITY, Priority.ALWAYS, HPos.CENTER, true));
     }
     for (int i = 0; i < numRows; i++) {
-      tileGrid.getRowConstraints().add(new RowConstraints(rowHeight, rowHeight, Double.POSITIVE_INFINITY, Priority.ALWAYS, VPos.CENTER, true));
+      tileGrid.getRowConstraints().add(new RowConstraints(
+          rowHeight, rowHeight, Double.POSITIVE_INFINITY, Priority.ALWAYS, VPos.CENTER, true));
     }
     tileGrid.setGridLinesVisible(false);
 
@@ -164,12 +168,13 @@ public class MainWindowController {
         networkTables.getSelectionModel().select(null);
         widgetHandles.stream()
                      .map(WidgetHandle::getUiElement)
-                     .forEach(n -> n.pseudoClassStateChanged(PseudoClass.getPseudoClass("selected"), false));
+                     .forEach(n -> n.pseudoClassStateChanged(selectedPseudoClass, false));
       }
     });
 
     networkTables.setOnContextMenuRequested(e -> {
-      TreeItem<NetworkTableEntry> selectedItem = networkTables.getSelectionModel().getSelectedItem();
+      TreeItem<NetworkTableEntry> selectedItem =
+          networkTables.getSelectionModel().getSelectedItem();
       if (selectedItem == null) {
         return;
       }
@@ -190,10 +195,12 @@ public class MainWindowController {
           if (rootTable.containsSubTable(key)) {
             // It's a composite data type like a motor controller
             ITable table = rootTable.getSubTable(key);
-            source = new CompositeNetworkTableSource(table, DataType.valueOf(table.getString("~METADATA~/Type", null)));
+            source = new CompositeNetworkTableSource(
+                table, DataType.valueOf(table.getString("~METADATA~/Type", null)));
           } else {
             // It's a single key-value pair
-            source = new SingleKeyNetworkTableSource<>(rootTable, key, rootTable.getValue(key).getClass());
+            source = new SingleKeyNetworkTableSource<>(
+                rootTable, key, rootTable.getValue(key).getClass());
           }
           Widgets.createWidget(widgetName, source)
                  .ifPresent(this::addWidget);
@@ -204,18 +211,20 @@ public class MainWindowController {
     });
   }
 
-  private NetworkTableEntry getEntry(TreeTableColumn.CellDataFeatures<NetworkTableEntry, String> features) {
+  private NetworkTableEntry getEntry(CellDataFeatures<NetworkTableEntry, String> features) {
     return features.getValue().getValue();
   }
 
   private void highlight(TreeItem<NetworkTableEntry> prev, boolean doHighlight) {
     findWidgets(prev.getValue().getKey())
-        .forEach(handle -> handle.getUiElement().pseudoClassStateChanged(PseudoClass.getPseudoClass("selected"), doHighlight));
+        .forEach(handle -> handle.getUiElement()
+                                 .pseudoClassStateChanged(selectedPseudoClass, doHighlight));
     if (!prev.isLeaf()) {
       // Highlight all child widgets
       widgetHandles.stream()
                    .filter(h -> h.getSourceName().startsWith(prev.getValue().getKey().substring(1)))
-                   .forEach(h -> h.getUiElement().pseudoClassStateChanged(PseudoClass.getPseudoClass("selected"), doHighlight));
+                   .forEach(h -> h.getUiElement()
+                                  .pseudoClassStateChanged(selectedPseudoClass, doHighlight));
     }
   }
 
@@ -226,15 +235,21 @@ public class MainWindowController {
                         .collect(Collectors.toList());
   }
 
+  /**
+   * Gets a list of the names of all widgets that can display the data associated with the given
+   * network table key.
+   *
+   * @param fullTableKey the full network table key (ie "/a/b/c" instead of just "c")
+   */
   public List<String> widgetNamesFor(String fullTableKey) {
-    fullTableKey = normalizeKey(fullTableKey).substring(1);
-    if (rootTable.containsKey(fullTableKey)) {
+    String key = normalizeKey(fullTableKey).substring(1);
+    if (rootTable.containsKey(key)) {
       // Queried a key-value
       return Widgets.widgetNamesForType(
-          DataType.valueOf(NetworkTable.getTable("").getValue(fullTableKey).getClass()));
-    } else if (rootTable.containsSubTable(fullTableKey)) {
+          DataType.valueOf(NetworkTable.getTable("").getValue(key).getClass()));
+    } else if (rootTable.containsSubTable(key)) {
       // Queried a subtable (composite type)
-      ITable table = rootTable.getSubTable(fullTableKey);
+      ITable table = rootTable.getSubTable(key);
       if (table.containsSubTable("~METADATA~")) {
         // check for metadata that describes the type
         String type = table.getSubTable("~METADATA~").getString("Type", null);
@@ -243,17 +258,17 @@ public class MainWindowController {
           log.warning("No type specified in metadata table");
           dataType = DataType.Composite;
         } else if (dataType == DataType.Unknown) {
-          log.warning("Unknown data type '" + type + "'");
+          log.warning("Unknown data type '" + type + "'"); //NOPMD
           dataType = DataType.Composite;
         }
         return Widgets.widgetNamesForType(dataType);
       } else {
-        log.warning("No metadata table for table " + fullTableKey);
+        log.warning("No metadata table for table " + key); //NOPMD
         return Collections.emptyList();
       }
     } else {
       // No possible widgets
-      log.warning("No table element corresponding to key '" + fullTableKey + "'");
+      log.warning("No table element corresponding to key '" + key + "'"); //NOPMD
       return Collections.emptyList();
     }
   }
@@ -263,10 +278,12 @@ public class MainWindowController {
    *
    * @param node the root node to sort
    */
+  @SuppressWarnings("Indentation")
   private void sort(TreeItem<NetworkTableEntry> node) {
     if (!node.isLeaf()) {
       FXCollections.sort(node.getChildren(),
-                         ((Comparator<TreeItem<NetworkTableEntry>>) (a, b) -> a.isLeaf() ? b.isLeaf() ? 0 : 1 : -1)
+                         ((Comparator<TreeItem<NetworkTableEntry>>)
+                             (a, b) -> a.isLeaf() ? b.isLeaf() ? 0 : 1 : -1)
                              .thenComparing(Comparator.comparing(item -> item.getValue().getKey()))
                         );
       node.getChildren().forEach(this::sort);
@@ -284,15 +301,23 @@ public class MainWindowController {
    * Normalizes a network table key to start with exactly one leading slash ("/").
    */
   private static String normalizeKey(String key) {
-    key = key.replaceAll("/{2,}", "/");
-    if (!key.startsWith("/")) {
-      key = "/" + key;
+    String normalized = key.replaceAll("/{2,}", "/");
+    if (normalized.charAt(0) != '/') {
+      normalized = "/" + normalized; //NOPMD
     }
-    return key;
+    return normalized;
   }
 
-  private void makeBranches(String key, Object value, int flags) {
-    key = normalizeKey(key);
+  /**
+   * Creates, updates, or deletes tree nodes in the network table view.
+   *
+   * @param fullKey   the network table key that changed
+   * @param value the value of the entry that changed
+   * @param flags the flags of the change
+   */
+  @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
+  private void makeBranches(String fullKey, Object value, int flags) {
+    String key = normalizeKey(fullKey);
     boolean deleted = (flags & ITable.NOTIFY_DELETE) != 0;
     List<String> pathElements = Stream.of(key.split("/"))
                                       .filter(s -> !s.isEmpty())
@@ -303,7 +328,7 @@ public class MainWindowController {
     // Add, remove or update nodes in the tree as necessary
     for (int i = 0; i < pathElements.size(); i++) {
       String pathElement = pathElements.get(i);
-      currentKey.append("/").append(pathElement);
+      currentKey.append('/').append(pathElement);
       parent = current;
       current = current.getChildren().stream()
                        .filter(item -> item.getValue().getKey().equals(currentKey.toString()))
@@ -361,28 +386,31 @@ public class MainWindowController {
     System.exit(0);
   }
 
-
-  private void makeReadOnly(Parent root) {
-    root.getChildrenUnmodifiable().forEach(c -> {
-      if (c instanceof Pane) {
-        makeReadOnly((Pane) c);
-      }
-      if (c instanceof Control) {
-        c.setDisable(true);
-        c.setStyle("-fx-opacity: 1;");
-      }
-    });
-  }
-
+  /**
+   * Adds a widget to the tile view in the first available location.
+   *
+   * @param widget the widget to add
+   */
   public void addWidget(Widget<?> widget) {
-    addWidget(widget, widget.getPreferredSize());
+    Pane view = widget.getView();
+    double w = Math.max(colWidth, view.getPrefWidth());
+    double h = Math.max(rowHeight, view.getPrefHeight());
+    Size size = new Size((int) (w / colWidth), (int) (h / rowHeight));
+    addWidget(widget, size);
   }
 
+  /**
+   * Adds a widget to the tile view in the first available location. The tile will be the specified
+   * size.
+   *
+   * @param widget the widget to add
+   * @param size   the size of the tile used to display the widget
+   */
   public void addWidget(Widget<?> widget, Size size) {
     WidgetHandle handle = new WidgetHandle(widget);
     handle.setCurrentSize(size);
     widgetHandles.add(handle);
-    Pane control = widget.getViews().get(size).get();
+    Pane control = widget.getView();
     Node uiElement = addTile(control, size);
     control.setOnContextMenuRequested(e -> {
       ContextMenu menu = new ContextMenu();
@@ -391,36 +419,19 @@ public class MainWindowController {
         tileGrid.getChildren().remove(uiElement);
         widgetHandles.remove(handle);
       });
-      addResizeMenus(menu, widget, handle, uiElement);
       addChangeMenus(menu, widget, handle, uiElement);
       menu.getItems().add(new SeparatorMenuItem());
       menu.getItems().add(remove);
       menu.show(root.getScene().getWindow(), e.getScreenX(), e.getScreenY());
     });
     handle.setUiElement(uiElement);
-    handle.getUiElement().pseudoClassStateChanged(PseudoClass.getPseudoClass("selected"), true);
+    handle.getUiElement().pseudoClassStateChanged(selectedPseudoClass, true);
   }
 
-  private void addResizeMenus(ContextMenu menu, Widget<?> widget, WidgetHandle handle, Node uiElement) {
-    if (widget.getViews().size() > 1) {
-      Menu changeSize = new Menu("Resize...");
-      for (Size s : widget.getViews().keySet()) {
-        MenuItem sizeItem = new MenuItem(s.getWidth() + " by " + s.getHeight());
-        if (handle.getCurrentSize().equals(s)) {
-          sizeItem.setGraphic(new Label("✓"));
-        }
-        sizeItem.setOnAction(a -> {
-          widgetHandles.remove(handle);
-          tileGrid.getChildren().remove(uiElement);
-          addWidget(widget, s);
-        });
-        changeSize.getItems().add(sizeItem);
-      }
-      menu.getItems().add(changeSize);
-    }
-  }
-
-  private void addChangeMenus(ContextMenu menu, Widget<?> widget, WidgetHandle handle, Node uiElement) {
+  private void addChangeMenus(ContextMenu menu,
+                              Widget<?> widget,
+                              WidgetHandle handle,
+                              Node uiElement) {
     Menu changeView = new Menu("Show as...");
     Widgets.widgetNamesForType(DataType.valueOf(widget.getSource().getData().getClass()))
            .stream()
@@ -443,13 +454,17 @@ public class MainWindowController {
     menu.getItems().add(changeView);
   }
 
+
+  // Tile stuff
+  // TODO move all this to its own class
+
   private Node addTile(Node node, Size size) {
     return addTile(node, size.getWidth(), size.getHeight());
   }
 
   /**
-   * Adds a node in the first available spot. The node will be wrapped in a pane to make it easier to add
-   * single controls (buttons, labels, etc). This will fail (return {@code null}) iff:
+   * Adds a node in the first available spot. The node will be wrapped in a pane to make it
+   * easier to add single controls (buttons, labels, etc). This will fail (return {@code null}) iff:
    * <ul>
    * <li>{@code node} is {@code null}; or</li>
    * <li>{@code width} is zero or negative; or</li>
@@ -485,7 +500,8 @@ public class MainWindowController {
   }
 
   /**
-   * Finds the first point where a tile with the given dimensions can be added, or {@code null} if no such point exists.
+   * Finds the first point where a tile with the given dimensions can be added,
+   * or {@code null} if no such point exists.
    *
    * @param width  the width of the tile trying to be added
    * @param height the height of the tile trying to be added

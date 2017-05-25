@@ -7,7 +7,7 @@ public class ShuffleboardTest {
 
   @Test
   public void testApp() throws Exception {
-    ApplicationTest.launch(Shuffleboard.class);
+    ApplicationTest.launch(ShuffleBoard.class);
   }
 
 }

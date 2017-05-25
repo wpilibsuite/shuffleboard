@@ -1,6 +1,8 @@
 package edu.wpi.first.shuffleboard;
 
 
+import java.util.Objects;
+
 /**
  * A simple data class for information about an entry in NetworkTables.
  */
@@ -36,27 +38,25 @@ public final class NetworkTableEntry {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
 
     NetworkTableEntry that = (NetworkTableEntry) o;
 
-    if (key != null ? !key.equals(that.key) : that.key != null) return false;
-    return value != null ? value.equals(that.value) : that.value == null;
+    return Objects.equals(key, that.key) && Objects.equals(value, that.value);
   }
 
   @Override
   public int hashCode() {
-    int result = key != null ? key.hashCode() : 0;
-    result = 31 * result + (value != null ? value.hashCode() : 0);
-    return result;
+    return Objects.hash(key, value);
   }
 
   @Override
   public String toString() {
-    return "NetworkTableEntry(" +
-        "key='" + key + '\'' +
-        ", value='" + value + '\'' +
-        ')';
+    return String.format("NetworkTableEntry(key='%s', value='%s')", key, value);
   }
 }

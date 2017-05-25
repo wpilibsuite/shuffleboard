@@ -1,5 +1,7 @@
 package edu.wpi.first.shuffleboard.widget;
 
+import com.google.common.collect.ImmutableSet;
+
 import java.util.Set;
 
 /**
@@ -14,6 +16,10 @@ class WidgetDescription {
   public WidgetDescription(String name, Set<DataType> dataTypes) {
     this.name = name;
     this.dataTypes = dataTypes;
+  }
+
+  public WidgetDescription(Description description) {
+    this(description.name(), ImmutableSet.copyOf(description.dataTypes()));
   }
 
   public WidgetDescription(Widget<?> widget) {

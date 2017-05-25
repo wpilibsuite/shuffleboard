@@ -7,7 +7,8 @@ import static com.google.common.base.Preconditions.checkArgument;
  */
 class Point {
 
-  public final int col, row;
+  public final int col;
+  public final int row;
 
   Point(int col, int row) {
     checkArgument(col >= 0, "Column index must be non-negative, was " + col);

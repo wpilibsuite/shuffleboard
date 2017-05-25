@@ -14,9 +14,11 @@ import static edu.wpi.first.shuffleboard.util.FxUtils.runOnFxThread;
  */
 public class ThreadSafeProperty<T> extends SimpleObjectProperty<T> {
 
-  private final Map<ChangeListener<? super T>, ChangeListener<? super T>> wrappers = new HashMap<>();
+  private final Map<ChangeListener<? super T>, ChangeListener<? super T>> wrappers
+      = new HashMap<>();
 
   public ThreadSafeProperty() {
+    super();
   }
 
   public ThreadSafeProperty(T initialValue) {
@@ -36,7 +38,9 @@ public class ThreadSafeProperty<T> extends SimpleObjectProperty<T> {
     if (wrappers.containsKey(listener)) {
       return;
     }
-    wrappers.put(listener, ((obs, prev, cur) -> runOnFxThread(() -> listener.changed(obs, prev, cur))));
+    wrappers.put(listener, (obs, prev, cur) -> {
+      runOnFxThread(() -> listener.changed(obs, prev, cur));
+    });
     super.addListener(wrappers.get(listener));
   }
 

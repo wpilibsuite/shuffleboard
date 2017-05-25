@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard;
 
+import edu.wpi.first.shuffleboard.widget.StockWidgets;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -9,6 +10,7 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 
+@SuppressWarnings("JavadocMethod")
 public class ShuffleBoard extends Application {
 
   private Pane mainPane;

@@ -6,7 +6,7 @@ package edu.wpi.first.shuffleboard.widget;
 public class InvalidWidgetException extends RuntimeException {
 
   /**
-   * @inheritDoc
+   * Constructs an exception with the given message.
    */
   public InvalidWidgetException(String message) {
     super(message);

@@ -1,7 +1,9 @@
 package edu.wpi.first.shuffleboard.widget;
 
+import java.util.Objects;
+
 /**
- *
+ * Represents the size of a tile in a grid.
  */
 public class Size implements Comparable<Size> {
 
@@ -14,10 +16,6 @@ public class Size implements Comparable<Size> {
   public Size(int width, int height) {
     this.width = width;
     this.height = height;
-  }
-
-  public static Size of(int width, int height) {
-    return new Size(width, height);
   }
 
   public int getWidth() {
@@ -45,27 +43,25 @@ public class Size implements Comparable<Size> {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
 
     Size size = (Size) o;
 
-    if (width != size.width) return false;
-    return height == size.height;
+    return width == size.width && height == size.height;
   }
 
   @Override
   public int hashCode() {
-    int result = width;
-    result = 31 * result + height;
-    return result;
+    return Objects.hash(width, height);
   }
 
   @Override
   public String toString() {
-    return "Size(" +
-        "width=" + width +
-        ", height=" + height +
-        ')';
+    return String.format("Size(width=%d, height=%d)", width, height);
   }
 }
