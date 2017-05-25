@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * An annotation for FXML-based widgets that contains the absolute path to the FXML file.
+ * An annotation for FXML-based widgets that contains the path to the FXML file.
  * Widgets with this annotation are the FXML controller class for that FXML file.
  */
 @Target(ElementType.TYPE)

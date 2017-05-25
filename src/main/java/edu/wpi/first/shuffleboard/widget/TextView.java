@@ -15,7 +15,7 @@ import javafx.scene.layout.Pane;
     dataTypes = {
         DataType.String, DataType.Number, DataType.Boolean
     })
-@ParametrizedController("/edu/wpi/first/shuffleboard/widget/TextView.fxml")
+@ParametrizedController("TextView.fxml")
 public class TextView extends Widget<Object> {
 
   private final StringProperty text = new SimpleStringProperty(this, "text", "");
