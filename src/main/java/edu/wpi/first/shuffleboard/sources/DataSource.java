@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.sources;
 
+import edu.wpi.first.shuffleboard.widget.DataType;
 import javafx.beans.property.Property;
 import javafx.beans.value.ObservableValue;
 
@@ -57,6 +58,11 @@ public interface DataSource<T> {
   default void setData(T newValue) {
     dataProperty().setValue(newValue);
   }
+
+  /**
+   * Gets the type of data that this source is providing.
+   */
+  DataType getDataType();
 
   /**
    * Closes this data source and frees any used resources.

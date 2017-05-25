@@ -24,7 +24,8 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
    * @param fullTableKey the full path
    */
   protected NetworkTableSource(String fullTableKey) {
-    this.fullTableKey = NetworkTableUtils.normalizeKey(fullTableKey, false);
+    super(NetworkTableUtils.dataTypeForEntry(fullTableKey));
+    this.fullTableKey = NetworkTableUtils.normalizeKey(fullTableKey, true);
     setName(fullTableKey);
   }
 

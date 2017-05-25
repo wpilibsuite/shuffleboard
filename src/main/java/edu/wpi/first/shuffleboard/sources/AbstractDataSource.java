@@ -1,10 +1,13 @@
 package edu.wpi.first.shuffleboard.sources;
 
 import edu.wpi.first.shuffleboard.properties.AsyncProperty;
+import edu.wpi.first.shuffleboard.widget.DataType;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
+
+import static java.util.Objects.requireNonNull;
 
 /**
  * Abstract implementation of DataSource that defines properties for {@link #nameProperty()},
@@ -17,6 +20,11 @@ public abstract class AbstractDataSource<T> implements DataSource<T> {
   protected final Property<String> name = new SimpleStringProperty(this, "name", "");
   protected final Property<Boolean> active = new SimpleBooleanProperty(this, "active", false);
   protected final Property<T> data = new AsyncProperty<>(this, "data", null);
+  protected final DataType dataType;
+
+  protected AbstractDataSource(DataType dataType) {
+    this.dataType = requireNonNull(dataType, "dataType");
+  }
 
   @Override
   public ObservableValue<String> nameProperty() {
@@ -39,6 +47,11 @@ public abstract class AbstractDataSource<T> implements DataSource<T> {
 
   protected void setActive(boolean active) {
     this.active.setValue(active);
+  }
+
+  @Override
+  public DataType getDataType() {
+    return dataType;
   }
 
   @Override

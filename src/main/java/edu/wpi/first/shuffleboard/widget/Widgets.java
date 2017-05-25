@@ -120,7 +120,7 @@ public final class Widgets {
    * Gets the names of all the possible widgets than can display the data in a given source.
    */
   public static List<String> widgetNamesForSource(DataSource<?> source) {
-    return widgetNamesForType(DataType.valueOf(source.getData().getClass()));
+    return widgetNamesForType(source.getDataType());
   }
 
 }
