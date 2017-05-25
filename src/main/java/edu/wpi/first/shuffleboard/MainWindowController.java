@@ -93,7 +93,6 @@ public class MainWindowController {
 
 
   @FXML
-  @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
   private void initialize() throws IOException {
     // NetworkTable view init
     networkTables.getKeyColumn().setPrefWidth(199);

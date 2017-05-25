@@ -31,15 +31,15 @@ public class CompositeNetworkTableSource extends NetworkTableSource<ObservableMa
     // Use a synchronized map because network table listeners run in their own thread
     super.setData(FXCollections.synchronizedObservableMap(FXCollections.observableHashMap()));
 
-    setTableListener((k, value, flags) -> {
+    setTableListener((key, value, flags) -> {
       boolean delete = NetworkTableUtils.isDelete(flags);
-      String simpleKey = NetworkTableUtils.simpleKey(k);
+      String simpleKey = NetworkTableUtils.simpleKey(key);
       if (delete) {
         getData().remove(simpleKey);
       } else {
         getData().put(simpleKey, value);
       }
-      setActive(NetworkTableUtils.dataTypeForEntry(k) == dataType);
+      setActive(NetworkTableUtils.dataTypeForEntry(key) == dataType);
     });
 
     getData().addListener((MapChangeListener<String, Object>) change -> {

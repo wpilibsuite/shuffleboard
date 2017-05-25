@@ -99,9 +99,9 @@ public final class FxUtils {
     if (condition instanceof ObservableBooleanValue) {
       return Bindings.when((ObservableBooleanValue) condition);
     }
-    SimpleBooleanProperty o = new SimpleBooleanProperty();
-    o.bind(condition);
-    return Bindings.when(o);
+    SimpleBooleanProperty realCondition = new SimpleBooleanProperty();
+    realCondition.bind(condition);
+    return Bindings.when(realCondition);
   }
 
 }

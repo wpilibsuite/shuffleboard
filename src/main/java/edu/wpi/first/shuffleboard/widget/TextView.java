@@ -35,11 +35,11 @@ public class TextView extends Widget<Object> {
     return root;
   }
 
-  private String simpleToString(Object o) {
-    if (o == null) {
+  private String simpleToString(Object obj) {
+    if (obj == null) {
       return "";
     }
-    return o.toString();
+    return obj.toString();
   }
 
   public String getText() {

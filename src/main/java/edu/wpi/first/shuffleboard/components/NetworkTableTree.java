@@ -31,7 +31,7 @@ public class NetworkTableTree extends TreeTableView<NetworkTableEntry> {
    * Compares tree items, branches first.
    */
   private final Comparator<TreeItem<NetworkTableEntry>> branchesFirst
-      = (a, b) -> a.isLeaf() ? b.isLeaf() ? 0 : 1 : -1;
+      = (o1, o2) -> o1.isLeaf() ? o2.isLeaf() ? 0 : 1 : -1;
 
   /**
    * Compares tree items alphabetically.
