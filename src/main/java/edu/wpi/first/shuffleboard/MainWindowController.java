@@ -2,8 +2,10 @@ package edu.wpi.first.shuffleboard;
 
 import edu.wpi.first.shuffleboard.components.NetworkTableTree;
 import edu.wpi.first.shuffleboard.components.TilePane;
+import edu.wpi.first.shuffleboard.dnd.DataSourceTransferable;
 import edu.wpi.first.shuffleboard.sources.DataSource;
 import edu.wpi.first.shuffleboard.sources.NetworkTableSource;
+import edu.wpi.first.shuffleboard.util.GridPoint;
 import edu.wpi.first.shuffleboard.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.widget.DataType;
 import edu.wpi.first.shuffleboard.widget.TileSize;
@@ -21,12 +23,17 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableRow;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.DataFormat;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -52,7 +59,17 @@ public class MainWindowController {
 
   private static final PseudoClass selectedPseudoClass = PseudoClass.getPseudoClass("selected");
 
+  private static final DataFormat dataSourceFormat = new DataFormat("shuffleboard/data-source");
+  private static final DataFormat widgetFormat = new DataFormat("shuffleboard/widget");
+
+  /**
+   * Allows us to keep track of widgets and their UI elements.
+   */
   private static final class WidgetHandle {
+    /**
+     * A unique string used to identify this handle.
+     */
+    private final String id = UUID.randomUUID().toString();
     private final Widget widget;
     private TileSize currentSize;
     private String sourceName;
@@ -99,12 +116,66 @@ public class MainWindowController {
     networkTables.getKeyColumn().setPrefWidth(199);
     networkTables.getValueColumn().setPrefWidth(199);
 
+    // Drag and drop sources onto the tile grid
+    tileGrid.setOnDragOver(event -> {
+      event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
+      tileGrid.setGridLinesVisible(true);
+      widgetHandles.stream()
+                   .map(WidgetHandle::getUiElement)
+                   .forEach(Node::toFront);
+      event.consume();
+    });
+
+    tileGrid.setOnDragDone(event -> tileGrid.setGridLinesVisible(false));
+    tileGrid.setOnDragExited(event -> tileGrid.setGridLinesVisible(false));
+
+    tileGrid.setOnDragDropped(event -> {
+      Dragboard dragboard = event.getDragboard();
+      GridPoint point = tileGrid.pointAt(event.getX(), event.getY());
+      if (dragboard.hasContent(dataSourceFormat)) {
+        DataSourceTransferable sourceTransferable =
+            (DataSourceTransferable) dragboard.getContent(dataSourceFormat);
+
+        DataSource<?> source = sourceTransferable.createSource();
+        Widgets.widgetNamesForSource(source)
+               .stream()
+               .findAny()
+               .flatMap(name -> Widgets.createWidget(name, source))
+               .ifPresent(this::addWidget);
+        widgetHandles.stream()
+                     .filter(handle -> handle.getWidget().getSource() == source)
+                     .map(WidgetHandle::getUiElement)
+                     .findAny()
+                     .ifPresent(node -> tileGrid.setLocation(node, point));
+
+      } else if (dragboard.hasContent(widgetFormat)) {
+        String widgetId = (String) dragboard.getContent(widgetFormat);
+        widgetHandles.stream()
+                     .filter(handle -> widgetId.equals(handle.id))
+                     .map(WidgetHandle::getUiElement)
+                     .findAny()
+                     .ifPresent(node -> tileGrid.setLocation(node, point));
+      }
+      tileGrid.setGridLinesVisible(false);
+      event.consume();
+    });
+
     networkTables.setRowFactory(view -> {
       TreeTableRow<NetworkTableEntry> row = new TreeTableRow<>();
       row.hoverProperty().addListener((__, wasHover, isHover) -> {
         if (!row.isEmpty()) {
           highlight(row.getTreeItem(), isHover);
         }
+      });
+      row.setOnDragDetected(event -> {
+        if (!row.isEmpty()) {
+          NetworkTableEntry entry = row.getTreeItem().getValue();
+          Dragboard dragboard = row.startDragAndDrop(TransferMode.COPY_OR_MOVE);
+          ClipboardContent content = new ClipboardContent();
+          content.put(dataSourceFormat, DataSourceTransferable.networkTable(entry.getKey()));
+          dragboard.setContent(content);
+        }
+        event.consume();
       });
       return row;
     });
@@ -214,6 +285,13 @@ public class MainWindowController {
     widgetHandles.add(handle);
     Pane control = widget.getView();
     Node uiElement = tileGrid.addTile(control, size);
+    uiElement.setOnDragDetected(event -> {
+      Dragboard dragboard = uiElement.startDragAndDrop(TransferMode.MOVE);
+      ClipboardContent content = new ClipboardContent();
+      content.put(widgetFormat, handle.id);
+      dragboard.setContent(content);
+      event.consume();
+    });
     handle.setUiElement(uiElement);
     control.setOnContextMenuRequested(e -> {
       ContextMenu menu = createContextMenu(handle);

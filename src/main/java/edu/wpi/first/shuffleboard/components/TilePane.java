@@ -80,14 +80,14 @@ public class TilePane extends GridPane {
 
   private ColumnConstraints createColumnConstraints() {
     ColumnConstraints constraints = new ColumnConstraints(
-        MIN_TILE_SIZE, getTileSize(), 1e3, Priority.ALWAYS, HPos.LEFT, true);
+        MIN_TILE_SIZE, getTileSize(), 1e3, Priority.NEVER, HPos.LEFT, true);
     constraints.prefWidthProperty().bind(tileSize);
     return constraints;
   }
 
   private RowConstraints createRowConstraints() {
     RowConstraints constraints = new RowConstraints(
-        MIN_TILE_SIZE, getTileSize(), 1e3, Priority.ALWAYS, VPos.CENTER, true);
+        MIN_TILE_SIZE, getTileSize(), 1e3, Priority.NEVER, VPos.CENTER, true);
     constraints.prefHeightProperty().bind(tileSize);
     return constraints;
   }
@@ -148,6 +148,31 @@ public class TilePane extends GridPane {
     checkArgument(tileSize > MIN_TILE_SIZE,
                   "Tile size must be at least " + MIN_TILE_SIZE + ", but was " + tileSize);
     this.tileSize.set(tileSize);
+  }
+
+  /**
+   * Gets a grid point as close as possible to the given (x, y) coordinate in this grid's local
+   * coordinate space.
+   */
+  public GridPoint pointAt(double x, double y) {
+    double colCount = x / (getTileSize() + getHgap());
+    double rowCount = y / (getTileSize() + getVgap());
+    return new GridPoint((int) colCount, (int) rowCount);
+  }
+
+  /**
+   * Sets the location of the given node in this tile pane.
+   *
+   * @param node  the node to set the location of
+   * @param point the new location of the node
+   * @throws IllegalArgumentException if the node is not a child of this pane
+   */
+  public void setLocation(Node node, GridPoint point) {
+    if (!getChildren().contains(node)) {
+      throw new IllegalArgumentException("The node is not a child of this pane: " + node);
+    }
+    setColumnIndex(node, point.col);
+    setRowIndex(node, point.row);
   }
 
   public Node addTile(Node node, TileSize size) {
