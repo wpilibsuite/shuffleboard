@@ -106,7 +106,7 @@ if (project.hasProperty('jenkinsBuild') || project.hasProperty('headless')) {
     }
 }
 
-mainClassName = 'edu.wpi.first.shuffleboard.Shuffleboard'
+mainClassName = 'edu.wpi.first.shuffleboard.ShuffleBoard'
 
 shadowJar {
     classifier = null
