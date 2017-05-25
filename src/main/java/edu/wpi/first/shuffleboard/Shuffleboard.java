@@ -1,32 +1,36 @@
 package edu.wpi.first.shuffleboard;
 
-import edu.wpi.first.shuffleboard.controller.ShuffleboardController;
+import edu.wpi.first.shuffleboard.widget.StockWidgets;
+import edu.wpi.first.wpilibj.networktables.NetworkTable;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 
 import java.io.IOException;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
+@SuppressWarnings("JavadocMethod")
 public class Shuffleboard extends Application {
 
-  private Scene scene;
+  private Pane mainPane;
 
-  @Override
-  public void init() throws IOException {
-    FXMLLoader loader
-            = new FXMLLoader(ShuffleboardController.class.getResource("Shuffleboard.fxml"));
-    scene = new Scene(loader.load());
+  public static void main(String[] args) {
+    NetworkTable.setClientMode();
+    NetworkTable.setIPAddress("localhost"); // for local testing
+    launch(args);
   }
 
   @Override
-  public void start(Stage primaryStage) throws Exception {
-    checkNotNull(primaryStage);
+  public void init() throws Exception {
+    StockWidgets.init();
 
-    primaryStage.setScene(scene);
-    primaryStage.setTitle("shuffleboard");
+    mainPane = FXMLLoader.load(MainWindowController.class.getResource("MainWindow.fxml"));
+  }
+
+  @Override
+  public void start(Stage primaryStage) throws IOException {
+    primaryStage.setScene(new Scene(mainPane));
     primaryStage.show();
   }
 
