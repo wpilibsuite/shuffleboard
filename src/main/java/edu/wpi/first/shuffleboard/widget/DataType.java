@@ -13,12 +13,12 @@ public enum DataType {
   /**
    * An unknown data type. Equivalent to null.
    */
-  Unknown("Unknown"),
+  Unknown,
 
   /**
    * Matches all known data types.
    */
-  All("All"),
+  All,
 
 
   // Single key-value types
@@ -27,38 +27,38 @@ public enum DataType {
   /**
    * Data type for a text string.
    */
-  String("String"),
+  String,
 
   /**
    * Data type for a single numeric value.
    */
-  Number("Number"),
+  Number,
 
   /**
    * Data type for a single boolean value.
    */
-  Boolean("Boolean"),
+  Boolean,
 
   /**
    * Data type for an array of strings.
    */
-  StringArray("StringArray"),
+  StringArray,
 
   /**
    * Data type for an array of numbers.
    */
-  NumberArray("NumberArray"),
+  NumberArray,
 
   /**
    * Data type for an array of booleans.
    */
-  BooleanArray("BooleanArray"),
+  BooleanArray,
 
   /**
    * Data type for an array of bytes that can be deserialized to some arbitrary
    * type by a consumer.
    */
-  RawBytes("RawBytes"),
+  RawBytes,
 
 
   // Composite types
@@ -67,29 +67,33 @@ public enum DataType {
   /**
    * A generic data type encompassing all composite types (ie types with more than a single value).
    */
-  Map("Map"),
+  Map,
 
-  RobotDrive("RobotDrive"),
+  RobotDrive,
 
-  MotorController("MotorController"),
+  MotorController,
 
-  Sensor("Sensor"),
+  Sensor,
 
-  DigitalInput("DigitalInput"),
+  DigitalInput,
 
-  AnalogInput("AnalogInput"),
+  AnalogInput,
 
-  Gyro("Gyro"),
+  Gyro,
 
-  Encoder("Encoder"),
+  Encoder,
 
-  Command("Command"),
+  Command,
 
-  SendableChooser("SendableChooser"),
+  SendableChooser,
 
-  CameraServerCamera("CameraServerCamera");
+  CameraServerCamera;
 
   private final String name;
+
+  DataType() {
+    this.name = name();
+  }
 
   DataType(String name) {
     this.name = name;
