@@ -20,6 +20,7 @@ import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeTableRow;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 
@@ -98,32 +99,15 @@ public class MainWindowController {
     networkTables.getKeyColumn().setPrefWidth(199);
     networkTables.getValueColumn().setPrefWidth(199);
 
-    networkTables.getSelectionModel()
-                 .selectedItemProperty()
-                 .addListener((obs, prev, cur) -> {
-                   // Highlight the tiles for the currently selected data item
-                   if (prev != null) {
-                     highlight(prev, false);
-                   }
-                   if (cur != null) {
-                     highlight(cur, true);
-                   }
-                 });
-
-    root.setOnKeyTyped(event -> {
-      // Press ESC to clear selection
-      if (event.getCharacter().charAt(0) == 27) {
-        networkTables.getSelectionModel().select(null);
-      }
+    networkTables.setRowFactory(view -> {
+      TreeTableRow<NetworkTableEntry> row = new TreeTableRow<>();
+      row.hoverProperty().addListener((__, wasHover, isHover) -> {
+        if (!row.isEmpty()) {
+          highlight(row.getTreeItem(), isHover);
+        }
+      });
+      return row;
     });
-
-    networkTables.getSelectionModel()
-                 .selectedItemProperty()
-                 .addListener((__, __o, newValue) -> {
-                   if (newValue == null) {
-                     deselectAllWidgets();
-                   }
-                 });
 
     networkTables.setOnContextMenuRequested(e -> {
       TreeItem<NetworkTableEntry> selectedItem =
