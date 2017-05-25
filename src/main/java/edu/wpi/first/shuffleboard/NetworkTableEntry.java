@@ -3,23 +3,44 @@ package edu.wpi.first.shuffleboard;
 
 import edu.wpi.first.shuffleboard.util.NetworkTableUtils;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 /**
- * A simple data class for information about an entry in NetworkTables.
+ * A simple value class for information about an entry in NetworkTables.
  */
 public final class NetworkTableEntry {
 
-  private String key;
-  private String value;
+  private final String key;
+  private final String displayString;
 
-  public NetworkTableEntry(String key, String value) {
+  public NetworkTableEntry(String key, String displayString) {
     this.key = key;
-    this.value = value;
+    this.displayString = displayString;
+  }
+
+  public NetworkTableEntry(String key, Object value) {
+    this(key, displayStringForValue(value));
   }
 
   public NetworkTableEntry() {
     this("", "");
+  }
+
+  private static String displayStringForValue(Object value) {
+    if (value == null) {
+      return "";
+    }
+    if (value instanceof double[]) {
+      return Arrays.toString((double[]) value);
+    }
+    if (value instanceof String[]) {
+      return Arrays.toString((String[]) value);
+    }
+    if (value instanceof boolean[]) {
+      return Arrays.toString((boolean[]) value);
+    }
+    return value.toString();
   }
 
   public String getKey() {
@@ -30,16 +51,8 @@ public final class NetworkTableEntry {
     return NetworkTableUtils.simpleKey(key);
   }
 
-  public String getValue() {
-    return value;
-  }
-
-  public void setKey(String key) {
-    this.key = key;
-  }
-
-  public void setValue(String value) {
-    this.value = value;
+  public String getDisplayString() {
+    return displayString;
   }
 
   @Override
@@ -53,16 +66,16 @@ public final class NetworkTableEntry {
 
     NetworkTableEntry that = (NetworkTableEntry) obj;
 
-    return Objects.equals(key, that.key) && Objects.equals(value, that.value);
+    return Objects.equals(key, that.key) && Objects.equals(displayString, that.displayString);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(key, value);
+    return Objects.hash(key, displayString);
   }
 
   @Override
   public String toString() {
-    return String.format("NetworkTableEntry(key='%s', value='%s')", key, value);
+    return String.format("NetworkTableEntry(key='%s', displayString='%s')", key, displayString);
   }
 }

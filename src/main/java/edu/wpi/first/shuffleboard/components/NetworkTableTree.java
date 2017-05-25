@@ -12,7 +12,6 @@ import javafx.scene.control.TreeTableColumn;
 import javafx.scene.control.TreeTableColumn.CellDataFeatures;
 import javafx.scene.control.TreeTableView;
 
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -53,7 +52,7 @@ public class NetworkTableTree extends TreeTableView<NetworkTableEntry> {
     keyColumn.setCellValueFactory(
         f -> new ReadOnlyStringWrapper(getEntryForCellData(f).simpleKey()));
     valueColumn.setCellValueFactory(
-        f -> new ReadOnlyStringWrapper(getEntryForCellData(f).getValue()));
+        f -> new ReadOnlyStringWrapper(getEntryForCellData(f).getDisplayString()));
     setRoot(root);
     setSortPolicy(param -> {
       sort(getRoot());
@@ -134,33 +133,14 @@ public class NetworkTableTree extends TreeTableView<NetworkTableEntry> {
     } else {
       if (current == null) {
         // Newly added value, create a tree item for it
-        current = new TreeItem<>(new NetworkTableEntry(key, displayStringForValue(value)));
+        current = new TreeItem<>(new NetworkTableEntry(key, value));
         parent.getChildren().add(current);
       } else {
         // The value updated, so just update the existing node
-        current.getValue().setValue(displayStringForValue(value));
+        current.setValue(new NetworkTableEntry(key, value));
       }
     }
     sort();
-    refreshTableView();
-  }
-
-  private void refreshTableView() {
-    keyColumn.setVisible(false);
-    keyColumn.setVisible(true);
-  }
-
-  private String displayStringForValue(Object value) {
-    if (value instanceof double[]) {
-      return Arrays.toString((double[]) value);
-    }
-    if (value instanceof String[]) {
-      return Arrays.toString((String[]) value);
-    }
-    if (value instanceof boolean[]) {
-      return Arrays.toString((boolean[]) value);
-    }
-    return value.toString();
   }
 
 }
