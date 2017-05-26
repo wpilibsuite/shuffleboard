@@ -140,6 +140,9 @@ public class MainWindowController {
                        tileGrid.add(gridHighlight,
                                     origin.col, origin.row,
                                     size.getWidth(), size.getHeight());
+                       gridHighlight.pseudoClassStateChanged(
+                           PseudoClass.getPseudoClass("colliding"),
+                           !tileGrid.isOpen(origin, size, handle.getUiElement(), gridHighlight));
                      });
       }
       // setting grid lines visible puts them above every child, so move every widget view
@@ -177,9 +180,14 @@ public class MainWindowController {
         String widgetId = (String) dragboard.getContent(widgetFormat);
         widgetHandles.stream()
                      .filter(handle -> widgetId.equals(handle.id))
-                     .map(WidgetHandle::getUiElement)
                      .findAny()
-                     .ifPresent(node -> tileGrid.setLocation(node, point));
+                     .ifPresent(handle -> {
+                       GridPoint origin = tileGrid.pointAt(event.getX(), event.getY());
+                       TileSize size = handle.getCurrentSize();
+                       if (tileGrid.isOpen(origin, size, gridHighlight, handle.getUiElement())) {
+                         tileGrid.setLocation(handle.getUiElement(), origin);
+                       }
+                     });
       }
       cleanupWidgetDrag(gridHighlight);
       event.consume();

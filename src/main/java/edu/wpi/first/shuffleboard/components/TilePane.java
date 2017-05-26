@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.components;
 
+import com.google.common.collect.ImmutableSet;
 import edu.wpi.first.shuffleboard.util.GridPoint;
 import edu.wpi.first.shuffleboard.widget.TileSize;
 import javafx.beans.DefaultProperty;
@@ -17,6 +18,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.StackPane;
 
+import java.util.Set;
 import java.util.stream.IntStream;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -237,17 +239,35 @@ public class TilePane extends GridPane {
   }
 
   /**
-   * Checks if a tile with the given width and height can be added at the point {@code (col, row)}.
+   * Checks if a tile with the given size can be added at the given point,
+   * ignoring some nodes when calculating collisions.
+   *
+   * @param point    the point to check
+   * @param tileSize the size of the tile
+   * @param ignore   the nodes to ignore when determining collisions
+   */
+  public boolean isOpen(GridPoint point, TileSize tileSize, Node... ignore) {
+    return isOpen(point.getCol(), point.getRow(),
+                  tileSize.getWidth(), tileSize.getHeight(),
+                  ignore);
+  }
+
+  /**
+   * Checks if a tile with the given width and height can be added at the point {@code (col, row)},
+   * ignoring some nodes when calculating collisions.
    *
    * @param col        the column index of the point to check
    * @param row        the row index of the point to check
    * @param tileWidth  the width of the tile
    * @param tileHeight the height of the tile
+   * @param ignore     the nodes to ignore when determining collisions
    */
-  public boolean isOpen(int col, int row, int tileWidth, int tileHeight) {
+  public boolean isOpen(int col, int row, int tileWidth, int tileHeight, Node... ignore) {
     if (col + tileWidth > getNumColumns() || row + tileHeight > getNumRows()) {
       return false;
     }
+
+    Set<Node> ignoredChildren = ImmutableSet.copyOf(ignore);
 
     int x;
     int y;
@@ -255,6 +275,9 @@ public class TilePane extends GridPane {
     int height;
 
     for (Node tile : getChildren()) {
+      if (ignoredChildren.contains(tile)) {
+        continue;
+      }
       try {
         x = GridPane.getColumnIndex(tile);
         y = GridPane.getRowIndex(tile);
