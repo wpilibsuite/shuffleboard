@@ -7,10 +7,7 @@ import edu.wpi.first.shuffleboard.dnd.SourceRow;
 import edu.wpi.first.shuffleboard.sources.DataSource;
 import edu.wpi.first.shuffleboard.sources.NetworkTableSource;
 import edu.wpi.first.shuffleboard.util.NetworkTableUtils;
-import edu.wpi.first.shuffleboard.widget.Widget;
 import edu.wpi.first.shuffleboard.widget.Widgets;
-import edu.wpi.first.wpilibj.networktables.NetworkTable;
-import edu.wpi.first.wpilibj.tables.ITable;
 import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -39,9 +36,7 @@ public class MainWindowController {
   @FXML
   private NetworkTableTree networkTables;
 
-  private final ITable rootTable = NetworkTable.getTable("");
   private static final PseudoClass selectedPseudoClass = PseudoClass.getPseudoClass("selected");
-
 
   @FXML
   private void initialize() throws IOException {
@@ -138,19 +133,6 @@ public class MainWindowController {
   public void close() {
     log.info("Exiting app");
     System.exit(0);
-  }
-
-  /**
-   * Removes a widget from the view.
-   *
-   * @param widget the widget to remove
-   */
-  public void removeWidget(Widget<?> widget) {
-    widgetPane.getWidgetHandles()
-              .stream()
-              .filter(h -> h.getWidget() == widget)
-              .findFirst()
-              .ifPresent(widgetPane::removeWidget);
   }
 
 }
