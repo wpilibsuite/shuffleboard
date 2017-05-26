@@ -23,12 +23,14 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableRow;
+import javafx.scene.image.WritableImage;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.DataFormat;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -116,19 +118,42 @@ public class MainWindowController {
     networkTables.getKeyColumn().setPrefWidth(199);
     networkTables.getValueColumn().setPrefWidth(199);
 
-    // Drag and drop sources onto the tile grid
+    Pane gridHighlight = new StackPane();
+    gridHighlight.getStyleClass().add("grid-highlight");
+
+    // Drag and drop sources onto the tile grid or drag widgets around
     tileGrid.setOnDragOver(event -> {
       event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
       tileGrid.setGridLinesVisible(true);
+      tileGrid.getChildren().remove(gridHighlight);
+      boolean isWidget = event.getDragboard().hasContent(widgetFormat);
+
+      // preview the location of the widget if one is being dragged
+      if (isWidget) {
+        String widgetId = (String) event.getDragboard().getContent(widgetFormat);
+        widgetHandles.stream()
+                     .filter(handle -> handle.id.equals(widgetId))
+                     .findFirst()
+                     .ifPresent(handle -> {
+                       TileSize size = handle.getCurrentSize();
+                       GridPoint origin = tileGrid.pointAt(event.getX(), event.getY());
+                       tileGrid.add(gridHighlight,
+                                    origin.col, origin.row,
+                                    size.getWidth(), size.getHeight());
+                     });
+      }
+      // setting grid lines visible puts them above every child, so move every widget view
+      // to the front to avoid them being obscure by the grid lines
       widgetHandles.stream()
                    .map(WidgetHandle::getUiElement)
                    .forEach(Node::toFront);
       event.consume();
     });
 
-    tileGrid.setOnDragDone(event -> tileGrid.setGridLinesVisible(false));
-    tileGrid.setOnDragExited(event -> tileGrid.setGridLinesVisible(false));
+    tileGrid.setOnDragDone(__ -> cleanupWidgetDrag(gridHighlight));
+    tileGrid.setOnDragExited(__ -> cleanupWidgetDrag(gridHighlight));
 
+    // Drop sources or widgets into the tile grid
     tileGrid.setOnDragDropped(event -> {
       Dragboard dragboard = event.getDragboard();
       GridPoint point = tileGrid.pointAt(event.getX(), event.getY());
@@ -143,7 +168,7 @@ public class MainWindowController {
                .flatMap(name -> Widgets.createWidget(name, source))
                .ifPresent(this::addWidget);
         widgetHandles.stream()
-                     .filter(handle -> handle.getWidget().getSource() == source)
+                     .filter(handle -> handle.getWidget().getSource() == source) // intentional ==
                      .map(WidgetHandle::getUiElement)
                      .findAny()
                      .ifPresent(node -> tileGrid.setLocation(node, point));
@@ -156,7 +181,7 @@ public class MainWindowController {
                      .findAny()
                      .ifPresent(node -> tileGrid.setLocation(node, point));
       }
-      tileGrid.setGridLinesVisible(false);
+      cleanupWidgetDrag(gridHighlight);
       event.consume();
     });
 
@@ -167,6 +192,8 @@ public class MainWindowController {
           highlight(row.getTreeItem(), isHover);
         }
       });
+
+      // drag sources into the tile grid
       row.setOnDragDetected(event -> {
         if (!row.isEmpty()) {
           NetworkTableEntry entry = row.getTreeItem().getValue();
@@ -204,6 +231,16 @@ public class MainWindowController {
 
       menu.show(root.getScene().getWindow(), e.getScreenX(), e.getScreenY());
     });
+  }
+
+  /**
+   * Cleans up from dragging widgets around in the tile pane.
+   *
+   * @param gridHighlight the node used to highlight the drop target location
+   */
+  private void cleanupWidgetDrag(Node gridHighlight) {
+    tileGrid.setGridLinesVisible(false);
+    tileGrid.getChildren().remove(gridHighlight);
   }
 
   private MenuItem createShowAsMenuItem(String widgetName, DataSource<?> source) {
@@ -287,6 +324,13 @@ public class MainWindowController {
     Node uiElement = tileGrid.addTile(control, size);
     uiElement.setOnDragDetected(event -> {
       Dragboard dragboard = uiElement.startDragAndDrop(TransferMode.MOVE);
+      WritableImage preview =
+          new WritableImage(
+              (int) uiElement.getBoundsInParent().getWidth(),
+              (int) uiElement.getBoundsInParent().getHeight()
+          );
+      uiElement.snapshot(null, preview);
+      dragboard.setDragView(preview);
       ClipboardContent content = new ClipboardContent();
       content.put(widgetFormat, handle.id);
       dragboard.setContent(content);
