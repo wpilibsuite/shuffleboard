@@ -177,6 +177,10 @@ public class TilePane extends GridPane {
     setRowIndex(node, point.row);
   }
 
+  public void add(Node node, GridPoint point, TileSize size) {
+    add(node, point.col, point.row, size.getWidth(), size.getHeight());
+  }
+
   public Node addTile(Node node, TileSize size) {
     return addTile(node, size.getWidth(), size.getHeight());
   }

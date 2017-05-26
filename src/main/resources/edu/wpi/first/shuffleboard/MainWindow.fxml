@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import edu.wpi.first.shuffleboard.components.NetworkTableTree?>
-<?import edu.wpi.first.shuffleboard.components.TilePane?>
+<?import edu.wpi.first.shuffleboard.components.WidgetPane?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Menu?>
@@ -20,12 +20,12 @@
         </MenuBar>
     </top>
     <center>
-        <TilePane fx:id="tileGrid" hgap="8" vgap="8" numColumns="8" numRows="6">
+        <WidgetPane fx:id="widgetPane" hgap="8" vgap="8" numColumns="8" numRows="6">
             <properties dropTarget="true"/>
             <padding>
                 <Insets topRightBottomLeft="10"/>
             </padding>
-        </TilePane>
+        </WidgetPane>
     </center>
     <left>
         <VBox>
