@@ -53,7 +53,7 @@ public class NetworkTableTreeTest extends ApplicationTest {
   }
 
   @Test
-  public void testFirstLevel() { //NOPMD
+  public void testFirstLevel() {
     table.putString("entry", "value");
     waitForFxEvents();
 
@@ -67,7 +67,7 @@ public class NetworkTableTreeTest extends ApplicationTest {
   }
 
   @Test
-  public void testBranches() { //NOPMD
+  public void testBranches() {
     table.putString("branch/entry", "x");
     waitForFxEvents();
     ObservableList<TreeItem<NetworkTableEntry>> children = root.getChildren();
@@ -87,7 +87,7 @@ public class NetworkTableTreeTest extends ApplicationTest {
   }
 
   @Test
-  public void testSort() { //NOPMD
+  public void testSort() {
     // deliberately not in order
     table.putString("c", "");
     table.putString("sub_a/sub_entry_a", "");
@@ -122,7 +122,7 @@ public class NetworkTableTreeTest extends ApplicationTest {
   }
 
   @Test
-  public void testDelete() { //NOPMD
+  public void testDelete() {
     String key = "testDelete";
     table.putString(key, "value");
     waitForFxEvents();
@@ -135,7 +135,7 @@ public class NetworkTableTreeTest extends ApplicationTest {
   }
 
   @Test
-  public void testUpdate() { //NOPMD
+  public void testUpdate() {
     final String key = "testUpdate";
     final String firstValue = "value 1";
     final String secondValue = "value 2";
