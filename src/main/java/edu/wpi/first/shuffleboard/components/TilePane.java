@@ -33,9 +33,9 @@ public class TilePane extends GridPane {
   private static final double DEFAULT_TILE_SIZE = 128; // pixels
 
   private final ObjectProperty<Integer> numColumns =
-      new SimpleObjectProperty<>(this, "numColumns", DEFAULT_COL_COUNT);
+      new SimpleObjectProperty<>(this, "numColumns", 0);
   private final ObjectProperty<Integer> numRows =
-      new SimpleObjectProperty<>(this, "numRows", DEFAULT_ROW_COUNT);
+      new SimpleObjectProperty<>(this, "numRows", 0);
   private final DoubleProperty tileSize =
       new SimpleDoubleProperty(this, "tileSize", DEFAULT_TILE_SIZE);
 
@@ -57,7 +57,7 @@ public class TilePane extends GridPane {
     this.numColumns.addListener((obs, oldCount, newCount) -> {
       if (newCount > oldCount) {
         IntStream.range(oldCount, newCount)
-                 .mapToObj(__ -> createColumnConstraints())
+                 .mapToObj(__ -> createColumnConstraint())
                  .forEach(getColumnConstraints()::add);
       } else {
         getColumnConstraints().remove(newCount, oldCount);
@@ -67,7 +67,7 @@ public class TilePane extends GridPane {
     this.numRows.addListener((obs, oldCount, newCount) -> {
       if (newCount > oldCount) {
         IntStream.range(oldCount, newCount)
-                 .mapToObj(__ -> createRowConstraints())
+                 .mapToObj(__ -> createRowConstraint())
                  .forEach(getRowConstraints()::add);
       } else {
         getRowConstraints().remove(newCount, oldCount);
@@ -78,14 +78,14 @@ public class TilePane extends GridPane {
     setNumRows(numRows);
   }
 
-  private ColumnConstraints createColumnConstraints() {
+  private ColumnConstraints createColumnConstraint() {
     ColumnConstraints constraints = new ColumnConstraints(
         MIN_TILE_SIZE, getTileSize(), 1e3, Priority.ALWAYS, HPos.LEFT, true);
     constraints.prefWidthProperty().bind(tileSize);
     return constraints;
   }
 
-  private RowConstraints createRowConstraints() {
+  private RowConstraints createRowConstraint() {
     RowConstraints constraints = new RowConstraints(
         MIN_TILE_SIZE, getTileSize(), 1e3, Priority.ALWAYS, VPos.CENTER, true);
     constraints.prefHeightProperty().bind(tileSize);
