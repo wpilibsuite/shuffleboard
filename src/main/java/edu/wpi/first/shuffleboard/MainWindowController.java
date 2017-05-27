@@ -108,15 +108,15 @@ public class MainWindowController {
 
   private void highlight(TreeItem<NetworkTableEntry> node, boolean doHighlight) {
     findWidgets(node.getValue().getKey())
-        .forEach(handle -> highlight(handle, doHighlight));
+        .forEach(tile -> highlight(tile, doHighlight));
 
     if (!node.isLeaf()) {
       // Highlight all child widgets
       widgetPane.getTiles()
                 .stream()
-                .filter(handle -> handle.getWidget().getSourceName()
+                .filter(tile -> tile.getWidget().getSourceName()
                                         .startsWith(node.getValue().getKey().substring(1)))
-                .forEach(handle -> highlight(handle, doHighlight));
+                .forEach(tile -> highlight(tile, doHighlight));
     }
   }
 
@@ -138,7 +138,7 @@ public class MainWindowController {
     String key = NetworkTableUtils.normalizeKey(fullTableKey, false);
     return widgetPane.getTiles()
                      .stream()
-                     .filter(handle -> handle.getWidget().getSourceName().equals(key))
+                     .filter(tile -> tile.getWidget().getSourceName().equals(key))
                      .collect(Collectors.toList());
   }
 

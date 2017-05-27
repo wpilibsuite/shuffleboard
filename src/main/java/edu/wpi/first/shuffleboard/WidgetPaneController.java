@@ -41,8 +41,8 @@ public class WidgetPaneController {
         pane.setHighlight(true);
         pane.setHighlightPoint(point);
         String widgetId = (String) event.getDragboard().getContent(DataFormats.widget);
-        pane.tileMatching(handle -> handle.getId().equals(widgetId))
-            .ifPresent(handle -> previewWidget(handle, point));
+        pane.tileMatching(tile -> tile.getId().equals(widgetId))
+            .ifPresent(tile -> previewWidget(tile, point));
       }
 
       // setting grid lines visible puts them above every child, so move every widget view
@@ -70,8 +70,8 @@ public class WidgetPaneController {
         }
       } else if (dragboard.hasContent(DataFormats.widget)) {
         String widgetId = (String) dragboard.getContent(DataFormats.widget);
-        pane.tileMatching(handle -> handle.getId().equals(widgetId))
-            .ifPresent(handle -> dropWidget(handle, point));
+        pane.tileMatching(tile -> tile.getId().equals(widgetId))
+            .ifPresent(tile -> dropWidget(tile, point));
       }
       cleanupWidgetDrag();
       event.consume();
