@@ -11,14 +11,13 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
 import javafx.scene.Node;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
+import org.fxmisc.easybind.EasyBind;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 
@@ -27,7 +26,7 @@ import java.util.function.Predicate;
  */
 public class WidgetPane extends TilePane {
 
-  private final List<WidgetTile> tiles = new ArrayList<>();
+  private final ObservableList<WidgetTile> tiles;
   private final Pane gridHighlight = new StackPane();
 
   private final BooleanProperty highlight
@@ -44,16 +43,7 @@ public class WidgetPane extends TilePane {
   public WidgetPane() {
     gridHighlight.getStyleClass().add("grid-highlight");
 
-    getChildren().addListener((ListChangeListener<Node>) c -> {
-      c.next();
-      if (c.wasRemoved()) {
-        tiles.removeAll(c.getRemoved());
-      } else if (c.wasAdded()) {
-        c.getAddedSubList().stream()
-         .filter(n -> n instanceof WidgetTile)
-         .forEach(n -> tiles.add((WidgetTile) n));
-      }
-    });
+    tiles = EasyBind.map(getChildren().filtered(n -> n instanceof WidgetTile), n -> (WidgetTile) n);
 
     // Add the highlighter when we're told to highlight
     highlight.addListener((__, old, highlight) -> {

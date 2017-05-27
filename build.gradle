@@ -29,6 +29,7 @@ repositories {
 
 dependencies {
     compile group: 'com.google.guava', name: 'guava', version: '21.0'
+    compile group: 'org.fxmisc.easybind', name: 'easybind', version: '1.0.3'
     compile "edu.wpi.first.wpilib.networktables.java:NetworkTables:+:desktop"
 
     testCompile group: 'com.google.guava', name: 'guava-testlib', version: '21.0'
