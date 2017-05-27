@@ -133,7 +133,6 @@ public class WidgetPane extends TilePane {
   }
 
   public void removeWidget(WidgetTile tile) {
-    tiles.remove(tile);
     getChildren().remove(tile);
   }
 
