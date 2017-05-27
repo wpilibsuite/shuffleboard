@@ -1,6 +1,5 @@
 package edu.wpi.first.shuffleboard.components;
 
-import com.google.common.collect.ImmutableSet;
 import edu.wpi.first.shuffleboard.util.GridPoint;
 import edu.wpi.first.shuffleboard.widget.TileSize;
 import javafx.beans.DefaultProperty;
@@ -16,9 +15,8 @@ import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
-import javafx.scene.layout.StackPane;
 
-import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.IntStream;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -169,7 +167,7 @@ public class TilePane extends GridPane {
    * @param point the new location of the node
    * @throws IllegalArgumentException if the node is not a child of this pane
    */
-  public void setLocation(Node node, GridPoint point) {
+  public void moveNode(Node node, GridPoint point) {
     if (!getChildren().contains(node)) {
       throw new IllegalArgumentException("The node is not a child of this pane: " + node);
     }
@@ -177,8 +175,18 @@ public class TilePane extends GridPane {
     setRowIndex(node, point.row);
   }
 
-  public void add(Node node, GridPoint point, TileSize size) {
-    add(node, point.col, point.row, size.getWidth(), size.getHeight());
+  /**
+   * Sets the size of the given node in this tile pane.
+   *
+   * @param node the node to resize
+   * @param size the new size of the node
+   */
+  public void setSize(Node node, TileSize size) {
+    if (!getChildren().contains(node)) {
+      throw new IllegalArgumentException("The node is not a child of this pane: " + node);
+    }
+    setColumnSpan(node, size.getWidth());
+    setRowSpan(node, size.getHeight());
   }
 
   public Node addTile(Node node, TileSize size) {
@@ -215,11 +223,8 @@ public class TilePane extends GridPane {
       return null;
     }
 
-    StackPane wrapper = new StackPane(node);
-    wrapper.getStyleClass().add("tile");
-
-    add(wrapper, placement.col, placement.row, width, height);
-    return wrapper;
+    add(node, placement.col, placement.row, width, height);
+    return node;
   }
 
   /**
@@ -234,7 +239,7 @@ public class TilePane extends GridPane {
     // outer col, inner row would add tiles top-to-bottom from the left-hand columns (not intuitive)
     for (int row = 0; row < getNumRows(); row++) {
       for (int col = 0; col < getNumColumns(); col++) {
-        if (isOpen(col, row, width, height)) {
+        if (isOpen(col, row, width, height, n -> false)) {
           return new GridPoint(col, row);
         }
       }
@@ -250,7 +255,7 @@ public class TilePane extends GridPane {
    * @param tileSize the size of the tile
    * @param ignore   the nodes to ignore when determining collisions
    */
-  public boolean isOpen(GridPoint point, TileSize tileSize, Node... ignore) {
+  public boolean isOpen(GridPoint point, TileSize tileSize, Predicate<Node> ignore) {
     return isOpen(point.getCol(), point.getRow(),
                   tileSize.getWidth(), tileSize.getHeight(),
                   ignore);
@@ -266,12 +271,10 @@ public class TilePane extends GridPane {
    * @param tileHeight the height of the tile
    * @param ignore     the nodes to ignore when determining collisions
    */
-  public boolean isOpen(int col, int row, int tileWidth, int tileHeight, Node... ignore) {
+  public boolean isOpen(int col, int row, int tileWidth, int tileHeight, Predicate<Node> ignore) {
     if (col + tileWidth > getNumColumns() || row + tileHeight > getNumRows()) {
       return false;
     }
-
-    Set<Node> ignoredChildren = ImmutableSet.copyOf(ignore);
 
     int x;
     int y;
@@ -279,7 +282,7 @@ public class TilePane extends GridPane {
     int height;
 
     for (Node tile : getChildren()) {
-      if (ignoredChildren.contains(tile)) {
+      if (ignore.test(tile)) {
         continue;
       }
       try {

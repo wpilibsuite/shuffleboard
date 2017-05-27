@@ -1,7 +1,7 @@
 package edu.wpi.first.shuffleboard;
 
 import edu.wpi.first.shuffleboard.widget.StockWidgets;
-import edu.wpi.first.wpilibj.networktables.NetworkTable;
+import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -16,8 +16,7 @@ public class Shuffleboard extends Application {
   private Pane mainPane;
 
   public static void main(String[] args) {
-    NetworkTable.setClientMode();
-    NetworkTable.setIPAddress("localhost"); // for local testing
+    NetworkTablesJNI.startClient("localhost", 1735);
     launch(args);
   }
 

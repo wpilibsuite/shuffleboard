@@ -2,8 +2,7 @@ package edu.wpi.first.shuffleboard;
 
 import edu.wpi.first.shuffleboard.components.NetworkTableTree;
 import edu.wpi.first.shuffleboard.components.WidgetPane;
-import edu.wpi.first.shuffleboard.dnd.DataSourceTransferable;
-import edu.wpi.first.shuffleboard.dnd.SourceRow;
+import edu.wpi.first.shuffleboard.dnd.DataFormats;
 import edu.wpi.first.shuffleboard.sources.DataSource;
 import edu.wpi.first.shuffleboard.sources.NetworkTableSource;
 import edu.wpi.first.shuffleboard.util.NetworkTableUtils;
@@ -14,6 +13,10 @@ import javafx.scene.Node;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeTableRow;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
 
 import java.io.IOException;
@@ -45,13 +48,13 @@ public class MainWindowController {
     networkTables.getValueColumn().setPrefWidth(199);
 
     networkTables.setRowFactory(view -> {
-      SourceRow<NetworkTableEntry> row = new SourceRow<>();
+      TreeTableRow<NetworkTableEntry> row = new TreeTableRow<>();
       row.hoverProperty().addListener((__, wasHover, isHover) -> {
         if (!row.isEmpty()) {
           highlight(row.getTreeItem(), isHover);
         }
       });
-      row.setEntryConverter(entry -> DataSourceTransferable.networkTable(entry.getKey()));
+      makeSourceRowDraggable(row);
       return row;
     });
 
@@ -81,6 +84,19 @@ public class MainWindowController {
     });
   }
 
+  private void makeSourceRowDraggable(TreeTableRow<? extends SourceEntry> row) {
+    row.setOnDragDetected(event -> {
+      if (row.isEmpty()) {
+        return;
+      }
+      Dragboard dragboard = row.startDragAndDrop(TransferMode.COPY_OR_MOVE);
+      ClipboardContent content = new ClipboardContent();
+      content.put(DataFormats.source, row.getTreeItem().getValue());
+      dragboard.setContent(content);
+      event.consume();
+    });
+  }
+
   private MenuItem createShowAsMenuItem(String widgetName, DataSource<?> source) {
     MenuItem menuItem = new MenuItem("Show as: " + widgetName);
     menuItem.setOnAction(action -> {
@@ -92,15 +108,15 @@ public class MainWindowController {
 
   private void highlight(TreeItem<NetworkTableEntry> node, boolean doHighlight) {
     findWidgets(node.getValue().getKey())
-        .forEach(handle -> highlight(handle.getUiElement(), doHighlight));
+        .forEach(handle -> highlight(handle, doHighlight));
 
     if (!node.isLeaf()) {
       // Highlight all child widgets
-      widgetPane.getWidgetHandles()
+      widgetPane.getTiles()
                 .stream()
-                .filter(handle -> handle.getSourceName()
+                .filter(handle -> handle.getWidget().getSourceName()
                                         .startsWith(node.getValue().getKey().substring(1)))
-                .forEach(handle -> highlight(handle.getUiElement(), doHighlight));
+                .forEach(handle -> highlight(handle, doHighlight));
     }
   }
 
@@ -112,20 +128,17 @@ public class MainWindowController {
    * Deselects all widgets in the tile view.
    */
   private void deselectAllWidgets() {
-    widgetPane.getWidgetHandles()
-              .stream()
-              .map(WidgetHandle::getUiElement)
-              .forEach(node -> highlight(node, false));
+    widgetPane.getTiles().forEach(node -> highlight(node, false));
   }
 
   /**
    * Finds all widgets in the tile grid that are associated with the given network table key.
    */
-  private List<WidgetHandle> findWidgets(String fullTableKey) {
+  private List<WidgetTile> findWidgets(String fullTableKey) {
     String key = NetworkTableUtils.normalizeKey(fullTableKey, false);
-    return widgetPane.getWidgetHandles()
+    return widgetPane.getTiles()
                      .stream()
-                     .filter(handle -> handle.getSourceName().equals(key))
+                     .filter(handle -> handle.getWidget().getSourceName().equals(key))
                      .collect(Collectors.toList());
   }
 

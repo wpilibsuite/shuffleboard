@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import edu.wpi.first.shuffleboard.components.WidgetPane?>
+<?import javafx.geometry.Insets?>
+<WidgetPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="edu.wpi.first.shuffleboard.WidgetPaneController"
+            fx:id="pane"
+            hgap="16" vgap="16"
+            numColumns="8" numRows="6"
+            tileSize="128">
+    <padding>
+        <Insets topRightBottomLeft="10"/>
+    </padding>
+</WidgetPane>
