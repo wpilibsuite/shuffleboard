@@ -1,6 +1,8 @@
 package edu.wpi.first.shuffleboard;
 
 
+import edu.wpi.first.shuffleboard.sources.DataSource;
+import edu.wpi.first.shuffleboard.sources.NetworkTableSource;
 import edu.wpi.first.shuffleboard.util.NetworkTableUtils;
 
 import java.util.Arrays;
@@ -9,7 +11,7 @@ import java.util.Objects;
 /**
  * A simple value class for information about an entry in NetworkTables.
  */
-public final class NetworkTableEntry {
+public final class NetworkTableEntry implements SourceEntry {
 
   private final String key;
   private final String displayString;
@@ -41,6 +43,16 @@ public final class NetworkTableEntry {
       return Arrays.toString((boolean[]) value);
     }
     return value.toString();
+  }
+
+  @Override
+  public String getName() {
+    return getKey();
+  }
+
+  @Override
+  public Class<? extends DataSource> getType() {
+    return NetworkTableSource.class;
   }
 
   public String getKey() {

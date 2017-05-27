@@ -15,8 +15,8 @@ import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
-import javafx.scene.layout.StackPane;
 
+import java.util.function.Predicate;
 import java.util.stream.IntStream;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -80,14 +80,14 @@ public class TilePane extends GridPane {
 
   private ColumnConstraints createColumnConstraint() {
     ColumnConstraints constraints = new ColumnConstraints(
-        MIN_TILE_SIZE, getTileSize(), 1e3, Priority.ALWAYS, HPos.LEFT, true);
+        MIN_TILE_SIZE, getTileSize(), 1e3, Priority.NEVER, HPos.LEFT, true);
     constraints.prefWidthProperty().bind(tileSize);
     return constraints;
   }
 
   private RowConstraints createRowConstraint() {
     RowConstraints constraints = new RowConstraints(
-        MIN_TILE_SIZE, getTileSize(), 1e3, Priority.ALWAYS, VPos.CENTER, true);
+        MIN_TILE_SIZE, getTileSize(), 1e3, Priority.NEVER, VPos.CENTER, true);
     constraints.prefHeightProperty().bind(tileSize);
     return constraints;
   }
@@ -150,6 +150,45 @@ public class TilePane extends GridPane {
     this.tileSize.set(tileSize);
   }
 
+  /**
+   * Gets a grid point as close as possible to the given (x, y) coordinate in this grid's local
+   * coordinate space.
+   */
+  public GridPoint pointAt(double x, double y) {
+    double colCount = x / (getTileSize() + getHgap());
+    double rowCount = y / (getTileSize() + getVgap());
+    return new GridPoint((int) colCount, (int) rowCount);
+  }
+
+  /**
+   * Sets the location of the given node in this tile pane.
+   *
+   * @param node  the node to set the location of
+   * @param point the new location of the node
+   * @throws IllegalArgumentException if the node is not a child of this pane
+   */
+  public void moveNode(Node node, GridPoint point) {
+    if (!getChildren().contains(node)) {
+      throw new IllegalArgumentException("The node is not a child of this pane: " + node);
+    }
+    setColumnIndex(node, point.col);
+    setRowIndex(node, point.row);
+  }
+
+  /**
+   * Sets the size of the given node in this tile pane.
+   *
+   * @param node the node to resize
+   * @param size the new size of the node
+   */
+  public void setSize(Node node, TileSize size) {
+    if (!getChildren().contains(node)) {
+      throw new IllegalArgumentException("The node is not a child of this pane: " + node);
+    }
+    setColumnSpan(node, size.getWidth());
+    setRowSpan(node, size.getHeight());
+  }
+
   public Node addTile(Node node, TileSize size) {
     return addTile(node, size.getWidth(), size.getHeight());
   }
@@ -184,11 +223,8 @@ public class TilePane extends GridPane {
       return null;
     }
 
-    StackPane wrapper = new StackPane(node);
-    wrapper.getStyleClass().add("tile");
-
-    add(wrapper, placement.col, placement.row, width, height);
-    return wrapper;
+    add(node, placement.col, placement.row, width, height);
+    return node;
   }
 
   /**
@@ -203,7 +239,7 @@ public class TilePane extends GridPane {
     // outer col, inner row would add tiles top-to-bottom from the left-hand columns (not intuitive)
     for (int row = 0; row < getNumRows(); row++) {
       for (int col = 0; col < getNumColumns(); col++) {
-        if (isOpen(col, row, width, height)) {
+        if (isOpen(col, row, width, height, n -> false)) {
           return new GridPoint(col, row);
         }
       }
@@ -212,14 +248,30 @@ public class TilePane extends GridPane {
   }
 
   /**
-   * Checks if a tile with the given width and height can be added at the point {@code (col, row)}.
+   * Checks if a tile with the given size can be added at the given point,
+   * ignoring some nodes when calculating collisions.
+   *
+   * @param point    the point to check
+   * @param tileSize the size of the tile
+   * @param ignore   the nodes to ignore when determining collisions
+   */
+  public boolean isOpen(GridPoint point, TileSize tileSize, Predicate<Node> ignore) {
+    return isOpen(point.getCol(), point.getRow(),
+                  tileSize.getWidth(), tileSize.getHeight(),
+                  ignore);
+  }
+
+  /**
+   * Checks if a tile with the given width and height can be added at the point {@code (col, row)},
+   * ignoring some nodes when calculating collisions.
    *
    * @param col        the column index of the point to check
    * @param row        the row index of the point to check
    * @param tileWidth  the width of the tile
    * @param tileHeight the height of the tile
+   * @param ignore     the nodes to ignore when determining collisions
    */
-  public boolean isOpen(int col, int row, int tileWidth, int tileHeight) {
+  public boolean isOpen(int col, int row, int tileWidth, int tileHeight, Predicate<Node> ignore) {
     if (col + tileWidth > getNumColumns() || row + tileHeight > getNumRows()) {
       return false;
     }
@@ -230,6 +282,9 @@ public class TilePane extends GridPane {
     int height;
 
     for (Node tile : getChildren()) {
+      if (ignore.test(tile)) {
+        continue;
+      }
       try {
         x = GridPane.getColumnIndex(tile);
         y = GridPane.getRowIndex(tile);

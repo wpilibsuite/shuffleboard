@@ -28,4 +28,8 @@ public class GridPoint {
     return row;
   }
 
+  public String toString() {
+    return String.format("GridPoint(%d, %d)", col, row);
+  }
+
 }

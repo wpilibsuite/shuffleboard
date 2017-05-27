@@ -159,3 +159,14 @@
 .tile:selected {
     -fx-effect: dropshadow(gaussian, highlight, 6, 0.1, 0, 4);
 }
+
+.grid-highlight {
+    -fx-border-color: rgba(0, 255, 0, 0.75);
+    -fx-border-width: 0.25em;
+    -fx-background-color: rgba(255, 255, 255, 0.1);
+}
+
+.grid-highlight:colliding {
+    -fx-border-color: rgba(255, 0, 0, 0.75);
+    -fx-background-color: rgba(255, 0, 0, 0.1);
+}

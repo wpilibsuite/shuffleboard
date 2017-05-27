@@ -4,6 +4,7 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.StackPane?>
+<?import javafx.geometry.Insets?>
 <BorderPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="edu.wpi.first.shuffleboard.widget.TextView"
@@ -18,6 +19,9 @@
     </top>
     <center>
         <StackPane>
+            <padding>
+                <Insets topRightBottomLeft="8"/>
+            </padding>
             <TextField text="${controller.text}"/>
         </StackPane>
     </center>
