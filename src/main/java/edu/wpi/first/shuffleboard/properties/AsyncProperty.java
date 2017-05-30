@@ -1,12 +1,11 @@
 package edu.wpi.first.shuffleboard.properties;
 
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.value.ChangeListener;
+import static edu.wpi.first.shuffleboard.util.FxUtils.runOnFxThread;
 
 import java.util.Map;
 import java.util.WeakHashMap;
-
-import static edu.wpi.first.shuffleboard.util.FxUtils.runOnFxThread;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ChangeListener;
 
 /**
  * A thread-safe implementation of a property. Any changes to the value will execute on the JavaFX
@@ -14,8 +13,8 @@ import static edu.wpi.first.shuffleboard.util.FxUtils.runOnFxThread;
  */
 public class AsyncProperty<T> extends SimpleObjectProperty<T> {
 
-  private final Map<ChangeListener<? super T>, ChangeListener<? super T>> wrappers
-      = new WeakHashMap<>();
+  private final Map<ChangeListener<? super T>, ChangeListener<? super T>> wrappers =
+      new WeakHashMap<>();
 
   public AsyncProperty() {
     super();
@@ -38,9 +37,11 @@ public class AsyncProperty<T> extends SimpleObjectProperty<T> {
     if (wrappers.containsKey(listener)) {
       return;
     }
-    wrappers.put(listener, (obs, prev, cur) -> {
-      runOnFxThread(() -> listener.changed(obs, prev, cur));
-    });
+    wrappers.put(
+        listener,
+        (obs, prev, cur) -> {
+          runOnFxThread(() -> listener.changed(obs, prev, cur));
+        });
     super.addListener(wrappers.get(listener));
   }
 
@@ -54,5 +55,4 @@ public class AsyncProperty<T> extends SimpleObjectProperty<T> {
   public void set(T newValue) {
     runOnFxThread(() -> super.set(newValue));
   }
-
 }

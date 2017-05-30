@@ -2,9 +2,7 @@ package edu.wpi.first.shuffleboard.sources;
 
 import edu.wpi.first.shuffleboard.widget.DataType;
 
-/**
- * The 'null' data source type. This has no name, no data, and is never active.
- */
+/** The 'null' data source type. This has no name, no data, and is never active. */
 class EmptyDataSource<T> extends AbstractDataSource<T> {
 
   public EmptyDataSource() {
@@ -13,5 +11,4 @@ class EmptyDataSource<T> extends AbstractDataSource<T> {
     setData(null);
     setActive(false);
   }
-
 }

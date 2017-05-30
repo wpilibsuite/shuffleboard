@@ -21,7 +21,7 @@ public class CompositeNetworkTableSource extends NetworkTableSource<ObservableMa
    * subtable name.
    *
    * @param tableName the full path of the subtable backing this source
-   * @param dataType  the data type for this source to accept
+   * @param dataType the data type for this source to accept
    */
   @SuppressWarnings("PMD.ConstructorCallsOverridableMethod") // PMD is dumb
   public CompositeNetworkTableSource(String tableName, DataType dataType) {
@@ -31,37 +31,38 @@ public class CompositeNetworkTableSource extends NetworkTableSource<ObservableMa
     // Use a synchronized map because network table listeners run in their own thread
     super.setData(FXCollections.synchronizedObservableMap(FXCollections.observableHashMap()));
 
-    setTableListener((key, value, flags) -> {
-      boolean delete = NetworkTableUtils.isDelete(flags);
-      String simpleKey = NetworkTableUtils.simpleKey(key);
-      if (delete) {
-        getData().remove(simpleKey);
-      } else {
-        getData().put(simpleKey, value);
-      }
-      setActive(NetworkTableUtils.dataTypeForEntry(key) == dataType);
-    });
+    setTableListener(
+        (key, value, flags) -> {
+          boolean delete = NetworkTableUtils.isDelete(flags);
+          String simpleKey = NetworkTableUtils.simpleKey(key);
+          if (delete) {
+            getData().remove(simpleKey);
+          } else {
+            getData().put(simpleKey, value);
+          }
+          setActive(NetworkTableUtils.dataTypeForEntry(key) == dataType);
+        });
 
-    getData().addListener((MapChangeListener<String, Object>) change -> {
-      if (!isActive()) {
-        return;
-      }
-      if (change.wasAdded()) {
-        table.putValue(change.getKey(), change.getValueAdded());
-      }
-      if (change.wasRemoved() && !change.getMap().containsKey(change.getKey())) {
-        table.delete(change.getKey());
-      }
-    });
+    getData()
+        .addListener(
+            (MapChangeListener<String, Object>)
+                change -> {
+                  if (!isActive()) {
+                    return;
+                  }
+                  if (change.wasAdded()) {
+                    table.putValue(change.getKey(), change.getValueAdded());
+                  }
+                  if (change.wasRemoved() && !change.getMap().containsKey(change.getKey())) {
+                    table.delete(change.getKey());
+                  }
+                });
   }
 
-  /**
-   * Do not use this method.
-   */
+  /** Do not use this method. */
   @Override
   public void setData(ObservableMap<String, Object> newValue) {
     throw new UnsupportedOperationException(
         "The data cannot be set directly. Set a value using getData() instead");
   }
-
 }

@@ -2,17 +2,13 @@ package edu.wpi.first.shuffleboard.widget;
 
 import java.util.Objects;
 
-/**
- * Represents the size of a tile in a grid.
- */
+/** Represents the size of a tile in a grid. */
 public class TileSize {
 
   private final int width;
   private final int height;
 
-  /**
-   * Creates a size with the given width and height. These must both be positive values.
-   */
+  /** Creates a size with the given width and height. These must both be positive values. */
   public TileSize(int width, int height) {
     this.width = width;
     this.height = height;

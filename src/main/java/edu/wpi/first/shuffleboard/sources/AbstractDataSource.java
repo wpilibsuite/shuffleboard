@@ -1,5 +1,7 @@
 package edu.wpi.first.shuffleboard.sources;
 
+import static java.util.Objects.requireNonNull;
+
 import edu.wpi.first.shuffleboard.properties.AsyncProperty;
 import edu.wpi.first.shuffleboard.widget.DataType;
 import javafx.beans.property.Property;
@@ -7,11 +9,9 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
 
-import static java.util.Objects.requireNonNull;
-
 /**
- * Abstract implementation of DataSource that defines properties for {@link #nameProperty()},
- * {@link #activeProperty()}, and {@link #dataProperty()} for subclasses.
+ * Abstract implementation of DataSource that defines properties for {@link #nameProperty()}, {@link
+ * #activeProperty()}, and {@link #dataProperty()} for subclasses.
  *
  * @param <T> the type of data this source provides
  */
@@ -56,10 +56,8 @@ public abstract class AbstractDataSource<T> implements DataSource<T> {
 
   @Override
   public String toString() {
-    return String.format("%s(name=%s, active=%s, data=%s)",
-                         getClass().getSimpleName(),
-                         getName(),
-                         isActive(),
-                         getData());
+    return String.format(
+        "%s(name=%s, active=%s, data=%s)",
+        getClass().getSimpleName(), getName(), isActive(), getData());
   }
 }

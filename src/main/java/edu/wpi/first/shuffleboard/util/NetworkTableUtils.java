@@ -4,22 +4,15 @@ import edu.wpi.first.shuffleboard.widget.DataType;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
 import edu.wpi.first.wpilibj.tables.ITable;
 
-/**
- * Utility class for working with network tables.
- */
+/** Utility class for working with network tables. */
 public final class NetworkTableUtils {
 
-  /**
-   * The root network table.
-   */
+  /** The root network table. */
   public static final ITable rootTable = NetworkTable.getTable("");
 
-  private NetworkTableUtils() {
-  }
+  private NetworkTableUtils() {}
 
-  /**
-   * Gets the simple representation of a key. For example, "/foo/bar" becomes "bar".
-   */
+  /** Gets the simple representation of a key. For example, "/foo/bar" becomes "bar". */
   public static String simpleKey(String key) {
     if (!key.contains("/")) {
       return key;
@@ -28,8 +21,8 @@ public final class NetworkTableUtils {
   }
 
   /**
-   * Normalizes an network table key to contain no consecutive slashes and optionally start
-   * with a leading slash. For example:
+   * Normalizes an network table key to contain no consecutive slashes and optionally start with a
+   * leading slash. For example:
    *
    * <pre><code>
    * normalizeKey("/foo/bar", true)  == "/foo/bar"
@@ -38,7 +31,7 @@ public final class NetworkTableUtils {
    * normalizeKey("foo//bar", false) == "foo/bar"
    * </code></pre>
    *
-   * @param key              the key to normalize
+   * @param key the key to normalize
    * @param withLeadingSlash whether or not the normalized key should begin with a leading slash
    */
   public static String normalizeKey(String key, boolean withLeadingSlash) {
@@ -54,8 +47,8 @@ public final class NetworkTableUtils {
 
   /**
    * Normalizes a network table key to start with exactly one leading slash ("/") and contain no
-   * consecutive slashes. For example, {@code "//foo/bar/"} becomes {@code "/foo/bar/"} and
-   * {@code "///a/b/c"} becomes {@code "/a/b/c"}.
+   * consecutive slashes. For example, {@code "//foo/bar/"} becomes {@code "/foo/bar/"} and {@code
+   * "///a/b/c"} becomes {@code "/a/b/c"}.
    *
    * <p>This is equivalent to {@code normalizeKey(key, true)}
    */
@@ -67,7 +60,7 @@ public final class NetworkTableUtils {
    * Checks if network table flags contains a specific flag.
    *
    * @param flags the network table flags
-   * @param flag  the flag to check (eg {@link ITable#NOTIFY_DELETE})
+   * @param flag the flag to check (eg {@link ITable#NOTIFY_DELETE})
    * @return true if the flags match, false otherwise
    */
   public static boolean flagMatches(int flags, int flag) {
@@ -90,7 +83,7 @@ public final class NetworkTableUtils {
    *
    * @param key the network table key to get the data type for
    * @return the data type most closely associated with the given key, or {@link DataType#Unknown}
-   *         if there is no network table value for the given key
+   *     if there is no network table value for the given key
    */
   public static DataType dataTypeForEntry(String key) {
     String normalKey = normalizeKey(key, false);
@@ -103,5 +96,4 @@ public final class NetworkTableUtils {
     }
     return DataType.Unknown;
   }
-
 }

@@ -9,5 +9,4 @@ public class ShuffleboardTest {
   public void testApp() throws Exception {
     ApplicationTest.launch(Shuffleboard.class);
   }
-
 }

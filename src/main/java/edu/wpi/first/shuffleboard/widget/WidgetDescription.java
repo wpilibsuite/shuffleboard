@@ -1,12 +1,9 @@
 package edu.wpi.first.shuffleboard.widget;
 
 import com.google.common.collect.ImmutableSet;
-
 import java.util.Set;
 
-/**
- * Describes a widget. This is used to make lookup of widgets easier for {@link Widgets}.
- */
+/** Describes a widget. This is used to make lookup of widgets easier for {@link Widgets}. */
 // intentionally package-private; this is not part of a public API
 class WidgetDescription {
 

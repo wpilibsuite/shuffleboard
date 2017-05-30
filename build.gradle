@@ -17,6 +17,7 @@ plugins {
     id 'checkstyle'
     id 'edu.wpi.first.wpilib.versioning.WPILibVersioningPlugin' version '1.6'
     id 'maven-publish'
+    id "com.diffplug.gradle.spotless" version "3.4.0"
 }
 apply plugin: 'pmd'
 apply plugin: 'findbugs'
@@ -36,6 +37,13 @@ dependencies {
     testCompile "org.testfx:testfx-core:4.0.+"
     testCompile "org.testfx:testfx-junit:4.0.+"
     testRuntime group: 'org.testfx', name: 'openjfx-monocle', version: '1.8.0_20'
+}
+
+spotless {
+    java {
+        removeUnusedImports()
+        googleJavaFormat()
+    }
 }
 
 checkstyle {

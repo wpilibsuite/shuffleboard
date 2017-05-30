@@ -7,6 +7,8 @@ import edu.wpi.first.shuffleboard.sources.DataSource;
 import edu.wpi.first.shuffleboard.util.GridPoint;
 import edu.wpi.first.shuffleboard.widget.TileSize;
 import edu.wpi.first.shuffleboard.widget.Widget;
+import java.util.Optional;
+import java.util.function.Predicate;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -18,23 +20,17 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import org.fxmisc.easybind.EasyBind;
 
-import java.util.Optional;
-import java.util.function.Predicate;
-
-/**
- * A type of tile pane specifically for widgets.
- */
+/** A type of tile pane specifically for widgets. */
 public class WidgetPane extends TilePane {
 
   private final ObservableList<WidgetTile> tiles;
   private final Pane gridHighlight = new StackPane();
 
-  private final BooleanProperty highlight
-      = new SimpleBooleanProperty(this, "highlight", false);
-  private final Property<GridPoint> highlightPoint
-      = new SimpleObjectProperty<>(this, "highlightPoint", null);
-  private final Property<TileSize> highlightSize
-      = new SimpleObjectProperty<>(this, "highlightSize", null);
+  private final BooleanProperty highlight = new SimpleBooleanProperty(this, "highlight", false);
+  private final Property<GridPoint> highlightPoint =
+      new SimpleObjectProperty<>(this, "highlightPoint", null);
+  private final Property<TileSize> highlightSize =
+      new SimpleObjectProperty<>(this, "highlightSize", null);
 
   /**
    * Creates a new widget pane. This sets up everything needed for dragging widgets and sources
@@ -46,40 +42,42 @@ public class WidgetPane extends TilePane {
     tiles = EasyBind.map(getChildren().filtered(n -> n instanceof WidgetTile), n -> (WidgetTile) n);
 
     // Add the highlighter when we're told to highlight
-    highlight.addListener((__, old, highlight) -> {
-      if (highlight) {
-        getChildren().add(gridHighlight);
-        gridHighlight.toFront();
-      } else {
-        getChildren().remove(gridHighlight);
-      }
-    });
+    highlight.addListener(
+        (__, old, highlight) -> {
+          if (highlight) {
+            getChildren().add(gridHighlight);
+            gridHighlight.toFront();
+          } else {
+            getChildren().remove(gridHighlight);
+          }
+        });
 
     // Move the highlighter when the location changes
-    highlightPoint.addListener((__, old, point) -> {
-      if (getHighlightSize() == null || point == null) {
-        return;
-      }
-      gridHighlight.toFront();
-      moveNode(gridHighlight, point);
-      gridHighlight.pseudoClassStateChanged(
-          PseudoClass.getPseudoClass("colliding"),
-          !isOpen(point, getHighlightSize(), DragUtils.isDraggedWidget));
-    });
+    highlightPoint.addListener(
+        (__, old, point) -> {
+          if (getHighlightSize() == null || point == null) {
+            return;
+          }
+          gridHighlight.toFront();
+          moveNode(gridHighlight, point);
+          gridHighlight.pseudoClassStateChanged(
+              PseudoClass.getPseudoClass("colliding"),
+              !isOpen(point, getHighlightSize(), DragUtils.isDraggedWidget));
+        });
 
     // Resize the highlighter then when the size changes
-    highlightSize.addListener((__, old, size) -> {
-      if (getHighlightPoint() == null || size == null) {
-        return;
-      }
-      gridHighlight.toFront();
-      setSize(gridHighlight, size);
-      gridHighlight.pseudoClassStateChanged(
-          PseudoClass.getPseudoClass("colliding"),
-          !isOpen(getHighlightPoint(), size, DragUtils.isDraggedWidget));
-    });
+    highlightSize.addListener(
+        (__, old, size) -> {
+          if (getHighlightPoint() == null || size == null) {
+            return;
+          }
+          gridHighlight.toFront();
+          setSize(gridHighlight, size);
+          gridHighlight.pseudoClassStateChanged(
+              PseudoClass.getPseudoClass("colliding"),
+              !isOpen(getHighlightPoint(), size, DragUtils.isDraggedWidget));
+        });
   }
-
 
   public ImmutableList<WidgetTile> getTiles() {
     return ImmutableList.copyOf(tiles);
@@ -91,14 +89,10 @@ public class WidgetPane extends TilePane {
    * @param predicate the predicate to use to find the desired widget tile
    */
   public Optional<WidgetTile> tileMatching(Predicate<WidgetTile> predicate) {
-    return tiles.stream()
-                .filter(predicate)
-                .findFirst();
+    return tiles.stream().filter(predicate).findFirst();
   }
 
-  /**
-   * Gets the tile for the widget containing the given source.
-   */
+  /** Gets the tile for the widget containing the given source. */
   public Optional<WidgetTile> widgetForSource(DataSource<?> source) {
     return tileMatching(tile -> tile.getWidget().getSource() == source);
   }
@@ -113,8 +107,7 @@ public class WidgetPane extends TilePane {
     double width = Math.max(getTileSize(), view.getPrefWidth());
     double height = Math.max(getTileSize(), view.getPrefHeight());
 
-    TileSize size = new TileSize((int) (width / getTileSize()),
-                                 (int) (height / getTileSize()));
+    TileSize size = new TileSize((int) (width / getTileSize()), (int) (height / getTileSize()));
     return addWidget(widget, size);
   }
 
@@ -123,7 +116,7 @@ public class WidgetPane extends TilePane {
    * size.
    *
    * @param widget the widget to add
-   * @param size   the size of the tile used to display the widget
+   * @param size the size of the tile used to display the widget
    */
   public WidgetTile addWidget(Widget<?> widget, TileSize size) {
     WidgetTile tile = new WidgetTile(widget, size);
@@ -150,9 +143,7 @@ public class WidgetPane extends TilePane {
     return highlight;
   }
 
-  /**
-   * Sets whether or not a section of the grid should be highlighted.
-   */
+  /** Sets whether or not a section of the grid should be highlighted. */
   public final void setHighlight(boolean highlight) {
     this.highlight.set(highlight);
   }
@@ -165,9 +156,7 @@ public class WidgetPane extends TilePane {
     return highlightPoint;
   }
 
-  /**
-   * Sets the origin point of the section of the grid to be highlighted.
-   */
+  /** Sets the origin point of the section of the grid to be highlighted. */
   public final void setHighlightPoint(GridPoint highlightPoint) {
     this.highlightPoint.setValue(highlightPoint);
   }
@@ -180,11 +169,8 @@ public class WidgetPane extends TilePane {
     return highlightSize;
   }
 
-  /**
-   * Sets the size of the section of the grid to be highlighted.
-   */
+  /** Sets the size of the section of the grid to be highlighted. */
   public final void setHighlightSize(TileSize highlightSize) {
     this.highlightSize.setValue(highlightSize);
   }
-
 }
