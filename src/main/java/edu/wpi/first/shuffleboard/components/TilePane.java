@@ -1,7 +1,11 @@
 package edu.wpi.first.shuffleboard.components;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import edu.wpi.first.shuffleboard.util.GridPoint;
 import edu.wpi.first.shuffleboard.widget.TileSize;
+import java.util.function.Predicate;
+import java.util.stream.IntStream;
 import javafx.beans.DefaultProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
@@ -16,14 +20,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
 
-import java.util.function.Predicate;
-import java.util.stream.IntStream;
-
-import static com.google.common.base.Preconditions.checkArgument;
-
-/**
- * A pane that represents components as tiles in a grid.
- */
+/** A pane that represents components as tiles in a grid. */
 @DefaultProperty("children")
 public class TilePane extends GridPane {
 
@@ -34,14 +31,11 @@ public class TilePane extends GridPane {
 
   private final ObjectProperty<Integer> numColumns =
       new SimpleObjectProperty<>(this, "numColumns", 0);
-  private final ObjectProperty<Integer> numRows =
-      new SimpleObjectProperty<>(this, "numRows", 0);
+  private final ObjectProperty<Integer> numRows = new SimpleObjectProperty<>(this, "numRows", 0);
   private final DoubleProperty tileSize =
       new SimpleDoubleProperty(this, "tileSize", DEFAULT_TILE_SIZE);
 
-  /**
-   * Creates a tile pane with one row and one column.
-   */
+  /** Creates a tile pane with one row and one column. */
   public TilePane() {
     this(DEFAULT_COL_COUNT, DEFAULT_ROW_COUNT);
   }
@@ -50,44 +44,46 @@ public class TilePane extends GridPane {
    * Creates a tile pane with the given number of columns and rows.
    *
    * @param numColumns the number of columns in the grid. Must be >= 1
-   * @param numRows    the number of rows in the grid. Must be >= 1
+   * @param numRows the number of rows in the grid. Must be >= 1
    */
   @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
   public TilePane(int numColumns, int numRows) {
-    this.numColumns.addListener((obs, oldCount, newCount) -> {
-      if (newCount > oldCount) {
-        IntStream.range(oldCount, newCount)
-                 .mapToObj(__ -> createColumnConstraint())
-                 .forEach(getColumnConstraints()::add);
-      } else {
-        getColumnConstraints().remove(newCount, oldCount);
-      }
-    });
+    this.numColumns.addListener(
+        (obs, oldCount, newCount) -> {
+          if (newCount > oldCount) {
+            IntStream.range(oldCount, newCount)
+                .mapToObj(__ -> createColumnConstraint())
+                .forEach(getColumnConstraints()::add);
+          } else {
+            getColumnConstraints().remove(newCount, oldCount);
+          }
+        });
 
-    this.numRows.addListener((obs, oldCount, newCount) -> {
-      if (newCount > oldCount) {
-        IntStream.range(oldCount, newCount)
-                 .mapToObj(__ -> createRowConstraint())
-                 .forEach(getRowConstraints()::add);
-      } else {
-        getRowConstraints().remove(newCount, oldCount);
-      }
-    });
+    this.numRows.addListener(
+        (obs, oldCount, newCount) -> {
+          if (newCount > oldCount) {
+            IntStream.range(oldCount, newCount)
+                .mapToObj(__ -> createRowConstraint())
+                .forEach(getRowConstraints()::add);
+          } else {
+            getRowConstraints().remove(newCount, oldCount);
+          }
+        });
 
     setNumColumns(numColumns);
     setNumRows(numRows);
   }
 
   private ColumnConstraints createColumnConstraint() {
-    ColumnConstraints constraints = new ColumnConstraints(
-        MIN_TILE_SIZE, getTileSize(), 1e3, Priority.NEVER, HPos.LEFT, true);
+    ColumnConstraints constraints =
+        new ColumnConstraints(MIN_TILE_SIZE, getTileSize(), 1e3, Priority.NEVER, HPos.LEFT, true);
     constraints.prefWidthProperty().bind(tileSize);
     return constraints;
   }
 
   private RowConstraints createRowConstraint() {
-    RowConstraints constraints = new RowConstraints(
-        MIN_TILE_SIZE, getTileSize(), 1e3, Priority.NEVER, VPos.CENTER, true);
+    RowConstraints constraints =
+        new RowConstraints(MIN_TILE_SIZE, getTileSize(), 1e3, Priority.NEVER, VPos.CENTER, true);
     constraints.prefHeightProperty().bind(tileSize);
     return constraints;
   }
@@ -96,16 +92,12 @@ public class TilePane extends GridPane {
     return numColumns;
   }
 
-  /**
-   * Gets the number of columns in the grid.
-   */
+  /** Gets the number of columns in the grid. */
   public final int getNumColumns() {
     return numColumns.get();
   }
 
-  /**
-   * Sets the number of columns in the grid.
-   */
+  /** Sets the number of columns in the grid. */
   public final void setNumColumns(int numColumns) {
     checkArgument(numColumns > 0, "There must be at least one column");
     this.numColumns.set(numColumns);
@@ -115,16 +107,12 @@ public class TilePane extends GridPane {
     return numRows;
   }
 
-  /**
-   * Gets the number of rows in the grid.
-   */
+  /** Gets the number of rows in the grid. */
   public final int getNumRows() {
     return numRows.get();
   }
 
-  /**
-   * Sets the number of rows in the grid. This must be a positive number.
-   */
+  /** Sets the number of rows in the grid. This must be a positive number. */
   public final void setNumRows(int numRows) {
     checkArgument(numRows > 0, "There must be at least one row");
     this.numRows.set(numRows);
@@ -134,19 +122,16 @@ public class TilePane extends GridPane {
     return tileSize;
   }
 
-  /**
-   * Gets the size of the tiles in the grid.
-   */
+  /** Gets the size of the tiles in the grid. */
   public final double getTileSize() {
     return tileSize.get();
   }
 
-  /**
-   * Sets the size of the tiles in the grid.
-   */
+  /** Sets the size of the tiles in the grid. */
   public final void setTileSize(double tileSize) {
-    checkArgument(tileSize > MIN_TILE_SIZE,
-                  "Tile size must be at least " + MIN_TILE_SIZE + ", but was " + tileSize);
+    checkArgument(
+        tileSize > MIN_TILE_SIZE,
+        "Tile size must be at least " + MIN_TILE_SIZE + ", but was " + tileSize);
     this.tileSize.set(tileSize);
   }
 
@@ -163,7 +148,7 @@ public class TilePane extends GridPane {
   /**
    * Sets the location of the given node in this tile pane.
    *
-   * @param node  the node to set the location of
+   * @param node the node to set the location of
    * @param point the new location of the node
    * @throws IllegalArgumentException if the node is not a child of this pane
    */
@@ -194,17 +179,18 @@ public class TilePane extends GridPane {
   }
 
   /**
-   * Adds a node in the first available spot. The node will be wrapped in a pane to make it
-   * easier to add single controls (buttons, labels, etc). This will fail (return {@code null}) iff:
+   * Adds a node in the first available spot. The node will be wrapped in a pane to make it easier
+   * to add single controls (buttons, labels, etc). This will fail (return {@code null}) iff:
+   *
    * <ul>
-   * <li>{@code node} is {@code null}; or</li>
-   * <li>{@code width} is zero or negative; or</li>
-   * <li>{@code height} is zero or negative; or</li>
-   * <li>there is no available space for a tile with the given dimensions</li>
+   *   <li>{@code node} is {@code null}; or
+   *   <li>{@code width} is zero or negative; or
+   *   <li>{@code height} is zero or negative; or
+   *   <li>there is no available space for a tile with the given dimensions
    * </ul>
    *
-   * @param node   the node to add
-   * @param width  the width of the tile for the node. Must be >= 1
+   * @param node the node to add
+   * @param width the width of the tile for the node. Must be >= 1
    * @param height the height of the tile for the node. Must be >= 1
    * @return the node added to the view
    */
@@ -228,10 +214,10 @@ public class TilePane extends GridPane {
   }
 
   /**
-   * Finds the first point where a tile with the given dimensions can be added,
-   * or {@code null} if no such point exists.
+   * Finds the first point where a tile with the given dimensions can be added, or {@code null} if
+   * no such point exists.
    *
-   * @param width  the width of the tile trying to be added
+   * @param width the width of the tile trying to be added
    * @param height the height of the tile trying to be added
    */
   public GridPoint firstPoint(int width, int height) {
@@ -248,28 +234,27 @@ public class TilePane extends GridPane {
   }
 
   /**
-   * Checks if a tile with the given size can be added at the given point,
-   * ignoring some nodes when calculating collisions.
+   * Checks if a tile with the given size can be added at the given point, ignoring some nodes when
+   * calculating collisions.
    *
-   * @param point    the point to check
+   * @param point the point to check
    * @param tileSize the size of the tile
-   * @param ignore   the nodes to ignore when determining collisions
+   * @param ignore the nodes to ignore when determining collisions
    */
   public boolean isOpen(GridPoint point, TileSize tileSize, Predicate<Node> ignore) {
-    return isOpen(point.getCol(), point.getRow(),
-                  tileSize.getWidth(), tileSize.getHeight(),
-                  ignore);
+    return isOpen(
+        point.getCol(), point.getRow(), tileSize.getWidth(), tileSize.getHeight(), ignore);
   }
 
   /**
    * Checks if a tile with the given width and height can be added at the point {@code (col, row)},
    * ignoring some nodes when calculating collisions.
    *
-   * @param col        the column index of the point to check
-   * @param row        the row index of the point to check
-   * @param tileWidth  the width of the tile
+   * @param col the column index of the point to check
+   * @param row the row index of the point to check
+   * @param tileWidth the width of the tile
    * @param tileHeight the height of the tile
-   * @param ignore     the nodes to ignore when determining collisions
+   * @param ignore the nodes to ignore when determining collisions
    */
   public boolean isOpen(int col, int row, int tileWidth, int tileHeight, Predicate<Node> ignore) {
     if (col + tileWidth > getNumColumns() || row + tileHeight > getNumRows()) {
@@ -295,15 +280,12 @@ public class TilePane extends GridPane {
         continue;
       }
 
-      if (x + width > col && y + height > row
-          && x < col + tileWidth && y < row + tileHeight) {
+      if (x + width > col && y + height > row && x < col + tileWidth && y < row + tileHeight) {
         // Check intersection
         return false;
       }
-
     }
 
     return true;
   }
-
 }

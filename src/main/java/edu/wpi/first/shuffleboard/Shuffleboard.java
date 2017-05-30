@@ -2,13 +2,12 @@ package edu.wpi.first.shuffleboard;
 
 import edu.wpi.first.shuffleboard.widget.StockWidgets;
 import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
+import java.io.IOException;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
-
-import java.io.IOException;
 
 @SuppressWarnings("JavadocMethod")
 public class Shuffleboard extends Application {
@@ -32,5 +31,4 @@ public class Shuffleboard extends Application {
     primaryStage.setScene(new Scene(mainPane));
     primaryStage.show();
   }
-
 }

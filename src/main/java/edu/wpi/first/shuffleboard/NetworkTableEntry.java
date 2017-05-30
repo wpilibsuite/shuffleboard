@@ -1,16 +1,12 @@
 package edu.wpi.first.shuffleboard;
 
-
 import edu.wpi.first.shuffleboard.sources.DataSource;
 import edu.wpi.first.shuffleboard.sources.NetworkTableSource;
 import edu.wpi.first.shuffleboard.util.NetworkTableUtils;
-
 import java.util.Arrays;
 import java.util.Objects;
 
-/**
- * A simple value class for information about an entry in NetworkTables.
- */
+/** A simple value class for information about an entry in NetworkTables. */
 public final class NetworkTableEntry implements SourceEntry {
 
   private final String key;

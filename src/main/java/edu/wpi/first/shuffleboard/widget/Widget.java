@@ -2,13 +2,11 @@ package edu.wpi.first.shuffleboard.widget;
 
 import com.google.common.collect.ImmutableSet;
 import edu.wpi.first.shuffleboard.sources.DataSource;
-import javafx.beans.property.Property;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.collections.ObservableMap;
-import javafx.scene.layout.Pane;
-
 import java.util.Objects;
 import java.util.Set;
+import javafx.beans.property.Property;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.scene.layout.Pane;
 
 /**
  * A widget is a UI element that displays data from a {@link DataSource} and has the ability to
@@ -23,16 +21,17 @@ import java.util.Set;
  * the location of the FXML file relative to that class.
  *
  * <p>Widgets have a few important properties:
+ *
  * <ul>
- * <li>Name</li>
- * <li>Collection of supported data types</li>
- * <li>A data source</li>
- * <li>A view</li>
+ *   <li>Name
+ *   <li>Collection of supported data types
+ *   <li>A data source
+ *   <li>A view
  * </ul>
  *
- * <p>The name of a widget should be unique much like a class or package name. It's a
- * human-readable identifier that allows users to easily understand what widgets are being
- * displayed, and which widgets can display which data types.
+ * <p>The name of a widget should be unique much like a class or package name. It's a human-readable
+ * identifier that allows users to easily understand what widgets are being displayed, and which
+ * widgets can display which data types.
  *
  * <p>All widgets can display some arbitrary amount and combination of {@link DataType data types}.
  * By specifying these data types, the widget declares that it can <i>always</i> handle that kind of
@@ -46,8 +45,8 @@ import java.util.Set;
  * <p>A widget has a single method {@link #getView()} that returns a JavaFX pane that contains all
  * the UI components that display information about the widget.
  *
- * @param <T> the type of data the widget supports. For composite widgets, this is always
- *            {@link ObservableMap ObservableMap&lt;String, Object&gt;}.
+ * @param <T> the type of data the widget supports. For composite widgets, this is always {@link
+ *     javafx.collections.ObservableMap ObservableMap&lt;String, Object&gt;}.
  */
 public abstract class Widget<T> {
 
@@ -55,45 +54,38 @@ public abstract class Widget<T> {
   private final Property<String> sourceName = new SimpleStringProperty(this, "sourceName", "");
   protected final Description description = getClass().getAnnotation(Description.class);
 
-
   /**
    * Initializes this widget. This is called after the widget controller is instantiated and the
    * source is set.
    */
   public abstract void initialize();
 
-  /**
-   * Gets the JavaFX pane used to display this widget in the UI.
-   */
+  /** Gets the JavaFX pane used to display this widget in the UI. */
   public abstract Pane getView();
 
   // Getters and setters
 
-  /**
-   * Gets the name of this widget.
-   */
+  /** Gets the name of this widget. */
   public final String getName() {
     return description.name();
   }
 
-  /**
-   * Gets an unmodifiable copy of this widgets supported data types.
-   */
+  /** Gets an unmodifiable copy of this widgets supported data types. */
   public final Set<DataType> getDataTypes() {
     return ImmutableSet.copyOf(description.dataTypes());
   }
 
   /**
-   * Gets the data source that this widget backs. The source is automatically set when the
-   * widget is created.
+   * Gets the data source that this widget backs. The source is automatically set when the widget is
+   * created.
    */
   public final DataSource<T> getSource() {
     return source;
   }
 
   /**
-   * Sets the source for this widget. This should be called after instantiation but before
-   * {@link #initialize()}. This should only be called by internal shuffleboard code.
+   * Sets the source for this widget. This should be called after instantiation but before {@link
+   * #initialize()}. This should only be called by internal shuffleboard code.
    */
   final void setSource(DataSource<T> source) {
     this.source = Objects.requireNonNull(source, "A widget must have a source");
@@ -107,5 +99,4 @@ public abstract class Widget<T> {
   public final Property<String> sourceNameProperty() {
     return sourceName;
   }
-
 }

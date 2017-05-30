@@ -15,8 +15,8 @@ import javafx.beans.value.ObservableValue;
 public interface DataSource<T> {
 
   /**
-   * Creates a data source with no name, no data, and is never active.
-   * This should be used in place of {@code null}.
+   * Creates a data source with no name, no data, and is never active. This should be used in place
+   * of {@code null}.
    *
    * @param <T> the type of the data in the source
    */
@@ -38,8 +38,8 @@ public interface DataSource<T> {
   ObservableValue<String> nameProperty();
 
   /**
-   * Gets the name of this data source. This is typically a unique identifier for the data
-   * backed by this source.
+   * Gets the name of this data source. This is typically a unique identifier for the data backed by
+   * this source.
    */
   default String getName() {
     return nameProperty().getValue();
@@ -48,8 +48,8 @@ public interface DataSource<T> {
   Property<T> dataProperty();
 
   /**
-   * Gets the current value of this data source. May return {@code null}
-   * if this source isn't active, but may also just return the most recent value.
+   * Gets the current value of this data source. May return {@code null} if this source isn't
+   * active, but may also just return the most recent value.
    */
   default T getData() {
     return dataProperty().getValue();
@@ -59,16 +59,11 @@ public interface DataSource<T> {
     dataProperty().setValue(newValue);
   }
 
-  /**
-   * Gets the type of data that this source is providing.
-   */
+  /** Gets the type of data that this source is providing. */
   DataType getDataType();
 
-  /**
-   * Closes this data source and frees any used resources.
-   */
+  /** Closes this data source and frees any used resources. */
   default void close() {
     // default to NOP
   }
-
 }

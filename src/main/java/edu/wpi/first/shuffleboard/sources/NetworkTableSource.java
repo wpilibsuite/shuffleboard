@@ -7,9 +7,9 @@ import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
  * A source for data in network tables. Data can be a single value or a map of keys to values.
  *
  * @implNote Subclasses must call {@link #setTableListener(TableListener) setTableListener()} after
- *           the super constructor call. If a subclass needs to implement {@link #close()}, its
- *           implementation <i>must</i> call {@code super.close()} to properly remove the listener
- *           from network tables.
+ *     the super constructor call. If a subclass needs to implement {@link #close()}, its
+ *     implementation <i>must</i> call {@code super.close()} to properly remove the listener from
+ *     network tables.
  */
 public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
 
@@ -17,9 +17,8 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
   private final String fullTableKey;
 
   /**
-   * Creates a network table source that listens to values under the given key. The key can be
-   * a path to a single key-value pair (for single key sources) or a subtable
-   * (for composite sources).
+   * Creates a network table source that listens to values under the given key. The key can be a
+   * path to a single key-value pair (for single key sources) or a subtable (for composite sources).
    *
    * @param fullTableKey the full path
    */
@@ -29,14 +28,11 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
     setName(fullTableKey);
   }
 
-  /**
-   * Sets the table listener to call when a value changes under this source's key.
-   */
+  /** Sets the table listener to call when a value changes under this source's key. */
   protected final void setTableListener(TableListener listener) {
-    listenerId = NetworkTablesJNI.addEntryListener(
-        fullTableKey,
-        (uid, key, value, flags) -> listener.onChange(key, value, flags),
-        0xFF);
+    listenerId =
+        NetworkTablesJNI.addEntryListener(
+            fullTableKey, (uid, key, value, flags) -> listener.onChange(key, value, flags), 0xFF);
   }
 
   @Override
@@ -52,12 +48,11 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
     /**
      * Called when a value changes in network tables.
      *
-     * @param key   the key associated with the value that changed
+     * @param key the key associated with the value that changed
      * @param value the new value. This will <i>never</i> be null.
      * @param flags the network table flags for the change
      */
     void onChange(String key, Object value, int flags);
-
   }
 
   /**
@@ -79,6 +74,4 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
     }
     return DataSource.none();
   }
-
-
 }
