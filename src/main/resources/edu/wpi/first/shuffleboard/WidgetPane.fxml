@@ -4,6 +4,7 @@
 <?import javafx.geometry.Insets?>
 <WidgetPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
+            stylesheets="/edu/wpi/first/shuffleboard/main.css"
             fx:controller="edu.wpi.first.shuffleboard.WidgetPaneController"
             fx:id="pane"
             hgap="16" vgap="16"

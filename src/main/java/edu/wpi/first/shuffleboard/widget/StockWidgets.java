@@ -9,6 +9,8 @@ import java.io.IOException;
  */
 public final class StockWidgets {
 
+  private static volatile boolean didInit = false;
+
   private StockWidgets() {
   }
 
@@ -17,6 +19,9 @@ public final class StockWidgets {
    */
   @SuppressWarnings("unchecked")
   public static void init() throws IOException {
+    if (didInit) {
+      return;
+    }
     ClassPath.from(StockWidgets.class.getClassLoader())
              .getAllClasses()
              .stream()
@@ -26,6 +31,7 @@ public final class StockWidgets {
              .map(c -> (Class<Widget<?>>) c)
              .filter(c -> c.isAnnotationPresent(Description.class))
              .forEach(Widgets::register);
+    didInit = true;
   }
 
 }

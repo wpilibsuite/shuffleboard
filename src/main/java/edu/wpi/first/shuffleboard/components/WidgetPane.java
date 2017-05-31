@@ -41,6 +41,7 @@ public class WidgetPane extends TilePane {
    * around in this pane.
    */
   public WidgetPane() {
+    getStyleClass().add("widget-pane");
     gridHighlight.getStyleClass().add("grid-highlight");
 
     tiles = EasyBind.map(getChildren().filtered(n -> n instanceof WidgetTile), n -> (WidgetTile) n);
