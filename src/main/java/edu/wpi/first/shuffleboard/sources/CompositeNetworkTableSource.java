@@ -39,7 +39,7 @@ public class CompositeNetworkTableSource extends NetworkTableSource<ObservableMa
       } else {
         getData().put(simpleKey, value);
       }
-      setActive(NetworkTableUtils.dataTypeForEntry(key) == dataType);
+      setActive(NetworkTableUtils.dataTypeForEntry(fullTableKey) == dataType);
     });
 
     getData().addListener((MapChangeListener<String, Object>) change -> {

@@ -1,8 +1,11 @@
 package edu.wpi.first.shuffleboard.util;
 
 import edu.wpi.first.shuffleboard.widget.DataType;
+import edu.wpi.first.wpilibj.networktables.EntryInfo;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
+import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
 import edu.wpi.first.wpilibj.tables.ITable;
+import org.omg.CORBA.UNKNOWN;
 
 /**
  * Utility class for working with network tables.
@@ -98,8 +101,13 @@ public final class NetworkTableUtils {
       return DataType.valueOf(rootTable.getValue(normalKey).getClass());
     }
     if (rootTable.containsSubTable(normalKey)) {
-      String type = rootTable.getSubTable(normalKey).getString("~METADATA~/Type", null);
-      return DataType.forName(type);
+      ITable table = rootTable.getSubTable(normalKey);
+      String type = table.getString("~METADATA/Type", table.getString(".metadata/Type", null));
+      if (type == null) {
+        return DataType.Map;
+      } else {
+        return DataType.forName(type);
+      }
     }
     return DataType.Unknown;
   }

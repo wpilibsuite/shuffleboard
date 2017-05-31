@@ -22,15 +22,16 @@ public final class NetworkTableRequired {
    * Sets up the network table server, using the given port.
    */
   public static void setUpNetworkTables(int serverPort) {
-    NetworkTablesJNI.stopClient();
-    NetworkTablesJNI.stopServer();
-    NetworkTablesJNI.setServer("test_server", serverPort);
+    tearDownNetworkTables();
+    NetworkTablesJNI.startServer("shuffleboardtest", "", serverPort);
   }
 
   /**
    * Shuts down the testing server.
    */
   public static void tearDownNetworkTables() {
+    NetworkTablesJNI.deleteAllEntries();
+    NetworkTablesJNI.stopClient();
     NetworkTablesJNI.stopServer();
   }
 

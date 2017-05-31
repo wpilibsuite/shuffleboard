@@ -9,7 +9,6 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableCell;
 import javafx.stage.Stage;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.testfx.framework.junit.ApplicationTest;
 
@@ -36,15 +35,9 @@ public class NetworkTableTreeTest extends ApplicationTest {
     stage.show();
   }
 
-  @Before
-  public void setUp() {
-    root.getChildren().clear();
-  }
-
   @After
   public void tearDown() {
     NetworkTableRequired.tearDownNetworkTables();
-    root.getChildren().clear();
   }
 
   @Test
