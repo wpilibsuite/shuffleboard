@@ -1,6 +1,7 @@
 package edu.wpi.first.shuffleboard.widget;
 
 import edu.wpi.first.shuffleboard.sources.DataSource;
+import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.fxml.FXML;
@@ -17,7 +18,7 @@ import org.fxmisc.easybind.EasyBind;
         DataType.String, DataType.Number, DataType.Boolean
     })
 @ParametrizedController("TextView.fxml")
-public class TextView extends SimpleWidget<Object> {
+public class TextView extends SimpleAnnotatedWidget<Object> {
 
   private final StringProperty text = new SimpleStringProperty(this, "text", "");
   private final StringProperty label = new SimpleStringProperty(this, "label", "");
@@ -30,13 +31,13 @@ public class TextView extends SimpleWidget<Object> {
    * Creates a TextView widget.
    */
   public TextView() {
-    textProperty().bind(
+    text.bind(
         EasyBind.select(sourceProperty())
                 .selectObject(DataSource::dataProperty)
                 .map(this::simpleToString)
     );
-    labelProperty().bind(
-            EasyBind.map(sourceNameProperty(), s -> s.isEmpty() ? "- No Source -" : s)
+    label.bind(
+            EasyBind.map(sourceNameProperty(), name -> name.isEmpty() ? "- No Source -" : name)
     );
   }
 
@@ -56,7 +57,7 @@ public class TextView extends SimpleWidget<Object> {
     return text.get();
   }
 
-  public StringProperty textProperty() {
+  public ReadOnlyStringProperty textProperty() {
     return text;
   }
 
@@ -68,7 +69,7 @@ public class TextView extends SimpleWidget<Object> {
     return label.get();
   }
 
-  public StringProperty labelProperty() {
+  public ReadOnlyStringProperty labelProperty() {
     return label;
   }
 }

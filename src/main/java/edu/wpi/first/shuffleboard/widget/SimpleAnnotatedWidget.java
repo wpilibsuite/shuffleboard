@@ -50,7 +50,7 @@ import java.util.Set;
  * @param <T> the type of data the widget supports. For composite widgets, this is always
  *            {@link ObservableMap ObservableMap&lt;String, Object&gt;}.
  */
-public abstract class SimpleWidget<T> implements Widget {
+public abstract class SimpleAnnotatedWidget<T> implements Widget {
 
   protected SimpleObjectProperty<DataSource<T>> source
           = new SimpleObjectProperty<>(DataSource.none());

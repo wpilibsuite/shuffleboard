@@ -26,6 +26,8 @@ public class DummySource<T> extends AbstractDataSource<T> {
   public static Optional<DummySource> forTypes(Set<DataType> types) {
     if (types.contains(DataType.Number) || types.contains(DataType.All)) {
       return Optional.of(new DummySource(DataType.Number, 123));
+    } else if (types.contains(DataType.String)) {
+      return Optional.of(new DummySource(DataType.String, "a string"));
     } else {
       return Optional.empty();
     }
