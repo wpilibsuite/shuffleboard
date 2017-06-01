@@ -4,6 +4,8 @@ import com.google.common.collect.ImmutableSet;
 import edu.wpi.first.shuffleboard.sources.DataSource;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 import javafx.scene.layout.Pane;
 
@@ -54,6 +56,7 @@ public abstract class Widget<T> {
   protected DataSource<T> source = DataSource.none();
   private final Property<String> sourceName = new SimpleStringProperty(this, "sourceName", "");
   protected final Description description = getClass().getAnnotation(Description.class);
+  private final ObservableList<Property<?>> properties = FXCollections.observableArrayList();
 
 
   /**
@@ -106,6 +109,21 @@ public abstract class Widget<T> {
 
   public final Property<String> sourceNameProperty() {
     return sourceName;
+  }
+
+  /**
+   * Exports the given properties so other parts of the app can see the properties of this widget.
+   * Not all properties need to (or should be) exported; it should only properties that can be
+   * user-configurable. If possible, the view for this widget will allow users to modify the value
+   * of each property. For example, a "Number Slider" widget with a slider could have the minimum
+   * and maximum values of that slider be configurable by the user.
+   */
+  protected final void exportProperties(Property<?>... properties) {
+    this.properties.setAll(properties);
+  }
+
+  public ObservableList<Property<?>> getProperties() {
+    return properties;
   }
 
 }
