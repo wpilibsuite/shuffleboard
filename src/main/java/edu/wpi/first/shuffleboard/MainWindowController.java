@@ -1,6 +1,7 @@
 package edu.wpi.first.shuffleboard;
 
 import edu.wpi.first.shuffleboard.components.NetworkTableTree;
+import edu.wpi.first.shuffleboard.components.WidgetGallery;
 import edu.wpi.first.shuffleboard.components.WidgetPane;
 import edu.wpi.first.shuffleboard.dnd.DataFormats;
 import edu.wpi.first.shuffleboard.sources.DataSource;
@@ -31,6 +32,8 @@ import java.util.stream.Collectors;
 public class MainWindowController {
 
   private static final Logger log = Logger.getLogger(MainWindowController.class.getName());
+  @FXML
+  private WidgetGallery widgetGallery;
 
   @FXML
   private BorderPane root;
@@ -82,6 +85,8 @@ public class MainWindowController {
 
       menu.show(root.getScene().getWindow(), e.getScreenX(), e.getScreenY());
     });
+
+    widgetGallery.loadWidgets(Widgets.allWidgets());
   }
 
   private void makeSourceRowDraggable(TreeTableRow<? extends SourceEntry> row) {

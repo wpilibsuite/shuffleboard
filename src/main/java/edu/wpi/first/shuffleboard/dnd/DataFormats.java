@@ -15,12 +15,17 @@ public final class DataFormats {
   /**
    * The data format for widgets being dragged.
    */
-  public static final DataFormat widget = new DataFormat(APP_PREFIX + "/widget");
+  public static final DataFormat widgetTile = new DataFormat(APP_PREFIX + "/widgetTile");
 
   /**
    * The data format for sources being dragged.
    */
   public static final DataFormat source = new DataFormat(APP_PREFIX + "/data-source");
+
+  /**
+   * The data format for widget type names (string)
+   */
+  public static final DataFormat widgetType = new DataFormat(APP_PREFIX + "/widget-type");
 
   private DataFormats() {
   }

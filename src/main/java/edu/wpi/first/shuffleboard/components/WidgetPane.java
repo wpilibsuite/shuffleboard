@@ -1,6 +1,5 @@
 package edu.wpi.first.shuffleboard.components;
 
-import com.google.common.collect.ImmutableList;
 import edu.wpi.first.shuffleboard.WidgetTile;
 import edu.wpi.first.shuffleboard.dnd.DragUtils;
 import edu.wpi.first.shuffleboard.sources.DataSource;
@@ -81,8 +80,8 @@ public class WidgetPane extends TilePane {
   }
 
 
-  public ImmutableList<WidgetTile> getTiles() {
-    return ImmutableList.copyOf(tiles);
+  public ObservableList<WidgetTile> getTiles() {
+    return tiles;
   }
 
   /**
@@ -109,13 +108,17 @@ public class WidgetPane extends TilePane {
    * @param widget the widget to add
    */
   public WidgetTile addWidget(Widget widget) {
+    TileSize size = sizeOfWidget(widget);
+    return addWidget(widget, size);
+  }
+
+  public TileSize sizeOfWidget(Widget widget) {
     Pane view = widget.getView();
     double width = Math.max(getTileSize(), view.getPrefWidth());
     double height = Math.max(getTileSize(), view.getPrefHeight());
 
-    TileSize size = new TileSize((int) (width / getTileSize()),
+    return new TileSize((int) (width / getTileSize()),
                                  (int) (height / getTileSize()));
-    return addWidget(widget, size);
   }
 
   /**
