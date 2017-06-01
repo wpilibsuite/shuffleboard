@@ -18,7 +18,11 @@ public class NumberSlider extends Widget<Number> {
   @FXML
   @Override
   public void initialize() {
-    slider.majorTickUnitProperty().bind(slider.maxProperty().subtract(slider.minProperty()).divide(4));
+    // enforce five evenly-spaced ticks at all times
+    slider.majorTickUnitProperty().bind(
+        slider.maxProperty()
+              .subtract(slider.minProperty())
+              .divide(4));
     exportProperties(slider.minProperty(), slider.maxProperty(), slider.blockIncrementProperty());
     slider.valueProperty().bindBidirectional(source.dataProperty());
   }

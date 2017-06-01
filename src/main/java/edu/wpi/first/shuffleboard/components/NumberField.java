@@ -52,8 +52,6 @@ public class NumberField extends TextField {
 
   /**
    * Checks if the given string is a valid floating-point decimal number.
-   * @param string
-   * @return
    */
   private static boolean isValidDouble(String string) {
     return string.matches("^[-+]?\\d*\\.?\\d+$");
