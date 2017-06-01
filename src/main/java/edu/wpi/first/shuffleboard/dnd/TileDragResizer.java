@@ -104,11 +104,18 @@ public final class TileDragResizer {
     // round size to nearest tile size
     final int tileWidth = tilePane.roundWidthToNearestTile(tile.getMinWidth());
     final int tileHeight = tilePane.roundHeightToNearestTile(tile.getMinHeight());
-    tile.setMinWidth(tilePane.tileSizeToWidth(tileWidth));
-    tile.setMinHeight(tilePane.tileSizeToHeight(tileHeight));
-    tile.setSize(new TileSize(tileWidth, tileHeight));
-    GridPane.setColumnSpan(tile, tileWidth);
-    GridPane.setRowSpan(tile, tileHeight);
+
+    // limit size to prevent exceeding the bounds of the grid
+    final int boundedWidth = Math.min(tilePane.getNumColumns() - GridPane.getColumnIndex(tile),
+                                      tileWidth);
+    final int boundedHeight = Math.min(tilePane.getNumRows() - GridPane.getRowIndex(tile),
+                                       tileHeight);
+
+    tile.setMinWidth(tilePane.tileSizeToWidth(boundedWidth));
+    tile.setMinHeight(tilePane.tileSizeToHeight(boundedHeight));
+    tile.setSize(new TileSize(boundedWidth, boundedHeight));
+    GridPane.setColumnSpan(tile, boundedWidth);
+    GridPane.setRowSpan(tile, boundedHeight);
   }
 
   private void mouseOver(MouseEvent event) {
