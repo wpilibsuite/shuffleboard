@@ -4,7 +4,13 @@ import java.util.Set;
 import java.util.function.Supplier;
 
 public interface WidgetType extends Supplier<Widget> {
-    String getName();
+  /**
+   * @return The name of the widget.
+   */
+  String getName();
 
-    Set<DataType> getDataTypes();
+  /**
+   * @return The data types the widget should be suggested for.
+   */
+  Set<DataType> getDataTypes();
 }

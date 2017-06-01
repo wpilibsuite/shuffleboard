@@ -97,7 +97,6 @@ public class NetworkTableTree extends TreeTableView<NetworkTableEntry> {
    * @param value   the value of the entry that changed
    * @param flags   the flags of the change
    */
-  @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
   private void makeBranches(String fullKey, Object value, int flags) {
     String key = NetworkTableUtils.normalizeKey(fullKey);
     boolean deleted = (flags & ITable.NOTIFY_DELETE) != 0;

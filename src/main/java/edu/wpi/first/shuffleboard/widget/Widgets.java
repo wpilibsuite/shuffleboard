@@ -4,7 +4,14 @@ import edu.wpi.first.shuffleboard.sources.DataSource;
 import javafx.fxml.FXMLLoader;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
@@ -44,7 +51,7 @@ public final class Widgets {
             return widgetClass.newInstance();
           }
         } catch (IllegalAccessException | IOException | InstantiationException e) {
-          e.printStackTrace();
+          Logger.getLogger("Widgets").log(Level.WARNING, "error creating widget", e);
           return null;
         }
       }
@@ -65,11 +72,11 @@ public final class Widgets {
     }
     if (widgets.containsKey(description.name())) {
       throw new InvalidWidgetException(
-          "A widget already exists with the same name: " + description.name());
+              "A widget already exists with the same name: " + description.name());
     }
   }
 
-  static public Collection<WidgetType> allWidgets() {
+  public static Collection<WidgetType> allWidgets() {
     return widgets.values();
   }
 
@@ -89,7 +96,7 @@ public final class Widgets {
   }
 
   /**
-   * Retrieve the factory for this widget using it's unique name
+   * Retrieve the factory for this widget using its unique name.
    * @param name the globally unique name of the widget in question
    * @return a WidgetType to create widgets of the same class
    */

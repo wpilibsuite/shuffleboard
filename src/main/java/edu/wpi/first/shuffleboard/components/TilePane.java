@@ -52,7 +52,6 @@ public class TilePane extends GridPane {
    * @param numColumns the number of columns in the grid. Must be >= 1
    * @param numRows    the number of rows in the grid. Must be >= 1
    */
-  @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
   public TilePane(int numColumns, int numRows) {
     this.numColumns.addListener((obs, oldCount, newCount) -> {
       if (newCount > oldCount) {

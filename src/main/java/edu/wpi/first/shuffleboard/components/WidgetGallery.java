@@ -16,8 +16,11 @@ import java.io.IOException;
 import java.util.Collection;
 
 public class WidgetGallery extends TilePane {
+  /**
+   * Creates a new WidgetGallery. This loads WidgetGallery.fxml and set up the constructor
+   */
   public WidgetGallery() {
-    FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/edu/wpi/first/shuffleboard/components/WidgetGallery.fxml"));
+    FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("WidgetGallery.fxml"));
     fxmlLoader.setRoot(this);
 
     try {
@@ -27,6 +30,9 @@ public class WidgetGallery extends TilePane {
     }
   }
 
+  /**
+   * Add the given widget types to the gallery.
+   */
   public void loadWidgets(Collection<WidgetType> widgets) {
     widgets.stream().map(WidgetType::get)
             .peek(widget -> {
@@ -42,9 +48,9 @@ public class WidgetGallery extends TilePane {
     this.getChildren().add(item);
   }
 
-  public class WidgetGalleryItem extends VBox {
+  public static class WidgetGalleryItem extends VBox {
 
-    private Property<Widget> widget = new SimpleObjectProperty<>(this, "widget", null);
+    private final Property<Widget> widget = new SimpleObjectProperty<>(this, "widget", null);
 
     private WidgetGalleryItem() {
       this.getStyleClass().add("item");
@@ -63,16 +69,16 @@ public class WidgetGallery extends TilePane {
     }
 
     public void setWidget(Widget widget) {
-        this.widget.setValue(widget);
+      this.widget.setValue(widget);
     }
 
     public Property<Widget> getWidgetProperty() {
-        return widget;
+      return widget;
     }
 
     public Widget getWidget() {
-          return this.widget.getValue();
-      }
+      return this.widget.getValue();
+    }
 
   }
 }

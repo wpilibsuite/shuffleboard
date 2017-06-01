@@ -13,7 +13,11 @@ import edu.wpi.first.shuffleboard.widget.Widgets;
 import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
-import javafx.scene.control.*;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Label;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
@@ -28,7 +32,7 @@ public class WidgetPaneController {
   private void initialize() {
 
     pane.getTiles().addListener((ListChangeListener<WidgetTile>) changes -> {
-      while(changes.next()) {
+      while (changes.next()) {
         changes.getAddedSubList().forEach(this::setupTile);
       }
     });

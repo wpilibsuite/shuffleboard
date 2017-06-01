@@ -122,8 +122,9 @@ public class MainWindowController {
                 .stream()
                 .filter(tile -> {
                   DataSource<?> source = tile.getWidget().getSource();
+                  // TODO use NT specific API
                   return source instanceof NetworkTableSource
-                          && source.getName().startsWith(keyWithoutTrailingSlash); // TODO use NT specific API
+                          && source.getName().startsWith(keyWithoutTrailingSlash);
                 })
                 .forEach(tile -> highlight(tile, doHighlight));
     }
@@ -149,8 +150,8 @@ public class MainWindowController {
                      .stream()
                      .filter(tile -> {
                        DataSource<?> source = tile.getWidget().getSource();
-                       return source instanceof NetworkTableSource &&
-                               source.getName().equals(key); // TODO use a NT specific API
+                       return source instanceof NetworkTableSource
+                               && source.getName().equals(key); // TODO use a NT specific API
                      })
                      .collect(Collectors.toList());
   }

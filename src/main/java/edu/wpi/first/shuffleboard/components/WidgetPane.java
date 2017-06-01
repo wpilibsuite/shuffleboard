@@ -112,15 +112,6 @@ public class WidgetPane extends TilePane {
     return addWidget(widget, size);
   }
 
-  public TileSize sizeOfWidget(Widget widget) {
-    Pane view = widget.getView();
-    double width = Math.max(getTileSize(), view.getPrefWidth());
-    double height = Math.max(getTileSize(), view.getPrefHeight());
-
-    return new TileSize((int) (width / getTileSize()),
-                                 (int) (height / getTileSize()));
-  }
-
   /**
    * Adds a widget to the tile view in the first available location. The tile will be the specified
    * size.
@@ -133,6 +124,18 @@ public class WidgetPane extends TilePane {
     tile.sizeProperty().addListener(__ -> setSize(tile, tile.getSize()));
     addTile(tile, size);
     return tile;
+  }
+
+  /**
+   * @return Returns the expected size of the widget, in tiles.
+   */
+  public TileSize sizeOfWidget(Widget widget) {
+    Pane view = widget.getView();
+    double width = Math.max(getTileSize(), view.getPrefWidth());
+    double height = Math.max(getTileSize(), view.getPrefHeight());
+
+    return new TileSize((int) (width / getTileSize()),
+            (int) (height / getTileSize()));
   }
 
   public void removeWidget(WidgetTile tile) {

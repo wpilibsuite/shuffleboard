@@ -26,13 +26,18 @@ public class TextView extends SimpleWidget<Object> {
   @FXML
   private Pane root;
 
+  /**
+   * Creates a TextView widget.
+   */
   public TextView() {
     textProperty().bind(
         EasyBind.select(sourceProperty())
                 .selectObject(DataSource::dataProperty)
                 .map(this::simpleToString)
     );
-    labelProperty().bind(EasyBind.map(sourceNameProperty(), s -> s.isEmpty() ? "- No Source -" : s));
+    labelProperty().bind(
+            EasyBind.map(sourceNameProperty(), s -> s.isEmpty() ? "- No Source -" : s)
+    );
   }
 
   @Override

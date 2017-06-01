@@ -52,7 +52,9 @@ import java.util.Set;
  */
 public abstract class SimpleWidget<T> implements Widget {
 
-  protected SimpleObjectProperty<DataSource<T>> source = new SimpleObjectProperty<>(DataSource.none());
+  protected SimpleObjectProperty<DataSource<T>> source
+          = new SimpleObjectProperty<>(DataSource.none());
+
   private final Property<String> sourceName = new SimpleStringProperty(this, "sourceName", "");
   protected final Description description = getClass().getAnnotation(Description.class);
 
@@ -77,6 +79,9 @@ public abstract class SimpleWidget<T> implements Widget {
     return source.get();
   }
 
+  /**
+   * Bind a source to a widget.
+   */
   public final void setSource(DataSource source) throws IncompatibleSourceException {
     Objects.requireNonNull(source, "A widget must have a source");
     if (!getDataTypes().contains(source.getDataType())) {
