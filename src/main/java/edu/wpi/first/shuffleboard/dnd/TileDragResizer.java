@@ -4,29 +4,36 @@ import edu.wpi.first.shuffleboard.WidgetTile;
 import edu.wpi.first.shuffleboard.components.TilePane;
 import edu.wpi.first.shuffleboard.widget.TileSize;
 import javafx.scene.Cursor;
+import javafx.scene.input.DragEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
+
+import java.util.Map;
+import java.util.WeakHashMap;
 
 /**
  * {@link TileDragResizer} can be used to add mouse listeners to a {@link WidgetTile} and make it
  * resizable by the user by clicking and dragging the border in the same way as a window.
  */
-public class TileDragResizer {
+public final class TileDragResizer {
+
+  /**
+   * Keep track of resizers to avoid creating more than one for the same tile.
+   */
+  private static final Map<WidgetTile, TileDragResizer> resizers = new WeakHashMap<>();
 
   /**
    * The margin around the control that a user can click in to start resizing the tile.
    */
   private static final int RESIZE_MARGIN = 10;
 
-  private static final double TILE_SIZE = 128;
-
   private final TilePane tilePane;
   private final WidgetTile tile;
 
-  private double x;
-  private double y;
+  private double lastX;
+  private double lastY;
 
-  private boolean initMinHeight;
+  private boolean didDragInit;
   private boolean dragging;
   private ResizeLocation resizeLocation = ResizeLocation.NONE;
 
@@ -48,22 +55,27 @@ public class TileDragResizer {
     /**
      * Whether or not this location allows a tile to be resized vertically.
      */
-    public final boolean vertical;
+    public final boolean isVertical;
     /**
      * Whether or not this location allows a tile to be resized horizontally.
      */
-    public final boolean horizontal;
+    public final boolean isHorizontal;
 
-    ResizeLocation(Cursor cursor, boolean vertical, boolean horizontal) {
+    ResizeLocation(Cursor cursor, boolean isVertical, boolean isHorizontal) {
       this.cursor = cursor;
-      this.vertical = vertical;
-      this.horizontal = horizontal;
+      this.isVertical = isVertical;
+      this.isHorizontal = isHorizontal;
     }
   }
 
   private TileDragResizer(TilePane tilePane, WidgetTile tile) {
     this.tilePane = tilePane;
     this.tile = tile;
+    tile.addEventHandler(MouseEvent.MOUSE_PRESSED, this::mousePressed);
+    tile.addEventHandler(MouseEvent.MOUSE_DRAGGED, this::mouseDragged);
+    tile.addEventHandler(MouseEvent.MOUSE_MOVED, this::mouseOver);
+    tile.addEventHandler(MouseEvent.MOUSE_RELEASED, this::mouseReleased);
+    tile.addEventHandler(DragEvent.DRAG_DONE, __ -> reset());
   }
 
   /**
@@ -73,14 +85,15 @@ public class TileDragResizer {
    * @param tile     the tile to make resizable
    */
   public static TileDragResizer makeResizable(TilePane tilePane, WidgetTile tile) {
-    final TileDragResizer resizer = new TileDragResizer(tilePane, tile);
+    return resizers.computeIfAbsent(tile, __ -> new TileDragResizer(tilePane, tile));
+  }
 
-    tile.addEventHandler(MouseEvent.MOUSE_PRESSED, resizer::mousePressed);
-    tile.addEventHandler(MouseEvent.MOUSE_DRAGGED, resizer::mouseDragged);
-    tile.addEventHandler(MouseEvent.MOUSE_MOVED, resizer::mouseOver);
-    tile.addEventHandler(MouseEvent.MOUSE_RELEASED, resizer::mouseReleased);
-
-    return resizer;
+  private void reset() {
+    didDragInit = false;
+    dragging = false;
+    resizeLocation = ResizeLocation.NONE;
+    lastX = 0;
+    lastY = 0;
   }
 
   private void mouseReleased(MouseEvent event) {
@@ -164,25 +177,23 @@ public class TileDragResizer {
       return;
     }
 
-    double mouseX = event.getX();
-    double mouseY = event.getY();
+    final double mouseX = event.getX();
+    final double mouseY = event.getY();
 
-    double newWidth = tile.getMinWidth() + (mouseX - x);
-    double newHeight = tile.getMinHeight() + (mouseY - y);
+    final double newWidth = tile.getMinWidth() + (mouseX - lastX);
+    final double newHeight = tile.getMinHeight() + (mouseY - lastY);
 
-    if (resizeLocation.horizontal && newWidth >= TILE_SIZE) {
+    if (resizeLocation.isHorizontal && newWidth >= tilePane.getTileSize()) {
       tile.setMinWidth(newWidth);
       tile.setMaxWidth(newWidth);
-      GridPane.setColumnIndex(tile, GridPane.getColumnIndex(tile));
     }
-    if (resizeLocation.vertical && newHeight >= TILE_SIZE) {
+    if (resizeLocation.isVertical && newHeight >= tilePane.getTileSize()) {
       tile.setMinHeight(newHeight);
       tile.setMaxHeight(newHeight);
-      GridPane.setRowIndex(tile, GridPane.getRowIndex(tile));
     }
 
-    x = mouseX;
-    y = mouseY;
+    lastX = mouseX;
+    lastY = mouseY;
   }
 
   private void mousePressed(MouseEvent event) {
@@ -193,17 +204,16 @@ public class TileDragResizer {
 
     dragging = true;
 
-    // make sure that the minimum height is set to the current height once,
-    // setting a min height that is smaller than the current height will
-    // have no effect
-    if (!initMinHeight) {
+    // make sure that the minimum size is set to the current size once;
+    // setting a min size that is smaller than the current size will have no effect
+    if (!didDragInit) {
       tile.setMinHeight(tile.getHeight());
       tile.setMinWidth(tile.getWidth());
-      initMinHeight = true;
+      didDragInit = true;
     }
 
-    x = event.getX();
-    y = event.getY();
+    lastX = event.getX();
+    lastY = event.getY();
   }
 
   public boolean isDragging() {

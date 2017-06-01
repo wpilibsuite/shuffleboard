@@ -190,24 +190,36 @@ public class TilePane extends GridPane {
     );
   }
 
+  /**
+   * Rounds a tile's width to the nearest tile size.
+   */
   public int roundWidthToNearestTile(double width) {
     return (int) Math.round((width + getHgap()) / (getTileSize() + getHgap()));
   }
 
+  /**
+   * Rounds a tile's height to the nearest tile size.
+   */
   public int roundHeightToNearestTile(double height) {
     return (int) Math.round((height + getHgap()) / (getTileSize() + getVgap()));
   }
 
+  /**
+   * Converts a {@link TileSize#getWidth() tile's width} to a pixel size.
+   */
   public double tileSizeToWidth(int tileWidth) {
     checkArgument(tileWidth >= 1,
                   "The tile size must be a positive integer (was " + tileWidth + ")");
-    return (tileWidth * getTileSize()) + ((tileWidth - 1) * getHgap());
+    return tileWidth * getTileSize() + (tileWidth - 1) * getHgap();
   }
 
+  /**
+   * Converts a {@link TileSize#getHeight() tile's height} to a pixel size.
+   */
   public double tileSizeToHeight(int tileHeight) {
     checkArgument(tileHeight >= 1,
                   "The tile size must be a positive integer (was " + tileHeight + ")");
-    return (tileHeight * getTileSize()) + ((tileHeight - 1) * getVgap());
+    return tileHeight * getTileSize() + (tileHeight - 1) * getVgap();
   }
 
   /**
