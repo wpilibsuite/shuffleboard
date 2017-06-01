@@ -153,11 +153,15 @@
 /* Tiles */
 
 .tile {
-    -fx-background-color: slateblue;
+    -fx-background-color: base-light;
 }
 
 .tile:selected {
     -fx-effect: dropshadow(gaussian, highlight, 6, 0.1, 0, 4);
+}
+
+.tile-title-bar {
+    -fx-background-color: linear-gradient(to bottom, wpi-red, derive(wpi-red, -10%));
 }
 
 .grid-highlight {

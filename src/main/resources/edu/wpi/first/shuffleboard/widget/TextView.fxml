@@ -1,22 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.Label?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.StackPane?>
-<?import javafx.geometry.Insets?>
 <BorderPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="edu.wpi.first.shuffleboard.widget.TextView"
             fx:id="root"
             minHeight="128" minWidth="128"
             prefHeight="128" prefWidth="256">
-    <top>
-        <!-- Use stack panes to center children -->
-        <StackPane>
-            <Label text="${controller.sourceName}"/>
-        </StackPane>
-    </top>
     <center>
         <StackPane>
             <padding>
