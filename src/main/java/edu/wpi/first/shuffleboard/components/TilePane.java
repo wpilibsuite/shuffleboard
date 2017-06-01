@@ -175,6 +175,42 @@ public class TilePane extends GridPane {
   }
 
   /**
+   * Gets the tile size closest to the given width and height.
+   */
+  public TileSize round(double width, double height) {
+    // x = (n * tile_size) + ((n - 1) * hgap)
+    //   = (n * tile_size) + (n * hgap) - hgap
+    // x + hgap = (n * tile_size) + (n * hgap)
+    //          = n * (tile_size + hgap)
+    // n = (x + hgap) / (tile_size + hgap) QED
+    // round n to nearest integer
+    return new TileSize(
+        (int) Math.round((width + getHgap()) / (getTileSize() + getHgap())),
+        (int) Math.round((height + getVgap()) / (getTileSize() + getVgap()))
+    );
+  }
+
+  public int roundWidthToNearestTile(double width) {
+    return (int) Math.round((width + getHgap()) / (getTileSize() + getHgap()));
+  }
+
+  public int roundHeightToNearestTile(double height) {
+    return (int) Math.round((height + getHgap()) / (getTileSize() + getVgap()));
+  }
+
+  public double tileSizeToWidth(int tileWidth) {
+    checkArgument(tileWidth >= 1,
+                  "The tile size must be a positive integer (was " + tileWidth + ")");
+    return (tileWidth * getTileSize()) + ((tileWidth - 1) * getHgap());
+  }
+
+  public double tileSizeToHeight(int tileHeight) {
+    checkArgument(tileHeight >= 1,
+                  "The tile size must be a positive integer (was " + tileHeight + ")");
+    return (tileHeight * getTileSize()) + ((tileHeight - 1) * getVgap());
+  }
+
+  /**
    * Sets the size of the given node in this tile pane.
    *
    * @param node the node to resize
@@ -223,6 +259,8 @@ public class TilePane extends GridPane {
     }
 
     add(node, placement.col, placement.row, width, height);
+    setHalignment(node, HPos.LEFT);
+    setValignment(node, VPos.TOP);
     return node;
   }
 
