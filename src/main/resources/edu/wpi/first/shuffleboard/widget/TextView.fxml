@@ -10,11 +10,11 @@
             fx:controller="edu.wpi.first.shuffleboard.widget.TextView"
             fx:id="root"
             minHeight="128" minWidth="128"
-            prefHeight="128" prefWidth="256">
+            prefHeight="128" prefWidth="128">
     <top>
         <!-- Use stack panes to center children -->
         <StackPane>
-            <Label text="${controller.sourceName}"/>
+            <Label text="${controller.label}"/>
         </StackPane>
     </top>
     <center>
