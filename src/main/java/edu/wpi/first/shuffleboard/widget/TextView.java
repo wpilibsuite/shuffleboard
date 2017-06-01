@@ -1,10 +1,11 @@
 package edu.wpi.first.shuffleboard.widget;
 
-import javafx.beans.binding.Bindings;
+import edu.wpi.first.shuffleboard.sources.DataSource;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.fxml.FXML;
 import javafx.scene.layout.Pane;
+import org.fxmisc.easybind.EasyBind;
 
 /**
  * A widget for displaying data as text. This supports text, numbers, and booleans.
@@ -16,18 +17,22 @@ import javafx.scene.layout.Pane;
         DataType.String, DataType.Number, DataType.Boolean
     })
 @ParametrizedController("TextView.fxml")
-public class TextView extends Widget<Object> {
+public class TextView extends SimpleWidget<Object> {
 
   private final StringProperty text = new SimpleStringProperty(this, "text", "");
+  private final StringProperty label = new SimpleStringProperty(this, "label", "");
+
 
   @FXML
   private Pane root;
 
-  @FXML
-  @Override
-  public void initialize() {
-    text.bind(Bindings.createStringBinding(() -> simpleToString(source.getData()),
-                                           source.dataProperty()));
+  public TextView() {
+    textProperty().bind(
+        EasyBind.select(sourceProperty())
+                .selectObject(DataSource::dataProperty)
+                .map(this::simpleToString)
+    );
+    labelProperty().bind(EasyBind.map(sourceNameProperty(), s -> s.isEmpty() ? "- No Source -" : s));
   }
 
   @Override
@@ -54,4 +59,11 @@ public class TextView extends Widget<Object> {
     this.text.set(text);
   }
 
+  public String getLabel() {
+    return label.get();
+  }
+
+  public StringProperty labelProperty() {
+    return label;
+  }
 }

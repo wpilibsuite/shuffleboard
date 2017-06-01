@@ -1,0 +1,27 @@
+package edu.wpi.first.shuffleboard.sources;
+
+import edu.wpi.first.shuffleboard.widget.DataType;
+
+import java.util.Set;
+import java.util.stream.Collectors;
+
+public class IncompatibleSourceException extends RuntimeException {
+  private final Set<DataType> expected;
+  private final DataType found;
+
+  public IncompatibleSourceException(Set<DataType> expected, DataType found) {
+    super(String.format("Expected one of (%s), but found type %s instead",
+            String.join(",", expected.stream().map(DataType::toString).collect(Collectors.toList())),
+            found));
+    this.expected = expected;
+    this.found = found;
+  }
+
+  public Set<DataType> getTypesExpected() {
+    return expected;
+  }
+
+  public DataType getTypesFound() {
+    return found;
+  }
+}

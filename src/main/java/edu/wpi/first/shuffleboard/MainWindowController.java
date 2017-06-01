@@ -112,10 +112,14 @@ public class MainWindowController {
 
     if (!node.isLeaf()) {
       // Highlight all child widgets
+      String keyWithoutTrailingSlash = node.getValue().getKey().substring(1);
       widgetPane.getTiles()
                 .stream()
-                .filter(tile -> tile.getWidget().getSourceName()
-                                        .startsWith(node.getValue().getKey().substring(1)))
+                .filter(tile -> {
+                  DataSource<?> source = tile.getWidget().getSource();
+                  return source instanceof NetworkTableSource
+                          && source.getName().startsWith(keyWithoutTrailingSlash); // TODO use NT specific API
+                })
                 .forEach(tile -> highlight(tile, doHighlight));
     }
   }
@@ -138,7 +142,11 @@ public class MainWindowController {
     String key = NetworkTableUtils.normalizeKey(fullTableKey, false);
     return widgetPane.getTiles()
                      .stream()
-                     .filter(tile -> tile.getWidget().getSourceName().equals(key))
+                     .filter(tile -> {
+                       DataSource<?> source = tile.getWidget().getSource();
+                       return source instanceof NetworkTableSource &&
+                               source.getName().equals(key); // TODO use a NT specific API
+                     })
                      .collect(Collectors.toList());
   }
 

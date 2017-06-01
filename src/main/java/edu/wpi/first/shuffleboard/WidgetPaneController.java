@@ -180,7 +180,7 @@ public class WidgetPaneController {
    * @param tile the tile for the widget to create the change menus for
    */
   private MenuItem createChangeMenus(WidgetTile tile) {
-    Widget<?> widget = tile.getWidget();
+    Widget widget = tile.getWidget();
     Menu changeView = new Menu("Show as...");
     Widgets.widgetNamesForType(DataType.valueOf(widget.getSource().getData().getClass()))
            .stream()

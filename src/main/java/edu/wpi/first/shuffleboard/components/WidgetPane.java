@@ -108,7 +108,7 @@ public class WidgetPane extends TilePane {
    *
    * @param widget the widget to add
    */
-  public WidgetTile addWidget(Widget<?> widget) {
+  public WidgetTile addWidget(Widget widget) {
     Pane view = widget.getView();
     double width = Math.max(getTileSize(), view.getPrefWidth());
     double height = Math.max(getTileSize(), view.getPrefHeight());
@@ -125,7 +125,7 @@ public class WidgetPane extends TilePane {
    * @param widget the widget to add
    * @param size   the size of the tile used to display the widget
    */
-  public WidgetTile addWidget(Widget<?> widget, TileSize size) {
+  public WidgetTile addWidget(Widget widget, TileSize size) {
     WidgetTile tile = new WidgetTile(widget, size);
     tile.sizeProperty().addListener(__ -> setSize(tile, tile.getSize()));
     addTile(tile, size);
