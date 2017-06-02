@@ -3,11 +3,15 @@ package edu.wpi.first.shuffleboard.widget;
 import edu.wpi.first.shuffleboard.sources.DataSource;
 import javafx.fxml.FXMLLoader;
 
+import java.io.IOException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
@@ -15,13 +19,7 @@ import java.util.stream.Collectors;
  */
 public final class Widgets {
 
-  // map descriptions to suppliers to avoid muddling with view internals if they were singletons
-  private static final Map<WidgetDescription, UnsafeSupplier<Widget<?>>> widgets = new HashMap<>();
-
-  @FunctionalInterface
-  private interface UnsafeSupplier<T> {
-    T create() throws Exception;
-  }
+  private static Map<String, WidgetType> widgets = new HashMap<>();
 
   private Widgets() {
     // Utility class, prevent instantiation
@@ -30,7 +28,7 @@ public final class Widgets {
   /**
    * Registers a widget class.
    */
-  static void register(Class<Widget<?>> widgetClass) {
+  static void register(Class<Widget> widgetClass) {
     if (!widgetClass.isAnnotationPresent(Description.class)) {
       throw new InvalidWidgetException(
           "No description present on widget class " + widgetClass.getName());
@@ -38,18 +36,28 @@ public final class Widgets {
     Description description = widgetClass.getAnnotation(Description.class);
     validate(description);
     ParametrizedController controller = widgetClass.getAnnotation(ParametrizedController.class);
-    boolean fxml = controller != null;
-    UnsafeSupplier<Widget<?>> supplier;
-    if (fxml) {
-      supplier = () -> {
-        FXMLLoader loader = new FXMLLoader(widgetClass.getResource(controller.value()));
-        loader.load();
-        return loader.getController();
-      };
-    } else {
-      supplier = widgetClass::newInstance;
-    }
-    widgets.put(new WidgetDescription(description), supplier);
+
+    WidgetType widgetType = new AbstractWidgetType(description) {
+      @Override
+      public Widget get() {
+        boolean fxml = controller != null;
+
+        try {
+          if (fxml) {
+            FXMLLoader loader = new FXMLLoader(widgetClass.getResource(controller.value()));
+            loader.load();
+            return loader.getController();
+          } else {
+            return widgetClass.newInstance();
+          }
+        } catch (IllegalAccessException | IOException | InstantiationException e) {
+          Logger.getLogger("Widgets").log(Level.WARNING, "error creating widget", e);
+          return null;
+        }
+      }
+    };
+
+    widgets.put(widgetType.getName(), widgetType);
   }
 
   /**
@@ -62,12 +70,14 @@ public final class Widgets {
     if (description.name().isEmpty()) {
       throw new InvalidWidgetException("No name specified for the widget");
     }
-    if (widgets.keySet().stream()
-               .map(WidgetDescription::getName)
-               .anyMatch(description.name()::equals)) {
+    if (widgets.containsKey(description.name())) {
       throw new InvalidWidgetException(
-          "A widget already exists with the same name: " + description.name());
+              "A widget already exists with the same name: " + description.name());
     }
+  }
+
+  public static Collection<WidgetType> allWidgets() {
+    return widgets.values();
   }
 
   /**
@@ -79,25 +89,26 @@ public final class Widgets {
    * @return an optional containing the created view, or an empty optional if no widget could
    *         be created
    */
-  @SuppressWarnings("unchecked")
-  public static <T> Optional<Widget<T>> createWidget(String name, DataSource<T> source) {
-    return widgets.entrySet().stream()
-                  .filter(e -> e.getKey().getName().equals(name))
-                  .map(e -> (Widget<T>) create(e.getValue()))
-                  .filter(Objects::nonNull)
-                  .peek(w -> w.setSource(source))
-                  .peek(Widget::initialize)
-                  .findFirst();
+  public static <T> Optional<Widget> createWidget(String name, DataSource<T> source) {
+    Optional<Widget> widget = typeFor(name).map(WidgetType::get);
+    widget.ifPresent(w -> w.setSource(source));
+    return widget;
   }
 
-  @SuppressWarnings("unchecked")
-  private static <T> Widget<T> create(UnsafeSupplier<Widget<?>> supplier) {
-    try {
-      return (Widget<T>) supplier.create();
-    } catch (Exception e) {
-      // TODO log
-      return null;
-    }
+  /**
+   * Retrieve the factory for this widget using its unique name.
+   * @param name the globally unique name of the widget in question
+   * @return a WidgetType to create widgets of the same class
+   */
+  public static Optional<WidgetType> typeFor(String name) {
+    return Optional.ofNullable(widgets.get(name));
+  }
+
+  private static Set<WidgetType> getWidgetsForType(DataType type) {
+    return widgets.values().stream()
+            .filter(d -> d.getDataTypes().contains(DataType.All)
+                         || d.getDataTypes().contains(type))
+            .collect(Collectors.toSet());
   }
 
   /**
@@ -109,11 +120,7 @@ public final class Widgets {
    *         given type
    */
   public static List<String> widgetNamesForType(DataType type) {
-    return widgets.keySet().stream()
-                  .filter(d -> d.getDataTypes().contains(DataType.All)
-                               || d.getDataTypes().contains(type))
-                  .map(WidgetDescription::getName)
-                  .collect(Collectors.toList());
+    return getWidgetsForType(type).stream().map(WidgetType::getName).collect(Collectors.toList());
   }
 
   /**

@@ -11,7 +11,7 @@ import javafx.scene.layout.StackPane;
  */
 public class WidgetTile extends StackPane {
 
-  private final Property<Widget<?>> widget = new SimpleObjectProperty<>(this, "widget", null);
+  private final Property<Widget> widget = new SimpleObjectProperty<>(this, "widget", null);
   private final Property<TileSize> size = new SimpleObjectProperty<>(this, "size", null);
 
   /**
@@ -34,17 +34,17 @@ public class WidgetTile extends StackPane {
   /**
    * Creates a tile with the given widget and size.
    */
-  public WidgetTile(Widget<?> widget, TileSize size) {
+  public WidgetTile(Widget widget, TileSize size) {
     this();
     setWidget(widget);
     setSize(size);
   }
 
-  public final Widget<?> getWidget() {
+  public final Widget getWidget() {
     return widget.getValue();
   }
 
-  public final Property<Widget<?>> widgetProperty() {
+  public final Property<Widget> widgetProperty() {
     return widget;
   }
 
@@ -53,7 +53,7 @@ public class WidgetTile extends StackPane {
    * however, the tile will not change size. The size must be set separately with
    * {@link #setSize(TileSize)}.
    */
-  public final void setWidget(Widget<?> widget) {
+  public final void setWidget(Widget widget) {
     this.widget.setValue(widget);
   }
 

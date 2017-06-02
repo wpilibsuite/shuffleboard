@@ -27,7 +27,7 @@ public final class DragUtils {
   public static boolean isDraggedWidget(Node node) {
     return node != null
         && Objects.equals(node.getId(),
-                          Clipboard.getSystemClipboard().getContent(DataFormats.widget));
+                          Clipboard.getSystemClipboard().getContent(DataFormats.widgetTile));
   }
 
 }

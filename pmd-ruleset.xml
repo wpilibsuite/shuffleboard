@@ -5,7 +5,9 @@
          xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 http://pmd.sourceforge.net/ruleset_2_0_0.xsd">
     <rule ref="rulesets/java/basic.xml"/>
     <rule ref="rulesets/java/braces.xml"/>
-    <rule ref="rulesets/java/design.xml"/>
+    <rule ref="rulesets/java/design.xml">
+        <exclude name="AccessorClassGeneration"/>
+    </rule>
     <rule ref="rulesets/java/empty.xml"/>
     <rule ref="rulesets/java/logging-java.xml"/>
     <rule ref="rulesets/java/migrating.xml"/>
@@ -13,6 +15,7 @@
         <exclude name="LocalVariableCouldBeFinal"/>
         <exclude name="MethodArgumentCouldBeFinal"/>
         <exclude name="RedundantFieldInitializer"/>
+        <exclude name="AvoidInstantiatingObjectsInLoops"/>
     </rule>
     <rule ref="rulesets/java/strings.xml"/>
     <rule ref="rulesets/java/unnecessary.xml"/>
