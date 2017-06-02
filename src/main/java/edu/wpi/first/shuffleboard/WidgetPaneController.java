@@ -4,7 +4,6 @@ package edu.wpi.first.shuffleboard;
 import edu.wpi.first.shuffleboard.components.WidgetPane;
 import edu.wpi.first.shuffleboard.dnd.DataFormats;
 import edu.wpi.first.shuffleboard.sources.DataSource;
-import edu.wpi.first.shuffleboard.sources.NetworkTableSource;
 import edu.wpi.first.shuffleboard.util.GridPoint;
 import edu.wpi.first.shuffleboard.widget.DataType;
 import edu.wpi.first.shuffleboard.widget.TileSize;
@@ -13,11 +12,7 @@ import edu.wpi.first.shuffleboard.widget.Widgets;
 import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.Label;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.SeparatorMenuItem;
+import javafx.scene.control.*;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
@@ -70,12 +65,7 @@ public class WidgetPaneController {
       GridPoint point = pane.pointAt(event.getX(), event.getY());
       if (dragboard.hasContent(DataFormats.source)) {
         SourceEntry entry = (SourceEntry) dragboard.getContent(DataFormats.source);
-        if (NetworkTableSource.class.isAssignableFrom(entry.getType())) {
-          dropSource(NetworkTableSource.forKey(entry.getName()), point);
-        } else {
-          throw new UnsupportedOperationException(
-              "Can't handle source of type " + entry.getType().getName());
-        }
+        dropSource(entry.get(), point);
       }
 
       if (dragboard.hasContent(DataFormats.widgetTile)) {

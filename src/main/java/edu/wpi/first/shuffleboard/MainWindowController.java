@@ -22,7 +22,6 @@ import javafx.scene.layout.BorderPane;
 import java.io.IOException;
 import java.util.List;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 import static edu.wpi.first.shuffleboard.util.TypeUtils.optionalCast;
 
@@ -55,7 +54,7 @@ public class MainWindowController {
       TreeTableRow<NetworkTableEntry> row = new TreeTableRow<>();
       row.hoverProperty().addListener((__, wasHover, isHover) -> {
         if (!row.isEmpty()) {
-          setHighlighted(row.getTreeItem(), isHover);
+          setHighlightedWithChildren(row.getTreeItem(), isHover);
         }
       });
       makeSourceRowDraggable(row);
@@ -69,7 +68,7 @@ public class MainWindowController {
         return;
       }
 
-      DataSource<?> source = NetworkTableSource.forKey(selectedItem.getValue().getKey());
+      DataSource<?> source = selectedItem.getValue().get();
       List<String> widgetNames = Widgets.widgetNamesForSource(source);
       if (widgetNames.isEmpty()) {
         // No known widgets that can show this data
@@ -112,21 +111,19 @@ public class MainWindowController {
   /**
    * Highlight or de-highlight any widgets with sources that are descendants of this NT key.
    */
-  private void setHighlighted(TreeItem<NetworkTableEntry> node, boolean highlightValue) {
+  private void setHighlightedWithChildren(TreeItem<NetworkTableEntry> node, boolean highlightValue) {
     String key = node.getValue().getKey();
-    findWidgetsByKey(key)
-        .forEach(tile -> setHighlighted(tile, highlightValue));
 
-    if (!node.isLeaf()) {
-      widgetPane.getTiles()
-                .stream()
-                .filter(tile ->
-                  optionalCast(tile.getWidget().getSource(), NetworkTableSource.class)
-                        .map(s -> s.getKey().startsWith(key))
-                        .orElse(false)
-                )
-                .forEach(tile -> setHighlighted(tile, highlightValue));
-    }
+    widgetPane.getTiles()
+              .stream()
+              .filter(tile ->
+                optionalCast(tile.getWidget().getSource(), NetworkTableSource.class)
+                      .map(s ->
+                        s.getKey().equals(key) || (!node.isLeaf() && s.getKey().startsWith(key))
+                      )
+                      .orElse(false)
+              )
+              .forEach(tile -> setHighlighted(tile, highlightValue));
   }
 
   private void setHighlighted(Node tile, boolean highlightValue) {
@@ -138,21 +135,6 @@ public class MainWindowController {
    */
   private void deselectAllWidgets() {
     widgetPane.getTiles().forEach(node -> setHighlighted(node, false));
-  }
-
-  /**
-   * Finds all widgets in the tile grid that are associated with the given network table key.
-   */
-  private List<WidgetTile> findWidgetsByKey(String fullTableKey) {
-    return widgetPane.getTiles()
-                     .stream()
-                     .filter(tile ->
-                       optionalCast(tile.getWidget().getSource(), NetworkTableSource.class)
-                               .map(NetworkTableSource::getKey)
-                               .map(fullTableKey::equals)
-                               .orElse(false)
-                     )
-                     .collect(Collectors.toList());
   }
 
   @FXML
