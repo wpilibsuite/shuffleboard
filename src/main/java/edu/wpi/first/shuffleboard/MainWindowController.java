@@ -111,7 +111,8 @@ public class MainWindowController {
   /**
    * Highlight or de-highlight any widgets with sources that are descendants of this NT key.
    */
-  private void setHighlightedWithChildren(TreeItem<NetworkTableEntry> node, boolean highlightValue) {
+  private void setHighlightedWithChildren(TreeItem<NetworkTableEntry> node,
+                                          boolean highlightValue) {
     String key = node.getValue().getKey();
 
     widgetPane.getTiles()
