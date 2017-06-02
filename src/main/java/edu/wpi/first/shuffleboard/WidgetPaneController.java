@@ -158,9 +158,19 @@ public class WidgetPaneController {
       ContextMenu contextMenu = createContextMenu(tile);
       contextMenu.show(pane.getScene().getWindow(), event.getScreenX(), event.getScreenY());
     });
+
     tile.setOnDragDetected(event -> {
       dragWidget(tile);
       event.consume();
+    });
+
+    tile.setOnDragDropped(event -> {
+      Dragboard dragboard = event.getDragboard();
+      if (dragboard.hasContent(DataFormats.source)) {
+        SourceEntry entry = (SourceEntry) dragboard.getContent(DataFormats.source);
+        tile.getWidget().setSource(entry.get());
+        event.consume();
+      }
     });
   }
 
