@@ -90,4 +90,9 @@ public final class NetworkTableEntry implements SourceEntry {
   public String toString() {
     return String.format("NetworkTableEntry(key='%s', displayString='%s')", key, displayString);
   }
+
+  @Override
+  public DataSource get() {
+    return NetworkTableSource.forKey(getKey());
+  }
 }

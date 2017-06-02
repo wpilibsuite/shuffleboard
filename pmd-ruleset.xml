@@ -19,5 +19,7 @@
         <exclude name="AvoidInstantiatingObjectsInLoops"/>
     </rule>
     <rule ref="rulesets/java/strings.xml" />
-    <rule ref="rulesets/java/unnecessary.xml"/>
+    <rule ref="rulesets/java/unnecessary.xml">
+        <exclude name="UselessParentheses"/>
+    </rule>
 </ruleset>
