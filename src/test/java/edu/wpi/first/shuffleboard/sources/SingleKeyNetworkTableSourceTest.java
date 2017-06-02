@@ -51,7 +51,7 @@ public class SingleKeyNetworkTableSourceTest {
         = new SingleKeyNetworkTableSource<>(table, key, type);
     table.putString(key, "a value");
     // wait for network table listeners to fire
-    WaitForAsyncUtils.waitFor(100, TimeUnit.MILLISECONDS, source::isActive);
+    WaitForAsyncUtils.waitFor(200, TimeUnit.MILLISECONDS, source::isActive);
     assertEquals("a value", source.getData());
     assertTrue("The source should be active", source.isActive());
   }

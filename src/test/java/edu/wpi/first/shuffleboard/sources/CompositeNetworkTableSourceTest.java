@@ -47,19 +47,21 @@ public class CompositeNetworkTableSourceTest {
   @Test
   public void testDataUpdates() {
     CompositeNetworkTableSource source = new CompositeNetworkTableSource(tableName, DataType.Map);
+    final String key = "key1";
 
-    NetworkTable.getTable(tableName).putString("key1", "value1");
+    NetworkTable.getTable(tableName).putString(key, "value1");
     waitForNtcoreListeners();
-    assertEquals("value1", source.getData().get("key1"));
+    assertEquals("value1", source.getData().get(key));
 
-    NetworkTable.getTable(tableName).putString("key1", "value2");
+    NetworkTable.getTable(tableName).putString(key, "value2");
     waitForNtcoreListeners();
-    assertEquals("value2", source.getData().get("key1"));
+    assertEquals("value2", source.getData().get(key));
   }
 
   @Test
   public void testTypeDetectedCorrectly() {
-    CompositeNetworkTableSource source = new CompositeNetworkTableSource(tableName, DataType.RobotDrive);
+    CompositeNetworkTableSource source
+        = new CompositeNetworkTableSource(tableName, DataType.RobotDrive);
 
     NetworkTable.getTable(tableName).putString(".metadata/Type", "RobotDrive");
     waitForNtcoreListeners();

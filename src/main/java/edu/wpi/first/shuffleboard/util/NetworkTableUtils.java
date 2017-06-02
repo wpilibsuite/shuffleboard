@@ -1,11 +1,8 @@
 package edu.wpi.first.shuffleboard.util;
 
 import edu.wpi.first.shuffleboard.widget.DataType;
-import edu.wpi.first.wpilibj.networktables.EntryInfo;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
-import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
 import edu.wpi.first.wpilibj.tables.ITable;
-import org.omg.CORBA.UNKNOWN;
 
 /**
  * Utility class for working with network tables.
