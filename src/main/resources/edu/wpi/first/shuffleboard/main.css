@@ -150,6 +150,33 @@
     -fx-background-color: white;
 }
 
+/* tab pane */
+
+.tab-header-background {
+    -fx-background-color: base-light;
+}
+
+.tab-header-area .tab {
+    -fx-background-color: transparent, #eee, base-light;
+}
+
+.tab-header-area .tab:selected {
+    -fx-background-color: transparent, #eee, base;
+}
+
+.tab-header-area .tab:selected .focus-indicator {
+    -fx-border-color: transparent;
+}
+
+.widget-gallery .item {
+    -fx-border-width: 2;
+    -fx-border-color: base-light;
+    -fx-border-insets: 5;
+    -fx-background-insets: 5;
+    -fx-alignment: center;
+    -fx-cursor: hand;
+}
+
 /* Tiles */
 
 .tile {

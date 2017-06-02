@@ -1,6 +1,5 @@
 package edu.wpi.first.shuffleboard.components;
 
-import com.google.common.collect.ImmutableList;
 import edu.wpi.first.shuffleboard.WidgetTile;
 import edu.wpi.first.shuffleboard.dnd.DragUtils;
 import edu.wpi.first.shuffleboard.sources.DataSource;
@@ -81,8 +80,8 @@ public class WidgetPane extends TilePane {
   }
 
 
-  public ImmutableList<WidgetTile> getTiles() {
-    return ImmutableList.copyOf(tiles);
+  public ObservableList<WidgetTile> getTiles() {
+    return tiles;
   }
 
   /**
@@ -108,13 +107,8 @@ public class WidgetPane extends TilePane {
    *
    * @param widget the widget to add
    */
-  public WidgetTile addWidget(Widget<?> widget) {
-    Pane view = widget.getView();
-    double width = Math.max(getTileSize(), view.getPrefWidth());
-    double height = Math.max(getTileSize(), view.getPrefHeight());
-
-    TileSize size = new TileSize((int) (width / getTileSize()),
-                                 (int) (height / getTileSize()));
+  public WidgetTile addWidget(Widget widget) {
+    TileSize size = sizeOfWidget(widget);
     return addWidget(widget, size);
   }
 
@@ -125,11 +119,23 @@ public class WidgetPane extends TilePane {
    * @param widget the widget to add
    * @param size   the size of the tile used to display the widget
    */
-  public WidgetTile addWidget(Widget<?> widget, TileSize size) {
+  public WidgetTile addWidget(Widget widget, TileSize size) {
     WidgetTile tile = new WidgetTile(widget, size);
     tile.sizeProperty().addListener(__ -> setSize(tile, tile.getSize()));
     addTile(tile, size);
     return tile;
+  }
+
+  /**
+   * @return Returns the expected size of the widget, in tiles.
+   */
+  public TileSize sizeOfWidget(Widget widget) {
+    Pane view = widget.getView();
+    double width = Math.max(getTileSize(), view.getPrefWidth());
+    double height = Math.max(getTileSize(), view.getPrefHeight());
+
+    return new TileSize((int) (width / getTileSize()),
+            (int) (height / getTileSize()));
   }
 
   public void removeWidget(WidgetTile tile) {

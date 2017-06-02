@@ -10,6 +10,7 @@ import edu.wpi.first.shuffleboard.widget.DataType;
 import edu.wpi.first.shuffleboard.widget.TileSize;
 import edu.wpi.first.shuffleboard.widget.Widget;
 import edu.wpi.first.shuffleboard.widget.Widgets;
+import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.ContextMenu;
@@ -29,18 +30,25 @@ public class WidgetPaneController {
 
   @FXML
   private void initialize() {
+
+    pane.getTiles().addListener((ListChangeListener<WidgetTile>) changes -> {
+      while (changes.next()) {
+        changes.getAddedSubList().forEach(this::setupTile);
+      }
+    });
+
     // Handle being dragged over
     pane.setOnDragOver(event -> {
       event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
       pane.setGridLinesVisible(true);
       GridPoint point = pane.pointAt(event.getX(), event.getY());
-      boolean isWidget = event.getDragboard().hasContent(DataFormats.widget);
+      boolean isWidget = event.getDragboard().hasContent(DataFormats.widgetTile);
 
       // preview the location of the widget if one is being dragged
       if (isWidget) {
         pane.setHighlight(true);
         pane.setHighlightPoint(point);
-        String widgetId = (String) event.getDragboard().getContent(DataFormats.widget);
+        String widgetId = (String) event.getDragboard().getContent(DataFormats.widgetTile);
         pane.tileMatching(tile -> tile.getId().equals(widgetId))
             .ifPresent(tile -> previewWidget(tile, point));
       }
@@ -68,11 +76,26 @@ public class WidgetPaneController {
           throw new UnsupportedOperationException(
               "Can't handle source of type " + entry.getType().getName());
         }
-      } else if (dragboard.hasContent(DataFormats.widget)) {
-        String widgetId = (String) dragboard.getContent(DataFormats.widget);
-        pane.tileMatching(tile -> tile.getId().equals(widgetId))
-            .ifPresent(tile -> dropWidget(tile, point));
       }
+
+      if (dragboard.hasContent(DataFormats.widgetTile)) {
+        String widgetId = (String) dragboard.getContent(DataFormats.widgetTile);
+        pane.tileMatching(tile -> tile.getId().equals(widgetId))
+            .ifPresent(tile -> moveWidget(tile, point));
+      }
+
+      if (dragboard.hasContent(DataFormats.widgetType)) {
+        String widgetType = (String) dragboard.getContent(DataFormats.widgetType);
+        Widgets.typeFor(widgetType).ifPresent(type -> {
+          Widget widget = type.get();
+          TileSize size = pane.sizeOfWidget(widget);
+          if (pane.isOpen(point, size, _t -> false)) {
+            WidgetTile tile = pane.addWidget(widget);
+            moveWidget(tile, point);
+          }
+        });
+      }
+
       cleanupWidgetDrag();
       event.consume();
     });
@@ -99,7 +122,7 @@ public class WidgetPaneController {
     tile.snapshot(null, preview);
     dragboard.setDragView(preview);
     ClipboardContent content = new ClipboardContent();
-    content.put(DataFormats.widget, tile.getId());
+    content.put(DataFormats.widgetTile, tile.getId());
     dragboard.setContent(content);
   }
 
@@ -109,7 +132,7 @@ public class WidgetPaneController {
    * @param tile  the tile for the widget to drop
    * @param point the point in the tile pane to drop the widget at
    */
-  private void dropWidget(WidgetTile tile, GridPoint point) {
+  private void moveWidget(WidgetTile tile, GridPoint point) {
     TileSize size = tile.getSize();
     if (pane.isOpen(point, size, n -> n == tile)) {
       pane.moveNode(tile, point);
@@ -129,8 +152,7 @@ public class WidgetPaneController {
            .stream()
            .findAny()
            .flatMap(name -> Widgets.createWidget(name, source))
-           .map(pane::addWidget)
-           .ifPresent(this::setupTile);
+           .map(pane::addWidget);
     pane.widgetForSource(source)
         .ifPresent(node -> pane.moveNode(node, point));
   }
@@ -180,7 +202,7 @@ public class WidgetPaneController {
    * @param tile the tile for the widget to create the change menus for
    */
   private MenuItem createChangeMenus(WidgetTile tile) {
-    Widget<?> widget = tile.getWidget();
+    Widget widget = tile.getWidget();
     Menu changeView = new Menu("Show as...");
     Widgets.widgetNamesForType(DataType.valueOf(widget.getSource().getData().getClass()))
            .stream()

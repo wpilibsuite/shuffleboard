@@ -9,7 +9,7 @@
             fx:controller="edu.wpi.first.shuffleboard.widget.TextView"
             fx:id="root"
             minHeight="128" minWidth="128"
-            prefHeight="128" prefWidth="256">
+            prefHeight="128" prefWidth="128">
     <center>
         <StackPane>
             <padding>

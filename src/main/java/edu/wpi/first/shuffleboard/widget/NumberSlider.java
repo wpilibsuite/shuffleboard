@@ -8,7 +8,7 @@ import javafx.scene.layout.Pane;
     name = "Number Slider",
     dataTypes = DataType.Number)
 @ParametrizedController("NumberSlider.fxml")
-public class NumberSlider extends Widget<Number> {
+public class NumberSlider extends SimpleAnnotatedWidget<Number> {
 
   @FXML
   private Pane root;
@@ -16,15 +16,14 @@ public class NumberSlider extends Widget<Number> {
   private Slider slider;
 
   @FXML
-  @Override
-  public void initialize() {
+  private void initialize() {
     // enforce five evenly-spaced ticks at all times
     slider.majorTickUnitProperty().bind(
         slider.maxProperty()
               .subtract(slider.minProperty())
               .divide(4));
     exportProperties(slider.minProperty(), slider.maxProperty(), slider.blockIncrementProperty());
-    slider.valueProperty().bindBidirectional(source.dataProperty());
+    slider.valueProperty().bindBidirectional(getSource().dataProperty());
   }
 
   @Override

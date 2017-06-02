@@ -7,29 +7,26 @@ import java.util.Set;
 /**
  * Describes a widget. This is used to make lookup of widgets easier for {@link Widgets}.
  */
-// intentionally package-private; this is not part of a public API
-class WidgetDescription {
+public abstract class AbstractWidgetType implements WidgetType {
 
   private final String name;
   private final Set<DataType> dataTypes;
 
-  public WidgetDescription(String name, Set<DataType> dataTypes) {
+  public AbstractWidgetType(String name, Set<DataType> dataTypes) {
     this.name = name;
     this.dataTypes = dataTypes;
   }
 
-  public WidgetDescription(Description description) {
+  public AbstractWidgetType(Description description) {
     this(description.name(), ImmutableSet.copyOf(description.dataTypes()));
   }
 
-  public WidgetDescription(Widget<?> widget) {
-    this(widget.getName(), widget.getDataTypes());
-  }
-
+  @Override
   public String getName() {
     return name;
   }
 
+  @Override
   public Set<DataType> getDataTypes() {
     return dataTypes;
   }
