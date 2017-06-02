@@ -6,7 +6,6 @@ import edu.wpi.first.shuffleboard.components.WidgetPane;
 import edu.wpi.first.shuffleboard.dnd.DataFormats;
 import edu.wpi.first.shuffleboard.sources.DataSource;
 import edu.wpi.first.shuffleboard.sources.NetworkTableSource;
-import edu.wpi.first.shuffleboard.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.widget.Widgets;
 import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
@@ -24,6 +23,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+
+import static edu.wpi.first.shuffleboard.util.TypeUtils.optionalCast;
 
 
 /**
@@ -54,7 +55,7 @@ public class MainWindowController {
       TreeTableRow<NetworkTableEntry> row = new TreeTableRow<>();
       row.hoverProperty().addListener((__, wasHover, isHover) -> {
         if (!row.isEmpty()) {
-          highlight(row.getTreeItem(), isHover);
+          setHighlighted(row.getTreeItem(), isHover);
         }
       });
       makeSourceRowDraggable(row);
@@ -68,15 +69,12 @@ public class MainWindowController {
         return;
       }
 
-      String key = NetworkTableUtils.normalizeKey(selectedItem.getValue().getKey(), false);
-
-      List<String> widgetNames = Widgets.widgetNamesForSource(NetworkTableSource.forKey(key));
+      DataSource<?> source = NetworkTableSource.forKey(selectedItem.getValue().getKey());
+      List<String> widgetNames = Widgets.widgetNamesForSource(source);
       if (widgetNames.isEmpty()) {
         // No known widgets that can show this data
         return;
       }
-
-      DataSource<?> source = NetworkTableSource.forKey(key);
 
       ContextMenu menu = new ContextMenu();
       widgetNames.stream()
@@ -111,48 +109,49 @@ public class MainWindowController {
     return menuItem;
   }
 
-  private void highlight(TreeItem<NetworkTableEntry> node, boolean doHighlight) {
-    findWidgets(node.getValue().getKey())
-        .forEach(tile -> highlight(tile, doHighlight));
+  /**
+   * Highlight or de-highlight any widgets with sources that are descendants of this NT key.
+   */
+  private void setHighlighted(TreeItem<NetworkTableEntry> node, boolean highlightValue) {
+    String key = node.getValue().getKey();
+    findWidgetsByKey(key)
+        .forEach(tile -> setHighlighted(tile, highlightValue));
 
     if (!node.isLeaf()) {
-      // Highlight all child widgets
-      String keyWithoutTrailingSlash = node.getValue().getKey().substring(1);
       widgetPane.getTiles()
                 .stream()
-                .filter(tile -> {
-                  DataSource<?> source = tile.getWidget().getSource();
-                  // TODO use NT specific API
-                  return source instanceof NetworkTableSource
-                          && source.getName().startsWith(keyWithoutTrailingSlash);
-                })
-                .forEach(tile -> highlight(tile, doHighlight));
+                .filter(tile ->
+                  optionalCast(tile.getWidget().getSource(), NetworkTableSource.class)
+                        .map(s -> s.getKey().startsWith(key))
+                        .orElse(false)
+                )
+                .forEach(tile -> setHighlighted(tile, highlightValue));
     }
   }
 
-  private void highlight(Node tile, boolean doHighlight) {
-    tile.pseudoClassStateChanged(selectedPseudoClass, doHighlight);
+  private void setHighlighted(Node tile, boolean highlightValue) {
+    tile.pseudoClassStateChanged(selectedPseudoClass, highlightValue);
   }
 
   /**
    * Deselects all widgets in the tile view.
    */
   private void deselectAllWidgets() {
-    widgetPane.getTiles().forEach(node -> highlight(node, false));
+    widgetPane.getTiles().forEach(node -> setHighlighted(node, false));
   }
 
   /**
    * Finds all widgets in the tile grid that are associated with the given network table key.
    */
-  private List<WidgetTile> findWidgets(String fullTableKey) {
-    String key = NetworkTableUtils.normalizeKey(fullTableKey, false);
+  private List<WidgetTile> findWidgetsByKey(String fullTableKey) {
     return widgetPane.getTiles()
                      .stream()
-                     .filter(tile -> {
-                       DataSource<?> source = tile.getWidget().getSource();
-                       return source instanceof NetworkTableSource
-                               && source.getName().equals(key); // TODO use a NT specific API
-                     })
+                     .filter(tile ->
+                       optionalCast(tile.getWidget().getSource(), NetworkTableSource.class)
+                               .map(NetworkTableSource::getKey)
+                               .map(fullTableKey::equals)
+                               .orElse(false)
+                     )
                      .collect(Collectors.toList());
   }
 
