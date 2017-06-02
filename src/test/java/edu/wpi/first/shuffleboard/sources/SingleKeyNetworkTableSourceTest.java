@@ -3,18 +3,20 @@ package edu.wpi.first.shuffleboard.sources;
 import edu.wpi.first.shuffleboard.NetworkTableRequired;
 import edu.wpi.first.shuffleboard.util.AsyncUtils;
 import edu.wpi.first.shuffleboard.util.FxUtils;
+import edu.wpi.first.shuffleboard.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.widget.DataType;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
 import edu.wpi.first.wpilibj.tables.ITable;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.testfx.util.WaitForAsyncUtils;
 
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public class SingleKeyNetworkTableSourceTest {
 
@@ -50,8 +52,7 @@ public class SingleKeyNetworkTableSourceTest {
     SingleKeyNetworkTableSource<String> source
         = new SingleKeyNetworkTableSource<>(table, key, type);
     table.putString(key, "a value");
-    // wait for network table listeners to fire
-    WaitForAsyncUtils.waitFor(200, TimeUnit.MILLISECONDS, source::isActive);
+    NetworkTableUtils.waitForNtcoreEvents();
     assertEquals("a value", source.getData());
     assertTrue("The source should be active", source.isActive());
   }

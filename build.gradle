@@ -33,9 +33,10 @@ dependencies {
     compile "edu.wpi.first.wpilib.networktables.java:NetworkTables:+:desktop"
 
     testCompile group: 'com.google.guava', name: 'guava-testlib', version: '21.0'
+    testCompile "junit:junit:+"
     testCompile "org.testfx:testfx-core:4.0.+"
     testCompile "org.testfx:testfx-junit:4.0.+"
-    testRuntime group: 'org.testfx', name: 'openjfx-monocle', version: '1.8.0_20'
+    testRuntime group: 'org.testfx', name: 'openjfx-monocle', version: '8u76-b04'
 }
 
 checkstyle {

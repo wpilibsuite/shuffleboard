@@ -9,11 +9,11 @@ import javafx.collections.FXCollections;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.testfx.util.WaitForAsyncUtils;
 
-import java.util.concurrent.TimeUnit;
-
-import static org.junit.Assert.*;
+import static edu.wpi.first.shuffleboard.util.NetworkTableUtils.waitForNtcoreEvents;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class CompositeNetworkTableSourceTest {
 
@@ -50,11 +50,11 @@ public class CompositeNetworkTableSourceTest {
     final String key = "key1";
 
     NetworkTable.getTable(tableName).putString(key, "value1");
-    waitForNtcoreListeners();
+    waitForNtcoreEvents();
     assertEquals("value1", source.getData().get(key));
 
     NetworkTable.getTable(tableName).putString(key, "value2");
-    waitForNtcoreListeners();
+    waitForNtcoreEvents();
     assertEquals("value2", source.getData().get(key));
   }
 
@@ -64,12 +64,8 @@ public class CompositeNetworkTableSourceTest {
         = new CompositeNetworkTableSource(tableName, DataType.RobotDrive);
 
     NetworkTable.getTable(tableName).putString(".metadata/Type", "RobotDrive");
-    waitForNtcoreListeners();
+    waitForNtcoreEvents();
     assertTrue(source.isActive());
-  }
-
-  private static void waitForNtcoreListeners() {
-    WaitForAsyncUtils.sleep(100, TimeUnit.MILLISECONDS);
   }
 
 }

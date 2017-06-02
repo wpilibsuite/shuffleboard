@@ -4,6 +4,8 @@ import edu.wpi.first.shuffleboard.widget.DataType;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
 import edu.wpi.first.wpilibj.tables.ITable;
 
+import java.util.concurrent.ExecutionException;
+
 /**
  * Utility class for working with network tables.
  */
@@ -107,6 +109,19 @@ public final class NetworkTableUtils {
       }
     }
     return DataType.Unknown;
+  }
+
+  /**
+   * Waits for ntcore listeners to be fired. This is a <i>blocking operation</i>.
+   */
+  public static void waitForNtcoreEvents() {
+    try {
+      new NetworkTableListenerFuture().get();
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    } catch (ExecutionException e) {
+      throw new AssertionError("This should never throw an execution exception", e);
+    }
   }
 
 }
