@@ -23,7 +23,7 @@ public class NumberSlider extends SimpleAnnotatedWidget<Number> {
               .subtract(slider.minProperty())
               .divide(4));
     exportProperties(slider.minProperty(), slider.maxProperty(), slider.blockIncrementProperty());
-    slider.valueProperty().bindBidirectional(getSource().dataProperty());
+    slider.valueProperty().bindBidirectional(data);
   }
 
   @Override

@@ -9,6 +9,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
+import org.fxmisc.easybind.EasyBind;
 
 import java.util.Objects;
 import java.util.Set;
@@ -54,8 +55,15 @@ import java.util.Set;
  */
 public abstract class SimpleAnnotatedWidget<T> implements Widget {
 
-  protected SimpleObjectProperty<DataSource<T>> source
+  protected final SimpleObjectProperty<DataSource<T>> source
       = new SimpleObjectProperty<>(DataSource.none());
+
+  /**
+   * The property for this widgets data. This is the preferred way to get the current value of the
+   * data source because it will update whenever the source is modified.
+   */
+  protected final Property<T> data
+      = EasyBind.monadic(source).selectProperty(DataSource::dataProperty);
 
   private final Property<String> sourceName = new SimpleStringProperty(this, "sourceName", "");
   private final ObservableList<Property<?>> properties = FXCollections.observableArrayList();
