@@ -13,9 +13,12 @@ import java.util.function.Function;
 /**
  * Editors for widget preferences.
  */
-public class PrefsEditors {
+public final class PrefsEditors {
 
   private static final Map<Class<?>, Function<Property<?>, Control>> editors = new HashMap<>();
+
+  private PrefsEditors() {
+  }
 
   /**
    * Sets the editor to use for a property of the given type.

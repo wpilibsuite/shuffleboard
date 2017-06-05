@@ -10,7 +10,7 @@ import javafx.scene.control.TextFormatter;
  */
 public class NumberField extends TextField {
 
-  private Property<Double> number = new SimpleObjectProperty<>(this, "number", 0.0);
+  private final Property<Double> number = new SimpleObjectProperty<>(this, "number", 0.0);
 
   /**
    * Creates a new number field with no value.

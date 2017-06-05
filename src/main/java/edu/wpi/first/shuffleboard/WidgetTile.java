@@ -28,7 +28,7 @@ public class WidgetTile extends BorderPane {
   private final Property<Widget> widget = new SimpleObjectProperty<>(this, "widget", null);
   private final Property<TileSize> size = new SimpleObjectProperty<>(this, "size", null);
 
-  private Pane prefsEditor = null;
+  private Pane prefsEditor = null; //NOPMD redundant field initializer
 
   /**
    * Creates an empty tile. The widget and size must be set with {@link #setWidget(Widget)} and
@@ -88,9 +88,6 @@ public class WidgetTile extends BorderPane {
         pane.add(label, 0, row);
         pane.add(control, 1, row);
         row++;
-      } else {
-        // skip
-        System.out.println("Cannot create editor for " + property);
       }
     }
     pane.setMaxWidth(65535);
