@@ -5,9 +5,7 @@ import edu.wpi.first.shuffleboard.components.WidgetPane;
 import edu.wpi.first.shuffleboard.dnd.DataFormats;
 import edu.wpi.first.shuffleboard.dnd.TileDragResizer;
 import edu.wpi.first.shuffleboard.sources.DataSource;
-import edu.wpi.first.shuffleboard.sources.NetworkTableSource;
 import edu.wpi.first.shuffleboard.util.GridPoint;
-import edu.wpi.first.shuffleboard.widget.DataType;
 import edu.wpi.first.shuffleboard.widget.TileSize;
 import edu.wpi.first.shuffleboard.widget.Widget;
 import edu.wpi.first.shuffleboard.widget.Widgets;
@@ -71,12 +69,7 @@ public class WidgetPaneController {
       GridPoint point = pane.pointAt(event.getX(), event.getY());
       if (dragboard.hasContent(DataFormats.source)) {
         SourceEntry entry = (SourceEntry) dragboard.getContent(DataFormats.source);
-        if (NetworkTableSource.class.isAssignableFrom(entry.getType())) {
-          dropSource(NetworkTableSource.forKey(entry.getName()), point);
-        } else {
-          throw new UnsupportedOperationException(
-              "Can't handle source of type " + entry.getType().getName());
-        }
+        dropSource(entry.get(), point);
       }
 
       if (dragboard.hasContent(DataFormats.widgetTile)) {
@@ -166,7 +159,9 @@ public class WidgetPaneController {
       ContextMenu contextMenu = createContextMenu(tile);
       contextMenu.show(pane.getScene().getWindow(), event.getScreenX(), event.getScreenY());
     });
+
     TileDragResizer resizer = TileDragResizer.makeResizable(pane, tile);
+
     tile.setOnDragDetected(event -> {
       if (resizer.isDragging()) {
         // don't drag the widget while it's being resized
@@ -174,6 +169,15 @@ public class WidgetPaneController {
       }
       dragWidget(tile);
       event.consume();
+    });
+
+    tile.setOnDragDropped(event -> {
+      Dragboard dragboard = event.getDragboard();
+      if (dragboard.hasContent(DataFormats.source)) {
+        SourceEntry entry = (SourceEntry) dragboard.getContent(DataFormats.source);
+        tile.getWidget().setSource(entry.get());
+        event.consume();
+      }
     });
   }
 
@@ -210,7 +214,7 @@ public class WidgetPaneController {
   private MenuItem createChangeMenus(WidgetTile tile) {
     Widget widget = tile.getWidget();
     Menu changeView = new Menu("Show as...");
-    Widgets.widgetNamesForType(DataType.valueOf(widget.getSource().getData().getClass()))
+    Widgets.widgetNamesForType(widget.getSource().getDataType())
            .stream()
            .sorted()
            .forEach(name -> {

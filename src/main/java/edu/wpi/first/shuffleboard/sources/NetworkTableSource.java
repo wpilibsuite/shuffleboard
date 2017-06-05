@@ -46,6 +46,10 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
     }
   }
 
+  public String getKey() {
+    return fullTableKey;
+  }
+
   @FunctionalInterface
   protected interface TableListener {
 
