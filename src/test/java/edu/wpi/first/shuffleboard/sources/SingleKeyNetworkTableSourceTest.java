@@ -1,6 +1,5 @@
 package edu.wpi.first.shuffleboard.sources;
 
-import edu.wpi.first.shuffleboard.NetworkTableRequired;
 import edu.wpi.first.shuffleboard.util.AsyncUtils;
 import edu.wpi.first.shuffleboard.util.FxUtils;
 import edu.wpi.first.shuffleboard.util.NetworkTableUtils;
@@ -13,10 +12,7 @@ import org.junit.Test;
 
 import java.util.concurrent.TimeoutException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class SingleKeyNetworkTableSourceTest {
 
@@ -24,7 +20,7 @@ public class SingleKeyNetworkTableSourceTest {
 
   @Before
   public void setUp() {
-    NetworkTableRequired.setUpNetworkTables();
+    NetworkTableUtils.shutdown();
     AsyncUtils.setAsyncRunner(Runnable::run);
     table = NetworkTable.getTable("");
   }
@@ -32,7 +28,7 @@ public class SingleKeyNetworkTableSourceTest {
   @After
   public void tearDown() {
     AsyncUtils.setAsyncRunner(FxUtils::runOnFxThread);
-    NetworkTableRequired.tearDownNetworkTables();
+    NetworkTableUtils.shutdown();
   }
 
   @Test

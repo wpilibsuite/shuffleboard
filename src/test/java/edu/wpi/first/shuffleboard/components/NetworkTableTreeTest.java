@@ -1,7 +1,7 @@
 package edu.wpi.first.shuffleboard.components;
 
 import edu.wpi.first.shuffleboard.NetworkTableEntry;
-import edu.wpi.first.shuffleboard.NetworkTableRequired;
+import edu.wpi.first.shuffleboard.util.NetworkTableUtils;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
 import javafx.collections.ObservableList;
 import javafx.scene.Scene;
@@ -24,11 +24,9 @@ public class NetworkTableTreeTest extends ApplicationTest {
 
   @Override
   public void start(Stage stage) throws Exception {
-    NetworkTableRequired.setUpNetworkTables();
+    NetworkTableUtils.shutdown();
     table = NetworkTable.getTable("");
     tree = new NetworkTableTree();
-    tree.getKeyColumn().prefWidthProperty().bind(tree.widthProperty().divide(2));
-    tree.getValueColumn().prefWidthProperty().bind(tree.widthProperty().divide(2));
     root = tree.getRoot();
     tree.setShowRoot(false);
     stage.setScene(new Scene(tree));
@@ -37,7 +35,7 @@ public class NetworkTableTreeTest extends ApplicationTest {
 
   @After
   public void tearDown() {
-    NetworkTableRequired.tearDownNetworkTables();
+    NetworkTableUtils.shutdown();
   }
 
   @Test

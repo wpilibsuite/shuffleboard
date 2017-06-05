@@ -12,8 +12,8 @@ import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.testfx.framework.junit.ApplicationTest;
 import org.testfx.matcher.base.NodeMatchers;
 import org.testfx.util.WaitForAsyncUtils;
@@ -33,12 +33,12 @@ public class MainWindowControllerTest extends ApplicationTest {
 
   @Before
   public void setUp() {
-    NetworkTableRequired.setUpNetworkTables();
+    NetworkTableUtils.shutdown();
   }
 
   @After
   public void tearDown() {
-    NetworkTableRequired.tearDownNetworkTables();
+    NetworkTableUtils.shutdown();
   }
 
   @Test
@@ -55,7 +55,7 @@ public class MainWindowControllerTest extends ApplicationTest {
   }
 
   @Test
-  @Ignore("Broken in headless mode")
+  @Category(NonHeadlessTests.class)
   public void testNetworkTableSourceContextMenu() {
     NetworkTablesJNI.putString("/testSourceContextMenu", "value");
     NetworkTableUtils.waitForNtcoreEvents();

@@ -1,6 +1,5 @@
 package edu.wpi.first.shuffleboard.util;
 
-import edu.wpi.first.shuffleboard.NetworkTableRequired;
 import edu.wpi.first.wpilibj.tables.ITable;
 import org.junit.After;
 import org.junit.Before;
@@ -12,12 +11,12 @@ public class NetworkTableUtilsTest {
 
   @Before
   public void setUp() {
-    NetworkTableRequired.setUpNetworkTables();
+    NetworkTableUtils.shutdown();
   }
 
   @After
   public void tearDown() {
-    NetworkTableRequired.tearDownNetworkTables();
+    NetworkTableUtils.shutdown();
   }
 
   @Test

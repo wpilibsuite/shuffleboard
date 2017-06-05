@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard;
 
+import edu.wpi.first.shuffleboard.util.NetworkTableUtils;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
@@ -10,11 +11,9 @@ import org.testfx.framework.junit.ApplicationTest;
 
 public class ShuffleboardTest extends ApplicationTest {
 
-  private Pane mainPane; //NOPMD
-
   @Override
   public void start(Stage stage) throws Exception {
-    mainPane = FXMLLoader.load(MainWindowController.class.getResource("MainWindow.fxml"));
+    Pane mainPane = FXMLLoader.load(MainWindowController.class.getResource("MainWindow.fxml"));
     Scene scene = new Scene(mainPane);
     stage.setScene(scene);
     stage.show();
@@ -22,12 +21,12 @@ public class ShuffleboardTest extends ApplicationTest {
 
   @Before
   public void setUp() {
-    NetworkTableRequired.setUpNetworkTables();
+    NetworkTableUtils.shutdown();
   }
 
   @After
   public void tearDown() {
-    NetworkTableRequired.tearDownNetworkTables();
+    NetworkTableUtils.shutdown();
   }
 
   // TODO

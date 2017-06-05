@@ -1,8 +1,8 @@
 package edu.wpi.first.shuffleboard.sources;
 
-import edu.wpi.first.shuffleboard.NetworkTableRequired;
 import edu.wpi.first.shuffleboard.util.AsyncUtils;
 import edu.wpi.first.shuffleboard.util.FxUtils;
+import edu.wpi.first.shuffleboard.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.widget.DataType;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
 import javafx.collections.FXCollections;
@@ -11,9 +11,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static edu.wpi.first.shuffleboard.util.NetworkTableUtils.waitForNtcoreEvents;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class CompositeNetworkTableSourceTest {
 
@@ -21,13 +19,13 @@ public class CompositeNetworkTableSourceTest {
 
   @Before
   public void setUp() {
-    NetworkTableRequired.setUpNetworkTables();
+    NetworkTableUtils.shutdown();
     AsyncUtils.setAsyncRunner(Runnable::run);
   }
 
   @After
   public void tearDown() {
-    NetworkTableRequired.tearDownNetworkTables();
+    NetworkTableUtils.shutdown();
     AsyncUtils.setAsyncRunner(FxUtils::runOnFxThread);
   }
 
