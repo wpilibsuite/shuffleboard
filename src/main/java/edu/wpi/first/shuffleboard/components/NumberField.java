@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.components;
 
+import edu.wpi.first.shuffleboard.util.PropertyUtils;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.control.TextField;
@@ -20,24 +21,21 @@ public class NumberField extends TextField {
     setText("0.0"); // initial text to match the initial number
     setTextFormatter(new TextFormatter<>(change -> {
       String text = change.getControlNewText();
-      // almost, but not quite, the same regex as isValidDouble
-      // note the trailing \d* instead of \d+
-      if (text.matches("^[-+]?\\d*\\.?\\d*$")) {
+      if (isValidDoubleStart(text)) {
         return change;
       }
       return null;
     }));
-    textProperty().addListener((__, oldText, newText) -> {
-      if (isValidDouble(newText)) {
-        setNumber(Double.parseDouble(newText));
-      }
-    });
-    number.addListener((__, oldNumber, newNumber) -> {
-      if (getText() == null || getText().isEmpty() || newNumber != Double.parseDouble(getText())) {
-        // only update the text if the number didn't update from the text property
-        setText(newNumber.toString());
-      }
-    });
+    // bind text <-> number, only changing one if the new value has actually updated
+    PropertyUtils.bindBidirectional(
+        textProperty(),
+        number,
+        text -> isValidDouble(text) ? getNumberFromText(text) : getNumber(),
+        num -> num == getNumberFromText(getText()) ? getText() : num.toString());
+  }
+
+  private double getNumberFromText(String text) {
+    return Double.parseDouble(text);
   }
 
   /**
@@ -57,15 +55,25 @@ public class NumberField extends TextField {
     return string.matches("^[-+]?\\d*\\.?\\d+$");
   }
 
-  public double getNumber() {
+  /**
+   * Checks if the given string is a valid start to a floating-point decimal number in text form.
+   * This differs from {@link #isValidDouble(String) isValidDouble} because this checks if the text
+   * is only a valid <i>beginning</i> of a string representation of a number. For example, this
+   * method would accept a single "-" because it's a valid start to a negative number.
+   */
+  private static boolean isValidDoubleStart(String text) {
+    return text.matches("^[-+]?\\d*\\.?\\d*$");
+  }
+
+  public final double getNumber() {
     return number.getValue();
   }
 
-  public Property<Double> numberProperty() {
+  public final Property<Double> numberProperty() {
     return number;
   }
 
-  public void setNumber(double number) {
+  public final void setNumber(double number) {
     this.number.setValue(number);
   }
 

@@ -3,10 +3,10 @@ package edu.wpi.first.shuffleboard.widget;
 import edu.wpi.first.shuffleboard.sources.DataSource;
 import edu.wpi.first.shuffleboard.sources.IncompatibleSourceException;
 import javafx.beans.property.Property;
-import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 import javafx.scene.layout.Pane;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -66,6 +66,6 @@ public interface Widget {
 
   DataSource<?> getSource();
 
-  ObservableList<Property<?>> getProperties();
+  List<Property<?>> getProperties();
 
 }

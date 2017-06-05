@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import edu.wpi.first.shuffleboard.components.PreferencesPane?>
+<?import javafx.geometry.Insets?>
+<PreferencesPane xmlns="http://javafx.com/javafx"
+                 xmlns:fx="http://javafx.com/fxml"
+                 fx:controller="edu.wpi.first.shuffleboard.widget.WidgetPrefsController"
+                 fx:id="preferencesPane"
+                 hgap="8" vgap="8"
+                 maxWidth="65535"
+                 alignment="CENTER">
+    <padding>
+        <Insets topRightBottomLeft="8"/>
+    </padding>
+</PreferencesPane>
