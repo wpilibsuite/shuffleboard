@@ -6,18 +6,26 @@ import edu.wpi.first.shuffleboard.components.WidgetPane;
 import edu.wpi.first.shuffleboard.dnd.DataFormats;
 import edu.wpi.first.shuffleboard.sources.DataSource;
 import edu.wpi.first.shuffleboard.sources.NetworkTableSource;
+import edu.wpi.first.shuffleboard.theme.ThemeManager;
+import edu.wpi.first.shuffleboard.util.FxUtils;
 import edu.wpi.first.shuffleboard.widget.Widgets;
 import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableRow;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Pane;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.util.List;
@@ -41,11 +49,15 @@ public class MainWindowController {
   private WidgetPane widgetPane;
   @FXML
   private NetworkTableTree networkTables;
+  @FXML
+  private Pane prefsWindow;
+  private Scene prefsScene;
 
   private static final PseudoClass selectedPseudoClass = PseudoClass.getPseudoClass("selected");
 
   @FXML
   private void initialize() throws IOException {
+    FxUtils.bind(root.getStylesheets(), ThemeManager.styleSheetsProperty());
     // NetworkTable view init
     networkTables.getKeyColumn().setPrefWidth(199);
     networkTables.getValueColumn().setPrefWidth(199);
@@ -84,6 +96,7 @@ public class MainWindowController {
     });
 
     widgetGallery.loadWidgets(Widgets.allWidgets());
+    prefsScene = new Scene(prefsWindow);
   }
 
   private void makeSourceRowDraggable(TreeTableRow<? extends SourceEntry> row) {
@@ -142,6 +155,25 @@ public class MainWindowController {
   public void close() {
     log.info("Exiting app");
     System.exit(0);
+  }
+
+  /**
+   * Shows the preferences window.
+   */
+  @FXML
+  public void showPrefs() {
+    Stage stage = new Stage();
+    stage.initModality(Modality.APPLICATION_MODAL);
+    stage.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
+      if (event.getCode() == KeyCode.ESCAPE) {
+        stage.close();
+      }
+    });
+    stage.setTitle("Shuffleboard Preferences");
+    stage.setScene(prefsScene);
+    stage.sizeToScene();
+    stage.setResizable(false);
+    stage.showAndWait();
   }
 
 }

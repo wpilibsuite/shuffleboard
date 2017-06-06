@@ -1,0 +1,33 @@
+* {
+    -fx-font-family: "Roboto";
+}
+
+.widget-gallery .item {
+    -fx-border-width: 2;
+    -fx-border-color: #888;
+    -fx-border-insets: 5;
+    -fx-background-insets: 5;
+    -fx-alignment: center;
+    -fx-cursor: hand;
+}
+
+/* Tiles */
+
+.tile {
+    -fx-background-color: lightskyblue;
+}
+
+.tile:selected {
+    -fx-effect: dropshadow(gaussian, darkslateblue, 6, 0.1, 0, 4);
+}
+
+.grid-highlight {
+    -fx-border-color: rgba(0, 255, 0, 0.75);
+    -fx-border-width: 0.25em;
+    -fx-background-color: rgba(255, 255, 255, 0.1);
+}
+
+.grid-highlight:colliding {
+    -fx-border-color: rgba(255, 0, 0, 0.75);
+    -fx-background-color: rgba(255, 0, 0, 0.1);
+}

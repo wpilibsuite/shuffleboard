@@ -7,8 +7,11 @@ import javafx.beans.binding.When;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ObservableBooleanValue;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
@@ -75,6 +78,19 @@ public final class FxUtils {
    */
   public static <T> void bind(Property<T> property, DataSource<T> dataSource) {
     property.bind(dataSource.dataProperty());
+  }
+
+  /**
+   * Binds an observable list to a list property.
+   *
+   * @param list       the observable list to bind
+   * @param observable the property to bind to
+   * @param <T>        the type of elements in the list
+   */
+  public static <T> void bind(ObservableList<? super T> list,
+                              ObservableValue<? extends List<? extends T>> observable) {
+    list.setAll(observable.getValue());
+    observable.addListener((__, oldList, newList) -> list.setAll(newList));
   }
 
   /**

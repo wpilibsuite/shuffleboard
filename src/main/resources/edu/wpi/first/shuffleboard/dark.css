@@ -152,16 +152,21 @@
 
 /* tab pane */
 
+.tab-pane {
+    -fx-border-color: white;
+    -fx-border-width: 0 0.025em 0 0;
+}
+
 .tab-header-background {
-    -fx-background-color: base-light;
+    -fx-background-color: #111;
 }
 
 .tab-header-area .tab {
-    -fx-background-color: transparent, #eee, base-light;
+    -fx-background-color: transparent, highlight, #111;
 }
 
 .tab-header-area .tab:selected {
-    -fx-background-color: transparent, #eee, base;
+    -fx-background-color: transparent, highlight, base;
 }
 
 .tab-header-area .tab:selected .focus-indicator {
