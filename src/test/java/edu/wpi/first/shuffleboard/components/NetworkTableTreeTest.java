@@ -3,16 +3,28 @@ package edu.wpi.first.shuffleboard.components;
 import edu.wpi.first.shuffleboard.NetworkTableEntry;
 import edu.wpi.first.shuffleboard.util.NetworkTableUtils;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
+
+import org.junit.After;
+import org.junit.Test;
+import org.testfx.framework.junit.ApplicationTest;
+
 import javafx.collections.ObservableList;
 import javafx.scene.Scene;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableCell;
 import javafx.stage.Stage;
-import org.junit.After;
-import org.junit.Test;
-import org.testfx.framework.junit.ApplicationTest;
 
-import static org.junit.Assert.*;
+import static edu.wpi.first.shuffleboard.components.NetworkTableTreeItemMatcher.hasDisplayString;
+import static edu.wpi.first.shuffleboard.components.NetworkTableTreeItemMatcher.hasKey;
+import static edu.wpi.first.shuffleboard.components.NetworkTableTreeItemMatcher.hasSimpleKey;
+import static edu.wpi.first.shuffleboard.components.NetworkTableTreeItemMatcher.isExpanded;
+import static edu.wpi.first.shuffleboard.components.NetworkTableTreeItemMatcher.isLeaf;
+import static org.hamcrest.core.IsNot.not;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.testfx.matcher.base.NodeMatchers.hasText;
 import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
 
@@ -50,11 +62,10 @@ public class NetworkTableTreeTest extends ApplicationTest {
 
     ObservableList<TreeItem<NetworkTableEntry>> children = root.getChildren();
     TreeItem<NetworkTableEntry> child = children.get(0);
-    NetworkTableEntry entry = child.getValue();
-    assertEquals("/entry", entry.getKey());
-    assertEquals("entry", entry.simpleKey());
-    assertEquals("value", entry.getDisplayString());
-    assertTrue("Child should be a leaf", child.isLeaf());
+    assertThat(child, hasKey("/entry"));
+    assertThat(child, hasSimpleKey("entry"));
+    assertThat(child, hasDisplayString("value"));
+    assertThat("Child should be a leaf", child, isLeaf());
   }
 
   @Test
@@ -66,15 +77,15 @@ public class NetworkTableTreeTest extends ApplicationTest {
     final TreeItem<NetworkTableEntry> branch = children.get(0);
     final TreeItem<NetworkTableEntry> leaf = branch.getChildren().get(0);
 
-    assertEquals("/branch", branch.getValue().getKey());
-    assertEquals("", branch.getValue().getDisplayString());
-    assertFalse("Branch should not be a leaf", branch.isLeaf());
-    assertTrue("Branch should be expanded", branch.isExpanded());
+    assertThat(branch, hasKey("/branch"));
+    assertThat(branch, hasDisplayString(""));
+    assertThat("Branch should not be a leaf", branch, not(isLeaf()));
+    assertThat("Branch should be expanded", branch, isExpanded());
 
-    assertEquals("/branch/entry", leaf.getValue().getKey());
-    assertEquals("entry", leaf.getValue().simpleKey());
-    assertEquals("x", leaf.getValue().getDisplayString());
-    assertTrue("Value node was not a leaf", leaf.isLeaf());
+    assertThat(leaf, hasKey("/branch/entry"));
+    assertThat(leaf, hasSimpleKey("entry"));
+    assertThat(leaf, hasDisplayString("x"));
+    assertThat(leaf, isLeaf());
   }
 
   @Test
@@ -90,11 +101,11 @@ public class NetworkTableTreeTest extends ApplicationTest {
 
     ObservableList<TreeItem<NetworkTableEntry>> children = root.getChildren();
     assertEquals("There should be 5 children", 5, children.size());
-    assertEquals("/sub_a", children.get(0).getValue().getKey());
-    assertEquals("/sub_b", children.get(1).getValue().getKey());
-    assertEquals("/a", children.get(2).getValue().getKey());
-    assertEquals("/b", children.get(3).getValue().getKey());
-    assertEquals("/c", children.get(4).getValue().getKey());
+    assertThat(root, hasKey("/sub_a").atIndex(0));
+    assertThat(root, hasKey("/sub_b").atIndex(1));
+    assertThat(root, hasKey("/a").atIndex(2));
+    assertThat(root, hasKey("/b").atIndex(3));
+    assertThat(root, hasKey("/c").atIndex(4));
 
     assertCellIndex("sub_a", 0);
     assertCellIndex("sub_entry_a", 1);
