@@ -205,3 +205,8 @@
     -fx-border-color: rgba(255, 0, 0, 0.75);
     -fx-background-color: rgba(255, 0, 0, 0.1);
 }
+
+.property-sheet, .property-sheet .property-pane {
+    /* TODO figure out why there's a thin white line at the bottom */
+    -fx-background-color: base-light;
+}
