@@ -62,7 +62,7 @@ public class MainWindowController {
 
   @FXML
   private void initialize() throws IOException {
-    FxUtils.bind(root.getStylesheets(), ThemeManager.styleSheetsProperty());
+    FxUtils.bind(root.getStylesheets(), ThemeManager.getInstance().styleSheetsProperty());
     // NetworkTable view init
     networkTables.getKeyColumn().setPrefWidth(199);
     networkTables.getValueColumn().setPrefWidth(199);
@@ -172,13 +172,13 @@ public class MainWindowController {
     propertySheet.setModeSwitcherVisible(false);
     propertySheet.setSearchBoxVisible(false);
     propertySheet.setMode(PropertySheet.Mode.NAME);
-    AppPreferences.getProperties()
+    AppPreferences.getInstance().getProperties()
         .stream()
         .map(property -> new ObservableItem(property, "Application"))
         .forEachOrdered(propertySheet.getItems()::add);
     propertySheet.setPropertyEditorFactory(new PropertyEditorFactory());
     Scene scene = new Scene(propertySheet);
-    FxUtils.bind(propertySheet.getStylesheets(), ThemeManager.styleSheetsProperty());
+    FxUtils.bind(propertySheet.getStylesheets(), ThemeManager.getInstance().styleSheetsProperty());
 
     Stage stage = new Stage();
     stage.setScene(scene);

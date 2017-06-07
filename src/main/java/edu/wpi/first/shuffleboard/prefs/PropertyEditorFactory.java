@@ -1,6 +1,5 @@
 package edu.wpi.first.shuffleboard.prefs;
 
-import edu.wpi.first.shuffleboard.PreferencesWindowController;
 import edu.wpi.first.shuffleboard.theme.DefaultThemes;
 import edu.wpi.first.shuffleboard.theme.Theme;
 
@@ -11,6 +10,7 @@ import org.controlsfx.property.editor.PropertyEditor;
 
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.ComboBox;
+import javafx.util.StringConverter;
 
 import static javafx.collections.FXCollections.observableArrayList;
 
@@ -34,7 +34,7 @@ public class PropertyEditorFactory extends DefaultPropertyEditorFactory {
     ThemePropertyEditor(PropertySheet.Item property) {
       super(property, new ComboBox<>());
       getEditor().setItems(observableArrayList(DefaultThemes.LIGHT, DefaultThemes.DARK));
-      getEditor().setConverter(new PreferencesWindowController.ThemeStringConverter());
+      getEditor().setConverter(new ThemeStringConverter());
     }
 
     @Override
@@ -45,6 +45,26 @@ public class PropertyEditorFactory extends DefaultPropertyEditorFactory {
     @Override
     public void setValue(Theme value) {
       getEditor().getSelectionModel().select(value);
+    }
+  }
+
+  private static class ThemeStringConverter extends StringConverter<Theme> {
+
+    @Override
+    public String toString(Theme object) {
+      return object.getName();
+    }
+
+    @Override
+    public Theme fromString(String string) {
+      switch (string) {
+        case "Light":
+          return DefaultThemes.LIGHT;
+        case "Dark":
+          return DefaultThemes.DARK;
+        default:
+          return DefaultThemes.LIGHT;
+      }
     }
   }
 

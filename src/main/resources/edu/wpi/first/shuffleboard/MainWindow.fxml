@@ -40,7 +40,4 @@
             </Tab>
         </TabPane>
     </left>
-    <fx:define>
-        <fx:include source="PreferencesWindow.fxml" fx:id="prefsWindow"/>
-    </fx:define>
 </BorderPane>

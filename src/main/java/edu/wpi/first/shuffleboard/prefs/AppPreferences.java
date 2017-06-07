@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.prefs;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
 import edu.wpi.first.shuffleboard.theme.Theme;
@@ -13,30 +14,34 @@ import javafx.beans.property.Property;
  */
 public final class AppPreferences {
 
-  private static Property<Theme> theme = ThemeManager.themeProperty();
+  private final Property<Theme> theme = ThemeManager.getInstance().themeProperty();
 
-  private AppPreferences() {
+  @VisibleForTesting
+  static AppPreferences instance = new AppPreferences();
+
+  public static AppPreferences getInstance() {
+    return instance;
   }
 
   /**
    * Gets a read-only list of all the preference properties.
    */
-  public static ImmutableList<Property<?>> getProperties() {
+  public ImmutableList<Property<?>> getProperties() {
     return ImmutableList.of(
         theme
     );
   }
 
-  public static Property<Theme> themeProperty() {
+  public Property<Theme> themeProperty() {
     return theme;
   }
 
-  public static Theme getTheme() {
+  public Theme getTheme() {
     return theme.getValue();
   }
 
-  public static void setTheme(Theme theme) {
-    AppPreferences.theme.setValue(theme);
+  public void setTheme(Theme theme) {
+    this.theme.setValue(theme);
   }
 
 }

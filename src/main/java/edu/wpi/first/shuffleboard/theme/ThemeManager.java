@@ -1,6 +1,8 @@
 package edu.wpi.first.shuffleboard.theme;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.Property;
 import javafx.beans.property.ReadOnlyProperty;
@@ -11,27 +13,31 @@ import javafx.beans.property.SimpleObjectProperty;
  */
 public final class ThemeManager {
 
-  private static final Property<Theme> theme
+  private final Property<Theme> theme
       = new SimpleObjectProperty<>(ThemeManager.class, "Theme", DefaultThemes.LIGHT);
 
-  private static final Property<ImmutableList<String>> styleSheets
+  private final Property<ImmutableList<String>> styleSheets
       = new SimpleObjectProperty<>(ThemeManager.class, "StyleSheets", ImmutableList.of());
 
-  static {
+  @VisibleForTesting
+  static ThemeManager instance = new ThemeManager();
+
+  private ThemeManager() {
     styleSheets.bind(Bindings.createObjectBinding(() -> getTheme().getStyleSheets(), theme));
   }
 
-  private ThemeManager() {
+  public static ThemeManager getInstance() {
+    return instance;
   }
 
-  public static ReadOnlyProperty<ImmutableList<String>> styleSheetsProperty() {
+  public ReadOnlyProperty<ImmutableList<String>> styleSheetsProperty() {
     return styleSheets;
   }
 
   /**
    * Gets the current application stylesheets.
    */
-  public static ImmutableList<String> getStyleSheets() {
+  public ImmutableList<String> getStyleSheets() {
     return styleSheets.getValue();
   }
 
@@ -39,18 +45,18 @@ public final class ThemeManager {
    * Sets the current theme. The style sheets will automatically update to the style sheets for the
    * given theme.
    */
-  public static void setTheme(Theme theme) {
-    ThemeManager.theme.setValue(theme);
+  public void setTheme(Theme theme) {
+    this.theme.setValue(theme);
   }
 
   /**
    * Gets the current theme.
    */
-  public static Theme getTheme() {
+  public Theme getTheme() {
     return theme.getValue();
   }
 
-  public static Property<Theme> themeProperty() {
+  public Property<Theme> themeProperty() {
     return theme;
   }
 
