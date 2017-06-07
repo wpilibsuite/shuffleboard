@@ -27,7 +27,7 @@ public class NetworkTableUtilsTest {
 
   @Test
   public void testSimplifyNestedKey() {
-    String key = "a/complex/key";
+    String key = "/a/complex/key";
     assertEquals("key", NetworkTableUtils.simpleKey(key));
   }
 

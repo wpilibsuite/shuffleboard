@@ -19,6 +19,7 @@ import static edu.wpi.first.shuffleboard.components.NetworkTableTreeItemMatcher.
 import static edu.wpi.first.shuffleboard.components.NetworkTableTreeItemMatcher.hasSimpleKey;
 import static edu.wpi.first.shuffleboard.components.NetworkTableTreeItemMatcher.isExpanded;
 import static edu.wpi.first.shuffleboard.components.NetworkTableTreeItemMatcher.isLeaf;
+import static edu.wpi.first.shuffleboard.util.NetworkTableUtils.waitForNtcoreEvents;
 import static org.hamcrest.core.IsNot.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -58,6 +59,7 @@ public class NetworkTableTreeTest extends ApplicationTest {
   @Test
   public void testFirstLevel() {
     table.putString("entry", "value");
+    waitForNtcoreEvents();
     waitForFxEvents();
 
     ObservableList<TreeItem<NetworkTableEntry>> children = root.getChildren();
@@ -71,6 +73,7 @@ public class NetworkTableTreeTest extends ApplicationTest {
   @Test
   public void testBranches() {
     table.putString("branch/entry", "x");
+    waitForNtcoreEvents();
     waitForFxEvents();
     ObservableList<TreeItem<NetworkTableEntry>> children = root.getChildren();
 
@@ -96,6 +99,7 @@ public class NetworkTableTreeTest extends ApplicationTest {
     table.putString("a", "");
     table.putString("b", "");
     table.putString("sub_b/sub_entry_b", "");
+    waitForNtcoreEvents();
     waitForFxEvents();
     tree.sort();
 
@@ -127,11 +131,13 @@ public class NetworkTableTreeTest extends ApplicationTest {
   public void testDelete() {
     String key = "testDelete";
     table.putString(key, "value");
+    waitForNtcoreEvents();
     waitForFxEvents();
 
     assertNotNull("There should be a cell for the entry", lookup(hasText(key)).query());
 
     table.delete(key);
+    waitForNtcoreEvents();
     waitForFxEvents();
     assertNull("The cell should have been removed", lookup(hasText(key)).query());
   }
@@ -142,6 +148,7 @@ public class NetworkTableTreeTest extends ApplicationTest {
     final String firstValue = "value 1";
     final String secondValue = "value 2";
     table.putString(key, firstValue);
+    waitForNtcoreEvents();
     waitForFxEvents();
     assertCellIndex(key, 0);
     assertCellIndex(firstValue, 0);
@@ -149,6 +156,7 @@ public class NetworkTableTreeTest extends ApplicationTest {
     assertNull(lookup(hasText(secondValue)).query());
 
     table.putString(key, secondValue);
+    waitForNtcoreEvents();
     waitForFxEvents();
     assertCellIndex(key, 0);
     assertNull(lookup(hasText(firstValue)).query());
