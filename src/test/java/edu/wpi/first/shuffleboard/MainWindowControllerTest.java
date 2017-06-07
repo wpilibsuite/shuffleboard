@@ -1,8 +1,8 @@
 package edu.wpi.first.shuffleboard;
 
 import edu.wpi.first.shuffleboard.util.NetworkTableUtils;
-import edu.wpi.first.shuffleboard.widget.StockWidgets;
 import edu.wpi.first.shuffleboard.widget.Widget;
+import edu.wpi.first.shuffleboard.widget.Widgets;
 import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -24,7 +24,7 @@ public class MainWindowControllerTest extends ApplicationTest {
 
   @Override
   public void start(Stage stage) throws Exception {
-    StockWidgets.init();
+    Widgets.discover();
     FXMLLoader loader = new FXMLLoader(MainWindowController.class.getResource("MainWindow.fxml"));
     Pane root = loader.load();
     stage.setScene(new Scene(root));
