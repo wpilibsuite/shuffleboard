@@ -4,11 +4,21 @@ import edu.wpi.first.shuffleboard.components.NetworkTableTree;
 import edu.wpi.first.shuffleboard.components.WidgetGallery;
 import edu.wpi.first.shuffleboard.components.WidgetPane;
 import edu.wpi.first.shuffleboard.dnd.DataFormats;
+import edu.wpi.first.shuffleboard.prefs.AppPreferences;
+import edu.wpi.first.shuffleboard.prefs.ObservableItem;
+import edu.wpi.first.shuffleboard.prefs.PropertyEditorFactory;
 import edu.wpi.first.shuffleboard.sources.DataSource;
 import edu.wpi.first.shuffleboard.sources.NetworkTableSource;
 import edu.wpi.first.shuffleboard.theme.ThemeManager;
 import edu.wpi.first.shuffleboard.util.FxUtils;
 import edu.wpi.first.shuffleboard.widget.Widgets;
+
+import org.controlsfx.control.PropertySheet;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.logging.Logger;
+
 import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -26,10 +36,6 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.logging.Logger;
 
 import static edu.wpi.first.shuffleboard.util.TypeUtils.optionalCast;
 
@@ -51,7 +57,6 @@ public class MainWindowController {
   private NetworkTableTree networkTables;
   @FXML
   private Pane prefsWindow;
-  private Scene prefsScene;
 
   private static final PseudoClass selectedPseudoClass = PseudoClass.getPseudoClass("selected");
 
@@ -89,14 +94,13 @@ public class MainWindowController {
 
       ContextMenu menu = new ContextMenu();
       widgetNames.stream()
-                 .map(name -> createShowAsMenuItem(name, source))
-                 .forEach(menu.getItems()::add);
+          .map(name -> createShowAsMenuItem(name, source))
+          .forEach(menu.getItems()::add);
 
       menu.show(root.getScene().getWindow(), e.getScreenX(), e.getScreenY());
     });
 
     widgetGallery.loadWidgets(Widgets.allWidgets());
-    prefsScene = new Scene(prefsWindow);
   }
 
   private void makeSourceRowDraggable(TreeTableRow<? extends SourceEntry> row) {
@@ -116,7 +120,7 @@ public class MainWindowController {
     MenuItem menuItem = new MenuItem("Show as: " + widgetName);
     menuItem.setOnAction(action -> {
       Widgets.createWidget(widgetName, source)
-             .ifPresent(widgetPane::addWidget);
+          .ifPresent(widgetPane::addWidget);
     });
     return menuItem;
   }
@@ -129,15 +133,15 @@ public class MainWindowController {
     String key = node.getValue().getKey();
 
     widgetPane.getTiles()
-              .stream()
-              .filter(tile ->
-                optionalCast(tile.getWidget().getSource(), NetworkTableSource.class)
-                      .map(s ->
-                        s.getKey().equals(key) || (!node.isLeaf() && s.getKey().startsWith(key))
-                      )
-                      .orElse(false)
-              )
-              .forEach(tile -> setHighlighted(tile, highlightValue));
+        .stream()
+        .filter(tile ->
+            optionalCast(tile.getWidget().getSource(), NetworkTableSource.class)
+                .map(s ->
+                    s.getKey().equals(key) || (!node.isLeaf() && s.getKey().startsWith(key))
+                )
+                .orElse(false)
+        )
+        .forEach(tile -> setHighlighted(tile, highlightValue));
   }
 
   private void setHighlighted(Node tile, boolean highlightValue) {
@@ -160,9 +164,24 @@ public class MainWindowController {
   /**
    * Shows the preferences window.
    */
+  @SuppressWarnings("unchecked")
   @FXML
   public void showPrefs() {
+    // Create the property sheet
+    PropertySheet propertySheet = new PropertySheet();
+    propertySheet.setModeSwitcherVisible(false);
+    propertySheet.setSearchBoxVisible(false);
+    propertySheet.setMode(PropertySheet.Mode.NAME);
+    AppPreferences.getProperties()
+        .stream()
+        .map(property -> new ObservableItem(property, "Application"))
+        .forEachOrdered(propertySheet.getItems()::add);
+    propertySheet.setPropertyEditorFactory(new PropertyEditorFactory());
+    Scene scene = new Scene(propertySheet);
+    FxUtils.bind(propertySheet.getStylesheets(), ThemeManager.styleSheetsProperty());
+
     Stage stage = new Stage();
+    stage.setScene(scene);
     stage.initModality(Modality.APPLICATION_MODAL);
     stage.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
       if (event.getCode() == KeyCode.ESCAPE) {
@@ -170,9 +189,9 @@ public class MainWindowController {
       }
     });
     stage.setTitle("Shuffleboard Preferences");
-    stage.setScene(prefsScene);
     stage.sizeToScene();
     stage.setResizable(false);
+    stage.requestFocus();
     stage.showAndWait();
   }
 

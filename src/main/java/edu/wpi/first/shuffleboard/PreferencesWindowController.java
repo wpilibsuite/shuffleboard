@@ -28,7 +28,7 @@ public class PreferencesWindowController {
             .addListener((__, oldTheme, newTheme) -> ThemeManager.setTheme(newTheme));
   }
 
-  private static class ThemeStringConverter extends StringConverter<Theme> {
+  public static class ThemeStringConverter extends StringConverter<Theme> {
 
     @Override
     public String toString(Theme object) {

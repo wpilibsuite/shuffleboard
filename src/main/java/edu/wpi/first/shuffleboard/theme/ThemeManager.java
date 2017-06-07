@@ -12,10 +12,10 @@ import javafx.beans.property.SimpleObjectProperty;
 public final class ThemeManager {
 
   private static final Property<Theme> theme
-      = new SimpleObjectProperty<>(ThemeManager.class, "theme", DefaultThemes.LIGHT);
+      = new SimpleObjectProperty<>(ThemeManager.class, "Theme", DefaultThemes.LIGHT);
 
   private static final Property<ImmutableList<String>> styleSheets
-      = new SimpleObjectProperty<>(ThemeManager.class, "styleSheets", ImmutableList.of());
+      = new SimpleObjectProperty<>(ThemeManager.class, "StyleSheets", ImmutableList.of());
 
   static {
     styleSheets.bind(Bindings.createObjectBinding(() -> getTheme().getStyleSheets(), theme));
