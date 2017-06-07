@@ -1,15 +1,16 @@
 package edu.wpi.first.shuffleboard;
 
-import edu.wpi.first.shuffleboard.widget.StockWidgets;
+import edu.wpi.first.shuffleboard.widget.Widgets;
 import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
+
+import java.io.IOException;
+
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
-
-import java.io.IOException;
 
 @SuppressWarnings("JavadocMethod")
 public class Shuffleboard extends Application {
@@ -28,7 +29,9 @@ public class Shuffleboard extends Application {
     Font.loadFont(getClass().getResource("font/roboto/Roboto-Bold.ttf").openStream(), -1);
     Font.loadFont(getClass().getResource("font/roboto/Roboto-Italic.ttf").openStream(), -1);
     Font.loadFont(getClass().getResource("font/roboto/Roboto-BoldItalic.ttf").openStream(), -1);
-    StockWidgets.init();
+
+    Widgets.discover();
+
     mainPane = FXMLLoader.load(MainWindowController.class.getResource("MainWindow.fxml"));
   }
 
