@@ -1,3 +1,11 @@
+/*******************************************************************************
+ *                                                                             *
+ * Base CSS for all themes.                                                    *
+ * This sets the styles for some app-specific types that are consistent        *
+ * through all themes (like the tile highlight) or use CSS variables to make   *
+ * them easy to reskin.                                                        *
+ ******************************************************************************/
+
 @import "material.css";
 
 /*******************************************************************************

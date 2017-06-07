@@ -1,9 +1,8 @@
-/*
- * main.css
- *
- * This is the main css file that determines the default styles for everything in the app. Controls and views
- * that override these default settings should define them in their own css files.
- */
+/*******************************************************************************
+ *                                                                             *
+ * CSS for the DARK theme                                                      *
+ *                                                                             *
+ ******************************************************************************/
 
 @import "base.css";
 
