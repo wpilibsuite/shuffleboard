@@ -3,10 +3,11 @@ package edu.wpi.first.shuffleboard.prefs;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
+import edu.wpi.first.shuffleboard.theme.DefaultThemes;
 import edu.wpi.first.shuffleboard.theme.Theme;
-import edu.wpi.first.shuffleboard.theme.ThemeManager;
 
 import javafx.beans.property.Property;
+import javafx.beans.property.SimpleObjectProperty;
 
 /**
  * Contains the user preferences for the app. These preferences are user-specific and are saved
@@ -14,7 +15,8 @@ import javafx.beans.property.Property;
  */
 public final class AppPreferences {
 
-  private final Property<Theme> theme = ThemeManager.getInstance().themeProperty();
+  private final Property<Theme> theme
+      = new SimpleObjectProperty<>(this, "Theme", DefaultThemes.LIGHT);
 
   @VisibleForTesting
   static AppPreferences instance = new AppPreferences();

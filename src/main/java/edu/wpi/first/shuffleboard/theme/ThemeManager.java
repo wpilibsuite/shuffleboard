@@ -3,6 +3,8 @@ package edu.wpi.first.shuffleboard.theme;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
+import edu.wpi.first.shuffleboard.prefs.AppPreferences;
+
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.Property;
 import javafx.beans.property.ReadOnlyProperty;
@@ -13,8 +15,7 @@ import javafx.beans.property.SimpleObjectProperty;
  */
 public final class ThemeManager {
 
-  private final Property<Theme> theme
-      = new SimpleObjectProperty<>(ThemeManager.class, "Theme", DefaultThemes.LIGHT);
+  private final Property<Theme> theme = AppPreferences.getInstance().themeProperty();
 
   private final Property<ImmutableList<String>> styleSheets
       = new SimpleObjectProperty<>(ThemeManager.class, "StyleSheets", ImmutableList.of());
