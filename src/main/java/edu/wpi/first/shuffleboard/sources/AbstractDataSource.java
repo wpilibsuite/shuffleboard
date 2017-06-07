@@ -56,10 +56,11 @@ public abstract class AbstractDataSource<T> implements DataSource<T> {
 
   @Override
   public String toString() {
-    return String.format("%s(name=%s, active=%s, data=%s)",
+    return String.format("%s(name=%s, active=%s, data=%s, dataType=%s)",
                          getClass().getSimpleName(),
                          getName(),
                          isActive(),
-                         getData());
+                         getData(),
+                         getDataType());
   }
 }
