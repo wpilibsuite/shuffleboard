@@ -48,6 +48,11 @@
     -fx-font-weight: bold;
 }
 
+.tile .property-sheet * {
+    /* TODO figure out exactly what needs to be set */
+    -fx-background-color: transparent;
+}
+
 /*******************************************************************************
  *                                                                             *
  * Grid Highlight                                                              *

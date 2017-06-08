@@ -214,12 +214,3 @@
     -fx-background-color: -swatch-light-gray;
     -fx-text-fill: -fx-text-base-color;
 }
-
-/*******************************************************************************
- *                                                                             *
- * Property sheet                                                              *
- *                                                                             *
- ******************************************************************************/
-.property-sheet .property-pane {
-    -fx-background-color: -swatch-gray;
-}

@@ -52,3 +52,7 @@
 .tile-title-label {
     -fx-text-fill: #eee;
 }
+
+.tile .slider .axis {
+    -fx-tick-label-fill: #222;
+}
