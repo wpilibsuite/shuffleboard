@@ -72,6 +72,14 @@ public abstract class SimpleAnnotatedWidget<T> implements Widget {
     return data;
   }
 
+  protected final T getData() {
+    return data.getValue();
+  }
+
+  protected final void setData(T data) {
+    this.data.setValue(data);
+  }
+
   public final String getSourceName() {
     return sourceName.getValue();
   }
