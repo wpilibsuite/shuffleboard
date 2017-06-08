@@ -44,6 +44,10 @@
     -fx-background-color: linear-gradient(to bottom, -swatch-200, -swatch-500);
 }
 
+.tile-title-label {
+    -fx-font-weight: bold;
+}
+
 /*******************************************************************************
  *                                                                             *
  * Grid Highlight                                                              *
