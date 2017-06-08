@@ -180,11 +180,19 @@
 /* Tiles */
 
 .tile {
-    -fx-background-color: slateblue;
+    -fx-background-color: base-light;
 }
 
 .tile:selected {
     -fx-effect: dropshadow(gaussian, highlight, 6, 0.1, 0, 4);
+}
+
+.tile-title-bar {
+    -fx-background-color: linear-gradient(to bottom, wpi-red, derive(wpi-red, -10%));
+}
+
+.slider .axis * {
+    -fx-fill: white;
 }
 
 .grid-highlight {
@@ -196,4 +204,9 @@
 .grid-highlight:colliding {
     -fx-border-color: rgba(255, 0, 0, 0.75);
     -fx-background-color: rgba(255, 0, 0, 0.1);
+}
+
+.property-sheet, .property-sheet .property-pane {
+    /* TODO figure out why there's a thin white line at the bottom */
+    -fx-background-color: base-light;
 }

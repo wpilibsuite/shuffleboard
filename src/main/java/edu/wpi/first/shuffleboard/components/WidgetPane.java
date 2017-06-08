@@ -1,6 +1,5 @@
 package edu.wpi.first.shuffleboard.components;
 
-import edu.wpi.first.shuffleboard.WidgetTile;
 import edu.wpi.first.shuffleboard.dnd.DragUtils;
 import edu.wpi.first.shuffleboard.sources.DataSource;
 import edu.wpi.first.shuffleboard.util.GridPoint;
