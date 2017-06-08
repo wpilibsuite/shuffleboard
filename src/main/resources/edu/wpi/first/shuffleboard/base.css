@@ -40,6 +40,10 @@
     -fx-effect: dropshadow(gaussian, -swatch-500, 6, 0.1, 0, 4);
 }
 
+.tile-title-bar {
+    -fx-background-color: linear-gradient(to bottom, -swatch-200, -swatch-500);
+}
+
 /*******************************************************************************
  *                                                                             *
  * Grid Highlight                                                              *

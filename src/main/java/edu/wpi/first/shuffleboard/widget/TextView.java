@@ -23,7 +23,6 @@ public class TextView extends SimpleAnnotatedWidget<Object> {
   private final StringProperty text = new SimpleStringProperty(this, "text", "");
   private final StringProperty label = new SimpleStringProperty(this, "label", "");
 
-
   @FXML
   private Pane root;
 

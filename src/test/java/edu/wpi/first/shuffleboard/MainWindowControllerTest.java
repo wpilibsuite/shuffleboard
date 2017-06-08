@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard;
 
+import edu.wpi.first.shuffleboard.components.WidgetTile;
 import edu.wpi.first.shuffleboard.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.widget.Widget;
 import edu.wpi.first.shuffleboard.widget.Widgets;
