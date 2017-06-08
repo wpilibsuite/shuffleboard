@@ -28,6 +28,8 @@ public class DummySource<T> extends AbstractDataSource<T> {
       return Optional.of(new DummySource(DataType.Number, 123));
     } else if (types.contains(DataType.String)) {
       return Optional.of(new DummySource(DataType.String, "a string"));
+    } else if (types.contains(DataType.Boolean)) {
+      return Optional.of(new DummySource(DataType.Boolean, true));
     } else {
       return Optional.empty();
     }
