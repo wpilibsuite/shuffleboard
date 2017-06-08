@@ -38,9 +38,17 @@
  *                                                                             *
  ******************************************************************************/
 .tile {
-    -fx-background-color: dodgerblue;
+    -fx-background-color: -swatch-300;
 }
 
 .tile:selected {
-    -fx-effect: dropshadow(gaussian, darkslateblue, 6, 0.1, 0, 4);
+    -fx-effect: dropshadow(gaussian, -swatch-500, 6, 0.1, 0, 4);
+}
+
+.tile-title-bar {
+    -fx-background-color: linear-gradient(to bottom, #444, black);
+}
+
+.tile-title-label {
+    -fx-text-fill: #eee;
 }
