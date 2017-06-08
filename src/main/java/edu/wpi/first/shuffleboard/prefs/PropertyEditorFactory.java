@@ -33,7 +33,7 @@ public class PropertyEditorFactory extends DefaultPropertyEditorFactory {
 
     ThemePropertyEditor(PropertySheet.Item property) {
       super(property, new ComboBox<>());
-      getEditor().setItems(observableArrayList(DefaultThemes.LIGHT, DefaultThemes.DARK));
+      getEditor().setItems(observableArrayList(DefaultThemes.getThemes()));
       getEditor().setConverter(new ThemeStringConverter());
     }
 
@@ -57,14 +57,7 @@ public class PropertyEditorFactory extends DefaultPropertyEditorFactory {
 
     @Override
     public Theme fromString(String string) {
-      switch (string) {
-        case "Light":
-          return DefaultThemes.LIGHT;
-        case "Dark":
-          return DefaultThemes.DARK;
-        default:
-          return DefaultThemes.LIGHT;
-      }
+      return DefaultThemes.forName(string, DefaultThemes.LIGHT);
     }
   }
 
