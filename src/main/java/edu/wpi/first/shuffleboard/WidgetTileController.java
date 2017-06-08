@@ -21,7 +21,7 @@ public class WidgetTileController {
   @FXML
   private void initialize() {
     tile.addEventHandler(MouseEvent.MOUSE_CLICKED, this::changeView);
-    PropertyUtils.bind(
+    PropertyUtils.bindWithConverter(
         titleLabel.textProperty(),
         tile.widgetProperty(),
         w -> w.getSource().getName());

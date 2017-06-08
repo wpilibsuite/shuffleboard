@@ -32,7 +32,7 @@ public class NumberField extends TextField {
       return null;
     }));
     // bind text <-> number, only changing one if the new value has actually updated
-    PropertyUtils.bindBidirectional(
+    PropertyUtils.bindBidirectionalWithConverter(
         textProperty(),
         number,
         text -> isCompleteNumber(text) ? getNumberFromText(text) : getNumber(),
