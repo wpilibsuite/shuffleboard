@@ -2,7 +2,10 @@ package edu.wpi.first.shuffleboard.util;
 
 import edu.wpi.first.shuffleboard.widget.DataType;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
+import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
 import edu.wpi.first.wpilibj.tables.ITable;
+
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Utility class for working with network tables.
@@ -98,10 +101,64 @@ public final class NetworkTableUtils {
       return DataType.valueOf(rootTable.getValue(normalKey).getClass());
     }
     if (rootTable.containsSubTable(normalKey)) {
-      String type = rootTable.getSubTable(normalKey).getString("~METADATA~/Type", null);
-      return DataType.forName(type);
+      ITable table = rootTable.getSubTable(normalKey);
+      String type = table.getString("~METADATA/Type", table.getString(".metadata/Type", null));
+      if (type == null) {
+        return DataType.Map;
+      } else {
+        return DataType.forName(type);
+      }
     }
     return DataType.Unknown;
+  }
+
+  /**
+   * Waits for ntcore listeners to be fired. This is a <i>blocking operation</i>.
+   */
+  public static void waitForNtcoreEvents() {
+    CompletableFuture<?> future = new CompletableFuture<>();
+    NetworkTablesJNI.addEntryListener("", (uid, key, value, flags) -> {
+      future.complete(null);
+      NetworkTablesJNI.removeEntryListener(uid);
+    }, 0xFF);
+    future.join();
+  }
+
+
+  /**
+   * Shuts down the network table client or server, then clears all entries from network tables.
+   * This should be used when changing from server mode to client mode, or changing server
+   * address while in client mode.
+   */
+  public static void shutdown() {
+    NetworkTablesJNI.stopDSClient();
+    NetworkTablesJNI.stopClient();
+    NetworkTablesJNI.stopServer();
+    NetworkTablesJNI.deleteAllEntries(); // delete AFTER shutting down the server/client
+    NetworkTable.shutdown();
+  }
+
+  /**
+   * Sets ntcore to server mode.
+   *
+   * @param port the port on the local machine to run the ntcore server on
+   */
+  public static void setServer(int port) {
+    shutdown();
+    NetworkTablesJNI.startServer("networktables.ini", "", port);
+    NetworkTable.initialize();
+  }
+
+  /**
+   * Sets ntcore to client mode.
+   *
+   * @param serverIp   the ip of the server to connect to, eg "127.0.0.1" or "localhost"
+   * @param serverPort the port of the server to connect to. This is normally 1735.
+   */
+  public static void setClient(String serverIp, int serverPort) {
+    shutdown();
+    NetworkTablesJNI.startClient(serverIp, serverPort);
+    NetworkTable.initialize();
   }
 
 }

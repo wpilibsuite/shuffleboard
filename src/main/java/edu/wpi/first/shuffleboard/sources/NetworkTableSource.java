@@ -14,7 +14,7 @@ import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
 public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
 
   private int listenerId = -1;
-  private final String fullTableKey;
+  protected final String fullTableKey;
 
   /**
    * Creates a network table source that listens to values under the given key. The key can be
@@ -44,6 +44,10 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
     if (listenerId != -1) {
       NetworkTablesJNI.removeEntryListener(listenerId);
     }
+  }
+
+  public String getKey() {
+    return fullTableKey;
   }
 
   @FunctionalInterface

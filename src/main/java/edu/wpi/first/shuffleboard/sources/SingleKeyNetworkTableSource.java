@@ -39,6 +39,10 @@ public class SingleKeyNetworkTableSource<T> extends NetworkTableSource<T> {
     });
 
     data.addListener((__, oldValue, newValue) -> {
+      if (table.getValue(key, null) == newValue) {
+        // no change
+        return;
+      }
       if (isActive()) {
         table.putValue(key, newValue);
       } else {
