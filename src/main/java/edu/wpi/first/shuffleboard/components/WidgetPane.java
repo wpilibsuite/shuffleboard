@@ -203,4 +203,10 @@ public class WidgetPane extends TilePane {
     this.highlightSize.setValue(highlightSize);
   }
 
+  /**
+   * Will select the widgets that match predicate, and de-select all other widgets.
+   */
+  public void selectWidgets(Predicate<Widget> predicate) {
+    tiles.forEach(tile -> tile.setSelected(predicate.test(tile.getWidget())));
+  }
 }

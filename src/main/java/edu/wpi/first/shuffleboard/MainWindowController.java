@@ -42,8 +42,6 @@ public class MainWindowController {
   @FXML
   private NetworkTableTree networkTables;
 
-  private static final PseudoClass selectedPseudoClass = PseudoClass.getPseudoClass("selected");
-
   @FXML
   private void initialize() throws IOException {
     // NetworkTable view init
@@ -115,27 +113,17 @@ public class MainWindowController {
                                           boolean highlightValue) {
     String key = node.getValue().getKey();
 
-    widgetPane.getTiles()
-              .stream()
-              .filter(tile ->
-                optionalCast(tile.getWidget().getSource(), NetworkTableSource.class)
+    if (highlightValue) {
+      widgetPane.selectWidgets((Widget widget) ->
+              optionalCast(widget.getSource(), NetworkTableSource.class)
                       .map(s ->
-                        s.getKey().equals(key) || (!node.isLeaf() && s.getKey().startsWith(key))
+                              s.getKey().equals(key) || (!node.isLeaf() && s.getKey().startsWith(key))
                       )
                       .orElse(false)
-              )
-              .forEach(tile -> setHighlighted(tile, highlightValue));
-  }
-
-  private void setHighlighted(Node tile, boolean highlightValue) {
-    tile.pseudoClassStateChanged(selectedPseudoClass, highlightValue);
-  }
-
-  /**
-   * Deselects all widgets in the tile view.
-   */
-  private void deselectAllWidgets() {
-    widgetPane.getTiles().forEach(node -> setHighlighted(node, false));
+      );
+    } else {
+      widgetPane.selectWidgets(widget -> false);
+    }
   }
 
   @FXML
@@ -143,5 +131,4 @@ public class MainWindowController {
     log.info("Exiting app");
     System.exit(0);
   }
-
 }
