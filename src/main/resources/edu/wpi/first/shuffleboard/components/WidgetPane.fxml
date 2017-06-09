@@ -6,7 +6,8 @@
 <fx:root fx:id="pane" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
             fx:controller="edu.wpi.first.shuffleboard.WidgetPaneController"
             hgap="16" vgap="16" numColumns="8" numRows="6"
-            tileSize="128" type="WidgetPane">
+            tileSize="128" type="WidgetPane"
+            styleClass="widget-pane">
     <padding>
         <Insets topRightBottomLeft="10"/>
     </padding>
