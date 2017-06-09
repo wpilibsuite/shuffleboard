@@ -1,15 +1,14 @@
 package edu.wpi.first.shuffleboard;
 
+import edu.wpi.first.shuffleboard.components.DashboardTabPane;
 import edu.wpi.first.shuffleboard.components.NetworkTableTree;
 import edu.wpi.first.shuffleboard.components.WidgetGallery;
-import edu.wpi.first.shuffleboard.components.WidgetPane;
 import edu.wpi.first.shuffleboard.dnd.DataFormats;
 import edu.wpi.first.shuffleboard.sources.DataSource;
 import edu.wpi.first.shuffleboard.sources.NetworkTableSource;
+import edu.wpi.first.shuffleboard.widget.Widget;
 import edu.wpi.first.shuffleboard.widget.Widgets;
-import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
-import javafx.scene.Node;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TreeItem;
@@ -38,7 +37,7 @@ public class MainWindowController {
   @FXML
   private BorderPane root;
   @FXML
-  private WidgetPane widgetPane;
+  private DashboardTabPane dashboard;
   @FXML
   private NetworkTableTree networkTables;
 
@@ -101,7 +100,7 @@ public class MainWindowController {
     MenuItem menuItem = new MenuItem("Show as: " + widgetName);
     menuItem.setOnAction(action -> {
       Widgets.createWidget(widgetName, source)
-             .ifPresent(widgetPane::addWidget);
+             .ifPresent(dashboard::addManually);
     });
     return menuItem;
   }
@@ -114,7 +113,7 @@ public class MainWindowController {
     String key = node.getValue().getKey();
 
     if (highlightValue) {
-      widgetPane.selectWidgets((Widget widget) ->
+      dashboard.selectWidgets((Widget widget) ->
               optionalCast(widget.getSource(), NetworkTableSource.class)
                       .map(s ->
                               s.getKey().equals(key) || (!node.isLeaf() && s.getKey().startsWith(key))
@@ -122,7 +121,7 @@ public class MainWindowController {
                       .orElse(false)
       );
     } else {
-      widgetPane.selectWidgets(widget -> false);
+      dashboard.selectWidgets(widget -> false);
     }
   }
 
