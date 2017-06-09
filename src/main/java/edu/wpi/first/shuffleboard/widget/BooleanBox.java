@@ -11,8 +11,7 @@ import javafx.scene.paint.Color;
 
 @Description(
     name = "Boolean Box",
-    dataTypes = DataType.Boolean
-)
+    dataTypes = DataType.Boolean)
 @ParametrizedController("BooleanBox.fxml")
 public class BooleanBox extends SimpleAnnotatedWidget<Boolean> {
 
@@ -42,7 +41,7 @@ public class BooleanBox extends SimpleAnnotatedWidget<Boolean> {
     final Boolean data = getData();
     if (data == null) {
       return Color.BLACK;
-    } else if (data == true) {
+    } else if (data == true) { //NOPMD
       return trueColor.getValue();
     } else {
       return falseColor.getValue();

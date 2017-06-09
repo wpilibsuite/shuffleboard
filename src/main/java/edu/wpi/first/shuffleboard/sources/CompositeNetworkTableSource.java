@@ -1,8 +1,10 @@
 package edu.wpi.first.shuffleboard.sources;
 
+import edu.wpi.first.shuffleboard.util.AsyncUtils;
 import edu.wpi.first.shuffleboard.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.widget.DataType;
 import edu.wpi.first.wpilibj.tables.ITable;
+
 import javafx.collections.FXCollections;
 import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableMap;
@@ -32,14 +34,17 @@ public class CompositeNetworkTableSource extends NetworkTableSource<ObservableMa
     super.setData(FXCollections.synchronizedObservableMap(FXCollections.observableHashMap()));
 
     setTableListener((key, value, flags) -> {
-      boolean delete = NetworkTableUtils.isDelete(flags);
-      String simpleKey = NetworkTableUtils.simpleKey(key);
-      if (delete) {
-        getData().remove(simpleKey);
-      } else {
-        getData().put(simpleKey, value);
-      }
-      setActive(NetworkTableUtils.dataTypeForEntry(fullTableKey) == dataType);
+      AsyncUtils.runAsync(() -> {
+        // make sure the updates run on the application thread
+        boolean delete = NetworkTableUtils.isDelete(flags);
+        String simpleKey = NetworkTableUtils.simpleKey(key);
+        if (delete) {
+          getData().remove(simpleKey);
+        } else {
+          getData().put(simpleKey, value);
+        }
+        setActive(NetworkTableUtils.dataTypeForEntry(fullTableKey) == dataType);
+      });
     });
 
     getData().addListener((MapChangeListener<String, Object>) change -> {

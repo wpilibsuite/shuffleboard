@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.sources;
 
+import edu.wpi.first.shuffleboard.util.AsyncUtils;
 import edu.wpi.first.shuffleboard.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.widget.DataType;
 import edu.wpi.first.wpilibj.tables.ITable;
@@ -28,14 +29,16 @@ public class SingleKeyNetworkTableSource<T> extends NetworkTableSource<T> {
         // No change
         return;
       }
-      boolean deleted = NetworkTableUtils.isDelete(flags);
-      setActive(!deleted && dataType == DataType.valueOf(value.getClass()));
+      AsyncUtils.runAsync(() -> {
+        boolean deleted = NetworkTableUtils.isDelete(flags);
+        setActive(!deleted && dataType == DataType.valueOf(value.getClass()));
 
-      if (isActive()) {
-        setData((T) value);
-      } else {
-        setData(null);
-      }
+        if (isActive()) {
+          setData((T) value);
+        } else {
+          setData(null);
+        }
+      });
     });
 
     data.addListener((__, oldValue, newValue) -> {
