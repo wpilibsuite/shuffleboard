@@ -200,14 +200,6 @@
     -fx-background-color: base;
 }
 
-/*
-
-
-
-.dashboard-tabs .tab-close-button {
-    -fx-border-width: 20px;
-}*/
-
 .widget-gallery .item {
     -fx-border-width: 2;
     -fx-border-color: base-light;
