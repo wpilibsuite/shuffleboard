@@ -10,14 +10,14 @@ import javafx.scene.layout.Pane;
 @ParametrizedController("ComboBoxChooser.fxml")
 public class ComboBoxChooser extends ComplexAnnotatedWidget {
 
-  private static final String DEFAULT_VALUE_KEY = "default";
-  private static final String SELECTED_VALUE_KEY = "selected";
-  private static final String OPTIONS_KEY = "options";
+  static final String DEFAULT_VALUE_KEY = "default";
+  static final String SELECTED_VALUE_KEY = "selected";
+  static final String OPTIONS_KEY = "options";
 
   @FXML
   private Pane root;
   @FXML
-  private ComboBox<String> comboBox;
+  ComboBox<String> comboBox;
 
   @FXML
   private void initialize() {
