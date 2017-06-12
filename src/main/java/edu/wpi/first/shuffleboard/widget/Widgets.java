@@ -20,9 +20,23 @@ import java.util.stream.Collectors;
 public final class Widgets {
 
   private static Map<String, WidgetType> widgets = new HashMap<>();
+  private static boolean loadedStockWidgets = false;
 
   private Widgets() {
     // Utility class, prevent instantiation
+  }
+
+  /**
+   * Discovers and loads stock and custom widgets. Stock widgets are only loaded once since they
+   * never change; custom widgets are unloaded (if they were changed) and are reloaded with the
+   * newest version.
+   */
+  public static void discover() {
+    if (!loadedStockWidgets) {
+      StockWidgets.init();
+      loadedStockWidgets = true;
+    }
+    // TODO discover custom widgets
   }
 
   /**

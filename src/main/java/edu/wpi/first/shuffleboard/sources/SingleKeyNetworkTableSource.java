@@ -4,6 +4,8 @@ import edu.wpi.first.shuffleboard.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.widget.DataType;
 import edu.wpi.first.wpilibj.tables.ITable;
 
+import java.util.Objects;
+
 /**
  * A data source backed by a single key-value pair in a network table.
  */
@@ -22,6 +24,10 @@ public class SingleKeyNetworkTableSource<T> extends NetworkTableSource<T> {
     super(key);
     setName(key);
     setTableListener((__, value, flags) -> {
+      if (Objects.equals(value, getData())) {
+        // No change
+        return;
+      }
       boolean deleted = NetworkTableUtils.isDelete(flags);
       setActive(!deleted && dataType == DataType.valueOf(value.getClass()));
 
@@ -33,6 +39,10 @@ public class SingleKeyNetworkTableSource<T> extends NetworkTableSource<T> {
     });
 
     data.addListener((__, oldValue, newValue) -> {
+      if (table.getValue(key, null) == newValue) {
+        // no change
+        return;
+      }
       if (isActive()) {
         table.putValue(key, newValue);
       } else {

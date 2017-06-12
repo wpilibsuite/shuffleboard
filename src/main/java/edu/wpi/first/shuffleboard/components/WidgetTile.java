@@ -1,34 +1,41 @@
-package edu.wpi.first.shuffleboard;
+package edu.wpi.first.shuffleboard.components;
 
+import edu.wpi.first.shuffleboard.util.PropertyUtils;
 import edu.wpi.first.shuffleboard.widget.TileSize;
 import edu.wpi.first.shuffleboard.widget.Widget;
+
+import java.io.IOException;
+
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.Property;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.scene.layout.StackPane;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.layout.BorderPane;
 
 /**
  * Represents a tile containing a widget.
  */
-public class WidgetTile extends StackPane {
+public class WidgetTile extends BorderPane {
 
   private final Property<Widget> widget = new SimpleObjectProperty<>(this, "widget", null);
   private final Property<TileSize> size = new SimpleObjectProperty<>(this, "size", null);
+  private final BooleanProperty showWidget = new SimpleBooleanProperty(this, "showWidget", true);
 
   /**
    * Creates an empty tile. The widget and size must be set with {@link #setWidget(Widget)} and
    * {@link #setSize(TileSize)}.
    */
   public WidgetTile() {
-    getStyleClass().add("tile");
-    widget.addListener((__, oldWidget, newWidget) -> {
-      if (oldWidget != null) {
-        getChildren().remove(oldWidget.getView());
-      }
-      if (newWidget != null) {
-        getChildren().add(newWidget.getView());
-      }
-    });
-    widget.addListener(__ -> setId("widget-tile[" + getWidget().toString() + "]"));
+    try {
+      FXMLLoader loader = new FXMLLoader(WidgetTile.class.getResource("WidgetTile.fxml"));
+      loader.setRoot(this);
+      loader.load();
+      getStyleClass().add("tile");
+      PropertyUtils.bindWithConverter(idProperty(), widget, w -> "widget-tile[" + w + "]");
+    } catch (IOException e) {
+      throw new RuntimeException("Could not load the widget tile FXML", e);
+    }
   }
 
   /**
@@ -71,6 +78,22 @@ public class WidgetTile extends StackPane {
    */
   public final void setSize(TileSize size) {
     this.size.setValue(size);
+  }
+
+  public boolean isShowWidget() {
+    return showWidget.get();
+  }
+
+  public BooleanProperty showWidgetProperty() {
+    return showWidget;
+  }
+
+  public void setShowWidget(boolean showWidget) {
+    this.showWidget.set(showWidget);
+  }
+
+  public void toggleShowWidget() {
+    setShowWidget(!isShowWidget());
   }
 
 }

@@ -1,6 +1,5 @@
 package edu.wpi.first.shuffleboard.components;
 
-import edu.wpi.first.shuffleboard.WidgetTile;
 import edu.wpi.first.shuffleboard.dnd.DragUtils;
 import edu.wpi.first.shuffleboard.sources.DataSource;
 import edu.wpi.first.shuffleboard.util.GridPoint;
@@ -40,6 +39,7 @@ public class WidgetPane extends TilePane {
    * around in this pane.
    */
   public WidgetPane() {
+    getStyleClass().add("widget-pane");
     gridHighlight.getStyleClass().add("grid-highlight");
 
     tiles = EasyBind.map(getChildren().filtered(n -> n instanceof WidgetTile), n -> (WidgetTile) n);
