@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.sources;
 
+import edu.wpi.first.shuffleboard.data.ComplexData;
 import edu.wpi.first.shuffleboard.util.AsyncUtils;
 import edu.wpi.first.shuffleboard.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.widget.DataType;
@@ -16,7 +17,11 @@ import javafx.collections.ObservableMap;
  * network tables is a flat namespace and that a subtable is really just a shortcut for finding data
  * under a certain nested namespace.
  */
-public class CompositeNetworkTableSource extends NetworkTableSource<ObservableMap<String, Object>> {
+public class CompositeNetworkTableSource<D extends ComplexData> extends NetworkTableSource<D> {
+
+  // Use a synchronized map because network table listeners run in their own thread
+  private final ObservableMap<String, Object> backingMap
+      = FXCollections.synchronizedObservableMap(FXCollections.observableHashMap());
 
   /**
    * Creates a composite network table source backed by the values associated with the given
@@ -30,8 +35,8 @@ public class CompositeNetworkTableSource extends NetworkTableSource<ObservableMa
     super(tableName);
     String path = NetworkTableUtils.normalizeKey(tableName, false);
     ITable table = NetworkTableUtils.rootTable.getSubTable(path);
-    // Use a synchronized map because network table listeners run in their own thread
-    super.setData(FXCollections.synchronizedObservableMap(FXCollections.observableHashMap()));
+    D data = (D) ComplexData.forDataType(dataType, backingMap);
+    super.setData(data);
 
     setTableListener((key, value, flags) -> {
       AsyncUtils.runAsync(() -> {
@@ -39,15 +44,15 @@ public class CompositeNetworkTableSource extends NetworkTableSource<ObservableMa
         boolean delete = NetworkTableUtils.isDelete(flags);
         String simpleKey = NetworkTableUtils.simpleKey(key);
         if (delete) {
-          getData().remove(simpleKey);
+          backingMap.remove(simpleKey);
         } else {
-          getData().put(simpleKey, value);
+          backingMap.put(simpleKey, value);
         }
         setActive(NetworkTableUtils.dataTypeForEntry(fullTableKey) == dataType);
       });
     });
 
-    getData().addListener((MapChangeListener<String, Object>) change -> {
+    backingMap.addListener((MapChangeListener<String, Object>) change -> {
       if (!isActive()) {
         return;
       }
@@ -64,7 +69,7 @@ public class CompositeNetworkTableSource extends NetworkTableSource<ObservableMa
    * Do not use this method.
    */
   @Override
-  public void setData(ObservableMap<String, Object> newValue) {
+  public void setData(D newValue) {
     throw new UnsupportedOperationException(
         "The data cannot be set directly. Set a value using getData() instead");
   }

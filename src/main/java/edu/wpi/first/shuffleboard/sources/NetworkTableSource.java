@@ -79,7 +79,7 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
     }
     if (NetworkTableUtils.rootTable.containsSubTable(key)) {
       // Composite
-      return new CompositeNetworkTableSource(key, NetworkTableUtils.dataTypeForEntry(key));
+      return new CompositeNetworkTableSource<>(key, NetworkTableUtils.dataTypeForEntry(key));
     }
     return DataSource.none();
   }

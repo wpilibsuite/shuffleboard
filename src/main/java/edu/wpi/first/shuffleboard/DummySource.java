@@ -2,15 +2,15 @@ package edu.wpi.first.shuffleboard;
 
 import com.google.common.collect.ImmutableSet;
 
+import edu.wpi.first.shuffleboard.data.SendableChooserData;
 import edu.wpi.first.shuffleboard.sources.AbstractDataSource;
 import edu.wpi.first.shuffleboard.widget.DataType;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableMap;
 
 @SuppressWarnings("PMD.UseUtilityClass")
 public class DummySource<T> extends AbstractDataSource<T> {
@@ -37,12 +37,11 @@ public class DummySource<T> extends AbstractDataSource<T> {
     } else if (types.contains(DataType.Boolean)) {
       return Optional.of(new DummySource(DataType.Boolean, true));
     } else if (types.contains(DataType.SendableChooser)) {
-      Map<String, Object> map = new HashMap<>();
+      ObservableMap<String, Object> map = FXCollections.observableHashMap();
       map.put("options", new String[]{"A", "B", "C"});
       map.put("default", "A");
       map.put("selected", null);
-      return Optional.of(new DummySource(DataType.SendableChooser,
-          FXCollections.observableMap(map)));
+      return Optional.of(new DummySource(DataType.SendableChooser, new SendableChooserData(map)));
     } else {
       return Optional.empty();
     }

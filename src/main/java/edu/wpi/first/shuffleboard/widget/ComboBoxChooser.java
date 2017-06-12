@@ -1,18 +1,15 @@
 package edu.wpi.first.shuffleboard.widget;
 
+import edu.wpi.first.shuffleboard.data.SendableChooserData;
+
 import javafx.collections.FXCollections;
-import javafx.collections.MapChangeListener;
 import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
 import javafx.scene.layout.Pane;
 
 @Description(name = "ComboBox Chooser", dataTypes = DataType.SendableChooser)
 @ParametrizedController("ComboBoxChooser.fxml")
-public class ComboBoxChooser extends ComplexAnnotatedWidget {
-
-  static final String DEFAULT_VALUE_KEY = "default";
-  static final String SELECTED_VALUE_KEY = "selected";
-  static final String OPTIONS_KEY = "options";
+public class ComboBoxChooser extends ComplexAnnotatedWidget<SendableChooserData> {
 
   @FXML
   private Pane root;
@@ -21,30 +18,23 @@ public class ComboBoxChooser extends ComplexAnnotatedWidget {
 
   @FXML
   private void initialize() {
-    dataProperty().addListener((observable, oldValue, newValue) -> {
-      newValue.addListener((MapChangeListener<String, Object>) change -> {
-        switch ((String) change.getKey()) {
-          case OPTIONS_KEY:
-            updateOptions((String[]) change.getMap().get(OPTIONS_KEY));
-            break;
-          case DEFAULT_VALUE_KEY:
-            updateDefaultValue((String) change.getMap().get(DEFAULT_VALUE_KEY));
-            break;
-          case SELECTED_VALUE_KEY:
-            updateSelectedValue((String) change.getMap().get(SELECTED_VALUE_KEY));
-            break;
-          default:
-            // Nothing we can use
-            break;
-        }
+    dataProperty().addListener((observable, oldData, newData) -> {
+      newData.optionsProperty().addListener((__, oldOptions, newOptions) -> {
+        updateOptions(newOptions);
       });
-      updateOptions((String[]) newValue.getOrDefault(OPTIONS_KEY, new String[0]));
-      updateDefaultValue((String) newValue.get(DEFAULT_VALUE_KEY));
-      updateSelectedValue((String) newValue.get(SELECTED_VALUE_KEY));
+      newData.defaultOptionProperty().addListener((__, oldDefault, newDefault) -> {
+        updateDefaultValue(newDefault);
+      });
+      newData.selectedOptionProperty().addListener((__, oldSelected, newSelected) -> {
+        updateSelectedValue(newSelected);
+      });
+      updateOptions(newData.getOptions());
+      updateDefaultValue(newData.getDefaultOption());
+      updateSelectedValue(newData.getSelectedOption());
     });
     comboBox.getSelectionModel()
         .selectedItemProperty()
-        .addListener((__, oldValue, newValue) -> getData().put(SELECTED_VALUE_KEY, newValue));
+        .addListener((__, oldValue, newValue) -> getData().setSelectedOption(newValue));
   }
 
   private void updateOptions(String... options) {
