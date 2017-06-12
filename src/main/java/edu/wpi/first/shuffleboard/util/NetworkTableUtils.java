@@ -102,20 +102,7 @@ public final class NetworkTableUtils {
     }
     if (rootTable.containsSubTable(normalKey)) {
       ITable table = rootTable.getSubTable(normalKey);
-      final String[] typeKeys = {
-          "~METADATA~/Type",
-          ".metadata/Type",
-          "~TYPE~",
-          ".type"
-      };
-      String type = null;
-      for (String typeKey : typeKeys) {
-        String value = table.getString(typeKey, null);
-        if (value != null) {
-          type = value;
-          break;
-        }
-      }
+      String type = table.getString("~TYPE~", table.getString(".type", null));
       if (type == null) {
         return DataType.Map;
       } else {
