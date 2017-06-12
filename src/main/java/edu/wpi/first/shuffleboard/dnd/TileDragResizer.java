@@ -1,6 +1,6 @@
 package edu.wpi.first.shuffleboard.dnd;
 
-import edu.wpi.first.shuffleboard.WidgetTile;
+import edu.wpi.first.shuffleboard.components.WidgetTile;
 import edu.wpi.first.shuffleboard.components.TilePane;
 import edu.wpi.first.shuffleboard.widget.TileSize;
 import javafx.scene.Cursor;
