@@ -97,6 +97,9 @@ public final class TileDragResizer {
   }
 
   private void mouseReleased(MouseEvent event) {
+    if (!dragging) {
+      return;
+    }
     dragging = false;
     tile.setCursor(Cursor.DEFAULT);
     resizeLocation = ResizeLocation.NONE;
