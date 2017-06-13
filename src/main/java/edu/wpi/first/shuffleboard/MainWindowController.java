@@ -21,6 +21,7 @@ import java.util.logging.Logger;
 
 import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.ContextMenu;
@@ -34,6 +35,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
@@ -177,8 +179,10 @@ public class MainWindowController {
         .map(property -> new ObservableItem(property, "Application"))
         .forEachOrdered(propertySheet.getItems()::add);
     propertySheet.setPropertyEditorFactory(new PropertyEditorFactory());
-    Scene scene = new Scene(propertySheet);
-    FxUtils.bind(propertySheet.getStylesheets(), ThemeManager.getInstance().styleSheetsProperty());
+    StackPane pane = new StackPane(propertySheet);
+    pane.setPadding(new Insets(8));
+    Scene scene = new Scene(pane);
+    FxUtils.bind(scene.getRoot().getStylesheets(), ThemeManager.getInstance().styleSheetsProperty());
 
     Stage stage = new Stage();
     stage.setScene(scene);
