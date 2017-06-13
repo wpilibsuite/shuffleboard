@@ -2,15 +2,15 @@ package edu.wpi.first.shuffleboard;
 
 import com.google.common.collect.ImmutableSet;
 
+import edu.wpi.first.shuffleboard.data.DataTypes;
 import edu.wpi.first.shuffleboard.data.SendableChooserData;
 import edu.wpi.first.shuffleboard.sources.AbstractDataSource;
-import edu.wpi.first.shuffleboard.widget.DataType;
+import edu.wpi.first.shuffleboard.data.DataType;
+import edu.wpi.first.shuffleboard.util.Maps;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableMap;
 
 @SuppressWarnings("PMD.UseUtilityClass")
 public class DummySource<T> extends AbstractDataSource<T> {
@@ -30,18 +30,19 @@ public class DummySource<T> extends AbstractDataSource<T> {
    */
   @SuppressWarnings("unchecked")
   public static Optional<DummySource> forTypes(Set<DataType> types) {
-    if (types.contains(DataType.Number) || types.contains(DataType.All)) {
-      return Optional.of(new DummySource(DataType.Number, 123));
-    } else if (types.contains(DataType.String)) {
-      return Optional.of(new DummySource(DataType.String, "a string"));
-    } else if (types.contains(DataType.Boolean)) {
-      return Optional.of(new DummySource(DataType.Boolean, true));
-    } else if (types.contains(DataType.SendableChooser)) {
-      ObservableMap<String, Object> map = FXCollections.observableHashMap();
-      map.put("options", new String[]{"A", "B", "C"});
-      map.put("default", "A");
-      map.put("selected", null);
-      return Optional.of(new DummySource(DataType.SendableChooser, new SendableChooserData(map)));
+    if (types.contains(DataTypes.Number) || types.contains(DataTypes.All)) {
+      return Optional.of(new DummySource(DataTypes.Number, 123));
+    } else if (types.contains(DataTypes.String)) {
+      return Optional.of(new DummySource(DataTypes.String, "a string"));
+    } else if (types.contains(DataTypes.Boolean)) {
+      return Optional.of(new DummySource(DataTypes.Boolean, true));
+    } else if (types.contains(DataTypes.SendableChooser)) {
+      Map<String, Object> map = Maps.<String, Object>builder()
+          .put(SendableChooserData.OPTIONS_KEY, new String[]{"A", "B", "C"})
+          .put(SendableChooserData.DEFAULT_OPTION_KEY, "A")
+          .put(SendableChooserData.SELECTED_OPTION_KEY, "A")
+          .build();
+      return Optional.of(new DummySource(DataTypes.SendableChooser, new SendableChooserData(map)));
     } else {
       return Optional.empty();
     }

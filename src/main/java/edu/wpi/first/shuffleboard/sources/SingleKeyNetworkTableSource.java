@@ -2,7 +2,7 @@ package edu.wpi.first.shuffleboard.sources;
 
 import edu.wpi.first.shuffleboard.util.AsyncUtils;
 import edu.wpi.first.shuffleboard.util.NetworkTableUtils;
-import edu.wpi.first.shuffleboard.widget.DataType;
+import edu.wpi.first.shuffleboard.data.DataType;
 import edu.wpi.first.wpilibj.tables.ITable;
 
 import java.util.Objects;

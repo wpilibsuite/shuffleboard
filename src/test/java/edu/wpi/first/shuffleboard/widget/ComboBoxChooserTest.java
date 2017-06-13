@@ -1,6 +1,7 @@
 package edu.wpi.first.shuffleboard.widget;
 
 import edu.wpi.first.shuffleboard.DummySource;
+import edu.wpi.first.shuffleboard.data.DataTypes;
 import edu.wpi.first.shuffleboard.data.SendableChooserData;
 import edu.wpi.first.shuffleboard.sources.DataSource;
 
@@ -18,16 +19,15 @@ import static org.junit.Assert.assertEquals;
 public class ComboBoxChooserTest extends ApplicationTest {
 
   private ComboBoxChooser widget;
-  private SendableChooserData data;
+  private DataSource<SendableChooserData> source;
 
   @Override
   public void start(Stage stage) throws Exception {
     Widgets.discover();
     widget = (ComboBoxChooser)
         Widgets.createWidget("ComboBox Chooser",
-            DummySource.forTypes(DataType.SendableChooser).get()).get();
-    DataSource<SendableChooserData> source = widget.getSource();
-    data = source.getData();
+            DummySource.forTypes(DataTypes.SendableChooser).get()).get();
+    source = widget.getSource();
 
     stage.setScene(new Scene(widget.getView()));
     stage.show();
@@ -36,7 +36,8 @@ public class ComboBoxChooserTest extends ApplicationTest {
   @Test
   public void testOptions() {
     final String[] options = {"Foo", "Bar", "Baz"};
-    data.setOptions(options);
+    SendableChooserData data = source.getData().withOptions(options);
+    source.setData(data);
     WaitForAsyncUtils.waitForFxEvents();
     assertEquals(FXCollections.observableArrayList(options), widget.comboBox.getItems());
   }
@@ -45,22 +46,24 @@ public class ComboBoxChooserTest extends ApplicationTest {
   public void testSelectDefaultWhenNotSelected() {
     widget.comboBox.getSelectionModel().select(null);
     WaitForAsyncUtils.waitForFxEvents();
-    data.setDefaultOption("B");
+    SendableChooserData data = source.getData().withDefaultOption("B");
+    source.setData(data);
     WaitForAsyncUtils.waitForFxEvents();
     assertEquals("B", widget.comboBox.getSelectionModel().getSelectedItem());
   }
 
   @Test
   public void testChangeToDefaultDoesNotChangeSelection() {
-    data.setSelectedOption("A");
-    data.setDefaultOption("B");
+    SendableChooserData data = source.getData().withSelectedOption("A").withDefaultOption("B");
+    source.setData(data);
     WaitForAsyncUtils.waitForFxEvents();
     assertEquals("A", widget.comboBox.getSelectionModel().getSelectedItem());
   }
 
   @Test
   public void testSelectPreviouslySelectedValue() {
-    data.setSelectedOption("C");
+    SendableChooserData data = source.getData().withSelectedOption("C");
+    source.setData(data);
     WaitForAsyncUtils.waitForFxEvents();
     assertEquals("C", widget.comboBox.getSelectionModel().getSelectedItem());
   }
@@ -69,7 +72,7 @@ public class ComboBoxChooserTest extends ApplicationTest {
   public void testSelectionChangesData() {
     Platform.runLater(() -> widget.comboBox.getSelectionModel().select("C"));
     WaitForAsyncUtils.waitForFxEvents();
-    assertEquals("C", data.getSelectedOption());
+    assertEquals("C", source.getData().getSelectedOption());
   }
 
 }

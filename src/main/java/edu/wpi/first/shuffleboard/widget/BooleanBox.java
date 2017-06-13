@@ -1,5 +1,7 @@
 package edu.wpi.first.shuffleboard.widget;
 
+import edu.wpi.first.shuffleboard.data.types.BooleanType;
+
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleObjectProperty;
@@ -11,7 +13,7 @@ import javafx.scene.paint.Color;
 
 @Description(
     name = "Boolean Box",
-    dataTypes = DataType.Boolean)
+    dataTypes = BooleanType.class)
 @ParametrizedController("BooleanBox.fxml")
 public class BooleanBox extends SimpleAnnotatedWidget<Boolean> {
 

@@ -1,6 +1,7 @@
 package edu.wpi.first.shuffleboard.util;
 
-import edu.wpi.first.shuffleboard.widget.DataType;
+import edu.wpi.first.shuffleboard.data.DataType;
+import edu.wpi.first.shuffleboard.data.DataTypes;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
 import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
 import edu.wpi.first.wpilibj.tables.ITable;
@@ -92,7 +93,7 @@ public final class NetworkTableUtils {
    * Gets the data type most closely associated with the value of the given network table key.
    *
    * @param key the network table key to get the data type for
-   * @return the data type most closely associated with the given key, or {@link DataType#Unknown}
+   * @return the data type most closely associated with the given key, or {@link DataTypes#Unknown}
    *         if there is no network table value for the given key
    */
   public static DataType dataTypeForEntry(String key) {
@@ -104,12 +105,12 @@ public final class NetworkTableUtils {
       ITable table = rootTable.getSubTable(normalKey);
       String type = table.getString("~TYPE~", table.getString(".type", null));
       if (type == null) {
-        return DataType.Map;
+        return DataTypes.Map;
       } else {
         return DataType.forName(type);
       }
     }
-    return DataType.Unknown;
+    return DataTypes.Unknown;
   }
 
   /**

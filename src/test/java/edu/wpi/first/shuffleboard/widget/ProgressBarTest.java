@@ -1,6 +1,7 @@
 package edu.wpi.first.shuffleboard.widget;
 
 import edu.wpi.first.shuffleboard.DummySource;
+import edu.wpi.first.shuffleboard.data.DataTypes;
 import edu.wpi.first.shuffleboard.sources.DataSource;
 
 import org.junit.Test;
@@ -21,7 +22,7 @@ public class ProgressBarTest extends ApplicationTest {
   public void start(Stage stage) throws Exception {
     Widgets.discover();
     widget = (ProgressBar) Widgets.createWidget(
-        "Progress Bar", DummySource.forTypes(DataType.Number).get()).get();
+        "Progress Bar", DummySource.forTypes(DataTypes.Number).get()).get();
     source = widget.getSource();
     stage.setScene(new Scene(widget.getView()));
     stage.show();

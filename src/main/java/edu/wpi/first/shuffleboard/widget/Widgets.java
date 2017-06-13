@@ -1,5 +1,7 @@
 package edu.wpi.first.shuffleboard.widget;
 
+import edu.wpi.first.shuffleboard.data.DataType;
+import edu.wpi.first.shuffleboard.data.DataTypes;
 import edu.wpi.first.shuffleboard.sources.DataSource;
 import javafx.fxml.FXMLLoader;
 
@@ -120,7 +122,7 @@ public final class Widgets {
 
   private static Set<WidgetType> getWidgetsForType(DataType type) {
     return widgets.values().stream()
-            .filter(d -> d.getDataTypes().contains(DataType.All)
+            .filter(d -> d.getDataTypes().contains(DataTypes.All)
                          || d.getDataTypes().contains(type))
             .collect(Collectors.toSet());
   }

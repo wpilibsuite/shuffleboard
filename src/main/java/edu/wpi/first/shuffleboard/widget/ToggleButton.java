@@ -1,9 +1,11 @@
 package edu.wpi.first.shuffleboard.widget;
 
+import edu.wpi.first.shuffleboard.data.types.BooleanType;
+
 import javafx.fxml.FXML;
 import javafx.scene.layout.Pane;
 
-@Description(name = "Toggle Button", dataTypes = DataType.Boolean)
+@Description(name = "Toggle Button", dataTypes = BooleanType.class)
 @ParametrizedController("ToggleButton.fxml")
 public class ToggleButton extends SimpleAnnotatedWidget<Boolean> {
 

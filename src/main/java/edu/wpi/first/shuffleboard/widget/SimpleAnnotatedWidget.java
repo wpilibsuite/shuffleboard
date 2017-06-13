@@ -1,19 +1,23 @@
 package edu.wpi.first.shuffleboard.widget;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
+
+import edu.wpi.first.shuffleboard.data.DataType;
+import edu.wpi.first.shuffleboard.data.DataTypes;
 import edu.wpi.first.shuffleboard.sources.DataSource;
 import edu.wpi.first.shuffleboard.sources.IncompatibleSourceException;
-import javafx.beans.property.Property;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
+
 import org.fxmisc.easybind.EasyBind;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+
+import javafx.beans.property.Property;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
 public abstract class SimpleAnnotatedWidget<T> implements Widget {
 
@@ -40,7 +44,7 @@ public abstract class SimpleAnnotatedWidget<T> implements Widget {
 
   @Override
   public final Set<DataType> getDataTypes() {
-    return ImmutableSet.copyOf(description.dataTypes());
+    return DataTypes.forTypes(description.dataTypes());
   }
 
   /**

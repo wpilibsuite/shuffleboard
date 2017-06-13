@@ -1,10 +1,12 @@
 package edu.wpi.first.shuffleboard.sources;
 
+import edu.wpi.first.shuffleboard.data.DataTypes;
 import edu.wpi.first.shuffleboard.util.AsyncUtils;
 import edu.wpi.first.shuffleboard.util.FxUtils;
 import edu.wpi.first.shuffleboard.util.NetworkTableUtils;
-import edu.wpi.first.shuffleboard.widget.DataType;
+import edu.wpi.first.shuffleboard.data.DataType;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
+import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
 import edu.wpi.first.wpilibj.tables.ITable;
 import org.junit.After;
 import org.junit.Before;
@@ -21,6 +23,7 @@ public class SingleKeyNetworkTableSourceTest {
   @Before
   public void setUp() {
     NetworkTableUtils.shutdown();
+    NetworkTablesJNI.setUpdateRate(0.01);
     AsyncUtils.setAsyncRunner(Runnable::run);
     table = NetworkTable.getTable("");
   }
@@ -34,7 +37,7 @@ public class SingleKeyNetworkTableSourceTest {
   @Test
   public void testInactiveByDefault() {
     String key = "key";
-    DataType type = DataType.String;
+    DataType type = DataTypes.String;
     SingleKeyNetworkTableSource<String> source
         = new SingleKeyNetworkTableSource<>(table, key, type);
     assertFalse("The source should not be active without any data", source.isActive());
@@ -44,7 +47,7 @@ public class SingleKeyNetworkTableSourceTest {
   @Test
   public void testValueUpdates() throws TimeoutException {
     String key = "key";
-    DataType type = DataType.String;
+    DataType type = DataTypes.String;
     SingleKeyNetworkTableSource<String> source
         = new SingleKeyNetworkTableSource<>(table, key, type);
     table.putString(key, "a value");
@@ -56,7 +59,7 @@ public class SingleKeyNetworkTableSourceTest {
   @Test
   public void testWrongDataType() throws TimeoutException {
     String key = "key";
-    DataType type = DataType.String;
+    DataType type = DataTypes.String;
     SingleKeyNetworkTableSource<String> source
         = new SingleKeyNetworkTableSource<>(table, key, type);
     table.putNumber(key, 12345);

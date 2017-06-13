@@ -1,6 +1,7 @@
 package edu.wpi.first.shuffleboard.widget;
 
 import edu.wpi.first.shuffleboard.DummySource;
+import edu.wpi.first.shuffleboard.data.DataTypes;
 
 import org.junit.Test;
 import org.testfx.framework.junit.ApplicationTest;
@@ -21,7 +22,7 @@ public class BooleanBoxTest extends ApplicationTest {
   public void start(Stage stage) throws Exception {
     Widgets.discover();
     widget = (BooleanBox) Widgets.createWidget("Boolean Box",
-        DummySource.forTypes(DataType.Boolean).get()).get();
+        DummySource.forTypes(DataTypes.Boolean).get()).get();
     stage.setScene(new Scene(widget.getView()));
     stage.show();
   }

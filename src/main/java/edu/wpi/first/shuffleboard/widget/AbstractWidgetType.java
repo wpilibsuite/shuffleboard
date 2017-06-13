@@ -1,6 +1,7 @@
 package edu.wpi.first.shuffleboard.widget;
 
-import com.google.common.collect.ImmutableSet;
+import edu.wpi.first.shuffleboard.data.DataType;
+import edu.wpi.first.shuffleboard.data.DataTypes;
 
 import java.util.Set;
 
@@ -18,7 +19,7 @@ public abstract class AbstractWidgetType implements WidgetType {
   }
 
   public AbstractWidgetType(Description description) {
-    this(description.name(), ImmutableSet.copyOf(description.dataTypes()));
+    this(description.name(), DataTypes.forTypes(description.dataTypes()));
   }
 
   @Override

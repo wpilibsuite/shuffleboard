@@ -1,12 +1,14 @@
 package edu.wpi.first.shuffleboard.widget;
 
+import edu.wpi.first.shuffleboard.data.types.NumberType;
+
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.fxml.FXML;
 import javafx.scene.layout.Pane;
 
-@Description(name = "Progress Bar", dataTypes = DataType.Number)
+@Description(name = "Progress Bar", dataTypes = NumberType.class)
 @ParametrizedController("ProgressBar.fxml")
 public class ProgressBar extends SimpleAnnotatedWidget<Number> {
 

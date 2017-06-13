@@ -1,10 +1,10 @@
 package edu.wpi.first.shuffleboard.sources;
 
-import edu.wpi.first.shuffleboard.data.ComplexData;
+import edu.wpi.first.shuffleboard.data.DataTypes;
+import edu.wpi.first.shuffleboard.data.MapData;
 import edu.wpi.first.shuffleboard.util.AsyncUtils;
 import edu.wpi.first.shuffleboard.util.FxUtils;
 import edu.wpi.first.shuffleboard.util.NetworkTableUtils;
-import edu.wpi.first.shuffleboard.widget.DataType;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
 
 import org.junit.After;
@@ -32,37 +32,31 @@ public class CompositeNetworkTableSourceTest {
 
   @Test
   public void testInactiveByDefault() {
-    CompositeNetworkTableSource<ComplexData> source
-        = new CompositeNetworkTableSource<>(tableName, DataType.Map);
+    CompositeNetworkTableSource<MapData> source
+        = new CompositeNetworkTableSource<>(tableName, DataTypes.Map);
     assertFalse(source.isActive());
-    assertTrue(source.getData().getMap().isEmpty());
-  }
-
-  @Test(expected = UnsupportedOperationException.class)
-  public void testCannotSetDataDirectly() {
-    CompositeNetworkTableSource source = new CompositeNetworkTableSource<>(tableName, DataType.Map);
-    source.setData(null);
+    assertTrue(source.getData().isEmpty());
   }
 
   @Test
   public void testDataUpdates() {
-    CompositeNetworkTableSource<ComplexData> source
-        = new CompositeNetworkTableSource<>(tableName, DataType.Map);
+    CompositeNetworkTableSource<MapData> source
+        = new CompositeNetworkTableSource<>(tableName, DataTypes.Map);
     final String key = "key1";
 
     NetworkTable.getTable(tableName).putString(key, "value1");
     waitForNtcoreEvents();
-    assertEquals("value1", source.getData().getMap().get(key));
+    assertEquals("value1", source.getData().get(key));
 
     NetworkTable.getTable(tableName).putString(key, "value2");
     waitForNtcoreEvents();
-    assertEquals("value2", source.getData().getMap().get(key));
+    assertEquals("value2", source.getData().get(key));
   }
 
   @Test
   public void testTypeDetectedCorrectly() {
-    CompositeNetworkTableSource source
-        = new CompositeNetworkTableSource(tableName, DataType.SendableChooser);
+    CompositeNetworkTableSource<?> source
+        = new CompositeNetworkTableSource<>(tableName, DataTypes.SendableChooser);
 
     NetworkTable.getTable(tableName).putString(".type", "SendableChooser");
     waitForNtcoreEvents();
