@@ -10,6 +10,9 @@ public class PseudoClassProperty extends BooleanPropertyBase {
   private final Node node;
   private final String name;
 
+  /**
+   * A boolean property that is reflected as a pseudo-class selector on the given node.
+   */
   public PseudoClassProperty(Node node, String pseudoClass) {
     this.node = node;
     this.name = pseudoClass;

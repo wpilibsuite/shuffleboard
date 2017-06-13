@@ -5,25 +5,28 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.control.Tab;
 
 public class AdderTab extends Tab {
-  private Property<Runnable> onAddTab = new SimpleObjectProperty<>(this, "onAddTab", () -> {});
+  private final Property<Runnable> addTabCallback = new SimpleObjectProperty<>(this, "addTabCallback", () -> {});
 
-  AdderTab() {
+  /**
+   * Creates a control for adding more tabs to a tab pane.
+   */
+  public AdderTab() {
     super("+");
     this.setOnSelectionChanged(__event -> {
-      getOnAddTab().run();
+      getAddTabCallback().run();
       getTabPane().getSelectionModel().selectPrevious();
     });
   }
 
-  public Runnable getOnAddTab() {
-    return onAddTab.getValue();
+  public Runnable getAddTabCallback() {
+    return addTabCallback.getValue();
   }
 
-  public Property<Runnable> onAddTabProperty() {
-    return onAddTab;
+  public Property<Runnable> addTabCallbackProperty() {
+    return addTabCallback;
   }
 
-  public void setOnAddTab(Runnable onAddTab) {
-    this.onAddTab.setValue(onAddTab);
+  public void setAddTabCallback(Runnable addTabCallback) {
+    this.addTabCallback.setValue(addTabCallback);
   }
 }

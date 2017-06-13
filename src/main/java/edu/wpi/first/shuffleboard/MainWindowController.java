@@ -100,7 +100,7 @@ public class MainWindowController {
     MenuItem menuItem = new MenuItem("Show as: " + widgetName);
     menuItem.setOnAction(action -> {
       Widgets.createWidget(widgetName, source)
-             .ifPresent(dashboard::addManually);
+             .ifPresent(dashboard::addWidgetToActivePane);
     });
     return menuItem;
   }
