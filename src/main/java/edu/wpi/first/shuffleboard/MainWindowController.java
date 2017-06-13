@@ -9,16 +9,18 @@ import edu.wpi.first.shuffleboard.prefs.ObservableItem;
 import edu.wpi.first.shuffleboard.prefs.PropertyEditorFactory;
 import edu.wpi.first.shuffleboard.sources.DataSource;
 import edu.wpi.first.shuffleboard.sources.NetworkTableSource;
-import edu.wpi.first.shuffleboard.theme.ThemeManager;
+import edu.wpi.first.shuffleboard.theme.Theme;
 import edu.wpi.first.shuffleboard.util.FxUtils;
 import edu.wpi.first.shuffleboard.widget.Widgets;
 
 import org.controlsfx.control.PropertySheet;
+import org.fxmisc.easybind.EasyBind;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.logging.Logger;
 
+import javafx.beans.value.ObservableValue;
 import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
@@ -34,7 +36,6 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -57,14 +58,15 @@ public class MainWindowController {
   private WidgetPane widgetPane;
   @FXML
   private NetworkTableTree networkTables;
-  @FXML
-  private Pane prefsWindow;
 
   private static final PseudoClass selectedPseudoClass = PseudoClass.getPseudoClass("selected");
 
+  private final ObservableValue<List<String>> stylesheets
+      = EasyBind.map(AppPreferences.getInstance().themeProperty(), Theme::getStyleSheets);
+
   @FXML
   private void initialize() throws IOException {
-    FxUtils.bind(root.getStylesheets(), ThemeManager.getInstance().styleSheetsProperty());
+    FxUtils.bind(root.getStylesheets(), stylesheets);
     // NetworkTable view init
     networkTables.getKeyColumn().setPrefWidth(199);
     networkTables.getValueColumn().setPrefWidth(199);
@@ -182,7 +184,7 @@ public class MainWindowController {
     StackPane pane = new StackPane(propertySheet);
     pane.setPadding(new Insets(8));
     Scene scene = new Scene(pane);
-    FxUtils.bind(scene.getRoot().getStylesheets(), ThemeManager.getInstance().styleSheetsProperty());
+    EasyBind.listBind(scene.getRoot().getStylesheets(), root.getStylesheets());
 
     Stage stage = new Stage();
     stage.setScene(scene);
