@@ -1,15 +1,16 @@
 package edu.wpi.first.shuffleboard.dnd;
 
-import edu.wpi.first.shuffleboard.components.WidgetTile;
 import edu.wpi.first.shuffleboard.components.TilePane;
+import edu.wpi.first.shuffleboard.components.WidgetTile;
 import edu.wpi.first.shuffleboard.widget.TileSize;
+
+import java.util.Map;
+import java.util.WeakHashMap;
+
 import javafx.scene.Cursor;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
-
-import java.util.Map;
-import java.util.WeakHashMap;
 
 /**
  * {@link TileDragResizer} can be used to add mouse listeners to a {@link WidgetTile} and make it
@@ -137,40 +138,37 @@ public final class TileDragResizer {
     final double mouseY = event.getY();
     final double w = tile.getWidth();
     final double h = tile.getHeight();
-    if (inRange(-RESIZE_MARGIN, RESIZE_MARGIN, mouseX)) {
-      // left side
-      if (inRange(-RESIZE_MARGIN, RESIZE_MARGIN, mouseY)) {
-        // top
+
+    final boolean top = inRange(-RESIZE_MARGIN, RESIZE_MARGIN, mouseY);
+    final boolean left = inRange(-RESIZE_MARGIN, RESIZE_MARGIN, mouseX);
+    final boolean bottom = inRange(h - RESIZE_MARGIN, h + RESIZE_MARGIN, mouseY);
+    final boolean right = inRange(w - RESIZE_MARGIN, w + RESIZE_MARGIN, mouseX);
+
+    if (left) {
+      if (top) {
         return ResizeLocation.NORTH_WEST;
-      } else if (inRange(h - RESIZE_MARGIN, h + RESIZE_MARGIN, mouseY)) {
-        // bottom
+      } else if (bottom) {
         return ResizeLocation.SOUTH_WEST;
       } else {
-        // middle
         return ResizeLocation.WEST;
       }
-    } else if (inRange(w - RESIZE_MARGIN, w + RESIZE_MARGIN, mouseX)) {
-      // right side
-      if (inRange(-RESIZE_MARGIN, RESIZE_MARGIN, mouseY)) {
-        // top
-        return ResizeLocation.NORTH_EAST;
-      } else if (inRange(h - RESIZE_MARGIN, h + RESIZE_MARGIN, mouseY)) {
-        // bottom
-        return ResizeLocation.SOUTH_EAST;
-      } else {
-        // middle
-        return ResizeLocation.EAST;
-      }
-    } else if (inRange(-RESIZE_MARGIN, RESIZE_MARGIN, mouseY)) {
-      // top
-      return ResizeLocation.NORTH;
-    } else if (inRange(h - RESIZE_MARGIN, h + RESIZE_MARGIN, mouseY)) {
-      // bottom
-      return ResizeLocation.SOUTH;
     } else {
-      // not close enough to an edge
-      return ResizeLocation.NONE;
+      if (right) {
+        if (top) {
+          return ResizeLocation.NORTH_EAST;
+        } else if (bottom) {
+          return ResizeLocation.SOUTH_EAST;
+        } else {
+          return ResizeLocation.EAST;
+        }
+      } else if (top) {
+        return ResizeLocation.NORTH;
+      } else if (bottom) {
+        return ResizeLocation.SOUTH;
+      }
     }
+    // not close enough to an edge
+    return ResizeLocation.NONE;
   }
 
   private static boolean inRange(double min, double max, double check) {

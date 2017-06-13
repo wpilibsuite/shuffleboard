@@ -179,33 +179,30 @@ public class TilePane extends GridPane {
   }
 
   /**
-   * Gets the tile size closest to the given width and height.
+   * Gets the tile size closest to the given width and height in pixels.
    */
   public TileSize round(double width, double height) {
-    // x = (n * tile_size) + ((n - 1) * hgap)
-    //   = (n * tile_size) + (n * hgap) - hgap
-    // x + hgap = (n * tile_size) + (n * hgap)
-    //          = n * (tile_size + hgap)
-    // n = (x + hgap) / (tile_size + hgap) QED
-    // round n to nearest integer
-    return new TileSize(
-        (int) Math.round((width + getHgap()) / (getTileSize() + getHgap())),
-        (int) Math.round((height + getVgap()) / (getTileSize() + getVgap()))
-    );
+    return new TileSize(roundWidthToNearestTile(width), roundHeightToNearestTile(height));
   }
 
   /**
-   * Rounds a tile's width to the nearest tile size.
+   * Rounds a tile's width in pixels to the nearest tile size.
    */
   public int roundWidthToNearestTile(double width) {
-    return (int) Math.round((width + getHgap()) / (getTileSize() + getHgap()));
+    // w = (n * tile_size) + ((n - 1) * vgap)
+    //   = (n * tile_size) + (n * vgap) - vgap
+    // w + vgap = (n * tile_size) + (n * vgap)
+    //          = n * (tile_size + vgap)
+    // n = (w + vgap) / (tile_size + vgap) QED
+    // round n to nearest integer
+    return (int) Math.max(1, Math.round((width + getVgap()) / (getTileSize() + getVgap())));
   }
 
   /**
-   * Rounds a tile's height to the nearest tile size.
+   * Rounds a tile's height in pixels to the nearest tile size.
    */
   public int roundHeightToNearestTile(double height) {
-    return (int) Math.round((height + getHgap()) / (getTileSize() + getVgap()));
+    return (int) Math.max(1, Math.round((height + getHgap()) / (getTileSize() + getVgap())));
   }
 
   /**
