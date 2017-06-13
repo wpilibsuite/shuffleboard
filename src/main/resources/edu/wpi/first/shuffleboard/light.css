@@ -12,7 +12,7 @@
  *                                                                             *
  ******************************************************************************/
 .root {
-    -fx-text-base-color: #313131;
+    -fx-text-base-color: black;
 }
 
 /*******************************************************************************
@@ -20,12 +20,16 @@
  * Tab pane                                                                    *
  *                                                                             *
  ******************************************************************************/
+.tab-pane {
+    -fx-border-color: black;
+}
+
 .tab-header-background {
-    -fx-background-color: -swatch-gray;
+    -fx-background-color: -swatch-light-gray;
 }
 
 .tab-header-area .tab {
-    -fx-background-color: transparent, -swatch-300, -swatch-gray;
+    -fx-background-color: transparent, -swatch-300, -swatch-dark-gray;
 }
 
 .tab-header-area .tab:selected {
@@ -38,21 +42,26 @@
  *                                                                             *
  ******************************************************************************/
 .tile {
-    -fx-background-color: -swatch-300;
+    -fx-background-color: -swatch-100;
 }
 
 .tile:selected {
     -fx-effect: dropshadow(gaussian, -swatch-500, 6, 0.1, 0, 4);
 }
 
-.tile-title-bar {
-    -fx-background-color: linear-gradient(to bottom, #444, black);
-}
-
 .tile-title-label {
-    -fx-text-fill: #eee;
+    -fx-text-fill: #222;
 }
 
 .tile .slider .axis {
     -fx-tick-label-fill: #222;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Text field, text area                                                       *
+ *                                                                             *
+ ******************************************************************************/
+.text-area, .text-field {
+    -underline-color: #eee;
 }

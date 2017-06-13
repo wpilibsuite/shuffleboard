@@ -24,7 +24,7 @@
  ******************************************************************************/
 .tab-pane {
     -fx-border-color: white;
-    -fx-border-width: 0 0.025em 0 0;
+    -fx-border-width: 0.025em;
 }
 
 .tab-header-area .tab:selected .focus-indicator {
@@ -36,16 +36,21 @@
  * Tiles                                                                       *
  *                                                                             *
  ******************************************************************************/
+.tile {
+    -fx-font-size: 11pt;
+}
+
 .tile:selected {
     -fx-effect: dropshadow(gaussian, -swatch-500, 6, 0.1, 0, 4);
 }
 
 .tile-title-bar {
-    -fx-background-color: linear-gradient(to bottom, -swatch-200, -swatch-500);
+    -fx-background-color: linear-gradient(to bottom, -swatch-100, -swatch-200);
 }
 
 .tile-title-label {
     -fx-font-weight: bold;
+    -fx-font-size: 12pt;
 }
 
 .tile .property-sheet * {
@@ -81,4 +86,22 @@
     -fx-background-insets: 5;
     -fx-alignment: center;
     -fx-cursor: hand;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Property sheet                                                              *
+ *                                                                             *
+ ******************************************************************************/
+.property-sheet .property-pane * {
+    -fx-font-size: 10pt;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Slider, range slider                                                        *
+ *                                                                             *
+ ******************************************************************************/
+.slider .track, .range-slider .track {
+    -fx-background-color: -swatch-300;
 }

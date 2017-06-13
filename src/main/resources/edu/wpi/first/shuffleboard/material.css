@@ -606,9 +606,10 @@
 }
 
 .text-area, .text-field {
+    -underline-color: -swatch-gray;
     -fx-background-color: transparent;
     -fx-background-radius: 2.0;
-    -fx-border-color: -swatch-gray;
+    -fx-border-color: -underline-color;
     -fx-border-width: 0 0 2 0;
     -fx-prompt-text-fill: derive(-dark, 50.0%);
     -fx-highlight-fill: rgb(94.0, 203.0, 234.0);

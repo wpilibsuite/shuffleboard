@@ -22,27 +22,8 @@
     -swatch-dark-gray: #222;
     -swatch-gray: #333;
     -swatch-light-gray: #444;
-    -fx-background-color: -swatch-gray;
+    -fx-background: -swatch-gray;
     -fx-color: -swatch-gray;
-}
-
-/*******************************************************************************
- *                                                                             *
- * Main split pane                                                             *
- *                                                                             *
- ******************************************************************************/
-.split-pane {
-    -fx-background-color: -swatch-gray;
-}
-
-.split-pane-divider {
-    -fx-background-color: -swatch-500;
-    /* Bring the divider to the edges and make it a bit taller than default */
-    -fx-padding: -0.125em 0.5em -0.125em 0.5em;
-}
-
-.split-pane-divider:hover, .split-pane-divider:pressed {
-    -fx-background-color: -swatch-200;
 }
 
 /*******************************************************************************
@@ -148,12 +129,12 @@
     -fx-background-color: transparent;
 }
 
-.tree-table-row-cell:hover {
+.tree-table-row-cell:filled:hover {
     -fx-background-color: -swatch-200;
 }
 
-.tree-table-row-cell:selected {
-    -fx-background-color: -swatch-500;
+.tree-table-row-cell:filled:focused:selected {
+    -fx-background-color: -swatch-100;
 }
 
 .tree-table-row-cell > .tree-disclosure-node > .arrow {
@@ -213,4 +194,22 @@
 .list-view:hover .list-cell:filled:hover {
     -fx-background-color: -swatch-light-gray;
     -fx-text-fill: -fx-text-base-color;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Text field, text area                                                       *
+ *                                                                             *
+ ******************************************************************************/
+.text-area, .text-field {
+    -underline-color: -swatch-500;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Slider, range slider                                                        *
+ *                                                                             *
+ ******************************************************************************/
+.slider .axis, .range-slider .axis {
+    -fx-tick-label-fill: #eee;
 }
