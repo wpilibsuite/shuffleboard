@@ -1,6 +1,8 @@
 package edu.wpi.first.shuffleboard.components;
 
 import edu.wpi.first.shuffleboard.widget.Widget;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 
@@ -43,14 +45,18 @@ public class DashboardTabPane extends TabPane {
                     .ifPresent(pane -> pane.selectWidgets(selector)));
   }
 
-  public static class DashboardTab extends Tab {
+  public static class DashboardTab extends Tab implements HandledTab {
     private final WidgetPane widgetPane;
+    private final StringProperty title = new SimpleStringProperty(this, "title", "");
 
     /**
      * Creates a single dashboard tab with the given title.
      */
     public DashboardTab(String title) {
-      super(title);
+      super();
+      this.title.set(title);
+      setGraphic(new TabHandle(this));
+
       widgetPane = new WidgetPane();
       setContent(widgetPane);
     }
@@ -58,6 +64,15 @@ public class DashboardTabPane extends TabPane {
     public WidgetPane getWidgetPane() {
       return widgetPane;
     }
-  }
 
+    @Override
+    public Tab getTab() {
+      return this;
+    }
+
+    @Override
+    public StringProperty titleProperty() {
+      return title;
+    }
+  }
 }
