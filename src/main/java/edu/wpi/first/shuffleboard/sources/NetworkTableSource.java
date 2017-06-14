@@ -35,8 +35,13 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
   protected final void setTableListener(TableListener listener) {
     listenerId = NetworkTablesJNI.addEntryListener(
         fullTableKey,
-        (uid, key, value, flags) -> listener.onChange(key, value, flags),
+        (uid, key, value, flags) -> {
+          if (isConnected()) {
+            listener.onChange(key, value, flags);
+          }
+        },
         0xFF);
+    connect();
   }
 
   @Override
@@ -48,6 +53,11 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
 
   public String getKey() {
     return fullTableKey;
+  }
+
+  @Override
+  public Type getType() {
+    return Type.NETWORK_TABLE;
   }
 
   @FunctionalInterface
@@ -68,18 +78,22 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
    * Creates a data source for the given network table key.
    *
    * @param fullTableKey the full key in network tables eg "/foo/bar"
+   *
    * @return a data source for that key, or {@link DataSource#none()} if that key does not exist
    */
   public static DataSource<?> forKey(String fullTableKey) {
     String key = NetworkTableUtils.normalizeKey(fullTableKey, false);
+    final String uri = Type.NETWORK_TABLE.toUri(key);
     if (NetworkTableUtils.rootTable.containsKey(key)) {
       // Key-value pair
-      return new SingleKeyNetworkTableSource<>(
-          NetworkTableUtils.rootTable, key, NetworkTableUtils.dataTypeForEntry(key));
+      return Sources.computeIfAbsent(uri, () ->
+          new SingleKeyNetworkTableSource<>(NetworkTableUtils.rootTable, key,
+              NetworkTableUtils.dataTypeForEntry(key)));
     }
     if (NetworkTableUtils.rootTable.containsSubTable(key)) {
       // Composite
-      return new CompositeNetworkTableSource(key, NetworkTableUtils.dataTypeForEntry(key));
+      return Sources.computeIfAbsent(uri, () ->
+          new CompositeNetworkTableSource(key, NetworkTableUtils.dataTypeForEntry(key)));
     }
     return DataSource.none();
   }

@@ -1,6 +1,7 @@
 package edu.wpi.first.shuffleboard;
 
 import edu.wpi.first.shuffleboard.sources.AbstractDataSource;
+import edu.wpi.first.shuffleboard.sources.Type;
 import edu.wpi.first.shuffleboard.widget.DataType;
 
 import java.util.Optional;
@@ -16,6 +17,11 @@ public class DummySource<T> extends AbstractDataSource<T> {
     this.setActive(true);
     this.setName("example");
     this.setData(value);
+  }
+
+  @Override
+  public Type getType() {
+    return Type.NONE;
   }
 
   /**

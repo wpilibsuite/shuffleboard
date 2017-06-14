@@ -14,6 +14,10 @@
             <Menu mnemonicParsing="false" text="File">
                 <MenuItem onAction="#close" text="Close" />
             </Menu>
+            <Menu text="Recording">
+                <MenuItem text="Start recording" fx:id="recordingMenu" onAction="#startRecording"/>
+                <MenuItem text="Start playback" fx:id="playbackMenu" onAction="#startPlayback"/>
+            </Menu>
         </MenuBar>
     </top>
     <center>

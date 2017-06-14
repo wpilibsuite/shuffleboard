@@ -71,4 +71,30 @@ public interface DataSource<T> {
     // default to NOP
   }
 
+  /**
+   * Gets the type of this source.
+   */
+  Type getType();
+
+  default String getId() {
+    return getType().toUri(getName());
+  }
+
+  /**
+   * Connects this source to the underlying data stream.
+   */
+  void connect();
+
+  /**
+   * Disconnects this source from the underlying data stream. Any changes made to this source will
+   * not propagate to the data stream, and changes to the data stream will not affect this source.
+   * This can be reconnected at any time with {@link #connect()}.
+   */
+  void disconnect();
+
+  /**
+   * Checks if this source is currently connected to its underlying data stream.
+   */
+  boolean isConnected();
+
 }

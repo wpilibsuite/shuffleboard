@@ -6,7 +6,14 @@ import edu.wpi.first.shuffleboard.components.WidgetPane;
 import edu.wpi.first.shuffleboard.dnd.DataFormats;
 import edu.wpi.first.shuffleboard.sources.DataSource;
 import edu.wpi.first.shuffleboard.sources.NetworkTableSource;
+import edu.wpi.first.shuffleboard.sources.recording.Playback;
+import edu.wpi.first.shuffleboard.sources.recording.Recorder;
 import edu.wpi.first.shuffleboard.widget.Widgets;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.logging.Logger;
+
 import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -19,10 +26,6 @@ import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.logging.Logger;
-
 import static edu.wpi.first.shuffleboard.util.TypeUtils.optionalCast;
 
 
@@ -32,6 +35,8 @@ import static edu.wpi.first.shuffleboard.util.TypeUtils.optionalCast;
 public class MainWindowController {
 
   private static final Logger log = Logger.getLogger(MainWindowController.class.getName());
+  @FXML
+  private MenuItem recordingMenu;
   @FXML
   private WidgetGallery widgetGallery;
 
@@ -43,6 +48,8 @@ public class MainWindowController {
   private NetworkTableTree networkTables;
 
   private static final PseudoClass selectedPseudoClass = PseudoClass.getPseudoClass("selected");
+
+  private boolean isRecording = false;
 
   @FXML
   private void initialize() throws IOException {
@@ -142,6 +149,23 @@ public class MainWindowController {
   public void close() {
     log.info("Exiting app");
     System.exit(0);
+  }
+
+  @FXML
+  public void startRecording() {
+    if (Recorder.getInstance().isRunning()) {
+      Recorder.getInstance().stop();
+      recordingMenu.setText("Start recording");
+    } else {
+      Recorder.getInstance().start();
+      recordingMenu.setText("Stop recording");
+    }
+  }
+
+  @FXML
+  public void startPlayback() throws IOException {
+    Playback playback = new Playback("/home/sam/dashboard_log.log");
+    playback.start();
   }
 
 }

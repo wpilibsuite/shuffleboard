@@ -43,7 +43,7 @@ public class CompositeNetworkTableSource extends NetworkTableSource<ObservableMa
     });
 
     getData().addListener((MapChangeListener<String, Object>) change -> {
-      if (!isActive()) {
+      if (!isActive() || !isConnected()) {
         return;
       }
       if (change.wasAdded()) {
