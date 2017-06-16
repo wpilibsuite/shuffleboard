@@ -8,16 +8,16 @@ import javafx.scene.layout.StackPane;
 import java.util.Timer;
 import java.util.TimerTask;
 
+/**
+ * This is a class that is designed to be used as a Tab graphic,
+ * it adds title editing and an onDragOver event.
+ */
 public class TabHandle extends StackPane {
 
   private static final int DRAG_FOCUS_DELAY = 500;
   private final Timer delayedDragThread = new Timer(true);
   private final HandledTab tab;
 
-  /**
-   * This is a class that is designed to be used as a Tab graphic,
-   * it adds title editing and focus-on-drag.
-   */
   public TabHandle(HandledTab tab) {
     this.tab = tab;
 

@@ -10,11 +10,11 @@ import java.util.function.Predicate;
 
 import static edu.wpi.first.shuffleboard.util.TypeUtils.optionalCast;
 
+/**
+ * Represents a dashboard composed of multiple tabs.
+ */
 public class DashboardTabPane extends TabPane {
 
-  /**
-   * Represents a dashboard composed of multiple tabs.
-   */
   public DashboardTabPane() {
     super(new DashboardTab("Tab 1"), new AdderTab());
     getTabs().stream().map(optionalCast(AdderTab.class))
@@ -45,13 +45,13 @@ public class DashboardTabPane extends TabPane {
                     .ifPresent(pane -> pane.selectWidgets(selector)));
   }
 
+  /**
+   * Creates a single dashboard tab with the given title.
+   */
   public static class DashboardTab extends Tab implements HandledTab {
     private final WidgetPane widgetPane;
     private final StringProperty title = new SimpleStringProperty(this, "title", "");
 
-    /**
-     * Creates a single dashboard tab with the given title.
-     */
     public DashboardTab(String title) {
       super();
       this.title.set(title);
