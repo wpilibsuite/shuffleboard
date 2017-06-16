@@ -26,7 +26,7 @@ public abstract class ComplexData<T extends ComplexData<T>> {
     if (other == null) {
       return thisMap;
     }
-    Maps.Builder<String, Object> builder = Maps.builder();
+    Maps.MapBuilder<String, Object> builder = Maps.builder();
     Map<String, Object> otherMap = other.asMap();
     thisMap.forEach((key, value) -> {
       if (EqualityUtils.isDifferent(value, otherMap.get(key))) {

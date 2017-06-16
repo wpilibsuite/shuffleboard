@@ -6,9 +6,7 @@ import edu.wpi.first.shuffleboard.data.DataTypes;
 import edu.wpi.first.shuffleboard.data.SendableChooserData;
 import edu.wpi.first.shuffleboard.sources.AbstractDataSource;
 import edu.wpi.first.shuffleboard.data.DataType;
-import edu.wpi.first.shuffleboard.util.Maps;
 
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -37,12 +35,8 @@ public class DummySource<T> extends AbstractDataSource<T> {
     } else if (types.contains(DataTypes.Boolean)) {
       return Optional.of(new DummySource(DataTypes.Boolean, true));
     } else if (types.contains(DataTypes.SendableChooser)) {
-      Map<String, Object> map = Maps.<String, Object>builder()
-          .put(SendableChooserData.OPTIONS_KEY, new String[]{"A", "B", "C"})
-          .put(SendableChooserData.DEFAULT_OPTION_KEY, "A")
-          .put(SendableChooserData.SELECTED_OPTION_KEY, "A")
-          .build();
-      return Optional.of(new DummySource(DataTypes.SendableChooser, new SendableChooserData(map)));
+      final SendableChooserData data = new SendableChooserData(new String[]{"A", "B", "C"}, "A", "A");
+      return Optional.of(new DummySource(DataTypes.SendableChooser, data));
     } else {
       return Optional.empty();
     }
