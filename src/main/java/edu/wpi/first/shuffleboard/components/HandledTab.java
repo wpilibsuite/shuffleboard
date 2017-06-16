@@ -11,7 +11,7 @@ public interface HandledTab {
    */
   Tab getTab();
 
-  default void focus() {
+  default void onDragOver() {
     getTab().getTabPane().getSelectionModel().select(getTab());
   }
 

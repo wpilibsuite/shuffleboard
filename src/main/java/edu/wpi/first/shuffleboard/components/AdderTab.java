@@ -5,6 +5,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.scene.control.Tab;
+import javafx.scene.input.MouseEvent;
 
 public class AdderTab extends Tab implements HandledTab {
   private final Property<Runnable> addTabCallback = new SimpleObjectProperty<>(this, "addTabCallback", () -> {});
@@ -15,23 +16,25 @@ public class AdderTab extends Tab implements HandledTab {
    */
   public AdderTab() {
     super();
-    this.setGraphic(new TabHandle(this));
-    this.setOnSelectionChanged(__event -> {
-      getAddTabCallback().run();
-      getTabPane().getSelectionModel().selectPrevious();
+    TabHandle handle = new TabHandle(this);
+    this.setGraphic(handle);
+
+    this.setOnSelectionChanged(__event -> getTabPane().getSelectionModel().selectFirst());
+
+    handle.addEventHandler(MouseEvent.MOUSE_PRESSED, me -> {
+      addTabAndFocus();
+      me.consume();
     });
   }
 
-  public Runnable getAddTabCallback() {
-    return addTabCallback.getValue();
+  public void addTabAndFocus() {
+    getAddTabCallback().run();
+    getTabPane().getSelectionModel().select(getTabPane().getTabs().size() - 2);
   }
 
-  public Property<Runnable> addTabCallbackProperty() {
-    return addTabCallback;
-  }
-
-  public void setAddTabCallback(Runnable addTabCallback) {
-    this.addTabCallback.setValue(addTabCallback);
+  @Override
+  public void onDragOver() {
+    addTabAndFocus();
   }
 
   @Override
@@ -47,5 +50,17 @@ public class AdderTab extends Tab implements HandledTab {
   @Override
   public boolean canEditTitle() {
     return false;
+  }
+
+  public Runnable getAddTabCallback() {
+    return addTabCallback.getValue();
+  }
+
+  public Property<Runnable> addTabCallbackProperty() {
+    return addTabCallback;
+  }
+
+  public void setAddTabCallback(Runnable addTabCallback) {
+    this.addTabCallback.setValue(addTabCallback);
   }
 }
