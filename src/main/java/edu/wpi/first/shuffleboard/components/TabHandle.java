@@ -32,6 +32,10 @@ public class TabHandle extends StackPane {
     }
   };
 
+  /**
+   * Creates a TabHandle for a specific Tab. This TabHandle should be retained by the tab,
+   * or else specific event handlers might be garbage collected.
+   */
   public TabHandle(HandledTab tab) {
     this.tab = tab;
 
