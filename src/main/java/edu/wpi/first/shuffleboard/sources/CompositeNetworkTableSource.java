@@ -53,6 +53,8 @@ public class CompositeNetworkTableSource extends NetworkTableSource<ObservableMa
         table.delete(change.getKey());
       }
     });
+
+    Sources.register(this);
   }
 
   /**

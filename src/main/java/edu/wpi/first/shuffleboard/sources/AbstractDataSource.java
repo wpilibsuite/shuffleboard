@@ -30,7 +30,7 @@ public abstract class AbstractDataSource<T> implements DataSource<T> {
   protected AbstractDataSource(DataType dataType) {
     this.dataType = requireNonNull(dataType, "dataType");
     if (getType().isRecordable) {
-      data.addListener((__, o, newData) -> {
+      data.addListener((__, oldData, newData) -> {
         recorder.recordCurrentValue(this);
       });
     }

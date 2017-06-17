@@ -1,26 +1,19 @@
 package edu.wpi.first.shuffleboard.sources.recording;
 
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Recording {
 
-  private final Map<String, Map<Long, TimestampedData>> data = new TreeMap<>();
-
-  private Map<Long, TimestampedData> mapForSource(String sourceName) {
-    return data.computeIfAbsent(sourceName, __ -> new TreeMap<>());
-  }
+  private final List<TimestampedData> data = new ArrayList<>();
 
   public void append(TimestampedData data) {
-    mapForSource(data.getSourceId())
-        .put(data.getTimestamp(), data);
+    this.data.add(data);
+    this.data.sort(TimestampedData::compareTo);
   }
 
-  public Map<Long, TimestampedData> getDataForSource(String sourceName) {
-    return mapForSource(sourceName);
-  }
-
-  public Map<String, Map<Long, TimestampedData>> getData() {
+  public List<TimestampedData> getData() {
     return data;
   }
+
 }

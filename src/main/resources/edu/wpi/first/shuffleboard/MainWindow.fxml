@@ -5,6 +5,8 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<?import org.controlsfx.control.SegmentedButton?>
 <BorderPane fx:id="root" maxHeight="Infinity" maxWidth="Infinity"
             stylesheets="@main.css"
             xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1"
@@ -39,4 +41,7 @@
             </Tab>
         </TabPane>
     </left>
+    <bottom>
+        <fx:include source="PlaybackControls.fxml"/>
+    </bottom>
 </BorderPane>

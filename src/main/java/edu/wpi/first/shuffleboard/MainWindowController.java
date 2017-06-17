@@ -49,8 +49,6 @@ public class MainWindowController {
 
   private static final PseudoClass selectedPseudoClass = PseudoClass.getPseudoClass("selected");
 
-  private boolean isRecording = false;
-
   @FXML
   private void initialize() throws IOException {
     // NetworkTable view init
@@ -152,7 +150,7 @@ public class MainWindowController {
   }
 
   @FXML
-  public void startRecording() {
+  private void startRecording() {
     if (Recorder.getInstance().isRunning()) {
       Recorder.getInstance().stop();
       recordingMenu.setText("Start recording");
@@ -163,8 +161,8 @@ public class MainWindowController {
   }
 
   @FXML
-  public void startPlayback() throws IOException {
-    Playback playback = new Playback("/home/sam/dashboard_log.log");
+  private void startPlayback() throws IOException {
+    Playback playback = Playback.load("dashboard_log.log");
     playback.start();
   }
 

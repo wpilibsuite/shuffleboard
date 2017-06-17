@@ -7,7 +7,7 @@ import java.util.Objects;
 /**
  * Represents an immutable view of the value of a data source at a specific instant.
  */
-public final class TimestampedData {
+public final class TimestampedData implements Comparable<TimestampedData> {
 
   private final String sourceId;
   private final DataType dataType;
@@ -46,15 +46,15 @@ public final class TimestampedData {
   }
 
   @Override
-  public boolean equals(Object o) {
-    if (this == o) {
+  public boolean equals(Object other) {
+    if (this == other) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (other == null || getClass() != other.getClass()) {
       return false;
     }
 
-    TimestampedData that = (TimestampedData) o;
+    TimestampedData that = (TimestampedData) other;
     return this.sourceId.equals(that.sourceId)
         && this.dataType.equals(that.dataType)
         && this.dataType.equals(that.data)
@@ -72,4 +72,14 @@ public final class TimestampedData {
     return String.format("TimeStampedData(sourceId=%s, dataType=%s, data=%s, timestamp=%s)",
         sourceId, dataType, data, timestamp);
   }
+
+  @Override
+  public int compareTo(TimestampedData other) {
+    if (this.timestamp == other.timestamp) {
+      return this.sourceId.compareTo(other.sourceId);
+    } else {
+      return this.timestamp > other.timestamp ? 1 : -1;
+    }
+  }
+
 }

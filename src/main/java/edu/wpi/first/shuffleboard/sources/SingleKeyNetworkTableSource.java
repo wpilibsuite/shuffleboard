@@ -49,6 +49,8 @@ public class SingleKeyNetworkTableSource<T> extends NetworkTableSource<T> {
         setData(oldValue);
       }
     });
+
+    Sources.register(this);
   }
 
 }
