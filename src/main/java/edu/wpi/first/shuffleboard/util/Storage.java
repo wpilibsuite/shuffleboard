@@ -15,9 +15,9 @@ public final class Storage {
    */
   public static final String STORAGE_DIR = USER_HOME + "/SmartDashboard";
 
-  public static final String RECORDING_FILE_FORMAT = STORAGE_DIR + "/dashboard_recording_%s";
+  public static final String RECORDING_FILE_FORMAT = STORAGE_DIR + "/dashboard_recording_%s.frc";
 
-  public static final String DEFAULT_RECORDING_FILE = STORAGE_DIR + "/default_dashboard_recording";
+  public static final String DEFAULT_RECORDING_FILE = STORAGE_DIR + "/default_dashboard_recording.frc";
 
   private Storage() {
   }

@@ -11,6 +11,9 @@ import edu.wpi.first.shuffleboard.sources.recording.Recorder;
 import edu.wpi.first.shuffleboard.util.Storage;
 import edu.wpi.first.shuffleboard.widget.Widgets;
 
+import org.fxmisc.easybind.EasyBind;
+
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.logging.Logger;
@@ -26,6 +29,7 @@ import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
+import javafx.stage.FileChooser;
 
 import static edu.wpi.first.shuffleboard.util.TypeUtils.optionalCast;
 
@@ -52,6 +56,10 @@ public class MainWindowController {
 
   @FXML
   private void initialize() throws IOException {
+    recordingMenu.textProperty().bind(
+        EasyBind.map(
+            Recorder.getInstance().runningProperty(),
+            running -> running ? "Stop recording" : "Start recording"));
     // NetworkTable view init
     networkTables.getKeyColumn().setPrefWidth(199);
     networkTables.getValueColumn().setPrefWidth(199);
@@ -154,16 +162,22 @@ public class MainWindowController {
   private void startRecording() {
     if (Recorder.getInstance().isRunning()) {
       Recorder.getInstance().stop();
-      recordingMenu.setText("Start recording");
     } else {
       Recorder.getInstance().start();
-      recordingMenu.setText("Stop recording");
     }
   }
 
   @FXML
-  private void startPlayback() throws IOException {
-    Playback playback = Playback.load(Storage.DEFAULT_RECORDING_FILE);
+  private void loadPlayback() throws IOException {
+    FileChooser chooser = new FileChooser();
+    chooser.setInitialDirectory(new File(Storage.STORAGE_DIR));
+    chooser.getExtensionFilters().setAll(
+        new FileChooser.ExtensionFilter("FRC Data Recording", "*.frc"));
+    final File selected = chooser.showOpenDialog(root.getScene().getWindow());
+    if (selected == null) {
+      return;
+    }
+    Playback playback = Playback.load(selected.getAbsolutePath());
     playback.start();
   }
 
