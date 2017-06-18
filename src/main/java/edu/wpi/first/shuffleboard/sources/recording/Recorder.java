@@ -3,6 +3,7 @@ package edu.wpi.first.shuffleboard.sources.recording;
 import com.google.gson.Gson;
 
 import edu.wpi.first.shuffleboard.sources.DataSource;
+import edu.wpi.first.shuffleboard.util.Storage;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -31,7 +32,7 @@ public final class Recorder {
       if (!isRunning) {
         String json = gson.toJson(recording);
         try {
-          Files.write(Paths.get("dashboard_log.log"), json.getBytes());
+          Files.write(Paths.get(Storage.DEFAULT_RECORDING_FILE), json.getBytes());
         } catch (IOException e) {
           throw new RuntimeException("Could not write to the log file", e);
         }

@@ -100,7 +100,8 @@ public final class Playback {
       while (!Thread.interrupted()) {
         previous = currentFrame == 0 ? null : current;
         current = data.get(currentFrame);
-        if (previous != null) {
+        currentFrame = (getFrame() + 1) % numFrames;
+        if (!isPaused() && previous != null && current.getTimestamp() >= previous.getTimestamp()) {
           try {
             Thread.sleep(current.getTimestamp() - previous.getTimestamp());
           } catch (InterruptedException e) {
@@ -108,12 +109,8 @@ public final class Playback {
             autoRunner.interrupt();
           }
         }
+        // May have been paused while sleeping, so check after wake to make sure
         if (!isPaused()) {
-          //currentFrame = getFrame();
-          currentFrame++;
-          if (currentFrame > maxFrameNum) {
-            currentFrame = 0;
-          }
           setFrame(currentFrame);
         }
       }
@@ -135,6 +132,14 @@ public final class Playback {
     autoRunner.interrupt();
     Sources.connectAll();
     unpause();
+  }
+
+  public int getNumFrames() {
+    return numFrames;
+  }
+
+  public int getMaxFrameNum() {
+    return maxFrameNum;
   }
 
   /**

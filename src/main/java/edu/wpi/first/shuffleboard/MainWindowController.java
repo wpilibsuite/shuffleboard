@@ -8,6 +8,7 @@ import edu.wpi.first.shuffleboard.sources.DataSource;
 import edu.wpi.first.shuffleboard.sources.NetworkTableSource;
 import edu.wpi.first.shuffleboard.sources.recording.Playback;
 import edu.wpi.first.shuffleboard.sources.recording.Recorder;
+import edu.wpi.first.shuffleboard.util.Storage;
 import edu.wpi.first.shuffleboard.widget.Widgets;
 
 import java.io.IOException;
@@ -162,7 +163,7 @@ public class MainWindowController {
 
   @FXML
   private void startPlayback() throws IOException {
-    Playback playback = Playback.load("dashboard_log.log");
+    Playback playback = Playback.load(Storage.DEFAULT_RECORDING_FILE);
     playback.start();
   }
 
