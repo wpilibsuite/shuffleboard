@@ -33,6 +33,7 @@ public final class Playback {
   private final int numFrames;
   private final int maxFrameNum;
   private Thread autoRunner;
+  private final Object sleepLock = new Object();
   private final BooleanProperty paused = new SimpleBooleanProperty(this, "paused", true);
   private final IntegerProperty frame = new SimpleIntegerProperty(this, "frame", 0);
   private final DoubleProperty progress = new SimpleDoubleProperty(this, "progress", 0);
@@ -80,6 +81,13 @@ public final class Playback {
     frame.addListener((__, prev, cur) -> setProgress(cur.doubleValue() / maxFrameNum));
     frame.addListener((__, prev, cur) -> set(data.get(cur.intValue())));
     progress.addListener((__, prev, cur) -> setFrame((int) (cur.doubleValue() * maxFrameNum)));
+    paused.addListener((__, wasPaused, isPaused) -> {
+      if (!isPaused) {
+        synchronized (sleepLock) {
+          sleepLock.notifyAll();
+        }
+      }
+    });
   }
 
   private Recording loadRecording(String logFile) throws IOException {
@@ -112,6 +120,19 @@ public final class Playback {
         // May have been paused while sleeping, so check after wake to make sure
         if (!isPaused()) {
           setFrame(currentFrame);
+        }
+
+        // Halt this thread if playback is paused.
+        if (isPaused()) {
+          synchronized (sleepLock) {
+            while (isPaused()) {
+              try {
+                sleepLock.wait();
+              } catch (InterruptedException ignore) {
+                // Spurious wakeup, go back to sleep
+              }
+            }
+          }
         }
       }
       Sources.connectAll();
