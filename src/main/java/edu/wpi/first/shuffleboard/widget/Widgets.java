@@ -1,15 +1,17 @@
 package edu.wpi.first.shuffleboard.widget;
 
+import edu.wpi.first.shuffleboard.data.DataType;
+import edu.wpi.first.shuffleboard.data.DataTypes;
 import edu.wpi.first.shuffleboard.sources.DataSource;
 import javafx.fxml.FXMLLoader;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -19,7 +21,7 @@ import java.util.stream.Collectors;
  */
 public final class Widgets {
 
-  private static Map<String, WidgetType> widgets = new HashMap<>();
+  private static Map<String, WidgetType> widgets = new TreeMap<>();
   private static boolean loadedStockWidgets = false;
 
   private Widgets() {
@@ -120,7 +122,7 @@ public final class Widgets {
 
   private static Set<WidgetType> getWidgetsForType(DataType type) {
     return widgets.values().stream()
-            .filter(d -> d.getDataTypes().contains(DataType.All)
+            .filter(d -> d.getDataTypes().contains(DataTypes.All)
                          || d.getDataTypes().contains(type))
             .collect(Collectors.toSet());
   }
@@ -134,7 +136,11 @@ public final class Widgets {
    *         given type
    */
   public static List<String> widgetNamesForType(DataType type) {
-    return getWidgetsForType(type).stream().map(WidgetType::getName).collect(Collectors.toList());
+    return getWidgetsForType(type)
+        .stream()
+        .map(WidgetType::getName)
+        .sorted()
+        .collect(Collectors.toList());
   }
 
   /**

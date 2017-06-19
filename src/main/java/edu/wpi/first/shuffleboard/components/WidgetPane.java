@@ -11,11 +11,13 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import org.fxmisc.easybind.EasyBind;
 
+import java.io.IOException;
 import java.util.Optional;
 import java.util.function.Predicate;
 
@@ -39,7 +41,6 @@ public class WidgetPane extends TilePane {
    * around in this pane.
    */
   public WidgetPane() {
-    getStyleClass().add("widget-pane");
     gridHighlight.getStyleClass().add("grid-highlight");
 
     tiles = EasyBind.map(getChildren().filtered(n -> n instanceof WidgetTile), n -> (WidgetTile) n);
@@ -77,6 +78,15 @@ public class WidgetPane extends TilePane {
           PseudoClass.getPseudoClass("colliding"),
           !isOpen(getHighlightPoint(), size, DragUtils.isDraggedWidget));
     });
+
+    FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("WidgetPane.fxml"));
+    fxmlLoader.setRoot(this);
+
+    try {
+      fxmlLoader.load();
+    } catch (IOException e) {
+      throw new IllegalStateException("Can't load FXML : " + getClass().getSimpleName(), e);
+    }
   }
 
 
@@ -193,4 +203,10 @@ public class WidgetPane extends TilePane {
     this.highlightSize.setValue(highlightSize);
   }
 
+  /**
+   * Will select the widgets that match predicate, and de-select all other widgets.
+   */
+  public void selectWidgets(Predicate<Widget> predicate) {
+    tiles.forEach(tile -> tile.setSelected(predicate.test(tile.getWidget())));
+  }
 }
