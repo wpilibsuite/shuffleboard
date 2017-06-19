@@ -1,5 +1,7 @@
 package edu.wpi.first.shuffleboard.widget;
 
+import edu.wpi.first.shuffleboard.data.DataType;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -27,6 +29,6 @@ public @interface Description {
   /**
    * The types for the sources the widget can handle.
    */
-  DataType[] dataTypes();
+  Class<? extends DataType<?>>[] dataTypes();
 
 }

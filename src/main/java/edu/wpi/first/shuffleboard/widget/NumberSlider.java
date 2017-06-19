@@ -1,12 +1,14 @@
 package edu.wpi.first.shuffleboard.widget;
 
+import edu.wpi.first.shuffleboard.data.types.NumberType;
+
 import javafx.fxml.FXML;
 import javafx.scene.control.Slider;
 import javafx.scene.layout.Pane;
 
 @Description(
     name = "Number Slider",
-    dataTypes = DataType.Number)
+    dataTypes = NumberType.class)
 @ParametrizedController("NumberSlider.fxml")
 public class NumberSlider extends SimpleAnnotatedWidget<Number> {
 

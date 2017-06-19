@@ -1,11 +1,12 @@
 package edu.wpi.first.shuffleboard.sources;
 
+import edu.wpi.first.shuffleboard.data.DataTypes;
+import edu.wpi.first.shuffleboard.data.MapData;
 import edu.wpi.first.shuffleboard.util.AsyncUtils;
 import edu.wpi.first.shuffleboard.util.FxUtils;
 import edu.wpi.first.shuffleboard.util.NetworkTableUtils;
-import edu.wpi.first.shuffleboard.widget.DataType;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
-import javafx.collections.FXCollections;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,20 +32,16 @@ public class CompositeNetworkTableSourceTest {
 
   @Test
   public void testInactiveByDefault() {
-    CompositeNetworkTableSource source = new CompositeNetworkTableSource(tableName, DataType.Map);
+    CompositeNetworkTableSource<MapData> source
+        = new CompositeNetworkTableSource<>(tableName, DataTypes.Map);
     assertFalse(source.isActive());
     assertTrue(source.getData().isEmpty());
   }
 
-  @Test(expected = UnsupportedOperationException.class)
-  public void testCannotSetDataDirectly() {
-    CompositeNetworkTableSource source = new CompositeNetworkTableSource(tableName, DataType.Map);
-    source.setData(FXCollections.observableHashMap());
-  }
-
   @Test
   public void testDataUpdates() {
-    CompositeNetworkTableSource source = new CompositeNetworkTableSource(tableName, DataType.Map);
+    CompositeNetworkTableSource<MapData> source
+        = new CompositeNetworkTableSource<>(tableName, DataTypes.Map);
     final String key = "key1";
 
     NetworkTable.getTable(tableName).putString(key, "value1");
@@ -58,10 +55,10 @@ public class CompositeNetworkTableSourceTest {
 
   @Test
   public void testTypeDetectedCorrectly() {
-    CompositeNetworkTableSource source
-        = new CompositeNetworkTableSource(tableName, DataType.RobotDrive);
+    CompositeNetworkTableSource<?> source
+        = new CompositeNetworkTableSource<>(tableName, DataTypes.SendableChooser);
 
-    NetworkTable.getTable(tableName).putString(".metadata/Type", "RobotDrive");
+    NetworkTable.getTable(tableName).putString(".type", "SendableChooser");
     waitForNtcoreEvents();
     assertTrue(source.isActive());
   }
