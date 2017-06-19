@@ -19,7 +19,12 @@ public class AdderTab extends Tab implements HandledTab {
     TabHandle handle = new TabHandle(this);
     this.setGraphic(handle);
 
-    this.setOnSelectionChanged(__event -> getTabPane().getSelectionModel().selectFirst());
+    this.setOnSelectionChanged(__event -> {
+      getTabPane().getSelectionModel().selectFirst();
+      if (getTabPane().getSelectionModel().getSelectedItem().equals(this)) {
+        addTabAndFocus();
+      }
+    });
 
     handle.addEventHandler(MouseEvent.MOUSE_PRESSED, me -> {
       addTabAndFocus();
