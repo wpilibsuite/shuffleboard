@@ -169,7 +169,8 @@
 }
 
 .tab-pane {
-    -fx-open-tab-animation: NONE; -fx-close-tab-animation: NONE;
+    -fx-open-tab-animation: NONE;
+    -fx-close-tab-animation: NONE;
 }
 
 .dashboard-tabs .tab-label {
@@ -186,6 +187,10 @@
     -fx-border-width: 1px 5px, 0px 4px;
     -fx-padding: 4px 10px;
     -fx-align: center;
+}
+
+.dashboard-tabs .tab .tab-close-button {
+    -fx-padding: 0 0 0 10px;
 }
 
 .dashboard-tabs .tab:hover {

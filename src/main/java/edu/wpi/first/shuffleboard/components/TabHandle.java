@@ -1,6 +1,7 @@
 package edu.wpi.first.shuffleboard.components;
 
 import edu.wpi.first.shuffleboard.util.FxUtils;
+import edu.wpi.first.shuffleboard.util.ThreadUtils;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.event.Event;
@@ -12,8 +13,9 @@ import javafx.scene.input.DragEvent;
 import javafx.scene.layout.StackPane;
 import org.fxmisc.easybind.EasyBind;
 
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * This is a class that is designed to be used as a Tab graphic,
@@ -22,7 +24,7 @@ import java.util.TimerTask;
 public class TabHandle extends StackPane {
 
   private static final int DRAG_FOCUS_DELAY = 500;
-  private final Timer delayedDragThread = new Timer(true);
+  private final ScheduledExecutorService delayedDragService = ThreadUtils.newDaemonExecutorService();
   private final HandledTab tab;
 
   private final Property<Node> tabHeaderContainer = new SimpleObjectProperty<>(this, "tabHeaderContainer");
@@ -65,14 +67,10 @@ public class TabHandle extends StackPane {
   }
 
   private void startDelayedDrag(DragEvent dragEvent) {
-    TimerTask task = new TimerTask() {
-      @Override
-      public void run() {
-        FxUtils.runOnFxThread(tab::onDragOver);
-      }
-    };
+    Future<?> task = delayedDragService.schedule(
+            (() -> FxUtils.runOnFxThread(tab::onDragOver)),
+            DRAG_FOCUS_DELAY, TimeUnit.MILLISECONDS);
 
-    delayedDragThread.schedule(task, DRAG_FOCUS_DELAY);
-    setOnDragExited(__de -> task.cancel());
+    setOnDragExited(__de -> task.cancel(false));
   }
 }
