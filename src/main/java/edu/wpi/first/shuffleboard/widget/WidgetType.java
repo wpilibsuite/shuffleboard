@@ -1,5 +1,7 @@
 package edu.wpi.first.shuffleboard.widget;
 
+import edu.wpi.first.shuffleboard.data.DataType;
+
 import java.util.Set;
 import java.util.function.Supplier;
 

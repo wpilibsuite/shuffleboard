@@ -1,6 +1,7 @@
 package edu.wpi.first.shuffleboard.components;
 
 import edu.wpi.first.shuffleboard.util.PropertyUtils;
+import edu.wpi.first.shuffleboard.util.PseudoClassProperty;
 import edu.wpi.first.shuffleboard.widget.TileSize;
 import edu.wpi.first.shuffleboard.widget.Widget;
 
@@ -21,6 +22,8 @@ public class WidgetTile extends BorderPane {
   private final Property<Widget> widget = new SimpleObjectProperty<>(this, "widget", null);
   private final Property<TileSize> size = new SimpleObjectProperty<>(this, "size", null);
   private final BooleanProperty showWidget = new SimpleBooleanProperty(this, "showWidget", true);
+
+  private final BooleanProperty selected = new PseudoClassProperty(this, "selected");
 
   /**
    * Creates an empty tile. The widget and size must be set with {@link #setWidget(Widget)} and
@@ -96,4 +99,15 @@ public class WidgetTile extends BorderPane {
     setShowWidget(!isShowWidget());
   }
 
+  public boolean isSelected() {
+    return selected.get();
+  }
+
+  public void setSelected(boolean value) {
+    selected.set(value);
+  }
+
+  public BooleanProperty selectedProperty() {
+    return selected;
+  }
 }

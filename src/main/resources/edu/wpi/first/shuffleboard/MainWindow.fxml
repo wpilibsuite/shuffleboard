@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import edu.wpi.first.shuffleboard.components.DashboardTabPane?>
 <?import edu.wpi.first.shuffleboard.components.NetworkTableTree?>
 <?import edu.wpi.first.shuffleboard.components.WidgetGallery?>
 <?import javafx.scene.control.Label?>
@@ -13,6 +14,7 @@
 <BorderPane fx:id="root" maxHeight="Infinity" maxWidth="Infinity"
             xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="edu.wpi.first.shuffleboard.MainWindowController">
+
     <top>
         <MenuBar>
             <Menu mnemonicParsing="false" text="File">
@@ -21,8 +23,9 @@
             </Menu>
         </MenuBar>
     </top>
+
     <center>
-        <fx:include source="WidgetPane.fxml" fx:id="widgetPane"/>
+        <DashboardTabPane fx:id="dashboard" styleClass="dashboard-tabs"/>
     </center>
 
     <left>

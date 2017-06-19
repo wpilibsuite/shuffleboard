@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.widget;
 
+import edu.wpi.first.shuffleboard.data.DataType;
 import edu.wpi.first.shuffleboard.sources.DataSource;
 import edu.wpi.first.shuffleboard.sources.IncompatibleSourceException;
 import javafx.beans.property.Property;

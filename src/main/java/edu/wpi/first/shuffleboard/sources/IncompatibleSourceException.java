@@ -1,6 +1,6 @@
 package edu.wpi.first.shuffleboard.sources;
 
-import edu.wpi.first.shuffleboard.widget.DataType;
+import edu.wpi.first.shuffleboard.data.DataType;
 
 import java.util.Set;
 import java.util.stream.Collectors;
