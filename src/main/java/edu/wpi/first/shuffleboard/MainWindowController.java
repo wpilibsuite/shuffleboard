@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import javafx.beans.value.ObservableValue;
-import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
