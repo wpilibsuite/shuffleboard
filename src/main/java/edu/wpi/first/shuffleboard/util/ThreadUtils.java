@@ -4,18 +4,21 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 /**
- * Utilities dealing with threading
+ * Utilities dealing with threading.
  */
 public final class ThreadUtils {
 
   private ThreadUtils() {
   }
 
+  /**
+   * A singleThreadScheduledExecutor that uses a daemon thread instead of one the doesn't respect shutdown.
+   */
   public static ScheduledExecutorService newDaemonExecutorService() {
-    return Executors.newSingleThreadScheduledExecutor(r -> {
-      Thread t = new Thread(r);
-      t.setDaemon(true);
-      return t;
+    return Executors.newSingleThreadScheduledExecutor(runnable -> {
+      Thread thread = new Thread(runnable);
+      thread.setDaemon(true);
+      return thread;
     });
   }
 }
