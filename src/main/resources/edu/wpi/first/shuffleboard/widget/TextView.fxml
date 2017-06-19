@@ -7,9 +7,7 @@
 <BorderPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="edu.wpi.first.shuffleboard.widget.TextView"
-            fx:id="root"
-            minHeight="128" minWidth="128"
-            prefHeight="128" prefWidth="128">
+            fx:id="root">
     <center>
         <StackPane>
             <padding>

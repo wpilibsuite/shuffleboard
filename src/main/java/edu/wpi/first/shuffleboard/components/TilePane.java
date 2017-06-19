@@ -79,15 +79,19 @@ public class TilePane extends GridPane {
 
   private ColumnConstraints createColumnConstraint() {
     ColumnConstraints constraints = new ColumnConstraints(
-        MIN_TILE_SIZE, getTileSize(), 1e3, Priority.NEVER, HPos.LEFT, true);
+        getTileSize(), getTileSize(), getTileSize(), Priority.NEVER, HPos.LEFT, true);
+    constraints.minWidthProperty().bind(tileSize);
     constraints.prefWidthProperty().bind(tileSize);
+    constraints.maxWidthProperty().bind(tileSize);
     return constraints;
   }
 
   private RowConstraints createRowConstraint() {
     RowConstraints constraints = new RowConstraints(
-        MIN_TILE_SIZE, getTileSize(), 1e3, Priority.NEVER, VPos.CENTER, true);
+        getTileSize(), getTileSize(), getTileSize(), Priority.NEVER, VPos.CENTER, true);
+    constraints.minHeightProperty().bind(tileSize);
     constraints.prefHeightProperty().bind(tileSize);
+    constraints.maxHeightProperty().bind(tileSize);
     return constraints;
   }
 
@@ -175,6 +179,51 @@ public class TilePane extends GridPane {
   }
 
   /**
+   * Gets the tile size closest to the given width and height in pixels.
+   */
+  public TileSize round(double width, double height) {
+    return new TileSize(roundWidthToNearestTile(width), roundHeightToNearestTile(height));
+  }
+
+  /**
+   * Rounds a tile's width in pixels to the nearest tile size.
+   */
+  public int roundWidthToNearestTile(double width) {
+    // w = (n * tile_size) + ((n - 1) * vgap)
+    //   = (n * tile_size) + (n * vgap) - vgap
+    // w + vgap = (n * tile_size) + (n * vgap)
+    //          = n * (tile_size + vgap)
+    // n = (w + vgap) / (tile_size + vgap) QED
+    // round n to nearest integer
+    return (int) Math.max(1, Math.round((width + getVgap()) / (getTileSize() + getVgap())));
+  }
+
+  /**
+   * Rounds a tile's height in pixels to the nearest tile size.
+   */
+  public int roundHeightToNearestTile(double height) {
+    return (int) Math.max(1, Math.round((height + getHgap()) / (getTileSize() + getVgap())));
+  }
+
+  /**
+   * Converts a {@link TileSize#getWidth() tile's width} to a pixel size.
+   */
+  public double tileSizeToWidth(int tileWidth) {
+    checkArgument(tileWidth >= 1,
+                  "The tile size must be a positive integer (was " + tileWidth + ")");
+    return tileWidth * getTileSize() + (tileWidth - 1) * getHgap();
+  }
+
+  /**
+   * Converts a {@link TileSize#getHeight() tile's height} to a pixel size.
+   */
+  public double tileSizeToHeight(int tileHeight) {
+    checkArgument(tileHeight >= 1,
+                  "The tile size must be a positive integer (was " + tileHeight + ")");
+    return tileHeight * getTileSize() + (tileHeight - 1) * getVgap();
+  }
+
+  /**
    * Sets the size of the given node in this tile pane.
    *
    * @param node the node to resize
@@ -223,6 +272,8 @@ public class TilePane extends GridPane {
     }
 
     add(node, placement.col, placement.row, width, height);
+    setHalignment(node, HPos.LEFT);
+    setValignment(node, VPos.TOP);
     return node;
   }
 
