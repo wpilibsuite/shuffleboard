@@ -4,23 +4,40 @@ import edu.wpi.first.shuffleboard.components.DashboardTabPane;
 import edu.wpi.first.shuffleboard.components.NetworkTableTree;
 import edu.wpi.first.shuffleboard.components.WidgetGallery;
 import edu.wpi.first.shuffleboard.dnd.DataFormats;
+import edu.wpi.first.shuffleboard.prefs.AppPreferences;
+import edu.wpi.first.shuffleboard.prefs.ObservableItem;
+import edu.wpi.first.shuffleboard.prefs.PropertyEditorFactory;
 import edu.wpi.first.shuffleboard.sources.DataSource;
 import edu.wpi.first.shuffleboard.sources.NetworkTableSource;
+import edu.wpi.first.shuffleboard.theme.Theme;
+import edu.wpi.first.shuffleboard.util.FxUtils;
 import edu.wpi.first.shuffleboard.widget.Widget;
 import edu.wpi.first.shuffleboard.widget.Widgets;
+
+import org.controlsfx.control.PropertySheet;
+import org.fxmisc.easybind.EasyBind;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.logging.Logger;
+
+import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
+import javafx.scene.Scene;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableRow;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.logging.Logger;
+import javafx.scene.layout.StackPane;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 
 import static edu.wpi.first.shuffleboard.util.TypeUtils.optionalCast;
 
@@ -41,8 +58,12 @@ public class MainWindowController {
   @FXML
   private NetworkTableTree networkTables;
 
+  private final ObservableValue<List<String>> stylesheets
+      = EasyBind.map(AppPreferences.getInstance().themeProperty(), Theme::getStyleSheets);
+
   @FXML
   private void initialize() throws IOException {
+    FxUtils.bind(root.getStylesheets(), stylesheets);
     // NetworkTable view init
     networkTables.getKeyColumn().setPrefWidth(199);
     networkTables.getValueColumn().setPrefWidth(199);
@@ -74,8 +95,8 @@ public class MainWindowController {
 
       ContextMenu menu = new ContextMenu();
       widgetNames.stream()
-                 .map(name -> createShowAsMenuItem(name, source))
-                 .forEach(menu.getItems()::add);
+          .map(name -> createShowAsMenuItem(name, source))
+          .forEach(menu.getItems()::add);
 
       menu.show(root.getScene().getWindow(), e.getScreenX(), e.getScreenY());
     });
@@ -130,4 +151,41 @@ public class MainWindowController {
     log.info("Exiting app");
     System.exit(0);
   }
+
+  /**
+   * Shows the preferences window.
+   */
+  @SuppressWarnings("unchecked")
+  @FXML
+  public void showPrefs() {
+    // Create the property sheet
+    PropertySheet propertySheet = new PropertySheet();
+    propertySheet.setModeSwitcherVisible(false);
+    propertySheet.setSearchBoxVisible(false);
+    propertySheet.setMode(PropertySheet.Mode.NAME);
+    AppPreferences.getInstance().getProperties()
+        .stream()
+        .map(property -> new ObservableItem(property, "Application"))
+        .forEachOrdered(propertySheet.getItems()::add);
+    propertySheet.setPropertyEditorFactory(new PropertyEditorFactory());
+    StackPane pane = new StackPane(propertySheet);
+    pane.setPadding(new Insets(8));
+    Scene scene = new Scene(pane);
+    EasyBind.listBind(scene.getRoot().getStylesheets(), root.getStylesheets());
+
+    Stage stage = new Stage();
+    stage.setScene(scene);
+    stage.initModality(Modality.APPLICATION_MODAL);
+    stage.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
+      if (event.getCode() == KeyCode.ESCAPE) {
+        stage.close();
+      }
+    });
+    stage.setTitle("Shuffleboard Preferences");
+    stage.sizeToScene();
+    stage.setResizable(false);
+    stage.requestFocus();
+    stage.showAndWait();
+  }
+
 }

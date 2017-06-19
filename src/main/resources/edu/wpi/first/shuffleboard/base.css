@@ -1,0 +1,146 @@
+/*******************************************************************************
+ *                                                                             *
+ * Base CSS for all themes.                                                    *
+ * This sets the styles for some app-specific types that are consistent        *
+ * through all themes (like the tile highlight) or use CSS variables to make   *
+ * them easy to reskin.                                                        *
+ ******************************************************************************/
+
+@import "material.css";
+
+/*******************************************************************************
+ *                                                                             *
+ * Root                                                                        *
+ *                                                                             *
+ ******************************************************************************/
+.root {
+    -fx-font-family: "Roboto";
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Tab Pane                                                                    *
+ *                                                                             *
+ ******************************************************************************/
+.tab-pane {
+    -fx-border-color: white;
+    -fx-border-width: 0.025em;
+    -fx-open-tab-animation: NONE;
+    -fx-close-tab-animation: NONE;
+}
+
+.tab-header-area .tab:selected .focus-indicator {
+    -fx-border-color: transparent;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Dashboard Tabs                                                              *
+ *                                                                             *
+ ******************************************************************************/
+.dashboard-tabs .tab-label {
+    -fx-font-size: 15px;
+}
+
+.dashboard-tabs .tab-header-area {
+    -fx-padding: 5px;
+}
+
+.dashboard-tabs .tab {
+    -fx-background-color: transparent;
+    -fx-border-color: white, -swatch-light-gray;
+    -fx-border-width: 1px 5px, 0px 4px;
+    -fx-padding: 4px 10px;
+    -fx-align: center;
+}
+
+.dashboard-tabs .tab .tab-close-button {
+    -fx-padding: 0 0 0 10px;
+}
+
+.dashboard-tabs .tab:hover {
+    -fx-cursor: hand;
+}
+
+.dashboard-tabs .tab:selected .focus-indicator {
+    -fx-border-color: TRANSPARENT;
+}
+
+.dashboard-tabs .tab:selected {
+    -fx-background-color: base;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Tiles                                                                       *
+ *                                                                             *
+ ******************************************************************************/
+.tile {
+    -fx-font-size: 11pt;
+}
+
+.tile:selected {
+    -fx-effect: dropshadow(gaussian, -swatch-500, 6, 0.1, 0, 4);
+}
+
+.tile-title-bar {
+    -fx-background-color: linear-gradient(to bottom, -swatch-100, -swatch-200);
+}
+
+.tile-title-label {
+    -fx-font-weight: bold;
+    -fx-font-size: 12pt;
+}
+
+.tile .property-sheet * {
+    /* TODO figure out exactly what needs to be set */
+    -fx-background-color: transparent;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Grid Highlight                                                              *
+ *                                                                             *
+ ******************************************************************************/
+.grid-highlight {
+    -fx-border-color: rgba(0, 255, 0, 0.75);
+    -fx-border-width: 0.25em;
+    -fx-background-color: rgba(255, 255, 255, 0.1);
+}
+
+.grid-highlight:colliding {
+    -fx-border-color: rgba(255, 0, 0, 0.75);
+    -fx-background-color: rgba(255, 0, 0, 0.1);
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Widget Gallery                                                              *
+ *                                                                             *
+ ******************************************************************************/
+.widget-gallery .item {
+    -fx-border-width: 2;
+    -fx-border-color: -swatch-200;
+    -fx-border-insets: 5;
+    -fx-background-insets: 5;
+    -fx-alignment: center;
+    -fx-cursor: hand;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Property sheet                                                              *
+ *                                                                             *
+ ******************************************************************************/
+.property-sheet .property-pane * {
+    -fx-font-size: 10pt;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Slider, range slider                                                        *
+ *                                                                             *
+ ******************************************************************************/
+.slider .track, .range-slider .track {
+    -fx-background-color: -swatch-300;
+}
