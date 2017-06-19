@@ -119,7 +119,11 @@ public final class Playback {
         previous = currentFrame == 0 ? null : current;
         current = data.get(currentFrame);
         currentFrame = (getFrame() + 1) % numFrames;
-        if (!isPaused() && previous != null && current.getTimestamp() >= previous.getTimestamp()) {
+
+        // Sleep only if we're not paused and the frames are consecutive.
+        // If the frames are not consecutive, it means that the frame was manually moved by a user and we would delay
+        // when we shouldn't
+        if (!isPaused() && previous != null && data.indexOf(current) == data.indexOf(previous) + 1) {
           try {
             Thread.sleep(current.getTimestamp() - previous.getTimestamp());
           } catch (InterruptedException e) {
@@ -137,6 +141,7 @@ public final class Playback {
           synchronized (sleepLock) {
             while (shouldNotPlayNextFrame()) {
               try {
+                System.out.println("Shouldn't play next frame, sleeping");
                 sleepLock.wait();
               } catch (InterruptedException ignore) {
                 // Spurious wakeup, go back to sleep
