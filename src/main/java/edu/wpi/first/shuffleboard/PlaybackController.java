@@ -4,6 +4,7 @@ import edu.wpi.first.shuffleboard.components.Scrubber;
 import edu.wpi.first.shuffleboard.sources.recording.Playback;
 import edu.wpi.first.shuffleboard.util.FxUtils;
 
+import org.controlsfx.control.ToggleSwitch;
 import org.fxmisc.easybind.EasyBind;
 
 import java.util.Optional;
@@ -24,6 +25,8 @@ public class PlaybackController {
   @FXML
   private Scrubber progressScrubber;
   @FXML
+  private ToggleSwitch loopingSwitch;
+  @FXML
   private Label progressLabel;
 
   private final ImageView playIcon = new ImageView("/edu/wpi/first/shuffleboard/icons/icons8-Play-16.png");
@@ -37,16 +40,20 @@ public class PlaybackController {
       EasyBind.monadic(Playback.currentPlaybackProperty())
           .selectProperty(Playback::pausedProperty);
 
+  private final Property<Boolean> loopingProperty =
+      EasyBind.monadic(Playback.currentPlaybackProperty())
+          .selectProperty(Playback::loopingProperty);
+
   @FXML
   private void initialize() {
-    pausedProperty.addListener((__, prev, cur) -> {
+    Playback.currentPlaybackProperty().addListener((__, prev, cur) -> {
       if (cur != null) {
         root.setDisable(false);
       }
     });
     progressProperty.addListener(__ -> progressScrubber.setProgressProperty(progressProperty));
-    progressScrubber.viewModeProperty().addListener((__, was, is) -> {
-      if (is) {
+    progressScrubber.viewModeProperty().addListener((__, wasViewMode, isViewMode) -> {
+      if (isViewMode) {
         currentPlayback().ifPresent(Playback::pause);
       }
     });
@@ -58,17 +65,19 @@ public class PlaybackController {
     playPauseButton.graphicProperty().bind(
         EasyBind.map(pausedProperty, paused -> paused == null || paused ? playIcon : pauseIcon));
 
-    progressProperty.addListener((__, prev, cur) -> {
+    progressProperty.addListener((__, prev, currentProgress) -> {
       FxUtils.runOnFxThread(() -> {
         Playback playback = currentPlayback().orElse(null);
-        if (cur == null || playback == null) {
+        if (currentProgress == null || playback == null) {
           progressLabel.setText("Frame 0 of 0");
         } else {
           progressLabel.setText(String.format("Frame %d of %d",
-              (int) (cur.doubleValue() * playback.getMaxFrameNum()), playback.getMaxFrameNum()));
+              (int) (currentProgress.doubleValue() * playback.getMaxFrameNum()), playback.getMaxFrameNum()));
         }
       });
     });
+
+    loopingSwitch.selectedProperty().bindBidirectional(loopingProperty);
   }
 
   private static Optional<Playback> currentPlayback() {

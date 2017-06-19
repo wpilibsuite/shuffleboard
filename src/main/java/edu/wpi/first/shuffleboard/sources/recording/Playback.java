@@ -37,6 +37,7 @@ public final class Playback {
   private final BooleanProperty paused = new SimpleBooleanProperty(this, "paused", true);
   private final IntegerProperty frame = new SimpleIntegerProperty(this, "frame", 0);
   private final DoubleProperty progress = new SimpleDoubleProperty(this, "progress", 0);
+  private final BooleanProperty looping = new SimpleBooleanProperty(this, "looping", true);
 
   private static final Property<Playback> currentPlayback = new SimpleObjectProperty<>(Playback.class, "current", null);
 
@@ -83,11 +84,20 @@ public final class Playback {
     progress.addListener((__, prev, cur) -> setFrame((int) (cur.doubleValue() * maxFrameNum)));
     paused.addListener((__, wasPaused, isPaused) -> {
       if (!isPaused) {
-        synchronized (sleepLock) {
-          sleepLock.notifyAll();
-        }
+        wakeAutoRunner();
       }
     });
+    looping.addListener((__, wasLooping, isLooping) -> {
+      if (isLooping) {
+        wakeAutoRunner();
+      }
+    });
+  }
+
+  private void wakeAutoRunner() {
+    synchronized (sleepLock) {
+      sleepLock.notifyAll();
+    }
   }
 
   private Recording loadRecording(String logFile) throws IOException {
@@ -122,10 +132,10 @@ public final class Playback {
           setFrame(currentFrame);
         }
 
-        // Halt this thread if playback is paused.
-        if (isPaused()) {
+        // Halt this thread if playback is paused, or if the end is reached and we're not looping
+        if (shouldNotPlayNextFrame()) {
           synchronized (sleepLock) {
-            while (isPaused()) {
+            while (shouldNotPlayNextFrame()) {
               try {
                 sleepLock.wait();
               } catch (InterruptedException ignore) {
@@ -139,6 +149,10 @@ public final class Playback {
     }, "PlaybackThread");
     autoRunner.setDaemon(true);
     autoRunner.start();
+  }
+
+  private boolean shouldNotPlayNextFrame() {
+    return isPaused() || (getFrame() == maxFrameNum && !isLooping());
   }
 
   private void set(TimestampedData data) {
@@ -229,6 +243,18 @@ public final class Playback {
    */
   public void setProgress(double progress) {
     this.progress.set(progress);
+  }
+
+  public boolean isLooping() {
+    return looping.get();
+  }
+
+  public BooleanProperty loopingProperty() {
+    return looping;
+  }
+
+  public void setLooping(boolean looping) {
+    this.looping.set(looping);
   }
 
   /**

@@ -6,6 +6,7 @@
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.HBox?>
+<?import org.controlsfx.control.ToggleSwitch?>
 <HBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="edu.wpi.first.shuffleboard.PlaybackController"
@@ -32,5 +33,6 @@
         </Button>
     </HBox>
     <Scrubber fx:id="progressScrubber"/>
+    <ToggleSwitch text="Loop" fx:id="loopingSwitch"/>
     <Label fx:id="progressLabel" text="Frame 0 of 0"/>
 </HBox>
