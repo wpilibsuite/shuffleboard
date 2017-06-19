@@ -1,14 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import edu.wpi.first.shuffleboard.components.DashboardTabPane?>
 <?import edu.wpi.first.shuffleboard.components.NetworkTableTree?>
 <?import edu.wpi.first.shuffleboard.components.WidgetGallery?>
-<?import javafx.scene.control.*?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.VBox?>
 <BorderPane fx:id="root" maxHeight="Infinity" maxWidth="Infinity"
             stylesheets="@main.css"
             xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="edu.wpi.first.shuffleboard.MainWindowController">
+
     <top>
         <MenuBar>
             <Menu mnemonicParsing="false" text="File">
@@ -16,8 +23,9 @@
             </Menu>
         </MenuBar>
     </top>
+
     <center>
-        <fx:include source="WidgetPane.fxml" fx:id="widgetPane"/>
+        <DashboardTabPane fx:id="dashboard" styleClass="dashboard-tabs"/>
     </center>
 
     <left>
