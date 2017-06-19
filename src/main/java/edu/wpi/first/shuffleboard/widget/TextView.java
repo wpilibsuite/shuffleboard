@@ -1,5 +1,8 @@
 package edu.wpi.first.shuffleboard.widget;
 
+import edu.wpi.first.shuffleboard.data.types.BooleanType;
+import edu.wpi.first.shuffleboard.data.types.NumberType;
+import edu.wpi.first.shuffleboard.data.types.StringType;
 import edu.wpi.first.shuffleboard.sources.DataSource;
 import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -15,7 +18,7 @@ import org.fxmisc.easybind.EasyBind;
     name = "Text View",
     summary = "Display a value as text",
     dataTypes = {
-        DataType.String, DataType.Number, DataType.Boolean
+        StringType.class, NumberType.class, BooleanType.class
     })
 @ParametrizedController("TextView.fxml")
 public class TextView extends SimpleAnnotatedWidget<Object> {

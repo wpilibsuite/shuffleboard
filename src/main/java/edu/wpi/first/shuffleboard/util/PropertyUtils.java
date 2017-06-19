@@ -8,6 +8,8 @@ import java.util.function.Function;
 
 import javafx.beans.binding.Binding;
 import javafx.beans.property.Property;
+import javafx.collections.MapChangeListener;
+import javafx.collections.ObservableMap;
 
 /**
  * Utility methods for working with JavaFX properties.
@@ -60,4 +62,31 @@ public final class PropertyUtils {
     firstProperty.bind(binding);
   }
 
+  /**
+   * Binds a property to a specific key in a map. If there is no entry for that key, the property's
+   * value will be set to null.
+   *
+   * @param property the property to bind
+   * @param map      the map to bind to
+   * @param key      the key for the entry to bind to
+   * @param v2t      a conversion function for converting objects of type <i>V</i> to type <i>T</i>
+   * @param <K>      the types of the keys in the map
+   * @param <V>      the types of the values in the map
+   * @param <T>      the type of data in the property
+   */
+  public static <K, V, T extends V> void bindToMapBidirectionally(Property<T> property,
+                                                                  ObservableMap<K, V> map,
+                                                                  K key,
+                                                                  Function<V, T> v2t) {
+    property.addListener((__, oldValue, newValue) -> map.put(key, newValue));
+    map.addListener((MapChangeListener<K, V>) change -> {
+      if (change.getKey().equals(key)) {
+        if (change.wasRemoved() && !map.containsKey(key)) {
+          property.setValue(null);
+        } else if (change.wasAdded()) {
+          property.setValue(v2t.apply(change.getValueAdded()));
+        }
+      }
+    });
+  }
 }
