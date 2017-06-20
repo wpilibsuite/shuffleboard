@@ -1,6 +1,7 @@
 package edu.wpi.first.shuffleboard.sources.recording;
 
-import edu.wpi.first.shuffleboard.widget.DataType;
+
+import edu.wpi.first.shuffleboard.data.DataType;
 
 import java.util.Objects;
 

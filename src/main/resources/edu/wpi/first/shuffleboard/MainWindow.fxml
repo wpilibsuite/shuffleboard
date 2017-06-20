@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import edu.wpi.first.shuffleboard.components.DashboardTabPane?>
 <?import edu.wpi.first.shuffleboard.components.NetworkTableTree?>
 <?import edu.wpi.first.shuffleboard.components.WidgetGallery?>
 <?import javafx.scene.control.Label?>
@@ -11,13 +12,14 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.VBox?>
 <BorderPane fx:id="root" maxHeight="Infinity" maxWidth="Infinity"
-            stylesheets="@main.css"
             xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="edu.wpi.first.shuffleboard.MainWindowController">
+
     <top>
         <MenuBar>
             <Menu mnemonicParsing="false" text="File">
                 <MenuItem onAction="#close" text="Close"/>
+                <MenuItem onAction="#showPrefs" text="Preferences" accelerator="SHORTCUT+,"/>
             </Menu>
             <Menu text="Recording">
                 <MenuItem text="Start recording" fx:id="recordingMenu" onAction="#startRecording"/>
@@ -25,13 +27,14 @@
             </Menu>
         </MenuBar>
     </top>
+
     <center>
-        <fx:include source="WidgetPane.fxml" fx:id="widgetPane"/>
+        <DashboardTabPane fx:id="dashboard" styleClass="dashboard-tabs"/>
     </center>
 
     <left>
         <TabPane tabClosingPolicy="UNAVAILABLE" prefWidth="400">
-            <Tab text="sources">
+            <Tab text="Sources">
                 <NetworkTableTree fx:id="networkTables" showRoot="false" prefHeight="80" prefWidth="400"
                                   VBox.vgrow="ALWAYS">
                     <placeholder>
@@ -39,7 +42,7 @@
                     </placeholder>
                 </NetworkTableTree>
             </Tab>
-            <Tab text="widgets">
+            <Tab text="Widgets">
                 <WidgetGallery vgap="10" hgap="10" prefColumns="3" fx:id="widgetGallery"/>
             </Tab>
         </TabPane>

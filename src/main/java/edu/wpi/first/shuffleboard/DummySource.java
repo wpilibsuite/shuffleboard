@@ -1,8 +1,12 @@
 package edu.wpi.first.shuffleboard;
 
+import com.google.common.collect.ImmutableSet;
+
+import edu.wpi.first.shuffleboard.data.DataType;
+import edu.wpi.first.shuffleboard.data.DataTypes;
+import edu.wpi.first.shuffleboard.data.SendableChooserData;
 import edu.wpi.first.shuffleboard.sources.AbstractDataSource;
 import edu.wpi.first.shuffleboard.sources.Type;
-import edu.wpi.first.shuffleboard.widget.DataType;
 
 import java.util.Optional;
 import java.util.Set;
@@ -30,12 +34,22 @@ public class DummySource<T> extends AbstractDataSource<T> {
    */
   @SuppressWarnings("unchecked")
   public static Optional<DummySource> forTypes(Set<DataType> types) {
-    if (types.contains(DataType.Number) || types.contains(DataType.All)) {
-      return Optional.of(new DummySource(DataType.Number, 123));
-    } else if (types.contains(DataType.String)) {
-      return Optional.of(new DummySource(DataType.String, "a string"));
+    if (types.contains(DataTypes.Number) || types.contains(DataTypes.All)) {
+      return Optional.of(new DummySource(DataTypes.Number, 123));
+    } else if (types.contains(DataTypes.String)) {
+      return Optional.of(new DummySource(DataTypes.String, "a string"));
+    } else if (types.contains(DataTypes.Boolean)) {
+      return Optional.of(new DummySource(DataTypes.Boolean, true));
+    } else if (types.contains(DataTypes.SendableChooser)) {
+      final SendableChooserData data = new SendableChooserData(new String[]{"A", "B", "C"}, "A", "A");
+      return Optional.of(new DummySource(DataTypes.SendableChooser, data));
     } else {
       return Optional.empty();
     }
   }
+
+  public static Optional<DummySource> forTypes(DataType... types) {
+    return forTypes(ImmutableSet.copyOf(types));
+  }
+
 }

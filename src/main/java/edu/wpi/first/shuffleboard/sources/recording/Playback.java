@@ -141,7 +141,6 @@ public final class Playback {
           synchronized (sleepLock) {
             while (shouldNotPlayNextFrame()) {
               try {
-                System.out.println("Shouldn't play next frame, sleeping");
                 sleepLock.wait();
               } catch (InterruptedException ignore) {
                 // Spurious wakeup, go back to sleep

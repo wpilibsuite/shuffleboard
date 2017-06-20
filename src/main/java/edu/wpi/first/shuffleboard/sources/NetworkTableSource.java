@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.sources;
 
+import edu.wpi.first.shuffleboard.data.ComplexDataType;
 import edu.wpi.first.shuffleboard.util.NetworkTableUtils;
 import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
 
@@ -81,6 +82,7 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
    *
    * @return a data source for that key, or {@link DataSource#none()} if that key does not exist
    */
+  @SuppressWarnings("unchecked")
   public static DataSource<?> forKey(String fullTableKey) {
     String key = NetworkTableUtils.normalizeKey(fullTableKey, false);
     final String uri = Type.NETWORK_TABLE.toUri(key);
@@ -93,7 +95,7 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
     if (NetworkTableUtils.rootTable.containsSubTable(key)) {
       // Composite
       return Sources.computeIfAbsent(uri, () ->
-          new CompositeNetworkTableSource(key, NetworkTableUtils.dataTypeForEntry(key)));
+          new CompositeNetworkTableSource(key, (ComplexDataType) NetworkTableUtils.dataTypeForEntry(key)));
     }
     return DataSource.none();
   }

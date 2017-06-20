@@ -1,11 +1,13 @@
 package edu.wpi.first.shuffleboard.sources;
 
+import edu.wpi.first.shuffleboard.data.ComplexData;
+import edu.wpi.first.shuffleboard.data.ComplexDataType;
+import edu.wpi.first.shuffleboard.util.AsyncUtils;
 import edu.wpi.first.shuffleboard.util.NetworkTableUtils;
-import edu.wpi.first.shuffleboard.widget.DataType;
 import edu.wpi.first.wpilibj.tables.ITable;
-import javafx.collections.FXCollections;
-import javafx.collections.MapChangeListener;
-import javafx.collections.ObservableMap;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * A network table source for composite data, ie data stored in multiple key-value pairs or nested
@@ -14,7 +16,9 @@ import javafx.collections.ObservableMap;
  * network tables is a flat namespace and that a subtable is really just a shortcut for finding data
  * under a certain nested namespace.
  */
-public class CompositeNetworkTableSource extends NetworkTableSource<ObservableMap<String, Object>> {
+public class CompositeNetworkTableSource<D extends ComplexData<D>> extends NetworkTableSource<D> {
+
+  private final Map<String, Object> backingMap = new HashMap<>();
 
   /**
    * Creates a composite network table source backed by the values associated with the given
@@ -24,46 +28,34 @@ public class CompositeNetworkTableSource extends NetworkTableSource<ObservableMa
    * @param dataType  the data type for this source to accept
    */
   @SuppressWarnings("PMD.ConstructorCallsOverridableMethod") // PMD is dumb
-  public CompositeNetworkTableSource(String tableName, DataType dataType) {
+  public CompositeNetworkTableSource(String tableName, ComplexDataType<D> dataType) {
     super(tableName);
     String path = NetworkTableUtils.normalizeKey(tableName, false);
     ITable table = NetworkTableUtils.rootTable.getSubTable(path);
-    // Use a synchronized map because network table listeners run in their own thread
-    super.setData(FXCollections.synchronizedObservableMap(FXCollections.observableHashMap()));
+    setData(dataType.getDefaultValue());
 
     setTableListener((key, value, flags) -> {
-      boolean delete = NetworkTableUtils.isDelete(flags);
-      String simpleKey = NetworkTableUtils.simpleKey(key);
-      if (delete) {
-        getData().remove(simpleKey);
-      } else {
-        getData().put(simpleKey, value);
-      }
-      setActive(NetworkTableUtils.dataTypeForEntry(fullTableKey) == dataType);
+      AsyncUtils.runAsync(() -> {
+        // make sure the updates run on the application thread
+        boolean delete = NetworkTableUtils.isDelete(flags);
+        String simpleKey = NetworkTableUtils.simpleKey(key);
+        if (delete) {
+          backingMap.remove(simpleKey);
+        } else {
+          backingMap.put(simpleKey, value);
+        }
+        setActive(NetworkTableUtils.dataTypeForEntry(fullTableKey) == dataType);
+        setData(dataType.fromMap(backingMap));
+      });
     });
 
-    getData().addListener((MapChangeListener<String, Object>) change -> {
-      if (!isActive() || !isConnected()) {
-        return;
-      }
-      if (change.wasAdded()) {
-        table.putValue(change.getKey(), change.getValueAdded());
-      }
-      if (change.wasRemoved() && !change.getMap().containsKey(change.getKey())) {
-        table.delete(change.getKey());
-      }
+    data.addListener((__, oldData, newData) -> {
+      Map<String, Object> diff = newData.changesFrom(oldData);
+      backingMap.putAll(diff);
+      diff.forEach(table::putValue);
     });
 
     Sources.register(this);
-  }
-
-  /**
-   * Do not use this method.
-   */
-  @Override
-  public void setData(ObservableMap<String, Object> newValue) {
-    throw new UnsupportedOperationException(
-        "The data cannot be set directly. Set a value using getData() instead");
   }
 
 }

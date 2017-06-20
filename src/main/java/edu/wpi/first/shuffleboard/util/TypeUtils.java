@@ -1,6 +1,7 @@
 package edu.wpi.first.shuffleboard.util;
 
 import java.util.Optional;
+import java.util.function.Function;
 
 /**
  * Utilities dealing with the type system.
@@ -18,5 +19,9 @@ public final class TypeUtils {
     return cls.isAssignableFrom(value.getClass())
             ? Optional.of(cls.cast(value))
             : Optional.empty();
+  }
+
+  public static <T> Function<Object, Optional<T>> optionalCast(Class<T> cls) {
+    return value -> optionalCast(value, cls);
   }
 }

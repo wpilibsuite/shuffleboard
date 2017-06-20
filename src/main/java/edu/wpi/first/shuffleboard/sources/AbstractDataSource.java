@@ -1,8 +1,8 @@
 package edu.wpi.first.shuffleboard.sources;
 
+import edu.wpi.first.shuffleboard.data.DataType;
 import edu.wpi.first.shuffleboard.properties.AsyncProperty;
 import edu.wpi.first.shuffleboard.sources.recording.Recorder;
-import edu.wpi.first.shuffleboard.widget.DataType;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.Property;

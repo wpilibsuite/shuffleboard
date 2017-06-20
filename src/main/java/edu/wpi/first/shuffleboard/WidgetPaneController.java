@@ -4,6 +4,7 @@ package edu.wpi.first.shuffleboard;
 import edu.wpi.first.shuffleboard.components.WidgetPane;
 import edu.wpi.first.shuffleboard.components.WidgetTile;
 import edu.wpi.first.shuffleboard.dnd.DataFormats;
+import edu.wpi.first.shuffleboard.dnd.TileDragResizer;
 import edu.wpi.first.shuffleboard.sources.DataSource;
 import edu.wpi.first.shuffleboard.util.GridPoint;
 import edu.wpi.first.shuffleboard.widget.TileSize;
@@ -160,7 +161,13 @@ public class WidgetPaneController {
       contextMenu.show(pane.getScene().getWindow(), event.getScreenX(), event.getScreenY());
     });
 
+    TileDragResizer resizer = TileDragResizer.makeResizable(pane, tile);
+
     tile.setOnDragDetected(event -> {
+      if (resizer.isDragging()) {
+        // don't drag the widget while it's being resized
+        return;
+      }
       dragWidget(tile);
       event.consume();
     });
