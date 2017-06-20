@@ -79,7 +79,7 @@ public final class Recorder {
       return;
     }
     TimestampedData timestampedData
-        = new TimestampedData(source.getId(), source.getDataType(), source.getData(), timestamp());
+        = new TimestampedData(source.getId(), source.getData(), timestamp());
     recording.append(timestampedData);
   }
 
