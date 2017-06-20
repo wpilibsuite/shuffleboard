@@ -1,6 +1,8 @@
 package edu.wpi.first.shuffleboard.sources.recording;
 
 
+import edu.wpi.first.shuffleboard.data.DataType;
+
 import java.util.Objects;
 
 /**
@@ -9,6 +11,7 @@ import java.util.Objects;
 public final class TimestampedData implements Comparable<TimestampedData> {
 
   private final String sourceId;
+  private final DataType dataType;
   private final Object data;
   private final long timestamp;
 
@@ -16,17 +19,23 @@ public final class TimestampedData implements Comparable<TimestampedData> {
    * Creates a new time stamped data object.
    *
    * @param sourceId  the ID of the source corresponding to this data
+   * @param dataType  the type of this data
    * @param data      the actual data
    * @param timestamp the timestamp for when the data was recorded
    */
-  public TimestampedData(String sourceId, Object data, long timestamp) {
+  public TimestampedData(String sourceId, DataType dataType, Object data, long timestamp) {
     this.sourceId = sourceId;
+    this.dataType = dataType;
     this.data = data;
     this.timestamp = timestamp;
   }
 
   public String getSourceId() {
     return sourceId;
+  }
+
+  public DataType getDataType() {
+    return dataType;
   }
 
   public Object getData() {
@@ -48,20 +57,21 @@ public final class TimestampedData implements Comparable<TimestampedData> {
 
     TimestampedData that = (TimestampedData) other;
     return this.sourceId.equals(that.sourceId)
-        && this.data.equals(that.data)
+        && this.dataType.equals(that.dataType)
+        && this.dataType.equals(that.data)
         && this.timestamp == that.timestamp;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(sourceId, data, timestamp);
+    return Objects.hash(sourceId, dataType, data, timestamp);
   }
 
 
   @Override
   public String toString() {
-    return String.format("TimeStampedData(sourceId=%s, data=%s, timestamp=%s)",
-        sourceId, data, timestamp);
+    return String.format("TimeStampedData(sourceId=%s, dataType=%s, data=%s, timestamp=%s)",
+        sourceId, dataType, data, timestamp);
   }
 
   @Override
