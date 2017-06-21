@@ -1,13 +1,8 @@
 package edu.wpi.first.shuffleboard.sources.recording;
 
-import com.google.gson.Gson;
-
 import edu.wpi.first.shuffleboard.sources.DataSource;
-import edu.wpi.first.shuffleboard.util.Storage;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.time.Instant;
 
 import javafx.beans.property.BooleanProperty;
@@ -19,8 +14,6 @@ import javafx.beans.property.SimpleBooleanProperty;
  */
 public final class Recorder {
 
-  private static final Gson gson = new Gson();
-
   private static final Recorder instance = new Recorder();
 
   private final BooleanProperty running = new SimpleBooleanProperty(this, "running", false);
@@ -30,11 +23,10 @@ public final class Recorder {
   private Recorder() {
     running.addListener((__, wasRunning, isRunning) -> {
       if (!isRunning) {
-        String json = gson.toJson(recording);
         try {
-          Files.write(Paths.get(Storage.DEFAULT_RECORDING_FILE), json.getBytes());
+          Serialization.saveToDefaultLocation(recording);
         } catch (IOException e) {
-          throw new RuntimeException("Could not write to the log file", e);
+          throw new RuntimeException("Could not save the recording", e);
         }
       }
     });

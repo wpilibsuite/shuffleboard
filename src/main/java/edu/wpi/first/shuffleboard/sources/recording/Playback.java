@@ -1,12 +1,8 @@
 package edu.wpi.first.shuffleboard.sources.recording;
 
-import com.google.gson.Gson;
-
 import edu.wpi.first.shuffleboard.sources.Sources;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.List;
 
 import javafx.beans.property.BooleanProperty;
@@ -69,7 +65,7 @@ public final class Playback {
    * @throws IOException if the recording file could not be read
    */
   private Playback(String logFile) throws IOException {
-    Recording recording = loadRecording(logFile);
+    Recording recording = Serialization.loadRecording(logFile);
     data = recording.getData();
     numFrames = data.size();
     maxFrameNum = numFrames - 1;
@@ -98,11 +94,6 @@ public final class Playback {
     synchronized (sleepLock) {
       sleepLock.notifyAll();
     }
-  }
-
-  private Recording loadRecording(String logFile) throws IOException {
-    byte[] bytes = Files.readAllBytes(Paths.get(logFile));
-    return new Gson().fromJson(new String(bytes, "UTF-8"), Recording.class);
   }
 
   /**
