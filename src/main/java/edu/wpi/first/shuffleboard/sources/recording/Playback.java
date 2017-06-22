@@ -100,6 +100,9 @@ public final class Playback {
    * Starts playback.
    */
   public void start() {
+    if (data.isEmpty()) {
+      return;
+    }
     unpause();
     Sources.disconnectAll();
     autoRunner = new Thread(() -> {

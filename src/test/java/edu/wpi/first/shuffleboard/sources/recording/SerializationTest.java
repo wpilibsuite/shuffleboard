@@ -1,6 +1,12 @@
 package edu.wpi.first.shuffleboard.sources.recording;
 
+import edu.wpi.first.shuffleboard.data.DataTypes;
+
 import org.junit.Test;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 
 import static org.junit.Assert.*;
 
@@ -88,6 +94,17 @@ public class SerializationTest {
 
     expected = new String[]{"foo", "bar"};
     assertArrayEquals(expected, Serialization.readStringArray(fooBarBytes, 0));
+  }
+
+  @Test
+  public void testEncodeRecode() throws IOException {
+    final File file = Files.createTempFile("testEncodeRecode", "frc").toFile();
+    final Recording recording = new Recording();
+    recording.append(new TimestampedData("foo", DataTypes.String, "bar", 0));
+    recording.append(new TimestampedData("foo", DataTypes.String, "baz", 1));
+    Serialization.saveRecording(recording, file.getAbsolutePath());
+    final Recording loaded = Serialization.loadRecording(file.getAbsolutePath());
+    assertEquals("The loaded recording differs from the encoded one", recording, loaded);
   }
 
 }

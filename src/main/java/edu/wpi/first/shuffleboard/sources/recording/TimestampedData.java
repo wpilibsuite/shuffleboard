@@ -58,7 +58,7 @@ public final class TimestampedData implements Comparable<TimestampedData> {
     TimestampedData that = (TimestampedData) other;
     return this.sourceId.equals(that.sourceId)
         && this.dataType.equals(that.dataType)
-        && this.dataType.equals(that.data)
+        && this.data.equals(that.data)
         && this.timestamp == that.timestamp;
   }
 

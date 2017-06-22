@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 @SuppressWarnings("PMD.GodClass")
 public final class Serialization {
@@ -26,6 +27,7 @@ public final class Serialization {
 
   private static final int SIZE_OF_BYTE = 1;
   private static final int SIZE_OF_BOOL = 1;
+  private static final int SIZE_OF_SHORT = 2;
   private static final int SIZE_OF_INT = 4;
   private static final int SIZE_OF_LONG = 8;
   private static final int SIZE_OF_DOUBLE = 8;
@@ -49,6 +51,8 @@ public final class Serialization {
     // work on a copy of the data so changes to the recording don't mess this up
     final List<TimestampedData> dataCopy = ImmutableList.copyOf(recording.getData());
     final byte[] header = header(dataCopy);
+    final List<String> sourceNames = getAllSourceNames(dataCopy);
+    assert sourceNames.size() <= Short.MAX_VALUE;
     List<byte[]> segments = new ArrayList<>();
     segments.add(header);
     for (TimestampedData data : dataCopy) {
@@ -56,7 +60,8 @@ public final class Serialization {
       final Object value = data.getData();
 
       final byte[] timestamp = toByteArray(data.getTimestamp());
-      final byte[] sourceId = toByteArray(data.getSourceId());
+      // use int16 instead of int32 -- 32,767 sources should be enough
+      final byte[] sourceIdIndex = toByteArray((short) sourceNames.indexOf(data.getSourceId()));
       final byte[] dataType = toByteArray(type.getName());
       final byte[] dataBytes;
 
@@ -83,7 +88,7 @@ public final class Serialization {
       }
 
       segments.add(timestamp);
-      segments.add(sourceId);
+      segments.add(sourceIdIndex);
       segments.add(dataType);
       segments.add(dataBytes);
     }
@@ -115,18 +120,24 @@ public final class Serialization {
    */
   public static Recording loadRecording(String file) throws IOException {
     final byte[] bytes = Files.readAllBytes(Paths.get(file));
+    if (bytes.length < 8) {
+      throw new IOException("Not enough ");
+    }
     final int magic = readInt(bytes, 0);
     if (magic != MAGIC_NUMBER) {
       throw new IOException("Wrong magic number in the header. Expected " + MAGIC_NUMBER + ", but was " + magic);
     }
     //final int numDataPoints = readInt(bytes, 4);
+    final String[] sourceNames = readStringArray(bytes, 8);
+
     Recording recording = new Recording();
-    int cursor = 8;
+    int cursor = 8 + sizeOfStringArray(sourceNames);
     while (cursor < bytes.length) {
       final long timeStamp = readLong(bytes, cursor); // NOPMD
       cursor += SIZE_OF_LONG;
-      final String sourceId = readString(bytes, cursor);
-      cursor += SIZE_OF_INT + sourceId.length();
+      final short sourceIdIndex = readShort(bytes, cursor);
+      final String sourceId = sourceNames[sourceIdIndex];
+      cursor += SIZE_OF_SHORT;
       final String dataType = readString(bytes, cursor);
       cursor += SIZE_OF_INT + dataType.length();
 
@@ -180,13 +191,32 @@ public final class Serialization {
   }
 
   /**
-   * Generates a header for a serialized recording.
+   * Generates a header for a serialized recording. The header contains:
+   * <ul>
+   * <li>The {@link #MAGIC_NUMBER} magic number, to help confirm data integrity</li>
+   * <li>The number of data points (signed 32-bit int)</li>
+   * <li>The names of all the recorded sources, used for caching</li>
+   * </ul>
    */
   public static byte[] header(List<TimestampedData> data) {
-    byte[] header = new byte[8];
+    List<String> sourceNames = getAllSourceNames(data);
+    byte[] nameBytes = toByteArray(getAllSourceNames(data).toArray(new String[sourceNames.size()]));
+    byte[] header = new byte[(SIZE_OF_INT * 2) + nameBytes.length];
     put(header, toByteArray(MAGIC_NUMBER), 0);
-    put(header, toByteArray(data.size()), 4);
+    put(header, toByteArray(data.size()), SIZE_OF_INT);
+    put(header, nameBytes, SIZE_OF_INT * 2);
     return header;
+  }
+
+  /**
+   * Gets the names of all the sources represented in a data set. This is sorted alphabetically.
+   */
+  public static List<String> getAllSourceNames(List<TimestampedData> data) {
+    return data.stream()
+        .map(TimestampedData::getSourceId)
+        .distinct()
+        .sorted()
+        .collect(Collectors.toList());
   }
 
   /**
@@ -194,6 +224,16 @@ public final class Serialization {
    */
   public static byte[] toByteArray(boolean val) {
     return new byte[]{(byte) (val ? 1 : 0)};
+  }
+
+  /**
+   * Encodes a 16-bit int as a 2-byte big-endian byte array.
+   */
+  public static byte[] toByteArray(short val) {
+    return new byte[]{
+        (byte) ((val >> 8) & 0xFF),
+        (byte) (val & 0xFF)
+    };
   }
 
   /**
@@ -299,6 +339,15 @@ public final class Serialization {
    */
   public static boolean readBoolean(byte[] array, int pos) {
     return array[pos] != 0;
+  }
+
+  public static short readShort(byte[] array) {
+    return readShort(array, 0);
+  }
+
+  public static short readShort(byte[] array, int pos) {
+    return (short) (((array[pos] & 0xFF) << 8)
+        | (array[pos + 1] & 0xFF));
   }
 
   /**
