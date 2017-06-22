@@ -63,28 +63,10 @@ public final class Serialization {
       // use int16 instead of int32 -- 32,767 sources should be enough
       final byte[] sourceIdIndex = toByteArray((short) sourceNames.indexOf(data.getSourceId()));
       final byte[] dataType = toByteArray(type.getName());
-      final byte[] dataBytes;
+      final byte[] dataBytes = encode(value, type);
 
-      if (DataTypes.Boolean.equals(type)) {
-        dataBytes = toByteArray((Boolean) value);
-      } else if (DataTypes.Number.equals(type)) {
-        dataBytes = toByteArray(((Number) value).doubleValue());
-      } else if (DataTypes.String.equals(type)) {
-        dataBytes = toByteArray((String) value);
-      } else if (DataTypes.RawBytes.equals(type)) {
-        dataBytes = (byte[]) value;
-      } else if (DataTypes.StringArray.equals(type)) {
-        dataBytes = toByteArray((String[]) value);
-      } else if (DataTypes.SendableChooser.equals(type)) {
-        SendableChooserData sendableChooserData = (SendableChooserData) value;
-        final String[] options = sendableChooserData.getOptions();
-        final String defaultOption = sendableChooserData.getDefaultOption();
-        final String selectedOption = sendableChooserData.getSelectedOption();
-        dataBytes = Bytes.concat(toByteArray(options), toByteArray(defaultOption), toByteArray(selectedOption));
-      } else {
-        // Can't serialize the value, skip
-        log.warning("Cannot serialize value of type " + type); //NOPMD log not surrounded by if
-        continue;
+      if (dataBytes == null) {
+        throw new IOException("Cannot serialize value of type " + type.getName());
       }
 
       segments.add(timestamp);
@@ -100,6 +82,35 @@ public final class Serialization {
       i += next.length;
     }
     Files.write(Paths.get(file), all);
+  }
+
+  private static byte[] encode(Object value, DataType type) {
+    final byte[] bytes;
+    if (DataTypes.Boolean.equals(type)) {
+      bytes = toByteArray((Boolean) value);
+    } else if (DataTypes.Number.equals(type)) {
+      bytes = toByteArray(((Number) value).doubleValue());
+    } else if (DataTypes.String.equals(type)) {
+      bytes = toByteArray((String) value);
+    } else if (DataTypes.RawBytes.equals(type)) {
+      bytes = (byte[]) value;
+    } else if (DataTypes.BooleanArray.equals(type)) {
+      bytes = toByteArray((boolean[]) value);
+    } else if (DataTypes.NumberArray.equals(type)) {
+      bytes = toByteArray((double[]) value);
+    } else if (DataTypes.StringArray.equals(type)) {
+      bytes = toByteArray((String[]) value);
+    } else if (DataTypes.SendableChooser.equals(type)) {
+      SendableChooserData sendableChooserData = (SendableChooserData) value;
+      final String[] options = sendableChooserData.getOptions();
+      final String defaultOption = sendableChooserData.getDefaultOption();
+      final String selectedOption = sendableChooserData.getSelectedOption();
+      bytes = Bytes.concat(toByteArray(options), toByteArray(defaultOption), toByteArray(selectedOption));
+    } else {
+      // Can't serialize the value
+      bytes = null;
+    }
+    return bytes;
   }
 
   /**
@@ -121,7 +132,7 @@ public final class Serialization {
   public static Recording loadRecording(String file) throws IOException {
     final byte[] bytes = Files.readAllBytes(Paths.get(file));
     if (bytes.length < 8) {
-      throw new IOException("Not enough ");
+      throw new IOException("Recording file too small");
     }
     final int magic = readInt(bytes, 0);
     if (magic != MAGIC_NUMBER) {
@@ -142,35 +153,45 @@ public final class Serialization {
       cursor += SIZE_OF_INT + dataType.length();
 
       final Object value;
-      switch (dataType) {
-        case "Boolean":
-          value = readBoolean(bytes, cursor);
-          cursor += SIZE_OF_BOOL;
-          break;
-        case "Number":
-          value = readDouble(bytes, cursor);
-          cursor += SIZE_OF_DOUBLE;
-          break;
-        case "String":
-          value = readString(bytes, cursor);
-          cursor += SIZE_OF_INT + ((String) value).length();
-          break;
-        case "StringArray":
-          final String[] stringArray = readStringArray(bytes, cursor);
-          cursor += sizeOfStringArray(stringArray);
-          value = stringArray;
-          break;
-        case "SendableChooser":
-          String[] options = readStringArray(bytes, cursor);
-          cursor += sizeOfStringArray(options);
-          String defaultOption = readString(bytes, cursor);
-          cursor += SIZE_OF_INT + defaultOption.length();
-          String selectedOption = readString(bytes, cursor);
-          cursor += SIZE_OF_INT + selectedOption.length();
-          value = new SendableChooserData(options, defaultOption, selectedOption);
-          break;
-        default:
-          throw new IOException("Unknown data type: " + dataType);
+      final DataType type = DataType.forName(dataType);
+      // ew ew ew
+      if (type == DataTypes.Boolean) {
+        value = readBoolean(bytes, cursor);
+        cursor += SIZE_OF_BOOL;
+      } else if (type == DataTypes.Number) {
+        value = readDouble(bytes, cursor);
+        cursor += SIZE_OF_DOUBLE;
+      } else if (type == DataTypes.String) {
+        value = readString(bytes, cursor);
+        cursor += SIZE_OF_INT + ((String) value).length();
+      } else if (type == DataTypes.RawBytes) {
+        int len = readInt(bytes, cursor);
+        cursor += SIZE_OF_INT;
+        byte[] byteArray = subArray(bytes, cursor, cursor + len);
+        cursor += byteArray.length;
+        value = byteArray;
+      } else if (type == DataTypes.BooleanArray) {
+        boolean[] bools = readBooleanArray(bytes, cursor);
+        cursor += SIZE_OF_INT + bools.length;
+        value = bools;
+      } else if (type == DataTypes.NumberArray) {
+        double[] numbers = readDoubleArray(bytes, cursor);
+        cursor += SIZE_OF_INT + (numbers.length * SIZE_OF_DOUBLE);
+        value = numbers;
+      } else if (type == DataTypes.StringArray) {
+        final String[] stringArray = readStringArray(bytes, cursor);
+        cursor += sizeOfStringArray(stringArray);
+        value = stringArray;
+      } else if (type == DataTypes.SendableChooser) {
+        String[] options = readStringArray(bytes, cursor);
+        cursor += sizeOfStringArray(options);
+        String defaultOption = readString(bytes, cursor);
+        cursor += SIZE_OF_INT + defaultOption.length();
+        String selectedOption = readString(bytes, cursor);
+        cursor += SIZE_OF_INT + selectedOption.length();
+        value = new SendableChooserData(options, defaultOption, selectedOption);
+      } else {
+        throw new IOException("Cannot deserialize data of type " + dataType);
       }
 
       TimestampedData data = new TimestampedData(sourceId, DataType.forName(dataType), value, timeStamp);
@@ -290,6 +311,46 @@ public final class Serialization {
   }
 
   /**
+   * Encodes an array of booleans as a byte array.
+   */
+  public static byte[] toByteArray(boolean[] array) {
+    final byte[] buf = new byte[SIZE_OF_INT + SIZE_OF_BOOL * array.length];
+    if (array.length == 0) {
+      return buf;
+    }
+    int pos = 0;
+    put(buf, toByteArray(array.length), pos);
+    pos += SIZE_OF_INT;
+
+    for (boolean val : array) {
+      byte[] arr = toByteArray(val);
+      put(buf, arr, pos);
+      pos += SIZE_OF_BOOL;
+    }
+    return buf;
+  }
+
+  /**
+   * Encodes an array of doubles as a big-endian byte array.
+   */
+  public static byte[] toByteArray(double[] array) {
+    final byte[] buf = new byte[SIZE_OF_INT + SIZE_OF_DOUBLE * array.length];
+    if (array.length == 0) {
+      return buf;
+    }
+    int pos = 0;
+    put(buf, toByteArray(array.length), pos);
+    pos += SIZE_OF_INT;
+
+    for (double val : array) {
+      byte[] arr = toByteArray(val);
+      put(buf, arr, pos);
+      pos += SIZE_OF_DOUBLE;
+    }
+    return buf;
+  }
+
+  /**
    * Encodes a string array as a big-endian byte array. These can be read with {@link #readStringArray(byte[], int)}.
    */
   public static byte[] toByteArray(String[] array) { // NOPMD varargs
@@ -341,13 +402,18 @@ public final class Serialization {
     return array[pos] != 0;
   }
 
+  /**
+   * Reads a {@code short} (signed 16-bit integer) from a big-endian byte array.
+   */
   public static short readShort(byte[] array) {
     return readShort(array, 0);
   }
 
+  /**
+   * Reads a {@code short} (signed 16-bit integer) from a big-endian byte array.
+   */
   public static short readShort(byte[] array, int pos) {
-    return (short) (((array[pos] & 0xFF) << 8)
-        | (array[pos + 1] & 0xFF));
+    return (short) (((array[pos] & 0xFF) << 8) | (array[pos + 1] & 0xFF));
   }
 
   /**
@@ -437,6 +503,38 @@ public final class Serialization {
     } catch (UnsupportedEncodingException e) {
       throw new AssertionError("UTF-8 is not supported (the JVM is not to spec!)", e);
     }
+  }
+
+  /**
+   * Reads a boolean array from the given byte array, starting at the given position.
+   */
+  public static boolean[] readBooleanArray(byte[] array, int pos) {
+    int cursor = pos;
+    int length = readInt(array, cursor);
+    cursor += SIZE_OF_INT;
+    boolean[] booleanArray = new boolean[length];
+    for (int i = 0; i < length; i++) {
+      boolean bool = readBoolean(array, cursor);
+      booleanArray[i] = bool;
+      cursor += SIZE_OF_BOOL;
+    }
+    return booleanArray;
+  }
+
+  /**
+   * Reads an array of doubles from an array of bytes, starting at the given position.
+   */
+  public static double[] readDoubleArray(byte[] array, int pos) {
+    int cursor = pos;
+    int length = readInt(array, cursor);
+    cursor += SIZE_OF_INT;
+    double[] doubleArray = new double[length];
+    for (int i = 0; i < length; i++) {
+      double val = readDouble(array, cursor);
+      doubleArray[i] = val;
+      cursor += SIZE_OF_DOUBLE;
+    }
+    return doubleArray;
   }
 
   /**
