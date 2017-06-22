@@ -5,7 +5,15 @@ import com.google.common.primitives.Bytes;
 
 import edu.wpi.first.shuffleboard.data.DataType;
 import edu.wpi.first.shuffleboard.data.DataTypes;
-import edu.wpi.first.shuffleboard.data.SendableChooserData;
+import edu.wpi.first.shuffleboard.sources.recording.serialization.BooleanArrayAdapter;
+import edu.wpi.first.shuffleboard.sources.recording.serialization.ByteArrayAdapter;
+import edu.wpi.first.shuffleboard.sources.recording.serialization.NumberArrayAdapter;
+import edu.wpi.first.shuffleboard.sources.recording.serialization.SendableChooserAdapter;
+import edu.wpi.first.shuffleboard.sources.recording.serialization.Serializers;
+import edu.wpi.first.shuffleboard.sources.recording.serialization.SimpleAdapter;
+import edu.wpi.first.shuffleboard.sources.recording.serialization.StringAdapter;
+import edu.wpi.first.shuffleboard.sources.recording.serialization.StringArrayAdapter;
+import edu.wpi.first.shuffleboard.sources.recording.serialization.TypeAdapter;
 import edu.wpi.first.shuffleboard.util.Storage;
 
 import java.io.IOException;
@@ -25,12 +33,25 @@ public final class Serialization {
 
   public static final int MAGIC_NUMBER = 0xFEEDBAC4;
 
-  private static final int SIZE_OF_BYTE = 1;
-  private static final int SIZE_OF_BOOL = 1;
-  private static final int SIZE_OF_SHORT = 2;
-  private static final int SIZE_OF_INT = 4;
-  private static final int SIZE_OF_LONG = 8;
-  private static final int SIZE_OF_DOUBLE = 8;
+  public static final int SIZE_OF_BYTE = 1;
+  public static final int SIZE_OF_BOOL = 1;
+  public static final int SIZE_OF_SHORT = 2;
+  public static final int SIZE_OF_INT = 4;
+  public static final int SIZE_OF_LONG = 8;
+  public static final int SIZE_OF_DOUBLE = 8;
+
+  static {
+    Serializers.add(new SimpleAdapter<>(
+        DataTypes.Boolean, Serialization::toByteArray, Serialization::readBoolean, 1));
+    Serializers.add(new SimpleAdapter<>(
+        DataTypes.Number, n -> toByteArray(n.doubleValue()), Serialization::readDouble, 8));
+    Serializers.add(new StringAdapter());
+    Serializers.add(new ByteArrayAdapter());
+    Serializers.add(new BooleanArrayAdapter());
+    Serializers.add(new NumberArrayAdapter());
+    Serializers.add(new StringArrayAdapter());
+    Serializers.add(new SendableChooserAdapter());
+  }
 
   private Serialization() {
   }
@@ -50,20 +71,22 @@ public final class Serialization {
   public static void saveRecording(Recording recording, String file) throws IOException {
     // work on a copy of the data so changes to the recording don't mess this up
     final List<TimestampedData> dataCopy = ImmutableList.copyOf(recording.getData());
-    final byte[] header = header(dataCopy);
+    final byte[] header = header(dataCopy); // NOPMD
     final List<String> sourceNames = getAllSourceNames(dataCopy);
-    assert sourceNames.size() <= Short.MAX_VALUE;
+    if (sourceNames.size() > Short.MAX_VALUE) {
+      throw new IOException("Too many sources (" + sourceNames.size() + "), should be at most " + Short.MAX_VALUE);
+    }
     List<byte[]> segments = new ArrayList<>();
     segments.add(header);
     for (TimestampedData data : dataCopy) {
       final DataType type = data.getDataType();
       final Object value = data.getData();
 
-      final byte[] timestamp = toByteArray(data.getTimestamp());
+      final byte[] timestamp = toByteArray(data.getTimestamp()); // NOPMD
       // use int16 instead of int32 -- 32,767 sources should be enough
-      final byte[] sourceIdIndex = toByteArray((short) sourceNames.indexOf(data.getSourceId()));
-      final byte[] dataType = toByteArray(type.getName());
-      final byte[] dataBytes = encode(value, type);
+      final byte[] sourceIdIndex = toByteArray((short) sourceNames.indexOf(data.getSourceId())); //NOPMD
+      final byte[] dataType = toByteArray(type.getName()); // NOPMD
+      final byte[] dataBytes = encode(value, type); // NOPMD
 
       if (dataBytes == null) {
         throw new IOException("Cannot serialize value of type " + type.getName());
@@ -77,40 +100,33 @@ public final class Serialization {
     byte[] all = new byte[segments.stream().mapToInt(b -> b.length).sum()];
     for (int i = 0, j = 0; i < all.length; ) {
       byte[] next = segments.get(j);
-      j++;
       put(all, next, i);
       i += next.length;
+      j++;
     }
     Files.write(Paths.get(file), all);
   }
 
-  private static byte[] encode(Object value, DataType type) {
-    final byte[] bytes;
-    if (DataTypes.Boolean.equals(type)) {
-      bytes = toByteArray((Boolean) value);
-    } else if (DataTypes.Number.equals(type)) {
-      bytes = toByteArray(((Number) value).doubleValue());
-    } else if (DataTypes.String.equals(type)) {
-      bytes = toByteArray((String) value);
-    } else if (DataTypes.RawBytes.equals(type)) {
-      bytes = (byte[]) value;
-    } else if (DataTypes.BooleanArray.equals(type)) {
-      bytes = toByteArray((boolean[]) value);
-    } else if (DataTypes.NumberArray.equals(type)) {
-      bytes = toByteArray((double[]) value);
-    } else if (DataTypes.StringArray.equals(type)) {
-      bytes = toByteArray((String[]) value);
-    } else if (DataTypes.SendableChooser.equals(type)) {
-      SendableChooserData sendableChooserData = (SendableChooserData) value;
-      final String[] options = sendableChooserData.getOptions();
-      final String defaultOption = sendableChooserData.getDefaultOption();
-      final String selectedOption = sendableChooserData.getSelectedOption();
-      bytes = Bytes.concat(toByteArray(options), toByteArray(defaultOption), toByteArray(selectedOption));
-    } else {
-      // Can't serialize the value
-      bytes = null;
-    }
-    return bytes;
+  public static <T> byte[] encode(T value) {
+    return encode(value, (DataType<T>) DataType.forJavaType(value.getClass()));
+  }
+
+  /**
+   * Encodes a value as a byte array.
+   */
+  public static <T> byte[] encode(T value, DataType<T> type) {
+    return Serializers.getOptional(type).map(s -> s.serialize(value)).orElse(null);
+  }
+
+  /**
+   * Decodes a byte buffer as a value of the given data type.
+   *
+   * @param buffer         the buffer to read from
+   * @param bufferPosition the position in the buffer to start reading from
+   * @param type           the type of the data to decode
+   */
+  public static <T> T decode(byte[] buffer, int bufferPosition, DataType<T> type) {
+    return Serializers.get(type).deserialize(buffer, bufferPosition);
   }
 
   /**
@@ -147,51 +163,19 @@ public final class Serialization {
       final long timeStamp = readLong(bytes, cursor); // NOPMD
       cursor += SIZE_OF_LONG;
       final short sourceIdIndex = readShort(bytes, cursor);
-      final String sourceId = sourceNames[sourceIdIndex];
+      final String sourceId = sourceNames[sourceIdIndex]; //NOPMD
       cursor += SIZE_OF_SHORT;
       final String dataType = readString(bytes, cursor);
       cursor += SIZE_OF_INT + dataType.length();
 
       final Object value;
-      final DataType type = DataType.forName(dataType);
-      // ew ew ew
-      if (type == DataTypes.Boolean) {
-        value = readBoolean(bytes, cursor);
-        cursor += SIZE_OF_BOOL;
-      } else if (type == DataTypes.Number) {
-        value = readDouble(bytes, cursor);
-        cursor += SIZE_OF_DOUBLE;
-      } else if (type == DataTypes.String) {
-        value = readString(bytes, cursor);
-        cursor += SIZE_OF_INT + ((String) value).length();
-      } else if (type == DataTypes.RawBytes) {
-        int len = readInt(bytes, cursor);
-        cursor += SIZE_OF_INT;
-        byte[] byteArray = subArray(bytes, cursor, cursor + len);
-        cursor += byteArray.length;
-        value = byteArray;
-      } else if (type == DataTypes.BooleanArray) {
-        boolean[] bools = readBooleanArray(bytes, cursor);
-        cursor += SIZE_OF_INT + bools.length;
-        value = bools;
-      } else if (type == DataTypes.NumberArray) {
-        double[] numbers = readDoubleArray(bytes, cursor);
-        cursor += SIZE_OF_INT + (numbers.length * SIZE_OF_DOUBLE);
-        value = numbers;
-      } else if (type == DataTypes.StringArray) {
-        final String[] stringArray = readStringArray(bytes, cursor);
-        cursor += sizeOfStringArray(stringArray);
-        value = stringArray;
-      } else if (type == DataTypes.SendableChooser) {
-        String[] options = readStringArray(bytes, cursor);
-        cursor += sizeOfStringArray(options);
-        String defaultOption = readString(bytes, cursor);
-        cursor += SIZE_OF_INT + defaultOption.length();
-        String selectedOption = readString(bytes, cursor);
-        cursor += SIZE_OF_INT + selectedOption.length();
-        value = new SendableChooserData(options, defaultOption, selectedOption);
+      final DataType<?> type = DataType.forName(dataType);
+      if (Serializers.hasSerializer(type)) {
+        TypeAdapter adapter = Serializers.get(type);
+        value = adapter.deserialize(bytes, cursor);
+        cursor += adapter.getSerializedSize(value);
       } else {
-        throw new IOException("Cannot deserialize data of type " + dataType);
+        throw new IOException("No serializer for " + dataType);
       }
 
       TimestampedData data = new TimestampedData(sourceId, DataType.forName(dataType), value, timeStamp);
@@ -311,66 +295,10 @@ public final class Serialization {
   }
 
   /**
-   * Encodes an array of booleans as a byte array.
-   */
-  public static byte[] toByteArray(boolean[] array) {
-    final byte[] buf = new byte[SIZE_OF_INT + SIZE_OF_BOOL * array.length];
-    if (array.length == 0) {
-      return buf;
-    }
-    int pos = 0;
-    put(buf, toByteArray(array.length), pos);
-    pos += SIZE_OF_INT;
-
-    for (boolean val : array) {
-      byte[] arr = toByteArray(val);
-      put(buf, arr, pos);
-      pos += SIZE_OF_BOOL;
-    }
-    return buf;
-  }
-
-  /**
-   * Encodes an array of doubles as a big-endian byte array.
-   */
-  public static byte[] toByteArray(double[] array) {
-    final byte[] buf = new byte[SIZE_OF_INT + SIZE_OF_DOUBLE * array.length];
-    if (array.length == 0) {
-      return buf;
-    }
-    int pos = 0;
-    put(buf, toByteArray(array.length), pos);
-    pos += SIZE_OF_INT;
-
-    for (double val : array) {
-      byte[] arr = toByteArray(val);
-      put(buf, arr, pos);
-      pos += SIZE_OF_DOUBLE;
-    }
-    return buf;
-  }
-
-  /**
    * Encodes a string array as a big-endian byte array. These can be read with {@link #readStringArray(byte[], int)}.
    */
   public static byte[] toByteArray(String[] array) { // NOPMD varargs
-    if (array.length == 0) {
-      return new byte[SIZE_OF_INT];
-    }
-    byte[] buf = new byte[sizeOfStringArray(array)];
-
-    int pos = 0;
-
-    put(buf, toByteArray(array.length), pos);
-    pos += SIZE_OF_INT;
-
-    for (String string : array) {
-      byte[] arr = toByteArray(string);
-      put(buf, arr, pos);
-      pos += arr.length;
-    }
-
-    return buf;
+    return Serializers.get(DataTypes.StringArray).serialize(array);
   }
 
   public static byte[] subArray(byte[] raw, int start, int end) {
@@ -471,13 +399,6 @@ public final class Serialization {
   /**
    * Reads a double-precision number from a big-endian byte array.
    */
-  public static double readDouble(byte[] array) {
-    return Double.longBitsToDouble(readLong(array));
-  }
-
-  /**
-   * Reads a double-precision number from a big-endian byte array.
-   */
   public static double readDouble(byte[] array, int pos) {
     return Double.longBitsToDouble(readLong(array, pos));
   }
@@ -489,52 +410,7 @@ public final class Serialization {
    * @param pos   the starting position of the encoded string
    */
   public static String readString(byte[] array, int pos) {
-    int cursor = pos;
-    int length = readInt(array, cursor);
-    cursor += SIZE_OF_INT;
-    if (array.length < cursor + length) {
-      throw new IllegalArgumentException(String.format(
-          "Not enough bytes to read from. String length = %d, starting position = %d, array length = %d",
-          length, cursor, array.length));
-    }
-    byte[] bytes = subArray(array, cursor, cursor + length);
-    try {
-      return new String(bytes, "UTF-8");
-    } catch (UnsupportedEncodingException e) {
-      throw new AssertionError("UTF-8 is not supported (the JVM is not to spec!)", e);
-    }
-  }
-
-  /**
-   * Reads a boolean array from the given byte array, starting at the given position.
-   */
-  public static boolean[] readBooleanArray(byte[] array, int pos) {
-    int cursor = pos;
-    int length = readInt(array, cursor);
-    cursor += SIZE_OF_INT;
-    boolean[] booleanArray = new boolean[length];
-    for (int i = 0; i < length; i++) {
-      boolean bool = readBoolean(array, cursor);
-      booleanArray[i] = bool;
-      cursor += SIZE_OF_BOOL;
-    }
-    return booleanArray;
-  }
-
-  /**
-   * Reads an array of doubles from an array of bytes, starting at the given position.
-   */
-  public static double[] readDoubleArray(byte[] array, int pos) {
-    int cursor = pos;
-    int length = readInt(array, cursor);
-    cursor += SIZE_OF_INT;
-    double[] doubleArray = new double[length];
-    for (int i = 0; i < length; i++) {
-      double val = readDouble(array, cursor);
-      doubleArray[i] = val;
-      cursor += SIZE_OF_DOUBLE;
-    }
-    return doubleArray;
+    return Serializers.get(DataTypes.String).deserialize(array, pos);
   }
 
   /**
@@ -544,16 +420,7 @@ public final class Serialization {
    * @param pos   the starting position of the encoded string array
    */
   public static String[] readStringArray(byte[] array, int pos) {
-    int cursor = pos;
-    int length = readInt(array, cursor);
-    cursor += SIZE_OF_INT;
-    String[] stringArray = new String[length];
-    for (int i = 0; i < length; i++) {
-      String string = readString(array, cursor);
-      stringArray[i] = string;
-      cursor += SIZE_OF_INT + string.length();
-    }
-    return stringArray;
+    return Serializers.get(DataTypes.StringArray).deserialize(array, pos);
   }
 
 }

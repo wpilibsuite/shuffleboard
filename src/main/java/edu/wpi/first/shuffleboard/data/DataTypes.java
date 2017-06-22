@@ -29,7 +29,7 @@ public final class DataTypes {
 
   // Simple types
   public static final DataType<Number> Number = new NumberType();
-  public static final DataType<Object> String = new StringType();
+  public static final DataType<String> String = new StringType();
   public static final DataType<Boolean> Boolean = new BooleanType();
   public static final DataType<double[]> NumberArray = new NumberArrayType();
   public static final DataType<String[]> StringArray = new StringArrayType();

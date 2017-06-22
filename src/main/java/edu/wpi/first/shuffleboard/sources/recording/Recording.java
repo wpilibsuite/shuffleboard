@@ -18,15 +18,15 @@ public class Recording {
   }
 
   @Override
-  public boolean equals(Object o) {
-    if (this == o) {
+  public boolean equals(Object obj) {
+    if (this == obj) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (obj == null || getClass() != obj.getClass()) {
       return false;
     }
 
-    Recording that = (Recording) o;
+    Recording that = (Recording) obj;
 
     return this.data.equals(that.data);
   }

@@ -99,7 +99,7 @@ public final class NetworkTableUtils {
   public static DataType dataTypeForEntry(String key) {
     String normalKey = normalizeKey(key, false);
     if (rootTable.containsKey(normalKey)) {
-      return DataType.valueOf(rootTable.getValue(normalKey).getClass());
+      return DataType.forJavaType(rootTable.getValue(normalKey).getClass());
     }
     if (rootTable.containsSubTable(normalKey)) {
       ITable table = rootTable.getSubTable(normalKey);

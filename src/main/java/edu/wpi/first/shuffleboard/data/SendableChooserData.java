@@ -75,4 +75,27 @@ public final class SendableChooserData extends ComplexData<SendableChooserData> 
         .build();
   }
 
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (obj == null || getClass() != obj.getClass()) {
+      return false;
+    }
+
+    final SendableChooserData that = (SendableChooserData) obj;
+
+    return Arrays.equals(this.options, that.options)
+        && this.defaultOption.equals(that.defaultOption)
+        && this.selectedOption.equals(that.selectedOption);
+  }
+
+  @Override
+  public int hashCode() {
+    int result = Arrays.hashCode(options);
+    result = 31 * result + defaultOption.hashCode();
+    result = 31 * result + selectedOption.hashCode();
+    return result;
+  }
 }

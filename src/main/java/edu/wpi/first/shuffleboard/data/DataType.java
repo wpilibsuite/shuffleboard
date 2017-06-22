@@ -29,7 +29,7 @@ public interface DataType<T> {
   /**
    * Gets the data type most closely associated with the given Java type.
    */
-  static DataType<?> valueOf(Class<?> type) {
+  static DataType<?> forJavaType(Class<?> type) {
     if (type == String.class) {
       return DataTypes.String;
     } else if (Number.class.isAssignableFrom(type)

@@ -31,7 +31,7 @@ public class SingleKeyNetworkTableSource<T> extends NetworkTableSource<T> {
       }
       AsyncUtils.runAsync(() -> {
         boolean deleted = NetworkTableUtils.isDelete(flags);
-        setActive(!deleted && dataType == DataType.valueOf(value.getClass()));
+        setActive(!deleted && dataType == DataType.forJavaType(value.getClass()));
 
         if (isActive()) {
           setData((T) value);
