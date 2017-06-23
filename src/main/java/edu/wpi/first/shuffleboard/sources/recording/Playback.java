@@ -6,12 +6,10 @@ import java.io.IOException;
 import java.util.List;
 
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.Property;
 import javafx.beans.property.ReadOnlyProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
@@ -19,9 +17,8 @@ import javafx.beans.property.SimpleObjectProperty;
  * Handles playback of a recording file. Calling {@link #start()} will start a thread that auto-increments data frames
  * to replay the recorded data at the speed at which it was originally recorded. This thread may be paused and unpaused
  * at at time using the {@link #pausedProperty}, which has the convenience methods {@link #pause()} and
- * {@link #unpause()}. Frames may be set manually using {@link #setFrame}, or progress as a percentage value may be
- * set with {@link #setProgress}. Frames can be iterated over using {@link #previousFrame()} and {@link #nextFrame()},
- * which will both pause the auto-incrementing thread.
+ * {@link #unpause()}. Frames may be set manually using {@link #setFrame}. Frames can be iterated over using
+ * {@link #previousFrame()} and {@link #nextFrame()}, which will both pause the auto-incrementing thread.
  */
 public final class Playback {
 
@@ -32,7 +29,6 @@ public final class Playback {
   private final Object sleepLock = new Object();
   private final BooleanProperty paused = new SimpleBooleanProperty(this, "paused", true);
   private final IntegerProperty frame = new SimpleIntegerProperty(this, "frame", 0);
-  private final DoubleProperty progress = new SimpleDoubleProperty(this, "progress", 0);
   private final BooleanProperty looping = new SimpleBooleanProperty(this, "looping", true);
 
   private static final Property<Playback> currentPlayback = new SimpleObjectProperty<>(Playback.class, "current", null);
@@ -75,9 +71,7 @@ public final class Playback {
             String.format("Frame number out of bounds: %s, must be in the range (0, %d)", cur, maxFrameNum));
       }
     });
-    frame.addListener((__, prev, cur) -> setProgress(cur.doubleValue() / maxFrameNum));
     frame.addListener((__, prev, cur) -> set(data.get(cur.intValue())));
-    progress.addListener((__, prev, cur) -> setFrame((int) (cur.doubleValue() * maxFrameNum)));
     paused.addListener((__, wasPaused, isPaused) -> {
       if (!isPaused) {
         wakeAutoRunner();
@@ -222,25 +216,6 @@ public final class Playback {
    */
   public void setFrame(int frame) {
     this.frame.set(frame);
-  }
-
-  /**
-   * Gets the current playback progress as a value from 0 to 1, inclusive.
-   */
-  public double getProgress() {
-    return progress.get();
-  }
-
-  public DoubleProperty progressProperty() {
-    return progress;
-  }
-
-  /**
-   * Sets the progress of the playback as a value from 0 to 1, where 0 is the first frame of the playback and 1 is the
-   * last frame.
-   */
-  public void setProgress(double progress) {
-    this.progress.set(progress);
   }
 
   public boolean isLooping() {

@@ -32,9 +32,9 @@ public class PlaybackController {
   private final ImageView playIcon = new ImageView("/edu/wpi/first/shuffleboard/icons/icons8-Play-16.png");
   private final ImageView pauseIcon = new ImageView("/edu/wpi/first/shuffleboard/icons/icons8-Pause-16.png");
 
-  private final Property<Number> progressProperty =
+  private final Property<Number> frameProperty =
       EasyBind.monadic(Playback.currentPlaybackProperty())
-          .selectProperty(Playback::progressProperty);
+          .selectProperty(Playback::frameProperty);
 
   private final Property<Boolean> pausedProperty =
       EasyBind.monadic(Playback.currentPlaybackProperty())
@@ -51,28 +51,28 @@ public class PlaybackController {
         root.setDisable(false);
       }
     });
-    progressProperty.addListener(__ -> progressScrubber.setProgressProperty(progressProperty));
+    frameProperty.addListener(__ -> {
+      progressScrubber.setProgressProperty(frameProperty);
+      progressScrubber.setMax(Playback.getCurrentPlayback().getMaxFrameNum());
+    });
     progressScrubber.viewModeProperty().addListener((__, wasViewMode, isViewMode) -> {
       if (isViewMode) {
         currentPlayback().ifPresent(Playback::pause);
       }
     });
 
-    progressScrubber.blockIncrementProperty().bind(
-        EasyBind.map(Playback.currentPlaybackProperty(),
-            playback -> playback == null ? 0.01 : 1.0 / playback.getMaxFrameNum()));
+    progressScrubber.setBlockIncrement(1);
 
     playPauseButton.graphicProperty().bind(
         EasyBind.map(pausedProperty, paused -> paused == null || paused ? playIcon : pauseIcon));
 
-    progressProperty.addListener((__, prev, currentProgress) -> {
+    frameProperty.addListener((__, prev, currentProgress) -> {
       FxUtils.runOnFxThread(() -> {
         Playback playback = currentPlayback().orElse(null);
         if (currentProgress == null || playback == null) {
           progressLabel.setText("Frame 0 of 0");
         } else {
-          progressLabel.setText(String.format("Frame %d of %d",
-              (int) (currentProgress.doubleValue() * playback.getMaxFrameNum()), playback.getMaxFrameNum()));
+          progressLabel.setText(String.format("Frame %d of %d", currentProgress.intValue(), playback.getMaxFrameNum()));
         }
       });
     });
