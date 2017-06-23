@@ -200,7 +200,7 @@ public class MainWindowController {
   }
 
   @FXML
-  private void startRecording() {
+  private void toggleRecording() {
     if (Recorder.getInstance().isRunning()) {
       Recorder.getInstance().stop();
     } else {

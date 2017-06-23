@@ -22,8 +22,8 @@
                 <MenuItem onAction="#showPrefs" text="Preferences" accelerator="SHORTCUT+,"/>
             </Menu>
             <Menu text="Recording">
-                <MenuItem text="Start recording" fx:id="recordingMenu" onAction="#startRecording"/>
-                <MenuItem text="Load playback..." onAction="#loadPlayback"/>
+                <MenuItem text="Start recording" fx:id="recordingMenu" onAction="#toggleRecording" accelerator="SHORTCUT+SHIFT+R"/>
+                <MenuItem text="Load playback..." onAction="#loadPlayback" accelerator="SHORTCUT+SHIFT+P"/>
             </Menu>
         </MenuBar>
     </top>

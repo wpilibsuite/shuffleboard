@@ -73,13 +73,13 @@ public class PlaybackController {
     playPauseButton.graphicProperty().bind(
         EasyBind.map(pausedProperty, paused -> paused == null || paused ? playIcon : pauseIcon));
 
-    frameProperty.addListener((__, prev, currentProgress) -> {
+    frameProperty.addListener((__, prev, frame) -> {
       FxUtils.runOnFxThread(() -> {
         Playback playback = Playback.getCurrentPlayback().orElse(null);
-        if (currentProgress == null || playback == null) {
+        if (frame == null || playback == null) {
           progressLabel.setText("Frame 0 of 0");
         } else {
-          progressLabel.setText(String.format("Frame %d of %d", currentProgress.intValue(), playback.getMaxFrameNum()));
+          progressLabel.setText(String.format("Frame %d of %d", frame.intValue(), playback.getNumFrames()));
         }
       });
     });
