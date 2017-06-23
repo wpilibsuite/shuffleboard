@@ -4,6 +4,8 @@ import edu.wpi.first.shuffleboard.sources.Sources;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
@@ -21,6 +23,8 @@ import javafx.beans.property.SimpleObjectProperty;
  * {@link #previousFrame()} and {@link #nextFrame()}, which will both pause the auto-incrementing thread.
  */
 public final class Playback {
+
+  private static final Logger log = Logger.getLogger(Playback.class.getName());
 
   private final List<TimestampedData> data;
   private final int numFrames;
@@ -115,7 +119,7 @@ public final class Playback {
           try {
             Thread.sleep(current.getTimestamp() - previous.getTimestamp());
           } catch (InterruptedException e) {
-            // TODO log it
+            log.log(Level.WARNING, "Autorunner thread interrupted between frames", e);
             autoRunner.interrupt();
           }
         }
@@ -130,8 +134,9 @@ public final class Playback {
             while (shouldNotPlayNextFrame()) {
               try {
                 sleepLock.wait();
-              } catch (InterruptedException ignore) {
-                // Spurious wakeup, go back to sleep
+              } catch (InterruptedException e) {
+                log.log(Level.WARNING, "Autorunner thread interrupted while paused", e);
+                autoRunner.interrupt();
               }
             }
           }
@@ -157,8 +162,8 @@ public final class Playback {
    */
   public void stop() {
     autoRunner.interrupt();
+    currentPlayback.setValue(null);
     Sources.connectAll();
-    unpause();
   }
 
   public int getNumFrames() {
