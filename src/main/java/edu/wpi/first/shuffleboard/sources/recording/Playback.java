@@ -4,6 +4,7 @@ import edu.wpi.first.shuffleboard.sources.Sources;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -44,6 +45,7 @@ public final class Playback {
    */
   public static Playback load(String recordingFile) throws IOException {
     Playback playback = new Playback(recordingFile);
+    getCurrentPlayback().ifPresent(Playback::stop);
     currentPlayback.setValue(playback);
     return playback;
   }
@@ -51,8 +53,8 @@ public final class Playback {
   /**
    * Gets the current playback instance.
    */
-  public static Playback getCurrentPlayback() {
-    return currentPlayback.getValue();
+  public static Optional<Playback> getCurrentPlayback() {
+    return Optional.ofNullable(currentPlayback.getValue());
   }
 
   public static ReadOnlyProperty<Playback> currentPlaybackProperty() {
@@ -121,6 +123,7 @@ public final class Playback {
           } catch (InterruptedException e) {
             log.log(Level.WARNING, "Autorunner thread interrupted between frames", e);
             autoRunner.interrupt();
+            return;
           }
         }
         // May have been paused while sleeping, so check after wake to make sure
@@ -137,6 +140,7 @@ public final class Playback {
               } catch (InterruptedException e) {
                 log.log(Level.WARNING, "Autorunner thread interrupted while paused", e);
                 autoRunner.interrupt();
+                return;
               }
             }
           }

@@ -3,14 +3,12 @@ package edu.wpi.first.shuffleboard;
 import edu.wpi.first.shuffleboard.components.Scrubber;
 import edu.wpi.first.shuffleboard.sources.recording.Playback;
 import edu.wpi.first.shuffleboard.sources.recording.Recorder;
-import edu.wpi.first.shuffleboard.sources.recording.Recording;
 import edu.wpi.first.shuffleboard.util.FxUtils;
 
 import org.controlsfx.control.ToggleSwitch;
 import org.fxmisc.easybind.EasyBind;
 
 import java.util.Objects;
-import java.util.Optional;
 
 import javafx.beans.property.Property;
 import javafx.fxml.FXML;
@@ -62,11 +60,11 @@ public class PlaybackController {
         EasyBind.map(Recorder.getInstance().runningProperty(), running -> running ? stopIcon : recordIcon));
     frameProperty.addListener(__ -> {
       progressScrubber.setProgressProperty(frameProperty);
-      progressScrubber.setMax(currentPlayback().map(Playback::getMaxFrameNum).orElse(0));
+      progressScrubber.setMax(Playback.getCurrentPlayback().map(Playback::getMaxFrameNum).orElse(0));
     });
     progressScrubber.viewModeProperty().addListener((__, wasViewMode, isViewMode) -> {
       if (isViewMode) {
-        currentPlayback().ifPresent(Playback::pause);
+        Playback.getCurrentPlayback().ifPresent(Playback::pause);
       }
     });
 
@@ -77,7 +75,7 @@ public class PlaybackController {
 
     frameProperty.addListener((__, prev, currentProgress) -> {
       FxUtils.runOnFxThread(() -> {
-        Playback playback = currentPlayback().orElse(null);
+        Playback playback = Playback.getCurrentPlayback().orElse(null);
         if (currentProgress == null || playback == null) {
           progressLabel.setText("Frame 0 of 0");
         } else {
@@ -89,28 +87,24 @@ public class PlaybackController {
     loopingSwitch.selectedProperty().bindBidirectional(loopingProperty);
   }
 
-  private static Optional<Playback> currentPlayback() {
-    return Optional.ofNullable(Playback.getCurrentPlayback());
-  }
-
   @FXML
   void previousFrame() {
-    currentPlayback().ifPresent(Playback::previousFrame);
+    Playback.getCurrentPlayback().ifPresent(Playback::previousFrame);
   }
 
   @FXML
   void nextFrame() {
-    currentPlayback().ifPresent(Playback::nextFrame);
+    Playback.getCurrentPlayback().ifPresent(Playback::nextFrame);
   }
 
   @FXML
   void togglePlayPause() {
-    currentPlayback().ifPresent(playback -> playback.setPaused(!playback.isPaused()));
+    Playback.getCurrentPlayback().ifPresent(playback -> playback.setPaused(!playback.isPaused()));
   }
 
   @FXML
   void stopPlayback() {
-    currentPlayback().ifPresent(Playback::stop);
+    Playback.getCurrentPlayback().ifPresent(Playback::stop);
   }
 
   @FXML
