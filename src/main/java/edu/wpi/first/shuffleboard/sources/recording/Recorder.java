@@ -1,9 +1,14 @@
 package edu.wpi.first.shuffleboard.sources.recording;
 
 import edu.wpi.first.shuffleboard.sources.DataSource;
+import edu.wpi.first.shuffleboard.util.Storage;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -14,6 +19,8 @@ import javafx.beans.property.SimpleBooleanProperty;
  */
 public final class Recorder {
 
+  private static final DateTimeFormatter timeFormatter =
+      DateTimeFormatter.ofPattern("uuuu-MM-dd_HH:mm:ss", Locale.getDefault());
   private static final Recorder instance = new Recorder();
 
   private final BooleanProperty running = new SimpleBooleanProperty(this, "running", false);
@@ -24,12 +31,18 @@ public final class Recorder {
     running.addListener((__, wasRunning, isRunning) -> {
       if (!isRunning) {
         try {
-          Serialization.saveToDefaultLocation(recording);
+          String file = String.format(Storage.RECORDING_FILE_FORMAT, createTimestamp());
+          System.out.println("Saving recording to " + file);
+          Serialization.saveRecording(recording, file);
         } catch (IOException e) {
           throw new RuntimeException("Could not save the recording", e);
         }
       }
     });
+  }
+
+  private String createTimestamp() {
+    return timeFormatter.format(LocalDateTime.ofInstant(startTime, ZoneId.systemDefault()));
   }
 
   /**
