@@ -14,7 +14,7 @@
       fx:id="root"
       alignment="CENTER"
       styleClass="playback-controls"
-      spacing="4">
+      spacing="8">
     <Button fx:id="recordButton" onAction="#toggleRecord"/>
     <HBox fx:id="playbackControls" alignment="CENTER">
         <padding>
@@ -44,7 +44,7 @@
         </Button>
         <HBox alignment="CENTER" spacing="4">
             <Scrubber fx:id="progressScrubber"/>
-            <ToggleSwitch text="Loop" fx:id="loopingSwitch"/>
+            <ToggleSwitch text="Loop" fx:id="loopingSwitch" alignment="CENTER" textAlignment="CENTER"/>
             <Label fx:id="progressLabel" text="Frame 0 of 0"/>
         </HBox>
     </HBox>
