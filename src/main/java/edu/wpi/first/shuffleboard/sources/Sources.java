@@ -13,6 +13,10 @@ public final class Sources {
   }
 
   public static void register(DataSource<?> source) {
+    if (sources.containsValue(source)) {
+      // Already registered
+      return;
+    }
     sources.put(source.getId(), source);
   }
 

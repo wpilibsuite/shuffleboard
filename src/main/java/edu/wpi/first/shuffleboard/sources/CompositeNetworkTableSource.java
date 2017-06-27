@@ -38,11 +38,11 @@ public class CompositeNetworkTableSource<D extends ComplexData<D>> extends Netwo
       AsyncUtils.runAsync(() -> {
         // make sure the updates run on the application thread
         boolean delete = NetworkTableUtils.isDelete(flags);
-        String simpleKey = NetworkTableUtils.simpleKey(key);
+        String relativeKey = NetworkTableUtils.normalizeKey(key.substring(path.length() + 1), false);
         if (delete) {
-          backingMap.remove(simpleKey);
+          backingMap.remove(relativeKey);
         } else {
-          backingMap.put(simpleKey, value);
+          backingMap.put(relativeKey, value);
         }
         setActive(NetworkTableUtils.dataTypeForEntry(fullTableKey) == dataType);
         setData(dataType.fromMap(backingMap));
