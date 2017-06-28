@@ -74,7 +74,7 @@ public interface DataSource<T> {
   /**
    * Gets the type of this source.
    */
-  Type getType();
+  SourceType getType();
 
   default String getId() {
     return getType().toUri(getName());

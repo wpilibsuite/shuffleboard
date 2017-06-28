@@ -1,21 +1,24 @@
 package edu.wpi.first.shuffleboard.components;
 
 import edu.wpi.first.shuffleboard.NetworkTableEntry;
+import edu.wpi.first.shuffleboard.sources.MapBackedTable;
 import edu.wpi.first.shuffleboard.util.FxUtils;
 import edu.wpi.first.shuffleboard.util.NetworkTableUtils;
 import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
 import edu.wpi.first.wpilibj.tables.ITable;
+import edu.wpi.first.wpilibj.tables.ITableListener;
+
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableColumn;
 import javafx.scene.control.TreeTableColumn.CellDataFeatures;
 import javafx.scene.control.TreeTableView;
-
-import java.util.Comparator;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 
 /**
@@ -58,9 +61,18 @@ public class NetworkTableTree extends TreeTableView<NetworkTableEntry> {
       sort(getRoot());
       return true;
     });
-    NetworkTablesJNI.addEntryListener(
-        "",
-        (uid, key, value, flags) -> FxUtils.runOnFxThread(() -> makeBranches(key, value, flags)),
+    MapBackedTable.getRoot().addTableListenerEx(
+        new ITableListener() {
+          @Override
+          public void valueChanged(ITable source, String key, Object value, boolean isNew) {
+            throw new UnsupportedOperationException("Use valueChangedEx()");
+          }
+
+          @Override
+          public void valueChangedEx(ITable source, String key, Object value, int flags) {
+            FxUtils.runOnFxThread(() -> makeBranches(key, value, flags));
+          }
+        },
         0xFF);
   }
 
@@ -85,7 +97,7 @@ public class NetworkTableTree extends TreeTableView<NetworkTableEntry> {
   private void sort(TreeItem<NetworkTableEntry> node) {
     if (!node.isLeaf()) {
       FXCollections.sort(node.getChildren(),
-                         branchesFirst.thenComparing(alphabetical));
+          branchesFirst.thenComparing(alphabetical));
       node.getChildren().forEach(this::sort);
     }
   }
@@ -101,8 +113,8 @@ public class NetworkTableTree extends TreeTableView<NetworkTableEntry> {
     String key = NetworkTableUtils.normalizeKey(fullKey);
     boolean deleted = (flags & ITable.NOTIFY_DELETE) != 0;
     List<String> pathElements = Stream.of(key.split("/"))
-                                      .filter(s -> !s.isEmpty())
-                                      .collect(Collectors.toList());
+        .filter(s -> !s.isEmpty())
+        .collect(Collectors.toList());
     TreeItem<NetworkTableEntry> current = root;
     TreeItem<NetworkTableEntry> parent = root;
     StringBuilder currentKey = new StringBuilder();
@@ -113,9 +125,9 @@ public class NetworkTableTree extends TreeTableView<NetworkTableEntry> {
       currentKey.append('/').append(pathElement);
       parent = current;
       current = current.getChildren().stream()
-                       .filter(item -> item.getValue().getKey().equals(currentKey.toString()))
-                       .findFirst()
-                       .orElse(null);
+          .filter(item -> item.getValue().getKey().equals(currentKey.toString()))
+          .findFirst()
+          .orElse(null);
       if (!deleted && i < pathElements.size() - 1 && current == null) {
         // It's a branch (subtable); expand it
         current = new TreeItem<>(new NetworkTableEntry(currentKey.toString(), ""));

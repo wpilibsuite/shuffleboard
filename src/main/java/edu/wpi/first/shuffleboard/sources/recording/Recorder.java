@@ -1,6 +1,9 @@
 package edu.wpi.first.shuffleboard.sources.recording;
 
+import edu.wpi.first.shuffleboard.data.DataType;
 import edu.wpi.first.shuffleboard.sources.DataSource;
+import edu.wpi.first.shuffleboard.sources.MapBackedTable;
+import edu.wpi.first.shuffleboard.sources.SourceType;
 import edu.wpi.first.shuffleboard.util.Storage;
 
 import java.io.IOException;
@@ -45,6 +48,12 @@ public final class Recorder {
     return timeFormatter.format(LocalDateTime.ofInstant(startTime, ZoneId.systemDefault()));
   }
 
+  static {
+    MapBackedTable.getRoot().addTableListener((__, key, value, isNew) -> {
+      getInstance().record(SourceType.NETWORK_TABLE.toUri(key), DataType.forJavaType(value.getClass()), value);
+    }, true);
+  }
+
   /**
    * Gets the recorder instance.
    */
@@ -83,9 +92,14 @@ public final class Recorder {
     if (!isRunning()) {
       return;
     }
-    TimestampedData timestampedData
-        = new TimestampedData(source.getId(), source.getDataType(), source.getData(), timestamp());
-    recording.append(timestampedData);
+    record(source.getId(), source.getDataType(), source.getData());
+  }
+
+  public void record(String id, DataType<?> dataType, Object value) {
+    if (!isRunning()) {
+      return;
+    }
+    recording.append(new TimestampedData(id, dataType, value, timestamp()));
   }
 
   private long timestamp() {

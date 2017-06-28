@@ -6,7 +6,7 @@ import edu.wpi.first.shuffleboard.data.DataType;
 import edu.wpi.first.shuffleboard.data.DataTypes;
 import edu.wpi.first.shuffleboard.data.SendableChooserData;
 import edu.wpi.first.shuffleboard.sources.AbstractDataSource;
-import edu.wpi.first.shuffleboard.sources.Type;
+import edu.wpi.first.shuffleboard.sources.SourceType;
 
 import java.util.Optional;
 import java.util.Set;
@@ -24,8 +24,8 @@ public class DummySource<T> extends AbstractDataSource<T> {
   }
 
   @Override
-  public Type getType() {
-    return Type.NONE;
+  public SourceType getType() {
+    return SourceType.NONE;
   }
 
   /**

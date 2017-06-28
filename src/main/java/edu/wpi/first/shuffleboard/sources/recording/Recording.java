@@ -1,12 +1,13 @@
 package edu.wpi.first.shuffleboard.sources.recording;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
 public class Recording {
 
-  private final List<TimestampedData> data = new ArrayList<>();
+  private final List<TimestampedData> data = Collections.synchronizedList(new ArrayList<>());
 
   public void append(TimestampedData data) {
     this.data.add(data);

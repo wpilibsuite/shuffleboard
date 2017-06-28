@@ -1,5 +1,7 @@
 package edu.wpi.first.shuffleboard.sources.recording;
 
+import edu.wpi.first.shuffleboard.sources.MapBackedTable;
+import edu.wpi.first.shuffleboard.sources.SourceType;
 import edu.wpi.first.shuffleboard.sources.Sources;
 
 import java.io.IOException;
@@ -31,6 +33,7 @@ public final class Playback {
   private final int numFrames;
   private final int maxFrameNum;
   private Thread autoRunner;
+  private volatile boolean started = false;
   private final Object sleepLock = new Object();
   private final BooleanProperty paused = new SimpleBooleanProperty(this, "paused", true);
   private final IntegerProperty frame = new SimpleIntegerProperty(this, "frame", 0);
@@ -103,8 +106,10 @@ public final class Playback {
     if (data.isEmpty()) {
       return;
     }
+    Recorder.getInstance().stop();
     unpause();
     Sources.disconnectAll();
+    MapBackedTable.setConnected(false);
     autoRunner = new Thread(() -> {
       TimestampedData previous;
       TimestampedData current = null;
@@ -150,6 +155,7 @@ public final class Playback {
     }, "PlaybackThread");
     autoRunner.setDaemon(true);
     autoRunner.start();
+    started = true;
   }
 
   private boolean shouldNotPlayNextFrame() {
@@ -157,17 +163,31 @@ public final class Playback {
   }
 
   private void set(TimestampedData data) {
-    Sources.get(data.getSourceId())
-        .ifPresent(source -> source.setData(data.getData()));
+    final String sourceId = data.getSourceId();
+    if (sourceId.startsWith(SourceType.NETWORK_TABLE.getProtocol())) {
+      // It's from network tables, manually update the tables
+      MapBackedTable.getRoot()
+          .putValue(sourceId.substring(SourceType.NETWORK_TABLE.getProtocol().length()), data.getData());
+    } else {
+      Sources.get(sourceId)
+          .ifPresent(source -> source.setData(data.getData()));
+    }
   }
 
   /**
    * Stops playback.
    */
   public void stop() {
+    if (!started) {
+      // This playback was never started, so there's no point in stopping it
+      return;
+    }
     autoRunner.interrupt();
     currentPlayback.setValue(null);
     Sources.connectAll();
+    MapBackedTable.getRoot().clear(); // clear the tables so the remnants of playback doesn't affect the network
+    MapBackedTable.setConnected(true);
+    Recorder.getInstance().start();
   }
 
   public int getNumFrames() {

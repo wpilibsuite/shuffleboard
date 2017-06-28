@@ -31,7 +31,7 @@ public class CompositeNetworkTableSource<D extends ComplexData<D>> extends Netwo
   public CompositeNetworkTableSource(String tableName, ComplexDataType<D> dataType) {
     super(tableName);
     String path = NetworkTableUtils.normalizeKey(tableName, false);
-    ITable table = NetworkTableUtils.rootTable.getSubTable(path);
+    ITable table = MapBackedTable.getTable(path);
     setData(dataType.getDefaultValue());
 
     setTableListener((key, value, flags) -> {

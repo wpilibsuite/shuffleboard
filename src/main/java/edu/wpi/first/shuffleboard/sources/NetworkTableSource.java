@@ -2,7 +2,8 @@ package edu.wpi.first.shuffleboard.sources;
 
 import edu.wpi.first.shuffleboard.data.ComplexDataType;
 import edu.wpi.first.shuffleboard.util.NetworkTableUtils;
-import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
+import edu.wpi.first.wpilibj.tables.ITable;
+import edu.wpi.first.wpilibj.tables.ITableListener;
 
 /**
  * A source for data in network tables. Data can be a single value or a map of keys to values.
@@ -14,7 +15,6 @@ import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
  */
 public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
 
-  private int listenerId = -1;
   protected final String fullTableKey;
 
   /**
@@ -34,22 +34,20 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
    * Sets the table listener to call when a value changes under this source's key.
    */
   protected final void setTableListener(TableListener listener) {
-    listenerId = NetworkTablesJNI.addEntryListener(
+    MapBackedTable.getRoot().addTableListenerEx(
         fullTableKey,
-        (uid, key, value, flags) -> {
-          if (isConnected()) {
+        new ITableListener() {
+          @Override
+          public void valueChanged(ITable source, String key, Object value, boolean isNew) {
+            throw new UnsupportedOperationException("Only valueChangedEx() should be called");
+          }
+
+          @Override
+          public void valueChangedEx(ITable source, String key, Object value, int flags) {
             listener.onChange(key, value, flags);
           }
-        },
-        0xFF);
+        }, 0xFF);
     connect();
-  }
-
-  @Override
-  public void close() {
-    if (listenerId != -1) {
-      NetworkTablesJNI.removeEntryListener(listenerId);
-    }
   }
 
   public String getKey() {
@@ -57,8 +55,8 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
   }
 
   @Override
-  public Type getType() {
-    return Type.NETWORK_TABLE;
+  public SourceType getType() {
+    return SourceType.NETWORK_TABLE;
   }
 
   @FunctionalInterface
@@ -85,11 +83,11 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
   @SuppressWarnings("unchecked")
   public static DataSource<?> forKey(String fullTableKey) {
     String key = NetworkTableUtils.normalizeKey(fullTableKey, false);
-    final String uri = Type.NETWORK_TABLE.toUri(key);
+    final String uri = SourceType.NETWORK_TABLE.toUri(key);
     if (NetworkTableUtils.rootTable.containsKey(key)) {
       // Key-value pair
       return Sources.computeIfAbsent(uri, () ->
-          new SingleKeyNetworkTableSource<>(NetworkTableUtils.rootTable, key,
+          new SingleKeyNetworkTableSource<>(MapBackedTable.getRoot(), key,
               NetworkTableUtils.dataTypeForEntry(key)));
     }
     if (NetworkTableUtils.rootTable.containsSubTable(key)) {
