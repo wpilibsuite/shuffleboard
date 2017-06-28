@@ -5,6 +5,7 @@ import edu.wpi.first.shuffleboard.sources.DataSource;
 import edu.wpi.first.shuffleboard.sources.MapBackedTable;
 import edu.wpi.first.shuffleboard.sources.SourceType;
 import edu.wpi.first.shuffleboard.util.Storage;
+import edu.wpi.first.shuffleboard.util.ThreadUtils;
 
 import java.io.IOException;
 import java.time.Instant;
@@ -12,6 +13,9 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -22,6 +26,8 @@ import javafx.beans.property.SimpleBooleanProperty;
  */
 public final class Recorder {
 
+  private static final Logger log = Logger.getLogger(Recorder.class.getName());
+
   private static final DateTimeFormatter timeFormatter =
       DateTimeFormatter.ofPattern("uuuu-MM-dd_HH:mm:ss", Locale.getDefault());
   private static final Recorder instance = new Recorder();
@@ -31,16 +37,31 @@ public final class Recorder {
   private Recording recording = null;
 
   private Recorder() {
-    running.addListener((__, wasRunning, isRunning) -> {
-      if (!isRunning) {
-        try {
-          String file = String.format(Storage.RECORDING_FILE_FORMAT, createTimestamp());
-          Serialization.saveRecording(recording, file);
-        } catch (IOException e) {
-          throw new RuntimeException("Could not save the recording", e);
-        }
-      }
-    });
+    // Save the recording at the start (get the initial values) and the stop
+    running.addListener((__, wasRunning, isRunning) -> saveToDisk());
+
+    // Save the recording every 2 seconds
+    Executors.newSingleThreadScheduledExecutor(ThreadUtils::makeDaemonThread)
+        .scheduleAtFixedRate(
+            () -> {
+              if (isRunning()) {
+                saveToDisk();
+              }
+            }, 0, 2, TimeUnit.SECONDS);
+  }
+
+  private void saveToDisk() {
+    if (recording == null) {
+      // Nothing to save
+      return;
+    }
+    try {
+      String file = String.format(Storage.RECORDING_FILE_FORMAT, createTimestamp());
+      Serialization.saveRecording(recording, file);
+      log.fine("Saved recording to " + file); //NOPMD log not in 'if' statement
+    } catch (IOException e) {
+      throw new RuntimeException("Could not save the recording", e);
+    }
   }
 
   private String createTimestamp() {
@@ -48,6 +69,10 @@ public final class Recorder {
   }
 
   static {
+    // Automatically capture and record changes in network tables
+    // This is done here because each key under N subtables would have N+1 copies
+    // in the recording (eg "/a/b/c" has 2 tables and 3 copies: "/a", "/a/b", and "/a/b/c")
+    // This significantly reduces the size of recording files.
     MapBackedTable.getRoot().addTableListener((__, key, value, isNew) -> {
       getInstance().record(SourceType.NETWORK_TABLE.toUri(key), DataType.forJavaType(value.getClass()), value);
     }, true);
@@ -88,9 +113,6 @@ public final class Recorder {
    * Records the current value of the given source.
    */
   public void recordCurrentValue(DataSource<?> source) {
-    if (!isRunning()) {
-      return;
-    }
     record(source.getId(), source.getDataType(), source.getData());
   }
 

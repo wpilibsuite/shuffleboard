@@ -15,10 +15,16 @@ public final class ThreadUtils {
    * A singleThreadScheduledExecutor that uses a daemon thread instead of one the doesn't respect shutdown.
    */
   public static ScheduledExecutorService newDaemonExecutorService() {
-    return Executors.newSingleThreadScheduledExecutor(runnable -> {
-      Thread thread = new Thread(runnable);
-      thread.setDaemon(true);
-      return thread;
-    });
+    return Executors.newSingleThreadScheduledExecutor(ThreadUtils::makeDaemonThread);
   }
+
+  /**
+   * Creates a daemon thread to run the given runnable.
+   */
+  public static Thread makeDaemonThread(Runnable runnable) {
+    Thread thread = new Thread(runnable);
+    thread.setDaemon(true);
+    return thread;
+  }
+
 }
