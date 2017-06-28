@@ -2,7 +2,6 @@ package edu.wpi.first.shuffleboard.sources;
 
 import edu.wpi.first.shuffleboard.data.DataType;
 import edu.wpi.first.shuffleboard.properties.AsyncProperty;
-import edu.wpi.first.shuffleboard.sources.recording.Recorder;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.Property;
@@ -25,15 +24,9 @@ public abstract class AbstractDataSource<T> implements DataSource<T> {
   protected final Property<T> data = new AsyncProperty<>(this, "data", null);
   protected final BooleanProperty connected = new SimpleBooleanProperty(this, "connected", false);
   protected final DataType dataType;
-  private final Recorder recorder = Recorder.getInstance();
 
   protected AbstractDataSource(DataType dataType) {
     this.dataType = requireNonNull(dataType, "dataType");
-    if (getType().isRecordable) {
-      data.addListener((__, oldData, newData) -> {
-        recorder.recordCurrentValue(this);
-      });
-    }
   }
 
   @Override
