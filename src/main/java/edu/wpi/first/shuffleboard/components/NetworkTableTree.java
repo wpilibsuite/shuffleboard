@@ -4,7 +4,6 @@ import edu.wpi.first.shuffleboard.NetworkTableEntry;
 import edu.wpi.first.shuffleboard.sources.MapBackedTable;
 import edu.wpi.first.shuffleboard.util.FxUtils;
 import edu.wpi.first.shuffleboard.util.NetworkTableUtils;
-import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
 import edu.wpi.first.wpilibj.tables.ITable;
 import edu.wpi.first.wpilibj.tables.ITableListener;
 

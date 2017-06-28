@@ -35,7 +35,6 @@ public final class Recorder {
       if (!isRunning) {
         try {
           String file = String.format(Storage.RECORDING_FILE_FORMAT, createTimestamp());
-          System.out.println("Saving recording to " + file);
           Serialization.saveRecording(recording, file);
         } catch (IOException e) {
           throw new RuntimeException("Could not save the recording", e);
@@ -95,6 +94,13 @@ public final class Recorder {
     record(source.getId(), source.getDataType(), source.getData());
   }
 
+  /**
+   * Records a data point at the current time.
+   *
+   * @param id       the ID of the value to record
+   * @param dataType the type of the value
+   * @param value    the value to record
+   */
   public void record(String id, DataType<?> dataType, Object value) {
     if (!isRunning()) {
       return;

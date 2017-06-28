@@ -12,6 +12,11 @@ public final class Sources {
   private Sources() {
   }
 
+  /**
+   * Registers the given data source.
+   *
+   * @param source the source to register
+   */
   public static void register(DataSource<?> source) {
     if (sources.containsValue(source)) {
       // Already registered
