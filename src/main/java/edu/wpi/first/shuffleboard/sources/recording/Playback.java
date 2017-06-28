@@ -80,7 +80,21 @@ public final class Playback {
             String.format("Frame number out of bounds: %s, must be in the range (0, %d)", cur, maxFrameNum));
       }
     });
-    frame.addListener((__, prev, cur) -> set(data.get(cur.intValue())));
+    frame.addListener((__, prev, cur) -> {
+      int lastFrame = prev.intValue();
+      int newFrame = cur.intValue();
+      if (newFrame > lastFrame) {
+        // forward
+        for (int i = lastFrame; i <= newFrame; i++) {
+          set(data.get(i));
+        }
+      } else {
+        // backward
+        for (int i = newFrame; i <= lastFrame; i++) {
+          set(data.get(i));
+        }
+      }
+    });
     paused.addListener((__, wasPaused, isPaused) -> {
       if (!isPaused) {
         wakeAutoRunner();
