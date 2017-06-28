@@ -70,7 +70,8 @@ public final class Serialization {
    */
   public static void saveRecording(Recording recording, String file) throws IOException {
     // work on a copy of the data so changes to the recording don't mess this up
-    final List<TimestampedData> dataCopy = ImmutableList.copyOf(recording.getData());
+    final List<TimestampedData> dataCopy = new ArrayList<>(recording.getData());
+    dataCopy.sort(TimestampedData::compareTo); // make sure the data is sorted properly
     final byte[] header = header(dataCopy); // NOPMD
     final List<String> sourceNames = getAllSourceNames(dataCopy);
     if (sourceNames.size() > Short.MAX_VALUE) {
@@ -178,6 +179,8 @@ public final class Serialization {
         throw new IOException("No serializer for " + dataType);
       }
 
+      // Since the data is guaranteed to be ordered in the file, we call recording.append()
+      // instead of recording.add() because the latter sorts the data
       TimestampedData data = new TimestampedData(sourceId, DataType.forName(dataType), value, timeStamp);
       recording.append(data);
     }

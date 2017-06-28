@@ -9,9 +9,13 @@ public class Recording {
 
   private final List<TimestampedData> data = Collections.synchronizedList(new ArrayList<>());
 
+  /**
+   * Appends the given data to the end of the data list. Note that this does not
+   *
+   * @param data the data to append
+   */
   public void append(TimestampedData data) {
     this.data.add(data);
-    this.data.sort(TimestampedData::compareTo);
   }
 
   public List<TimestampedData> getData() {
