@@ -1,6 +1,5 @@
 package edu.wpi.first.shuffleboard.sources.recording;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.primitives.Bytes;
 
 import edu.wpi.first.shuffleboard.data.DataType;

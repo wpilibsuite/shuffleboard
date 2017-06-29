@@ -27,6 +27,7 @@ import javafx.beans.property.SimpleObjectProperty;
  * {@link #unpause()}. Frames may be set manually using {@link #setFrame}. Frames can be iterated over using
  * {@link #previousFrame()} and {@link #nextFrame()}, which will both pause the auto-incrementing thread.
  */
+@SuppressWarnings("PMD.GodClass") // Seriously? It's not _that_ complicated
 public final class Playback {
 
   private static final Logger log = Logger.getLogger(Playback.class.getName());
@@ -78,6 +79,9 @@ public final class Playback {
     data = recording.getData();
     numFrames = data.size();
     maxFrameNum = numFrames - 1;
+    if (numFrames > 0) {
+      currentFrame = data.get(0);
+    }
     frame.addListener((__, prev, cur) -> {
       if (cur.intValue() < 0 || cur.intValue() > maxFrameNum) {
         throw new IllegalArgumentException(
@@ -226,10 +230,16 @@ public final class Playback {
     return maxFrameNum;
   }
 
+  /**
+   * Gets the current data frame. Returns null if the loaded recording is empty.
+   */
   public TimestampedData getCurrentFrame() {
     return currentFrame;
   }
 
+  /**
+   * Gets the recording being played back.
+   */
   public Recording getRecording() {
     return recording;
   }

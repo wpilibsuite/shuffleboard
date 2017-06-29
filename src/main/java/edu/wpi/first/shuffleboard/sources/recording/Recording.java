@@ -50,10 +50,10 @@ public class Recording {
    * Gets the length of this recording in milliseconds. Recordings wth 0 or 1 data points have a length of 0.
    */
   public long getLength() {
-    if (first != null && last != null) {
-      return last.getTimestamp() - first.getTimestamp();
-    } else {
+    if (first == null || last == null) {
       return 0;
+    } else {
+      return last.getTimestamp() - first.getTimestamp();
     }
   }
 
