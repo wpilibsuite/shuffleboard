@@ -31,11 +31,13 @@ public final class Playback {
 
   private static final Logger log = Logger.getLogger(Playback.class.getName());
 
+  private final Recording recording;
   private final List<TimestampedData> data;
   private final int numFrames;
   private final int maxFrameNum;
   private Thread autoRunner;
   private volatile boolean started = false;
+  private volatile TimestampedData currentFrame;
   private final Object sleepLock = new Object();
   private final BooleanProperty paused = new SimpleBooleanProperty(this, "paused", true);
   private final IntegerProperty frame = new SimpleIntegerProperty(this, "frame", 0);
@@ -72,7 +74,7 @@ public final class Playback {
    * @throws IOException if the recording file could not be read
    */
   private Playback(String logFile) throws IOException {
-    Recording recording = Serialization.loadRecording(logFile);
+    recording = Serialization.loadRecording(logFile);
     data = recording.getData();
     numFrames = data.size();
     maxFrameNum = numFrames - 1;
@@ -85,6 +87,7 @@ public final class Playback {
     frame.addListener((__, prev, cur) -> {
       int lastFrame = prev.intValue();
       int newFrame = cur.intValue();
+      currentFrame = data.get(newFrame);
       Set<String> remainingSources = new HashSet<>(recording.getSourceIds());
       if (newFrame > lastFrame) {
         // forward
@@ -221,6 +224,14 @@ public final class Playback {
 
   public int getMaxFrameNum() {
     return maxFrameNum;
+  }
+
+  public TimestampedData getCurrentFrame() {
+    return currentFrame;
+  }
+
+  public Recording getRecording() {
+    return recording;
   }
 
   /**

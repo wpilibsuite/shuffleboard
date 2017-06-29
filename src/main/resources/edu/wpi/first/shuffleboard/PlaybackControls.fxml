@@ -45,7 +45,7 @@
         <HBox alignment="CENTER" spacing="4">
             <Scrubber fx:id="progressScrubber"/>
             <ToggleSwitch text="Loop" fx:id="loopingSwitch" alignment="CENTER" textAlignment="CENTER"/>
-            <Label fx:id="progressLabel" text="Frame 0 of 0"/>
+            <Label fx:id="progressLabel"/>
         </HBox>
     </HBox>
 </HBox>

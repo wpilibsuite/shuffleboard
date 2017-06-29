@@ -3,6 +3,7 @@ package edu.wpi.first.shuffleboard;
 import edu.wpi.first.shuffleboard.components.Scrubber;
 import edu.wpi.first.shuffleboard.sources.recording.Playback;
 import edu.wpi.first.shuffleboard.sources.recording.Recorder;
+import edu.wpi.first.shuffleboard.sources.recording.TimestampedData;
 import edu.wpi.first.shuffleboard.util.FxUtils;
 
 import org.controlsfx.control.ToggleSwitch;
@@ -77,14 +78,27 @@ public class PlaybackController {
       FxUtils.runOnFxThread(() -> {
         Playback playback = Playback.getCurrentPlayback().orElse(null);
         if (frame == null || playback == null) {
-          progressLabel.setText("Frame 0 of 0");
+          progressLabel.setText("");
         } else {
-          progressLabel.setText(String.format("Frame %d of %d", frame.intValue(), playback.getNumFrames()));
+          TimestampedData first = playback.getRecording().getFirst();
+          TimestampedData current = playback.getCurrentFrame();
+          if (first == null || current == null) {
+            progressLabel.setText("");
+          } else {
+            String time = msToMinSec(current.getTimestamp() - first.getTimestamp());
+            String length = msToMinSec(playback.getRecording().getLength());
+            progressLabel.setText(time + " / " + length);
+          }
         }
       });
     });
 
     loopingSwitch.selectedProperty().bindBidirectional(loopingProperty);
+  }
+
+  private static String msToMinSec(long ms) {
+    long seconds = ms / 1000L;
+    return String.format("%d:%02d", seconds / 60, seconds % 60);
   }
 
   @FXML

@@ -7,6 +7,8 @@ import java.util.Objects;
 
 public class Recording {
 
+  private TimestampedData first;
+  private TimestampedData last;
   private final List<TimestampedData> data = Collections.synchronizedList(new ArrayList<>());
   private final List<String> sourceIds = new ArrayList<>();
 
@@ -20,6 +22,12 @@ public class Recording {
     if (!sourceIds.contains(data.getSourceId())) {
       sourceIds.add(data.getSourceId());
     }
+    if (first == null || data.getTimestamp() < first.getTimestamp()) {
+      first = data;
+    }
+    if (last == null || data.getTimestamp() > last.getTimestamp()) {
+      last = data;
+    }
   }
 
   public List<TimestampedData> getData() {
@@ -28,6 +36,25 @@ public class Recording {
 
   public List<String> getSourceIds() {
     return sourceIds;
+  }
+
+  public TimestampedData getFirst() {
+    return first;
+  }
+
+  public TimestampedData getLast() {
+    return last;
+  }
+
+  /**
+   * Gets the length of this recording in milliseconds. Recordings wth 0 or 1 data points have a length of 0.
+   */
+  public long getLength() {
+    if (first != null && last != null) {
+      return last.getTimestamp() - first.getTimestamp();
+    } else {
+      return 0;
+    }
   }
 
   @Override
