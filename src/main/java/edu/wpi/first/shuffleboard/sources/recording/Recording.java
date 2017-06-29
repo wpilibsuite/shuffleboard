@@ -8,6 +8,7 @@ import java.util.Objects;
 public class Recording {
 
   private final List<TimestampedData> data = Collections.synchronizedList(new ArrayList<>());
+  private final List<String> sourceIds = new ArrayList<>();
 
   /**
    * Appends the given data to the end of the data list. Note that this does not
@@ -16,10 +17,17 @@ public class Recording {
    */
   public void append(TimestampedData data) {
     this.data.add(data);
+    if (!sourceIds.contains(data.getSourceId())) {
+      sourceIds.add(data.getSourceId());
+    }
   }
 
   public List<TimestampedData> getData() {
     return data;
+  }
+
+  public List<String> getSourceIds() {
+    return sourceIds;
   }
 
   @Override

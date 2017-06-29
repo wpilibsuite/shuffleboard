@@ -5,8 +5,10 @@ import edu.wpi.first.shuffleboard.sources.SourceType;
 import edu.wpi.first.shuffleboard.sources.Sources;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -83,15 +85,24 @@ public final class Playback {
     frame.addListener((__, prev, cur) -> {
       int lastFrame = prev.intValue();
       int newFrame = cur.intValue();
+      Set<String> remainingSources = new HashSet<>(recording.getSourceIds());
       if (newFrame > lastFrame) {
         // forward
-        for (int i = lastFrame; i <= newFrame; i++) {
-          set(data.get(i));
+        for (int i = newFrame; i >= lastFrame && !remainingSources.isEmpty(); i--) {
+          final TimestampedData data = this.data.get(i);
+          if (remainingSources.contains(data.getSourceId())) {
+            set(data);
+            remainingSources.remove(data.getSourceId());
+          }
         }
       } else {
         // backward
-        for (int i = newFrame; i <= lastFrame; i++) {
-          set(data.get(i));
+        for (int i = newFrame; i <= lastFrame && !remainingSources.isEmpty(); i++) {
+          final TimestampedData data = this.data.get(i);
+          if (remainingSources.contains(data.getSourceId())) {
+            set(data);
+            remainingSources.remove(data.getSourceId());
+          }
         }
       }
     });
