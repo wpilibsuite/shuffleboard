@@ -5,6 +5,7 @@ import edu.wpi.first.shuffleboard.data.DataTypes;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
 import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
 import edu.wpi.first.wpilibj.tables.ITable;
+import edu.wpi.first.wpilibj.tables.ITableListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,6 +22,11 @@ public final class NetworkTableUtils {
   public static final ITable rootTable = NetworkTable.getTable("");
 
   private NetworkTableUtils() {
+  }
+
+  @FunctionalInterface
+  public interface ITableListenerEx {
+    void valueChangedEx(ITable source, String key, Object value, int flags);
   }
 
   /**
@@ -198,6 +204,25 @@ public final class NetworkTableUtils {
       builder.append('/').append(s);
     }
     return normalizeKey(builder.toString(), true);
+  }
+
+  /**
+   * Creates an ITableListener that wraps an extended table listener to make it usable in the ntcore API.
+   *
+   * @param extendedListener the listener to wrap
+   */
+  public static ITableListener createListenerEx(ITableListenerEx extendedListener) {
+    return new ITableListener() {
+      @Override
+      public void valueChanged(ITable source, String key, Object value, boolean isNew) {
+        throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public void valueChangedEx(ITable source, String key, Object value, int flags) {
+        extendedListener.valueChangedEx(source, key, value, flags);
+      }
+    };
   }
 
 }

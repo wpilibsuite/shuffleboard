@@ -2,10 +2,8 @@ package edu.wpi.first.shuffleboard.components;
 
 import edu.wpi.first.shuffleboard.NetworkTableEntry;
 import edu.wpi.first.shuffleboard.sources.MapBackedTable;
-import edu.wpi.first.shuffleboard.util.FxUtils;
 import edu.wpi.first.shuffleboard.util.NetworkTableUtils;
 import edu.wpi.first.wpilibj.tables.ITable;
-import edu.wpi.first.wpilibj.tables.ITableListener;
 
 import java.util.Comparator;
 import java.util.List;
@@ -61,17 +59,7 @@ public class NetworkTableTree extends TreeTableView<NetworkTableEntry> {
       return true;
     });
     MapBackedTable.getRoot().addTableListenerEx(
-        new ITableListener() {
-          @Override
-          public void valueChanged(ITable source, String key, Object value, boolean isNew) {
-            throw new UnsupportedOperationException("Use valueChangedEx()");
-          }
-
-          @Override
-          public void valueChangedEx(ITable source, String key, Object value, int flags) {
-            FxUtils.runOnFxThread(() -> makeBranches(key, value, flags));
-          }
-        },
+        NetworkTableUtils.createListenerEx((__, key, value, flags) -> makeBranches(key, value, flags)),
         0xFF);
   }
 

@@ -2,8 +2,6 @@ package edu.wpi.first.shuffleboard.sources;
 
 import edu.wpi.first.shuffleboard.data.ComplexDataType;
 import edu.wpi.first.shuffleboard.util.NetworkTableUtils;
-import edu.wpi.first.wpilibj.tables.ITable;
-import edu.wpi.first.wpilibj.tables.ITableListener;
 
 /**
  * A source for data in network tables. Data can be a single value or a map of keys to values.
@@ -36,17 +34,8 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
   protected final void setTableListener(TableListener listener) {
     MapBackedTable.getRoot().addTableListenerEx(
         fullTableKey,
-        new ITableListener() {
-          @Override
-          public void valueChanged(ITable source, String key, Object value, boolean isNew) {
-            throw new UnsupportedOperationException("Only valueChangedEx() should be called");
-          }
-
-          @Override
-          public void valueChangedEx(ITable source, String key, Object value, int flags) {
-            listener.onChange(key, value, flags);
-          }
-        }, 0xFF);
+        NetworkTableUtils.createListenerEx((__, key, value, flags) -> listener.onChange(key, value, flags)),
+        0xFF);
     connect();
   }
 
