@@ -1,8 +1,9 @@
 package edu.wpi.first.shuffleboard.components;
 
 import edu.wpi.first.shuffleboard.NetworkTableEntry;
-import edu.wpi.first.shuffleboard.sources.MapBackedTable;
+import edu.wpi.first.shuffleboard.util.FxUtils;
 import edu.wpi.first.shuffleboard.util.NetworkTableUtils;
+import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
 import edu.wpi.first.wpilibj.tables.ITable;
 
 import java.util.Comparator;
@@ -58,8 +59,9 @@ public class NetworkTableTree extends TreeTableView<NetworkTableEntry> {
       sort(getRoot());
       return true;
     });
-    MapBackedTable.getRoot().addTableListenerEx(
-        NetworkTableUtils.createListenerEx((__, key, value, flags) -> makeBranches(key, value, flags)),
+    NetworkTablesJNI.addEntryListener(
+        "",
+        (uid, key, value, flags) -> FxUtils.runOnFxThread(() -> makeBranches(key, value, flags)),
         0xFF);
   }
 

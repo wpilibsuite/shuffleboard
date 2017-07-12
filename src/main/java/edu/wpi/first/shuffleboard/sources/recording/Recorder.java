@@ -2,10 +2,10 @@ package edu.wpi.first.shuffleboard.sources.recording;
 
 import edu.wpi.first.shuffleboard.data.DataType;
 import edu.wpi.first.shuffleboard.sources.DataSource;
-import edu.wpi.first.shuffleboard.sources.MapBackedTable;
 import edu.wpi.first.shuffleboard.sources.SourceType;
 import edu.wpi.first.shuffleboard.util.Storage;
 import edu.wpi.first.shuffleboard.util.ThreadUtils;
+import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
 
 import java.io.IOException;
 import java.time.Instant;
@@ -73,9 +73,9 @@ public final class Recorder {
     // This is done here because each key under N subtables would have N+1 copies
     // in the recording (eg "/a/b/c" has 2 tables and 3 copies: "/a", "/a/b", and "/a/b/c")
     // This significantly reduces the size of recording files.
-    MapBackedTable.getRoot().addTableListener((__, key, value, isNew) -> {
+    NetworkTablesJNI.addEntryListener("", (uid, key, value, flags) -> {
       getInstance().record(SourceType.NETWORK_TABLE.toUri(key), DataType.forJavaType(value.getClass()), value);
-    }, true);
+    }, 0xFF);
   }
 
   /**

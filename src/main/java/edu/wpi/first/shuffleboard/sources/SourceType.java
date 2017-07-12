@@ -22,4 +22,17 @@ public enum SourceType {
     return protocol;
   }
 
+  /**
+   * Removes the protocol prefix from a string. Has no effect if the given text does not start with this types protocol.
+   *
+   * @param text the text to remove the protocol string from
+   */
+  public String removeProtocol(String text) {
+    if (text.startsWith(protocol)) {
+      return text.substring(protocol.length());
+    } else {
+      return text;
+    }
+  }
+
 }

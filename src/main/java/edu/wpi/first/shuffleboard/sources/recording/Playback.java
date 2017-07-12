@@ -1,12 +1,16 @@
 package edu.wpi.first.shuffleboard.sources.recording;
 
-import edu.wpi.first.shuffleboard.sources.MapBackedTable;
+import edu.wpi.first.shuffleboard.data.ComplexData;
+import edu.wpi.first.shuffleboard.sources.CompositeNetworkTableSource;
 import edu.wpi.first.shuffleboard.sources.SourceType;
 import edu.wpi.first.shuffleboard.sources.Sources;
+import edu.wpi.first.shuffleboard.util.NetworkTableUtils;
+import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
 
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
@@ -141,7 +145,6 @@ public final class Playback {
     Recorder.getInstance().stop();
     unpause();
     Sources.disconnectAll();
-    MapBackedTable.setConnected(false);
     autoRunner = new Thread(() -> {
       TimestampedData previous;
       TimestampedData current = null;
@@ -197,13 +200,35 @@ public final class Playback {
   private void set(TimestampedData data) {
     final String sourceId = data.getSourceId();
     if (sourceId.startsWith(SourceType.NETWORK_TABLE.getProtocol())) {
-      // It's from network tables, manually update the tables
-      MapBackedTable.getRoot()
-          .putValue(sourceId.substring(SourceType.NETWORK_TABLE.getProtocol().length()), data.getData());
+      // Update all possible sources for the entry
+      // This is a special case because of the treelike structure of network tables
+      final String fullKey = SourceType.NETWORK_TABLE.removeProtocol(sourceId);
+      List<String> hierarchy = NetworkTableUtils.getHierarchy(fullKey);
+      hierarchy.stream()
+          .map(SourceType.NETWORK_TABLE::toUri)
+          .map(Sources::get)
+          .filter(Optional::isPresent)
+          .map(Optional::get)
+          .forEach(source -> {
+            if (source instanceof CompositeNetworkTableSource) {
+              @SuppressWarnings("unchecked")
+              CompositeNetworkTableSource<? extends ComplexData<?>> comp = (CompositeNetworkTableSource) source;
+              updateTable(comp, fullKey.substring(comp.getKey().length() + 1), data.getData());
+            } else {
+              // It's the source just for the key, set it
+              source.setData(data.getData());
+            }
+          });
     } else {
       Sources.get(sourceId)
           .ifPresent(source -> source.setData(data.getData()));
     }
+  }
+
+  private <T extends ComplexData<T>> void updateTable(CompositeNetworkTableSource<T> source, String key, Object value) {
+    Map<String, Object> map = source.getData().asMap();
+    map.put(key, value);
+    source.setData(source.getDataType().fromMap(map));
   }
 
   /**
@@ -216,9 +241,8 @@ public final class Playback {
     }
     autoRunner.interrupt();
     currentPlayback.setValue(null);
+    NetworkTablesJNI.deleteAllEntries();
     Sources.connectAll();
-    MapBackedTable.getRoot().clear(); // clear the tables so the remnants of playback doesn't affect the network
-    MapBackedTable.setConnected(true);
     Recorder.getInstance().start();
   }
 

@@ -26,11 +26,6 @@ public final class Sources {
   }
 
   @SuppressWarnings("unchecked") //NOPMD multiple occurrences of string literal
-  public static <T> DataSource<T> forUri(String uri) {
-    return sources.get(uri);
-  }
-
-  @SuppressWarnings("unchecked") //NOPMD multiple occurrences of string literal
   public static <T> DataSource<T> getOrDefault(String uri, DataSource<T> defaultSource) {
     return sources.getOrDefault(uri, defaultSource);
   }

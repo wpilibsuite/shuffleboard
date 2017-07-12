@@ -2,6 +2,7 @@ package edu.wpi.first.shuffleboard.sources;
 
 import edu.wpi.first.shuffleboard.data.ComplexDataType;
 import edu.wpi.first.shuffleboard.util.NetworkTableUtils;
+import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
 
 /**
  * A source for data in network tables. Data can be a single value or a map of keys to values.
@@ -14,6 +15,7 @@ import edu.wpi.first.shuffleboard.util.NetworkTableUtils;
 public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
 
   protected final String fullTableKey;
+  private int listenerUid = -1;
 
   /**
    * Creates a network table source that listens to values under the given key. The key can be
@@ -32,9 +34,14 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
    * Sets the table listener to call when a value changes under this source's key.
    */
   protected final void setTableListener(TableListener listener) {
-    MapBackedTable.getRoot().addTableListenerEx(
+    NetworkTablesJNI.removeEntryListener(listenerUid);
+    listenerUid = NetworkTablesJNI.addEntryListener(
         fullTableKey,
-        NetworkTableUtils.createListenerEx((__, key, value, flags) -> listener.onChange(key, value, flags)),
+        (uid, key, value, flags) -> {
+          if (isConnected()) {
+            listener.onChange(key, value, flags);
+          }
+        },
         0xFF);
     connect();
   }
@@ -44,8 +51,18 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
   }
 
   @Override
+  public String getId() {
+    return getType().toUri(fullTableKey);
+  }
+
+  @Override
   public SourceType getType() {
     return SourceType.NETWORK_TABLE;
+  }
+
+  @Override
+  public void close() {
+    NetworkTablesJNI.removeEntryListener(listenerUid);
   }
 
   @FunctionalInterface
@@ -76,7 +93,7 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
     if (NetworkTableUtils.rootTable.containsKey(key)) {
       // Key-value pair
       return Sources.computeIfAbsent(uri, () ->
-          new SingleKeyNetworkTableSource<>(MapBackedTable.getRoot(), key,
+          new SingleKeyNetworkTableSource<>(NetworkTableUtils.rootTable, key,
               NetworkTableUtils.dataTypeForEntry(key)));
     }
     if (NetworkTableUtils.rootTable.containsSubTable(key)) {
