@@ -82,6 +82,7 @@ public final class NetworkTableUtils {
   public static List<String> getHierarchy(String key) {
     final String normal = normalizeKey(key, true);
     List<String> hierarchy = new ArrayList<>();
+    hierarchy.add("/");
     for (int i = 1; i < normal.length(); i++) {
       if (normal.charAt(i) == NetworkTable.PATH_SEPARATOR) {
         hierarchy.add(normal.substring(0, i));
@@ -127,6 +128,9 @@ public final class NetworkTableUtils {
    */
   public static DataType dataTypeForEntry(String key) {
     String normalKey = normalizeKey(key, false);
+    if (normalKey.isEmpty() || "/".equals(normalKey)) {
+      return DataTypes.Map;
+    }
     if (rootTable.containsKey(normalKey)) {
       return DataType.forJavaType(rootTable.getValue(normalKey).getClass());
     }

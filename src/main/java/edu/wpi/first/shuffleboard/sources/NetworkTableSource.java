@@ -96,7 +96,7 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
           new SingleKeyNetworkTableSource<>(NetworkTableUtils.rootTable, key,
               NetworkTableUtils.dataTypeForEntry(key)));
     }
-    if (NetworkTableUtils.rootTable.containsSubTable(key)) {
+    if (NetworkTableUtils.rootTable.containsSubTable(key) || key.isEmpty()) {
       // Composite
       return Sources.computeIfAbsent(uri, () ->
           new CompositeNetworkTableSource(key, (ComplexDataType) NetworkTableUtils.dataTypeForEntry(key)));

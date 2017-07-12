@@ -213,7 +213,11 @@ public final class Playback {
             if (source instanceof CompositeNetworkTableSource) {
               @SuppressWarnings("unchecked")
               CompositeNetworkTableSource<? extends ComplexData<?>> comp = (CompositeNetworkTableSource) source;
-              updateTable(comp, fullKey.substring(comp.getKey().length() + 1), data.getData());
+              if (comp.getKey().equals("/")) {
+                updateTable(comp, fullKey, data.getData());
+              } else {
+                updateTable(comp, fullKey.substring(comp.getKey().length() + 1), data.getData());
+              }
             } else {
               // It's the source just for the key, set it
               source.setData(data.getData());
