@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard;
 
+import edu.wpi.first.shuffleboard.sources.recording.Recorder;
 import edu.wpi.first.shuffleboard.widget.Widgets;
 import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
 
@@ -31,6 +32,7 @@ public class Shuffleboard extends Application {
     Font.loadFont(getClass().getResource("font/roboto/Roboto-BoldItalic.ttf").openStream(), -1);
 
     Widgets.discover();
+    Recorder.getInstance().start();
 
     mainPane = FXMLLoader.load(MainWindowController.class.getResource("MainWindow.fxml"));
   }

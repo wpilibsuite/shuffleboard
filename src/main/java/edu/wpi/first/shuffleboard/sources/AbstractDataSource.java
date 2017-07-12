@@ -1,7 +1,9 @@
 package edu.wpi.first.shuffleboard.sources;
 
-import edu.wpi.first.shuffleboard.properties.AsyncProperty;
 import edu.wpi.first.shuffleboard.data.DataType;
+import edu.wpi.first.shuffleboard.properties.AsyncProperty;
+
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -20,6 +22,7 @@ public abstract class AbstractDataSource<T> implements DataSource<T> {
   protected final Property<String> name = new SimpleStringProperty(this, "name", "");
   protected final Property<Boolean> active = new SimpleBooleanProperty(this, "active", false);
   protected final Property<T> data = new AsyncProperty<>(this, "data", null);
+  protected final BooleanProperty connected = new SimpleBooleanProperty(this, "connected", false);
   protected final DataType dataType;
 
   protected AbstractDataSource(DataType dataType) {
@@ -55,12 +58,35 @@ public abstract class AbstractDataSource<T> implements DataSource<T> {
   }
 
   @Override
+  public void connect() {
+    setConnected(true);
+  }
+
+  @Override
+  public void disconnect() {
+    setConnected(false);
+  }
+
+  public BooleanProperty connectedProperty() {
+    return connected;
+  }
+
+  public void setConnected(boolean connected) {
+    this.connected.set(connected);
+  }
+
+  @Override
+  public boolean isConnected() {
+    return connected.get();
+  }
+
+  @Override
   public String toString() {
     return String.format("%s(name=%s, active=%s, data=%s, dataType=%s)",
-                         getClass().getSimpleName(),
-                         getName(),
-                         isActive(),
-                         getData(),
-                         getDataType());
+        getClass().getSimpleName(),
+        getName(),
+        isActive(),
+        getData(),
+        getDataType());
   }
 }

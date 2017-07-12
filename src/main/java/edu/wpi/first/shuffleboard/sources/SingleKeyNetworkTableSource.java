@@ -31,7 +31,7 @@ public class SingleKeyNetworkTableSource<T> extends NetworkTableSource<T> {
       }
       AsyncUtils.runAsync(() -> {
         boolean deleted = NetworkTableUtils.isDelete(flags);
-        setActive(!deleted && dataType == DataType.valueOf(value.getClass()));
+        setActive(!deleted && dataType == DataType.forJavaType(value.getClass()));
 
         if (isActive()) {
           setData((T) value);
@@ -42,7 +42,7 @@ public class SingleKeyNetworkTableSource<T> extends NetworkTableSource<T> {
     });
 
     data.addListener((__, oldValue, newValue) -> {
-      if (table.getValue(key, null) == newValue) {
+      if (table.getValue(key, null) == newValue || !isConnected()) {
         // no change
         return;
       }
@@ -52,6 +52,8 @@ public class SingleKeyNetworkTableSource<T> extends NetworkTableSource<T> {
         setData(oldValue);
       }
     });
+
+    Sources.register(this);
   }
 
 }

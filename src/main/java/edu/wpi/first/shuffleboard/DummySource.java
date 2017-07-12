@@ -2,10 +2,11 @@ package edu.wpi.first.shuffleboard;
 
 import com.google.common.collect.ImmutableSet;
 
+import edu.wpi.first.shuffleboard.data.DataType;
 import edu.wpi.first.shuffleboard.data.DataTypes;
 import edu.wpi.first.shuffleboard.data.SendableChooserData;
 import edu.wpi.first.shuffleboard.sources.AbstractDataSource;
-import edu.wpi.first.shuffleboard.data.DataType;
+import edu.wpi.first.shuffleboard.sources.SourceType;
 
 import java.util.Optional;
 import java.util.Set;
@@ -20,6 +21,11 @@ public class DummySource<T> extends AbstractDataSource<T> {
     this.setActive(true);
     this.setName("example");
     this.setData(value);
+  }
+
+  @Override
+  public SourceType getType() {
+    return SourceType.NONE;
   }
 
   /**

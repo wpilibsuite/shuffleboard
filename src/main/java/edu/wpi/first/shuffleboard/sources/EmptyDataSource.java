@@ -14,4 +14,9 @@ class EmptyDataSource<T> extends AbstractDataSource<T> {
     setActive(false);
   }
 
+  @Override
+  public SourceType getType() {
+    return SourceType.NONE;
+  }
+
 }

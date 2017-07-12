@@ -1,16 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import edu.wpi.first.shuffleboard.components.DashboardTabPane?>
-<?import edu.wpi.first.shuffleboard.components.NetworkTableTree?>
 <?import edu.wpi.first.shuffleboard.components.WidgetGallery?>
-<?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.layout.VBox?>
 <BorderPane fx:id="root" maxHeight="Infinity" maxWidth="Infinity"
             xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="edu.wpi.first.shuffleboard.MainWindowController">
@@ -21,6 +18,10 @@
                 <MenuItem onAction="#close" text="Close"/>
                 <MenuItem onAction="#showPrefs" text="Preferences" accelerator="SHORTCUT+,"/>
             </Menu>
+            <Menu text="Recording">
+                <MenuItem text="Start recording" fx:id="recordingMenu" onAction="#toggleRecording" accelerator="SHORTCUT+SHIFT+R"/>
+                <MenuItem text="Load playback..." onAction="#loadPlayback" accelerator="SHORTCUT+SHIFT+P"/>
+            </Menu>
         </MenuBar>
     </top>
 
@@ -30,17 +31,14 @@
 
     <left>
         <TabPane tabClosingPolicy="UNAVAILABLE" prefWidth="400">
-            <Tab text="Sources">
-                <NetworkTableTree fx:id="networkTables" showRoot="false" prefHeight="80" prefWidth="400"
-                                  VBox.vgrow="ALWAYS">
-                    <placeholder>
-                        <Label text="No tables"/>
-                    </placeholder>
-                </NetworkTableTree>
+            <Tab text="Sources" fx:id="sourcesTab">
             </Tab>
             <Tab text="Widgets">
                 <WidgetGallery vgap="10" hgap="10" prefColumns="3" fx:id="widgetGallery"/>
             </Tab>
         </TabPane>
     </left>
+    <bottom>
+        <fx:include source="PlaybackControls.fxml"/>
+    </bottom>
 </BorderPane>

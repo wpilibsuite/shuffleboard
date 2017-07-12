@@ -1,7 +1,9 @@
 package edu.wpi.first.shuffleboard.components;
 
 import edu.wpi.first.shuffleboard.NetworkTableEntry;
+import edu.wpi.first.shuffleboard.sources.NetworkTableSource;
 import edu.wpi.first.shuffleboard.util.NetworkTableUtils;
+import edu.wpi.first.shuffleboard.widget.NetworkTableTreeWidget;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
 
 import org.junit.After;
@@ -12,6 +14,7 @@ import javafx.collections.ObservableList;
 import javafx.scene.Scene;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableCell;
+import javafx.scene.control.TreeTableView;
 import javafx.stage.Stage;
 
 import static edu.wpi.first.shuffleboard.components.NetworkTableTreeItemMatcher.hasDisplayString;
@@ -32,17 +35,19 @@ import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
 public class NetworkTableTreeTest extends ApplicationTest {
 
   private NetworkTable table;
-  private NetworkTableTree tree;
+  private TreeTableView<NetworkTableEntry> tree;
   private TreeItem<NetworkTableEntry> root;
 
   @Override
   public void start(Stage stage) throws Exception {
     NetworkTableUtils.shutdown();
     table = NetworkTable.getTable("");
-    tree = new NetworkTableTree();
+    NetworkTableTreeWidget widget = new NetworkTableTreeWidget();
+    widget.setSource(NetworkTableSource.forKey(""));
+    tree = widget.getTree();
     root = tree.getRoot();
     tree.setShowRoot(false);
-    stage.setScene(new Scene(tree));
+    stage.setScene(new Scene(widget.getView()));
     stage.show();
   }
 

@@ -5,7 +5,10 @@ import edu.wpi.first.shuffleboard.data.DataTypes;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
 import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
 import edu.wpi.first.wpilibj.tables.ITable;
+import edu.wpi.first.wpilibj.tables.ITableListener;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -19,6 +22,11 @@ public final class NetworkTableUtils {
   public static final ITable rootTable = NetworkTable.getTable("");
 
   private NetworkTableUtils() {
+  }
+
+  @FunctionalInterface
+  public interface ITableListenerEx {
+    void valueChangedEx(ITable source, String key, Object value, int flags);
   }
 
   /**
@@ -68,10 +76,31 @@ public final class NetworkTableUtils {
   }
 
   /**
+   * Gets a list of the names of all the super tables of a given key. For example, the key "/foo/bar/baz"
+   * has a hierarchy of "/foo", "/foo/bar", and "/foo/bar/baz".
+   */
+  public static List<String> getHierarchy(String key) {
+    final String normal = normalizeKey(key, true);
+    List<String> hierarchy = new ArrayList<>();
+    hierarchy.add("/");
+    for (int i = 1; i < normal.length(); i++) {
+      if (normal.charAt(i) == NetworkTable.PATH_SEPARATOR) {
+        hierarchy.add(normal.substring(0, i));
+      } else if (!normal.substring(i, normal.length()).contains("/")) {
+        // Now it's the full key
+        hierarchy.add(normal);
+        break;
+      }
+    }
+    return hierarchy;
+  }
+
+  /**
    * Checks if network table flags contains a specific flag.
    *
    * @param flags the network table flags
    * @param flag  the flag to check (eg {@link ITable#NOTIFY_DELETE})
+   *
    * @return true if the flags match, false otherwise
    */
   public static boolean flagMatches(int flags, int flag) {
@@ -93,13 +122,17 @@ public final class NetworkTableUtils {
    * Gets the data type most closely associated with the value of the given network table key.
    *
    * @param key the network table key to get the data type for
+   *
    * @return the data type most closely associated with the given key, or {@link DataTypes#Unknown}
    *         if there is no network table value for the given key
    */
   public static DataType dataTypeForEntry(String key) {
     String normalKey = normalizeKey(key, false);
+    if (normalKey.isEmpty() || "/".equals(normalKey)) {
+      return DataTypes.Map;
+    }
     if (rootTable.containsKey(normalKey)) {
-      return DataType.valueOf(rootTable.getValue(normalKey).getClass());
+      return DataType.forJavaType(rootTable.getValue(normalKey).getClass());
     }
     if (rootTable.containsSubTable(normalKey)) {
       ITable table = rootTable.getSubTable(normalKey);
@@ -160,6 +193,40 @@ public final class NetworkTableUtils {
     shutdown();
     NetworkTablesJNI.startClient(serverIp, serverPort);
     NetworkTable.initialize();
+  }
+
+  /**
+   * Concatenates multiple keys.
+   *
+   * @param key1 the first key
+   * @param key2 the second key
+   * @param more optional extra keys to concatenate
+   */
+  public static String concat(String key1, String key2, String... more) {
+    StringBuilder builder = new StringBuilder(key1).append('/').append(key2);
+    for (String s : more) {
+      builder.append('/').append(s);
+    }
+    return normalizeKey(builder.toString(), true);
+  }
+
+  /**
+   * Creates an ITableListener that wraps an extended table listener to make it usable in the ntcore API.
+   *
+   * @param extendedListener the listener to wrap
+   */
+  public static ITableListener createListenerEx(ITableListenerEx extendedListener) {
+    return new ITableListener() {
+      @Override
+      public void valueChanged(ITable source, String key, Object value, boolean isNew) {
+        throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public void valueChangedEx(ITable source, String key, Object value, int flags) {
+        extendedListener.valueChangedEx(source, key, value, flags);
+      }
+    };
   }
 
 }

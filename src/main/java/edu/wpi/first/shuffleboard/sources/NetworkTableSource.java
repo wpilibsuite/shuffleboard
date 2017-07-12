@@ -14,8 +14,8 @@ import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
  */
 public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
 
-  private int listenerId = -1;
   protected final String fullTableKey;
+  private int listenerUid = -1;
 
   /**
    * Creates a network table source that listens to values under the given key. The key can be
@@ -34,21 +34,35 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
    * Sets the table listener to call when a value changes under this source's key.
    */
   protected final void setTableListener(TableListener listener) {
-    listenerId = NetworkTablesJNI.addEntryListener(
+    NetworkTablesJNI.removeEntryListener(listenerUid);
+    listenerUid = NetworkTablesJNI.addEntryListener(
         fullTableKey,
-        (uid, key, value, flags) -> listener.onChange(key, value, flags),
+        (uid, key, value, flags) -> {
+          if (isConnected()) {
+            listener.onChange(key, value, flags);
+          }
+        },
         0xFF);
-  }
-
-  @Override
-  public void close() {
-    if (listenerId != -1) {
-      NetworkTablesJNI.removeEntryListener(listenerId);
-    }
+    connect();
   }
 
   public String getKey() {
     return fullTableKey;
+  }
+
+  @Override
+  public String getId() {
+    return getType().toUri(fullTableKey);
+  }
+
+  @Override
+  public SourceType getType() {
+    return SourceType.NETWORK_TABLE;
+  }
+
+  @Override
+  public void close() {
+    NetworkTablesJNI.removeEntryListener(listenerUid);
   }
 
   @FunctionalInterface
@@ -69,19 +83,23 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
    * Creates a data source for the given network table key.
    *
    * @param fullTableKey the full key in network tables eg "/foo/bar"
+   *
    * @return a data source for that key, or {@link DataSource#none()} if that key does not exist
    */
   @SuppressWarnings("unchecked")
   public static DataSource<?> forKey(String fullTableKey) {
     String key = NetworkTableUtils.normalizeKey(fullTableKey, false);
+    final String uri = SourceType.NETWORK_TABLE.toUri(key);
     if (NetworkTableUtils.rootTable.containsKey(key)) {
       // Key-value pair
-      return new SingleKeyNetworkTableSource<>(
-          NetworkTableUtils.rootTable, key, NetworkTableUtils.dataTypeForEntry(key));
+      return Sources.computeIfAbsent(uri, () ->
+          new SingleKeyNetworkTableSource<>(NetworkTableUtils.rootTable, key,
+              NetworkTableUtils.dataTypeForEntry(key)));
     }
-    if (NetworkTableUtils.rootTable.containsSubTable(key)) {
+    if (NetworkTableUtils.rootTable.containsSubTable(key) || key.isEmpty()) {
       // Composite
-      return new CompositeNetworkTableSource<>(key, (ComplexDataType) NetworkTableUtils.dataTypeForEntry(key));
+      return Sources.computeIfAbsent(uri, () ->
+          new CompositeNetworkTableSource(key, (ComplexDataType) NetworkTableUtils.dataTypeForEntry(key)));
     }
     return DataSource.none();
   }

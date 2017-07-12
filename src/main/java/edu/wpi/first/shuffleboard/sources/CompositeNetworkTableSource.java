@@ -4,6 +4,7 @@ import edu.wpi.first.shuffleboard.data.ComplexData;
 import edu.wpi.first.shuffleboard.data.ComplexDataType;
 import edu.wpi.first.shuffleboard.util.AsyncUtils;
 import edu.wpi.first.shuffleboard.util.NetworkTableUtils;
+import edu.wpi.first.wpilibj.networktables.NetworkTable;
 import edu.wpi.first.wpilibj.tables.ITable;
 
 import java.util.HashMap;
@@ -19,6 +20,7 @@ import java.util.Map;
 public class CompositeNetworkTableSource<D extends ComplexData<D>> extends NetworkTableSource<D> {
 
   private final Map<String, Object> backingMap = new HashMap<>();
+  private final ComplexDataType<D> dataType;
 
   /**
    * Creates a composite network table source backed by the values associated with the given
@@ -30,19 +32,20 @@ public class CompositeNetworkTableSource<D extends ComplexData<D>> extends Netwo
   @SuppressWarnings("PMD.ConstructorCallsOverridableMethod") // PMD is dumb
   public CompositeNetworkTableSource(String tableName, ComplexDataType<D> dataType) {
     super(tableName);
+    this.dataType = dataType;
     String path = NetworkTableUtils.normalizeKey(tableName, false);
-    ITable table = NetworkTableUtils.rootTable.getSubTable(path);
+    ITable table = NetworkTable.getTable(path);
     setData(dataType.getDefaultValue());
 
     setTableListener((key, value, flags) -> {
       AsyncUtils.runAsync(() -> {
         // make sure the updates run on the application thread
         boolean delete = NetworkTableUtils.isDelete(flags);
-        String simpleKey = NetworkTableUtils.simpleKey(key);
+        String relativeKey = NetworkTableUtils.normalizeKey(key.substring(path.length() + 1), false);
         if (delete) {
-          backingMap.remove(simpleKey);
+          backingMap.remove(relativeKey);
         } else {
-          backingMap.put(simpleKey, value);
+          backingMap.put(relativeKey, value);
         }
         setActive(NetworkTableUtils.dataTypeForEntry(fullTableKey) == dataType);
         setData(dataType.fromMap(backingMap));
@@ -52,8 +55,17 @@ public class CompositeNetworkTableSource<D extends ComplexData<D>> extends Netwo
     data.addListener((__, oldData, newData) -> {
       Map<String, Object> diff = newData.changesFrom(oldData);
       backingMap.putAll(diff);
-      diff.forEach(table::putValue);
+      if (isConnected()) {
+        diff.forEach(table::putValue);
+      }
     });
+
+    Sources.register(this);
+  }
+
+  @Override
+  public ComplexDataType<D> getDataType() {
+    return dataType;
   }
 
 }

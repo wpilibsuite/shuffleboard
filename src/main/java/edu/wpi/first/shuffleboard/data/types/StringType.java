@@ -2,7 +2,7 @@ package edu.wpi.first.shuffleboard.data.types;
 
 import edu.wpi.first.shuffleboard.data.SimpleDataType;
 
-public class StringType implements SimpleDataType<Object> {
+public class StringType implements SimpleDataType<String> {
 
   @Override
   public String getName() {
