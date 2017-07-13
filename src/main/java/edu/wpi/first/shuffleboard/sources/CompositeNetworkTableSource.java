@@ -2,7 +2,6 @@ package edu.wpi.first.shuffleboard.sources;
 
 import edu.wpi.first.shuffleboard.data.ComplexData;
 import edu.wpi.first.shuffleboard.data.ComplexDataType;
-import edu.wpi.first.shuffleboard.util.AsyncUtils;
 import edu.wpi.first.shuffleboard.util.NetworkTableUtils;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
 import edu.wpi.first.wpilibj.tables.ITable;
@@ -38,21 +37,22 @@ public class CompositeNetworkTableSource<D extends ComplexData<D>> extends Netwo
     setData(dataType.getDefaultValue());
 
     setTableListener((key, value, flags) -> {
-      AsyncUtils.runAsync(() -> {
-        // make sure the updates run on the application thread
-        boolean delete = NetworkTableUtils.isDelete(flags);
-        String relativeKey = NetworkTableUtils.normalizeKey(key.substring(path.length() + 1), false);
-        if (delete) {
-          backingMap.remove(relativeKey);
-        } else {
-          backingMap.put(relativeKey, value);
-        }
-        setActive(NetworkTableUtils.dataTypeForEntry(fullTableKey) == dataType);
-        setData(dataType.fromMap(backingMap));
-      });
+      boolean delete = NetworkTableUtils.isDelete(flags);
+      String relativeKey = NetworkTableUtils.normalizeKey(key.substring(path.length() + 1), false);
+      if (delete) {
+        backingMap.remove(relativeKey);
+      } else {
+        backingMap.put(relativeKey, value);
+      }
+      setActive(NetworkTableUtils.dataTypeForEntry(fullTableKey) == dataType);
+      setData(dataType.fromMap(backingMap));
     });
 
     data.addListener((__, oldData, newData) -> {
+      if (isUpdateFromNetworkTables()) {
+        // The change was from a network change, no need to send it again
+        return;
+      }
       Map<String, Object> diff = newData.changesFrom(oldData);
       backingMap.putAll(diff);
       if (isConnected()) {

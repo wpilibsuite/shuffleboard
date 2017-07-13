@@ -3,6 +3,7 @@ package edu.wpi.first.shuffleboard.widget;
 import edu.wpi.first.shuffleboard.NetworkTableEntry;
 import edu.wpi.first.shuffleboard.data.MapData;
 import edu.wpi.first.shuffleboard.data.types.MapType;
+import edu.wpi.first.shuffleboard.util.EqualityUtils;
 import edu.wpi.first.shuffleboard.util.NetworkTableUtils;
 
 import java.util.Comparator;
@@ -70,7 +71,7 @@ public class NetworkTableTreeWidget extends SimpleAnnotatedWidget<MapData> {
             .forEach(e -> makeBranches(e.getKey(), e.getValue(), true));
       }
 
-      newMap.forEach((key, value) -> makeBranches(key, value, false));
+      newData.changesFrom(oldData).forEach((key, value) -> makeBranches(key, value, false));
     });
   }
 
@@ -140,7 +141,7 @@ public class NetworkTableTreeWidget extends SimpleAnnotatedWidget<MapData> {
         // Newly added value, create a tree item for it
         current = new TreeItem<>(new NetworkTableEntry(key, value));
         parent.getChildren().add(current);
-      } else {
+      } else if (EqualityUtils.isDifferent(current.getValue(), value)) {
         // The value updated, so just update the existing node
         current.setValue(new NetworkTableEntry(key, value));
       }

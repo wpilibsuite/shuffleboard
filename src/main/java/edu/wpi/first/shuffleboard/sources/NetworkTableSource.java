@@ -1,6 +1,7 @@
 package edu.wpi.first.shuffleboard.sources;
 
 import edu.wpi.first.shuffleboard.data.ComplexDataType;
+import edu.wpi.first.shuffleboard.util.AsyncUtils;
 import edu.wpi.first.shuffleboard.util.NetworkTableUtils;
 import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
 
@@ -16,6 +17,7 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
 
   protected final String fullTableKey;
   private int listenerUid = -1;
+  private volatile boolean ntUpdate = false;
 
   /**
    * Creates a network table source that listens to values under the given key. The key can be
@@ -39,11 +41,19 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
         fullTableKey,
         (uid, key, value, flags) -> {
           if (isConnected()) {
-            listener.onChange(key, value, flags);
+            AsyncUtils.runAsync(() -> {
+              ntUpdate = true;
+              listener.onChange(key, value, flags);
+              ntUpdate = false;
+            });
           }
         },
         0xFF);
     connect();
+  }
+
+  protected boolean isUpdateFromNetworkTables() {
+    return ntUpdate;
   }
 
   public String getKey() {

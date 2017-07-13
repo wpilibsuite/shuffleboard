@@ -8,6 +8,7 @@ import edu.wpi.first.shuffleboard.util.NetworkTableUtils;
 import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -230,7 +231,7 @@ public final class Playback {
   }
 
   private <T extends ComplexData<T>> void updateTable(CompositeNetworkTableSource<T> source, String key, Object value) {
-    Map<String, Object> map = source.getData().asMap();
+    Map<String, Object> map = new HashMap<>(source.getData().asMap());
     map.put(key, value);
     source.setData(source.getDataType().fromMap(map));
   }
