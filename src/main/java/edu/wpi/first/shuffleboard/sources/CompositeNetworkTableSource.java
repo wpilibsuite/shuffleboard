@@ -2,7 +2,6 @@ package edu.wpi.first.shuffleboard.sources;
 
 import edu.wpi.first.shuffleboard.data.ComplexData;
 import edu.wpi.first.shuffleboard.data.ComplexDataType;
-import edu.wpi.first.shuffleboard.util.AsyncUtils;
 import edu.wpi.first.shuffleboard.util.NetworkTableUtils;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
 import edu.wpi.first.wpilibj.tables.ITable;
@@ -21,7 +20,6 @@ public class CompositeNetworkTableSource<D extends ComplexData<D>> extends Netwo
 
   private final Map<String, Object> backingMap = new HashMap<>();
   private final ComplexDataType<D> dataType;
-  private volatile boolean ntUpdate = false;
 
   /**
    * Creates a composite network table source backed by the values associated with the given
@@ -39,24 +37,19 @@ public class CompositeNetworkTableSource<D extends ComplexData<D>> extends Netwo
     setData(dataType.getDefaultValue());
 
     setTableListener((key, value, flags) -> {
-      AsyncUtils.runAsync(() -> {
-        // make sure the updates run on the application thread
-        boolean delete = NetworkTableUtils.isDelete(flags);
-        String relativeKey = NetworkTableUtils.normalizeKey(key.substring(path.length() + 1), false);
-        if (delete) {
-          backingMap.remove(relativeKey);
-        } else {
-          backingMap.put(relativeKey, value);
-        }
-        setActive(NetworkTableUtils.dataTypeForEntry(fullTableKey) == dataType);
-        ntUpdate = true;
-        setData(dataType.fromMap(backingMap));
-        ntUpdate = false;
-      });
+      boolean delete = NetworkTableUtils.isDelete(flags);
+      String relativeKey = NetworkTableUtils.normalizeKey(key.substring(path.length() + 1), false);
+      if (delete) {
+        backingMap.remove(relativeKey);
+      } else {
+        backingMap.put(relativeKey, value);
+      }
+      setActive(NetworkTableUtils.dataTypeForEntry(fullTableKey) == dataType);
+      setData(dataType.fromMap(backingMap));
     });
 
     data.addListener((__, oldData, newData) -> {
-      if (ntUpdate) {
+      if (isUpdateFromNetworkTables()) {
         // The change was from a network change, no need to send it again
         return;
       }

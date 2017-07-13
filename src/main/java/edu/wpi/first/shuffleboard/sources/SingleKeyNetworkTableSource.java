@@ -1,11 +1,9 @@
 package edu.wpi.first.shuffleboard.sources;
 
-import edu.wpi.first.shuffleboard.util.AsyncUtils;
-import edu.wpi.first.shuffleboard.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.data.DataType;
+import edu.wpi.first.shuffleboard.util.EqualityUtils;
+import edu.wpi.first.shuffleboard.util.NetworkTableUtils;
 import edu.wpi.first.wpilibj.tables.ITable;
-
-import java.util.Objects;
 
 /**
  * A data source backed by a single key-value pair in a network table.
@@ -25,23 +23,25 @@ public class SingleKeyNetworkTableSource<T> extends NetworkTableSource<T> {
     super(key);
     setName(key);
     setTableListener((__, value, flags) -> {
-      if (Objects.equals(value, getData())) {
+      if (EqualityUtils.isEqual(value, getData())) {
         // No change
         return;
       }
-      AsyncUtils.runAsync(() -> {
-        boolean deleted = NetworkTableUtils.isDelete(flags);
-        setActive(!deleted && dataType == DataType.forJavaType(value.getClass()));
+      boolean deleted = NetworkTableUtils.isDelete(flags);
+      setActive(!deleted && dataType == DataType.forJavaType(value.getClass()));
 
-        if (isActive()) {
-          setData((T) value);
-        } else {
-          setData(null);
-        }
-      });
+      if (isActive()) {
+        setData((T) value);
+      } else {
+        setData(null);
+      }
     });
 
     data.addListener((__, oldValue, newValue) -> {
+      if (isUpdateFromNetworkTables()) {
+        // The change was from network tables; setting the value again would be redundant
+        return;
+      }
       if (table.getValue(key, null) == newValue || !isConnected()) {
         // no change
         return;
