@@ -2,7 +2,6 @@ package edu.wpi.first.shuffleboard.data;
 
 import com.google.common.collect.ImmutableMap;
 
-import java.util.HashMap;
 import java.util.Map;
 
 public class MapData extends ComplexData<MapData> {
@@ -14,8 +13,8 @@ public class MapData extends ComplexData<MapData> {
   }
 
   @Override
-  public Map<String, Object> asMap() {
-    return new HashMap<>(map);
+  public ImmutableMap<String, Object> asMap() {
+    return map;
   }
 
   public Object get(String key) {

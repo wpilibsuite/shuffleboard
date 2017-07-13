@@ -21,6 +21,7 @@ public class CompositeNetworkTableSource<D extends ComplexData<D>> extends Netwo
 
   private final Map<String, Object> backingMap = new HashMap<>();
   private final ComplexDataType<D> dataType;
+  private volatile boolean ntUpdate = false;
 
   /**
    * Creates a composite network table source backed by the values associated with the given
@@ -48,11 +49,17 @@ public class CompositeNetworkTableSource<D extends ComplexData<D>> extends Netwo
           backingMap.put(relativeKey, value);
         }
         setActive(NetworkTableUtils.dataTypeForEntry(fullTableKey) == dataType);
+        ntUpdate = true;
         setData(dataType.fromMap(backingMap));
+        ntUpdate = false;
       });
     });
 
     data.addListener((__, oldData, newData) -> {
+      if (ntUpdate) {
+        // The change was from a network change, no need to send it again
+        return;
+      }
       Map<String, Object> diff = newData.changesFrom(oldData);
       backingMap.putAll(diff);
       if (isConnected()) {
