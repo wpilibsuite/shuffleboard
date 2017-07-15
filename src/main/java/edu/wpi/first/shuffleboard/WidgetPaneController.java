@@ -10,6 +10,7 @@ import edu.wpi.first.shuffleboard.util.GridPoint;
 import edu.wpi.first.shuffleboard.widget.TileSize;
 import edu.wpi.first.shuffleboard.widget.Widget;
 import edu.wpi.first.shuffleboard.widget.Widgets;
+
 import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -48,9 +49,9 @@ public class WidgetPaneController {
       if (isWidget) {
         pane.setHighlight(true);
         pane.setHighlightPoint(point);
-        String widgetId = (String) event.getDragboard().getContent(DataFormats.widgetTile);
-        pane.tileMatching(tile -> tile.getId().equals(widgetId))
-            .ifPresent(tile -> previewWidget(tile, point));
+        DataFormats.WidgetData data = (DataFormats.WidgetData) event.getDragboard().getContent(DataFormats.widgetTile);
+        pane.tileMatching(tile -> tile.getId().equals(data.getId()))
+            .ifPresent(tile -> previewWidget(tile, point.subtract(data.getDragPoint())));
       }
 
       // setting grid lines visible puts them above every child, so move every widget view
@@ -74,9 +75,9 @@ public class WidgetPaneController {
       }
 
       if (dragboard.hasContent(DataFormats.widgetTile)) {
-        String widgetId = (String) dragboard.getContent(DataFormats.widgetTile);
-        pane.tileMatching(tile -> tile.getId().equals(widgetId))
-            .ifPresent(tile -> moveWidget(tile, point));
+        DataFormats.WidgetData data = (DataFormats.WidgetData) dragboard.getContent(DataFormats.widgetTile);
+        pane.tileMatching(tile -> tile.getId().equals(data.getId()))
+            .ifPresent(tile -> moveWidget(tile, point.subtract(data.getDragPoint())));
       }
 
       if (dragboard.hasContent(DataFormats.widgetType)) {
@@ -107,7 +108,7 @@ public class WidgetPaneController {
   /**
    * Starts the drag of the given widget tile.
    */
-  private void dragWidget(WidgetTile tile) {
+  private void dragWidget(WidgetTile tile, GridPoint point) {
     Dragboard dragboard = tile.startDragAndDrop(TransferMode.MOVE);
     WritableImage preview =
         new WritableImage(
@@ -117,7 +118,7 @@ public class WidgetPaneController {
     tile.snapshot(null, preview);
     dragboard.setDragView(preview);
     ClipboardContent content = new ClipboardContent();
-    content.put(DataFormats.widgetTile, tile.getId());
+    content.put(DataFormats.widgetTile, new DataFormats.WidgetData(tile.getId(), point));
     dragboard.setContent(content);
   }
 
@@ -168,7 +169,9 @@ public class WidgetPaneController {
         // don't drag the widget while it's being resized
         return;
       }
-      dragWidget(tile);
+      GridPoint dragPoint = new GridPoint(pane.roundWidthToNearestTile(event.getX()) - 1,
+          pane.roundHeightToNearestTile(event.getY()) - 1);
+      dragWidget(tile, dragPoint);
       event.consume();
     });
 

@@ -1,10 +1,10 @@
 package edu.wpi.first.shuffleboard.dnd;
 
-import javafx.scene.Node;
-import javafx.scene.input.Clipboard;
-
 import java.util.Objects;
 import java.util.function.Predicate;
+
+import javafx.scene.Node;
+import javafx.scene.input.Clipboard;
 
 /**
  * A utility class for helping with drag and drop.
@@ -27,7 +27,7 @@ public final class DragUtils {
   public static boolean isDraggedWidget(Node node) {
     return node != null
         && Objects.equals(node.getId(),
-                          Clipboard.getSystemClipboard().getContent(DataFormats.widgetTile));
+        ((DataFormats.WidgetData) Clipboard.getSystemClipboard().getContent(DataFormats.widgetTile)).getId());
   }
 
 }
