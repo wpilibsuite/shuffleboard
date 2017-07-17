@@ -32,13 +32,13 @@ public class NetworkTableTreeWidget extends SimpleAnnotatedWidget<MapData> {
    * Compares tree items, branches first.
    */
   private static final Comparator<TreeItem<NetworkTableEntry>> branchesFirst
-      = (o1, o2) -> o1.isLeaf() ? o2.isLeaf() ? 0 : 1 : -1;
+      = (o1, o2) -> Boolean.compare(o1.isLeaf(), o2.isLeaf());
 
   /**
    * Compares tree items alphabetically.
    */
   private static final Comparator<TreeItem<NetworkTableEntry>> alphabetical
-      = Comparator.comparing(item -> item.getValue().getKey());
+      = Comparator.comparing(item -> item.getValue().getKey().toLowerCase());
 
   private final TreeTableColumn<NetworkTableEntry, String> keyColumn =
       new TreeTableColumn<>("Name");
