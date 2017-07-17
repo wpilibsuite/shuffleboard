@@ -23,18 +23,8 @@
         "widget": {
           "_type": "Boolean Box",
           "_source": "network_table:///LiveWindow/Elevator/enabled",
-          "True Color": {
-            "red": 0.4862745,
-            "green": 0.9882353,
-            "blue": 0.0,
-            "opacity": 1.0
-          },
-          "False Color": {
-            "red": 0.54509807,
-            "green": 0.0,
-            "blue": 0.0,
-            "opacity": 1.0
-          }
+          "True Color": "#7CFC00",
+          "False Color": "#8B0000"
         }
       },
       "5,1": {
@@ -71,18 +61,8 @@
         "widget": {
           "_type": "Boolean Box",
           "_source": "network_table:///LiveWindow/~STATUS~/LW Enabled",
-          "True Color": {
-            "red": 0.4862745,
-            "green": 0.9882353,
-            "blue": 0.0,
-            "opacity": 1.0
-          },
-          "False Color": {
-            "red": 0.54509807,
-            "green": 0.0,
-            "blue": 0.0,
-            "opacity": 1.0
-          }
+          "True Color": "#7CFC00",
+          "False Color": "#8B0000"
         }
       },
       "5,3": {
