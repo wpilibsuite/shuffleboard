@@ -68,6 +68,7 @@ public class MainWindowController {
 
   private final ObservableValue<List<String>> stylesheets
       = EasyBind.map(AppPreferences.getInstance().themeProperty(), Theme::getStyleSheets);
+  private NetworkTableEntry selectedEntry = null;
 
   @FXML
   private void initialize() throws IOException {
@@ -77,6 +78,13 @@ public class MainWindowController {
             running -> running ? "Stop recording" : "Start recording"));
     FxUtils.bind(root.getStylesheets(), stylesheets);
     NetworkTableTreeWidget networkTables = new NetworkTableTreeWidget();
+    networkTables.getTree().getSelectionModel().selectedItemProperty().addListener((__, prev, cur) -> {
+      if (cur == null) {
+        selectedEntry = null;
+      } else {
+        selectedEntry = cur.getValue();
+      }
+    });
     networkTables.getTree().setRowFactory(view -> {
       TreeTableRow<NetworkTableEntry> row = new TreeTableRow<>();
       row.hoverProperty().addListener((__, wasHover, isHover) -> {
@@ -115,12 +123,12 @@ public class MainWindowController {
 
   private void makeSourceRowDraggable(TreeTableRow<? extends SourceEntry> row) {
     row.setOnDragDetected(event -> {
-      if (row.isEmpty()) {
+      if (row.isEmpty() || selectedEntry == null) {
         return;
       }
       Dragboard dragboard = row.startDragAndDrop(TransferMode.COPY_OR_MOVE);
       ClipboardContent content = new ClipboardContent();
-      content.put(DataFormats.source, row.getTreeItem().getValue());
+      content.put(DataFormats.source, selectedEntry);
       dragboard.setContent(content);
       event.consume();
     });
