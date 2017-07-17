@@ -51,7 +51,7 @@ public class MainWindowControllerTest extends ApplicationTest {
     drag(NodeMatchers.hasText("a string source"), MouseButton.PRIMARY)
         .dropTo(".widget-pane");
 
-    WidgetTile tile = lookup(".tile").query();
+    WidgetTile tile = lookup(".widget-pane .tile").query();
     assertNotNull(tile);
   }
 

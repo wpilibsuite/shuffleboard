@@ -16,6 +16,9 @@
         <MenuBar>
             <Menu mnemonicParsing="false" text="File">
                 <MenuItem onAction="#close" text="Close"/>
+                <MenuItem onAction="#save" text="Save"/>
+                <MenuItem onAction="#load" text="Load dashboard"/>
+                <MenuItem onAction="#saveAs" text="Save As"/>
                 <MenuItem onAction="#showPrefs" text="Preferences" accelerator="SHORTCUT+,"/>
             </Menu>
             <Menu text="Recording">
@@ -26,7 +29,7 @@
     </top>
 
     <center>
-        <DashboardTabPane fx:id="dashboard" styleClass="dashboard-tabs"/>
+        <DashboardTabPane fx:id="dashboard"/>
     </center>
 
     <left>

@@ -1,8 +1,10 @@
 package edu.wpi.first.shuffleboard;
 
+import com.google.common.io.Files;
 import edu.wpi.first.shuffleboard.components.DashboardTabPane;
 import edu.wpi.first.shuffleboard.components.WidgetGallery;
 import edu.wpi.first.shuffleboard.dnd.DataFormats;
+import edu.wpi.first.shuffleboard.json.JsonBuilder;
 import edu.wpi.first.shuffleboard.prefs.AppPreferences;
 import edu.wpi.first.shuffleboard.prefs.ObservableItem;
 import edu.wpi.first.shuffleboard.prefs.PropertyEditorFactory;
@@ -16,15 +18,6 @@ import edu.wpi.first.shuffleboard.util.Storage;
 import edu.wpi.first.shuffleboard.widget.NetworkTableTreeWidget;
 import edu.wpi.first.shuffleboard.widget.Widget;
 import edu.wpi.first.shuffleboard.widget.Widgets;
-
-import org.controlsfx.control.PropertySheet;
-import org.fxmisc.easybind.EasyBind;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-import java.util.logging.Logger;
-
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
@@ -44,6 +37,16 @@ import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import org.controlsfx.control.PropertySheet;
+import org.fxmisc.easybind.EasyBind;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
+import java.nio.charset.Charset;
+import java.util.List;
+import java.util.logging.Logger;
 
 import static edu.wpi.first.shuffleboard.util.TypeUtils.optionalCast;
 
@@ -155,10 +158,85 @@ public class MainWindowController {
     }
   }
 
+  public void setDashboard(DashboardTabPane dashboard) {
+    dashboard.setId("dashboard");
+    this.dashboard = dashboard;
+    root.setCenter(dashboard);
+  }
+
   @FXML
   public void close() {
     log.info("Exiting app");
     System.exit(0);
+  }
+
+  File currentFile = null;
+  @FXML
+  public void save() {
+    if (currentFile == null) {
+      saveAs();
+    } else {
+      saveFile(currentFile);
+    }
+  }
+
+  @FXML
+  private void saveAs() {
+    FileChooser chooser = new FileChooser();
+    chooser.getExtensionFilters().setAll(
+            new FileChooser.ExtensionFilter("SmartDashboard Save File (.json)", "*.json"));
+    if (currentFile != null) {
+      chooser.setInitialDirectory(currentFile.getAbsoluteFile().getParentFile());
+      chooser.setInitialFileName(currentFile.getName());
+    } else {
+      chooser.setInitialDirectory(new File(Storage.STORAGE_DIR));
+      chooser.setInitialFileName("smartdashboard.json");
+    }
+
+    File selected = chooser.showSaveDialog(root.getScene().getWindow());
+
+    saveFile(selected);
+  }
+
+  private void saveFile(File selected) {
+    JsonBuilder.forSaveFile().toJson(dashboard, DashboardTabPane.class, System.out);
+    try {
+      Writer writer = Files.newWriter(selected, Charset.forName("UTF-8"));
+
+      JsonBuilder.forSaveFile().toJson(dashboard, DashboardTabPane.class, writer);
+      writer.flush();
+    } catch (Exception e) {
+      e.printStackTrace();
+      return;
+    }
+
+    currentFile = selected;
+  }
+
+
+  @FXML
+  public void load() {
+    FileChooser chooser = new FileChooser();
+    chooser.setInitialDirectory(new File(Storage.STORAGE_DIR));
+    chooser.getExtensionFilters().setAll(
+            new FileChooser.ExtensionFilter("SmartDashboard Save File (.json)", "*.json"));
+
+    final File selected = chooser.showOpenDialog(root.getScene().getWindow());
+
+    if (selected == null) {
+      return;
+    }
+
+    try {
+      Reader reader = Files.newReader(selected, Charset.forName("UTF-8"));
+
+      setDashboard(JsonBuilder.forSaveFile().fromJson(reader, DashboardTabPane.class));
+    } catch (Exception e) {
+      e.printStackTrace();
+      return;
+    }
+
+    currentFile = selected;
   }
 
   /**
@@ -219,5 +297,4 @@ public class MainWindowController {
     Playback playback = Playback.load(selected.getAbsolutePath());
     playback.start();
   }
-
 }

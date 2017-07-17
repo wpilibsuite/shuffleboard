@@ -103,8 +103,8 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
     if (NetworkTableUtils.rootTable.containsKey(key)) {
       // Key-value pair
       return Sources.computeIfAbsent(uri, () ->
-          new SingleKeyNetworkTableSource<>(NetworkTableUtils.rootTable, key,
-              NetworkTableUtils.dataTypeForEntry(key)));
+              new SingleKeyNetworkTableSource<>(NetworkTableUtils.rootTable, key,
+                      NetworkTableUtils.dataTypeForEntry(key)));
     }
     if (NetworkTableUtils.rootTable.containsSubTable(key) || key.isEmpty()) {
       // Composite
@@ -113,6 +113,4 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
     }
     return DataSource.none();
   }
-
-
 }
