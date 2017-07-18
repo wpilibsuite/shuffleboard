@@ -9,6 +9,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public final class JsonBuilder {
+  private JsonBuilder() {
+  }
+
   private static List<? extends Class<?>> typeAdapters() throws IOException {
     return ClassPath.from(JsonBuilder.class.getClassLoader())
             .getAllClasses()
@@ -19,6 +22,9 @@ public final class JsonBuilder {
             .collect(Collectors.toList());
   }
 
+  /**
+   * Creates a GsonBuilder instance With all of the type adapters for the current classpath.
+   */
   public static GsonBuilder withTypeAdapter() {
     GsonBuilder builder = new GsonBuilder();
 
@@ -29,21 +35,18 @@ public final class JsonBuilder {
                 c.newInstance());
       }
     } catch (IOException | InstantiationException | IllegalAccessException e) {
-      e.printStackTrace();
-      throw new RuntimeException("Could not initialize JSON serializers");
+      throw new RuntimeException("Could not initialize JSON serializers", e);
     }
 
     return builder;
   }
 
-  private static Gson gsonInstance;
+  /**
+   * Creates a Gson instance for use in saving and loading Shuffleboard files.
+   */
   public static Gson forSaveFile() {
-    if (gsonInstance == null) {
-      gsonInstance = withTypeAdapter()
-              .setPrettyPrinting()
-              .create();
-    }
-
-    return gsonInstance;
+    return withTypeAdapter()
+            .setPrettyPrinting()
+            .create();
   }
 }

@@ -46,6 +46,7 @@ import java.io.Reader;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static edu.wpi.first.shuffleboard.util.TypeUtils.optionalCast;
@@ -57,17 +58,19 @@ import static edu.wpi.first.shuffleboard.util.TypeUtils.optionalCast;
 public class MainWindowController {
 
   private static final Logger log = Logger.getLogger(MainWindowController.class.getName());
+
   @FXML
   private MenuItem recordingMenu;
   @FXML
   private WidgetGallery widgetGallery;
-
   @FXML
   private BorderPane root;
   @FXML
   private DashboardTabPane dashboard;
   @FXML
   private Tab sourcesTab;
+
+  File currentFile = null;
 
   private final ObservableValue<List<String>> stylesheets
       = EasyBind.map(AppPreferences.getInstance().themeProperty(), Theme::getStyleSheets);
@@ -158,6 +161,9 @@ public class MainWindowController {
     }
   }
 
+  /**
+   * Set the currently loaded dashboard.
+   */
   public void setDashboard(DashboardTabPane dashboard) {
     dashboard.setId("dashboard");
     this.dashboard = dashboard;
@@ -170,7 +176,10 @@ public class MainWindowController {
     System.exit(0);
   }
 
-  File currentFile = null;
+  /**
+   * Save the dashboard to an existing file, if one exists.
+   * Otherwise is identical to #saveAs.
+   */
   @FXML
   public void save() {
     if (currentFile == null) {
@@ -180,17 +189,20 @@ public class MainWindowController {
     }
   }
 
+  /**
+   * Choose a new file and save the dashboard to that file.
+   */
   @FXML
   private void saveAs() {
     FileChooser chooser = new FileChooser();
     chooser.getExtensionFilters().setAll(
             new FileChooser.ExtensionFilter("SmartDashboard Save File (.json)", "*.json"));
-    if (currentFile != null) {
-      chooser.setInitialDirectory(currentFile.getAbsoluteFile().getParentFile());
-      chooser.setInitialFileName(currentFile.getName());
-    } else {
+    if (currentFile == null) {
       chooser.setInitialDirectory(new File(Storage.STORAGE_DIR));
       chooser.setInitialFileName("smartdashboard.json");
+    } else {
+      chooser.setInitialDirectory(currentFile.getAbsoluteFile().getParentFile());
+      chooser.setInitialFileName(currentFile.getName());
     }
 
     File selected = chooser.showSaveDialog(root.getScene().getWindow());
@@ -206,7 +218,7 @@ public class MainWindowController {
       JsonBuilder.forSaveFile().toJson(dashboard, DashboardTabPane.class, writer);
       writer.flush();
     } catch (Exception e) {
-      e.printStackTrace();
+      log.log(Level.WARNING, "Couldn't save", e);
       return;
     }
 
@@ -214,6 +226,9 @@ public class MainWindowController {
   }
 
 
+  /**
+   * Load the dashboard from a save file.
+   */
   @FXML
   public void load() {
     FileChooser chooser = new FileChooser();
@@ -232,7 +247,7 @@ public class MainWindowController {
 
       setDashboard(JsonBuilder.forSaveFile().fromJson(reader, DashboardTabPane.class));
     } catch (Exception e) {
-      e.printStackTrace();
+      log.log(Level.WARNING, "Couldn't load", e);
       return;
     }
 

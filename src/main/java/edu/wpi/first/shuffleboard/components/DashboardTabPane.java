@@ -24,6 +24,9 @@ public class DashboardTabPane extends TabPane {
     this(new DashboardTab("Tab 1"));
   }
 
+  /**
+   * Create a dashboard with the given tabs.
+   */
   public DashboardTabPane(Tab... tabs) {
     super(tabs);
     getStyleClass().add("dashboard-tabs");
@@ -32,7 +35,7 @@ public class DashboardTabPane extends TabPane {
     getTabs().add(adder);
   }
 
-  public DashboardTab addNewTab() {
+  private DashboardTab addNewTab() {
     int existingTabs = getTabs().size();
     DashboardTab tab = new DashboardTab("Tab " + existingTabs);
     if (existingTabs > 0) {

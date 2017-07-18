@@ -43,7 +43,7 @@ public class WidgetPaneSaver implements ElementTypeAdapter<WidgetPane> {
 
     for (Map.Entry<String, JsonElement> tileLocation : tiles.entrySet()) {
       String[] coordPart = tileLocation.getKey().split(",");
-      GridPoint coords = new GridPoint(Integer.valueOf(coordPart[0]), Integer.valueOf(coordPart[1]));
+      GridPoint coords = new GridPoint(Integer.parseInt(coordPart[0]), Integer.parseInt(coordPart[1]));
 
       JsonObject tile = tileLocation.getValue().getAsJsonObject();
       TileSize size = context.deserialize(tile.get("size"), TileSize.class);

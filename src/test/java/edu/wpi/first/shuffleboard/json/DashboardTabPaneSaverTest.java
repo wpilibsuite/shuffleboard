@@ -50,7 +50,7 @@ public class DashboardTabPaneSaverTest extends ApplicationTest {
     Reader reader = new InputStreamReader(getClass().getResourceAsStream("/smartdashboard.json"), "UTF-8");
     DashboardTabPane dashboard = JsonBuilder.forSaveFile().fromJson(reader, DashboardTabPane.class);
 
-    assertEquals(2+1, dashboard.getTabs().size()); // 1 for the adder tab
+    assertEquals(2 + 1, dashboard.getTabs().size()); // 1 for the adder tab
 
     DashboardTabPane.DashboardTab firstTab = (DashboardTabPane.DashboardTab) dashboard.getTabs().get(0);
     assertEquals("First Tab", firstTab.getTitle());

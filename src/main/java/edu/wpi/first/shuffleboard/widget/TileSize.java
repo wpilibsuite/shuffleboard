@@ -15,8 +15,8 @@ public class TileSize {
    */
   public TileSize(int width, int height) {
     if (width < 1 || height < 1) {
-      throw new IllegalArgumentException("Tile Size must be positive, " +
-              String.format("found (%d, %d).", width, height));
+      throw new IllegalArgumentException(String.format(
+              "Tile Size must be positive, found (%d, %d).", width, height));
     }
     this.width = width;
     this.height = height;

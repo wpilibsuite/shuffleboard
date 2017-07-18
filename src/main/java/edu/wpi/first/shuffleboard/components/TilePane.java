@@ -271,7 +271,7 @@ public class TilePane extends GridPane {
    * </ul>
    *
    * @param node   the node to add
-   * @param location
+   * @param location the location to add the node
    * @param size the size of the node to add
    * @return the node added to the view
    */

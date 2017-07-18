@@ -36,8 +36,8 @@ public class WidgetSaverTest extends ApplicationTest {
     NetworkTableUtils.shutdown();
   }
 
-  public static Object getPropertyValue(Widget w, String name) {
-    return w.getProperties().stream()
+  private static Object getPropertyValue(Widget widget, String name) {
+    return widget.getProperties().stream()
             .filter(p -> p.getName().equals(name))
             .findFirst()
             .orElseThrow(RuntimeException::new)
@@ -46,22 +46,22 @@ public class WidgetSaverTest extends ApplicationTest {
 
   @Test
   public void loadSimpleWidget() throws Exception {
-    String widgetJson = "{\n" +
-            "\"_type\": \"Number Slider\",\n" +
-            "\"_source\": \"network_table:///value\",\n" +
-            "\"min\": -1.0,\n" +
-            "\"max\": 1.0,\n" +
-            "\"blockIncrement\": 0.0625\n" +
-            "}";
+    String widgetJson = "{\n"
+            + "\"_type\": \"Number Slider\",\n"
+            + "\"_source\": \"network_table:///value\",\n"
+            + "\"min\": -1.0,\n"
+            + "\"max\": 1.0,\n"
+            + "\"blockIncrement\": 0.0625\n"
+            + "}";
 
-    Widget w = JsonBuilder.forSaveFile().fromJson(widgetJson, Widget.class);
+    Widget widget = JsonBuilder.forSaveFile().fromJson(widgetJson, Widget.class);
 
-    assertEquals("Number Slider", w.getName());
-    assertEquals(SourceType.NETWORK_TABLE, w.getSource().getType());
-    assertEquals(0.5, w.getSource().getData());
+    assertEquals("Number Slider", widget.getName());
+    assertEquals(SourceType.NETWORK_TABLE, widget.getSource().getType());
+    assertEquals(0.5, widget.getSource().getData());
 
-    assertEquals(-1.0, getPropertyValue(w, "min"));
-    assertEquals(1.0, getPropertyValue(w, "max"));
-    assertEquals(0.0625, getPropertyValue(w, "blockIncrement"));
+    assertEquals(-1.0, getPropertyValue(widget, "min"));
+    assertEquals(1.0, getPropertyValue(widget, "max"));
+    assertEquals(0.0625, getPropertyValue(widget, "blockIncrement"));
   }
 }

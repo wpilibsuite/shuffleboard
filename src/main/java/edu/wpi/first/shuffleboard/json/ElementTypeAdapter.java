@@ -12,12 +12,13 @@ import java.lang.reflect.Type;
 public interface ElementTypeAdapter<T> extends JsonSerializer<T>, JsonDeserializer<T> {
 
   JsonElement serialize(T src, JsonSerializationContext context);
-  T deserialize(JsonElement json, JsonDeserializationContext context) throws JsonParseException;
 
   @Override
   default JsonElement serialize(T src, Type type, JsonSerializationContext context) {
     return serialize(src, context);
   }
+
+  T deserialize(JsonElement json, JsonDeserializationContext context) throws JsonParseException;
 
   @Override
   default T deserialize(JsonElement json, Type type, JsonDeserializationContext context) throws JsonParseException {

@@ -24,7 +24,7 @@ public class TileSizeSaver implements ElementTypeAdapter<TileSize> {
     try {
       return new TileSize(width, height);
     } catch (IllegalArgumentException e) {
-      throw new JsonParseException("Illegal TileSize. Expected positive integers, found "+json.getAsString(), e);
+      throw new JsonParseException("Illegal TileSize. Expected positive integers, found " + json.getAsString(), e);
     }
   }
 }

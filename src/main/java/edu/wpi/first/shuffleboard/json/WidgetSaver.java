@@ -28,7 +28,7 @@ public class WidgetSaver implements ElementTypeAdapter<Widget> {
     JsonObject obj = json.getAsJsonObject();
     String type = obj.get("_type").getAsString();
     Widget widget = Widgets.typeFor(type)
-            .orElseThrow(() -> new JsonParseException("No widget found for "+type)).get();
+            .orElseThrow(() -> new JsonParseException("No widget found for " + type)).get();
 
     String source = obj.get("_source").getAsString();
     widget.setSource(Sources.forUri(source));

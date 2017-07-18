@@ -3,7 +3,6 @@ package edu.wpi.first.shuffleboard.sources;
 import edu.wpi.first.shuffleboard.DummySource;
 import edu.wpi.first.shuffleboard.data.DataType;
 
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -12,7 +11,9 @@ public enum SourceType {
   NONE(false, "", null),
   STATIC(false, "example://", s -> DummySource.forTypes(DataType.forName(s)).get()),
   NETWORK_TABLE(true, "network_table://", NetworkTableSource::forKey),
-  CAMERA_SERVER(true, "camera_server://", __ -> {throw new RuntimeException("Not Implemented");});
+  CAMERA_SERVER(true, "camera_server://", __ -> {
+    throw new UnsupportedOperationException("Not implemented");
+  });
 
   public final boolean isRecordable;
   private final String protocol;
@@ -45,16 +46,27 @@ public enum SourceType {
     }
   }
 
-  public static DataSource<?> fromUri(String uri) {
-    if (uri.isEmpty()) {
-      return new EmptyDataSource();
+  /**
+   * Given a URI-like string with a protocol and a pseudo-path, return a source for the current SourceType
+   * This function will throw an error if it doesn't support the protocol that's passed.
+   *
+   * <p>The interpretation of paths may vary depending on any given SourceType.</p>
+   */
+  public DataSource<?> forUri(String uri) {
+    if (!uri.startsWith(protocol)) {
+      throw new IllegalArgumentException("URI does not start with the correct protocol: " + uri);
     }
-    String[] path = uri.split("://");
-    String protocol = path[0] + "://";
-    Optional<SourceType> type = Stream.of(values()).filter(t -> t.getProtocol().equals(protocol)).findFirst();
+    return sourceSupplier.apply(removeProtocol(uri));
+  }
 
-    return type
-      .map(t -> t.sourceSupplier.apply(path[1]))
-      .orElseThrow(() -> new RuntimeException("Couldn't find SourceType for protocol " + protocol));
+  /**
+   * Given a URI-like string with a protocol and a pseudo-path, return a source for that protocol.
+   */
+  public static DataSource<?> fromUri(String uri) {
+    return Stream.of(values())
+            .filter(type -> type != NONE && uri.startsWith(type.protocol))
+            .findFirst()
+            .map(type -> type.forUri(uri))
+            .orElseThrow(() -> new RuntimeException("Couldn't find SourceType for " + uri));
   }
 }
