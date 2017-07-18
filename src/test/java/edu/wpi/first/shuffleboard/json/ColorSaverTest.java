@@ -2,16 +2,12 @@ package edu.wpi.first.shuffleboard.json;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-
-import edu.wpi.first.shuffleboard.util.FxUtils;
-
+import javafx.scene.paint.Color;
+import javafx.stage.Stage;
 import org.junit.Test;
 import org.testfx.framework.junit.ApplicationTest;
 
-import javafx.scene.paint.Color;
-import javafx.stage.Stage;
-
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class ColorSaverTest extends ApplicationTest {
 
@@ -23,6 +19,7 @@ public class ColorSaverTest extends ApplicationTest {
         .registerTypeAdapter(Color.class, new ColorSaver())
         .create();
   }
+
   @Test
   public void testSerialize() throws Exception {
     String colorString = "#12345678";
