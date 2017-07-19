@@ -11,6 +11,9 @@ import edu.wpi.first.shuffleboard.widget.TileSize;
 import edu.wpi.first.shuffleboard.widget.Widget;
 import edu.wpi.first.shuffleboard.widget.Widgets;
 
+import org.fxmisc.easybind.EasyBind;
+
+import javafx.beans.binding.Binding;
 import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -23,6 +26,7 @@ import javafx.scene.image.WritableImage;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
+import javafx.scene.layout.Region;
 
 public class WidgetPaneController {
 
@@ -94,6 +98,24 @@ public class WidgetPaneController {
 
       cleanupWidgetDrag();
       event.consume();
+    });
+
+    pane.parentProperty().addListener((__, old, parent) -> {
+      if (parent instanceof Region) {
+        Region region = (Region) parent;
+        Binding<Integer> colBinding =
+            EasyBind.combine(region.widthProperty(), pane.hgapProperty(), pane.tileSizeProperty(),
+                (width, gap, size) -> pane.roundWidthToNearestTile(width.doubleValue()))
+                .map(numCols -> Math.max(1, numCols));
+        Binding<Integer> rowBinding =
+            EasyBind.combine(region.heightProperty(), pane.vgapProperty(), pane.tileSizeProperty(),
+                (height, gap, size) -> pane.roundHeightToNearestTile(height.doubleValue()))
+                .map(numRows -> Math.max(numRows, 1));
+
+
+        pane.numColumnsProperty().bind(colBinding);
+        pane.numRowsProperty().bind(rowBinding);
+      }
     });
   }
 

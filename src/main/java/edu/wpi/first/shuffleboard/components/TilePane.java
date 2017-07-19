@@ -29,7 +29,8 @@ public class TilePane extends GridPane {
 
   private static final int DEFAULT_COL_COUNT = 1;
   private static final int DEFAULT_ROW_COUNT = 1;
-  private static final double MIN_TILE_SIZE = 32; // pixels
+  private static final double MIN_TILE_SIZE = 64; // pixels
+  private static final double MAX_TILE_SIZE = 65535; // pixels
   private static final double DEFAULT_TILE_SIZE = 128; // pixels
 
   private final ObjectProperty<Integer> numColumns =
@@ -79,7 +80,7 @@ public class TilePane extends GridPane {
 
   private ColumnConstraints createColumnConstraint() {
     ColumnConstraints constraints = new ColumnConstraints(
-        getTileSize(), getTileSize(), getTileSize(), Priority.NEVER, HPos.LEFT, true);
+        MIN_TILE_SIZE, getTileSize(), MAX_TILE_SIZE, Priority.NEVER, HPos.LEFT, true);
     constraints.minWidthProperty().bind(tileSize);
     constraints.prefWidthProperty().bind(tileSize);
     constraints.maxWidthProperty().bind(tileSize);
@@ -88,7 +89,7 @@ public class TilePane extends GridPane {
 
   private RowConstraints createRowConstraint() {
     RowConstraints constraints = new RowConstraints(
-        getTileSize(), getTileSize(), getTileSize(), Priority.NEVER, VPos.CENTER, true);
+        MIN_TILE_SIZE, getTileSize(), MAX_TILE_SIZE, Priority.NEVER, VPos.CENTER, true);
     constraints.minHeightProperty().bind(tileSize);
     constraints.prefHeightProperty().bind(tileSize);
     constraints.maxHeightProperty().bind(tileSize);
@@ -148,8 +149,8 @@ public class TilePane extends GridPane {
    * Sets the size of the tiles in the grid.
    */
   public final void setTileSize(double tileSize) {
-    checkArgument(tileSize > MIN_TILE_SIZE,
-                  "Tile size must be at least " + MIN_TILE_SIZE + ", but was " + tileSize);
+    checkArgument(tileSize >= MIN_TILE_SIZE && tileSize <= MAX_TILE_SIZE,
+                  "Tile size must be in (" + MIN_TILE_SIZE + ", " + MAX_TILE_SIZE + ") but was " + tileSize);
     this.tileSize.set(tileSize);
   }
 
