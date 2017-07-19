@@ -37,6 +37,7 @@ public class DashboardTabPaneSaverTest extends ApplicationTest {
 
     NetworkTablesJNI.putBoolean("/LiveWindow/~STATUS~/LW Enabled", true);
     NetworkTablesJNI.putBoolean("/LiveWindow/Elevator/enabled", false);
+    NetworkTableUtils.waitForNtcoreEvents();
   }
 
   @After

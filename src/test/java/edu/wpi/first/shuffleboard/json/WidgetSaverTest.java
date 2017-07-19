@@ -28,6 +28,7 @@ public class WidgetSaverTest extends ApplicationTest {
     NetworkTablesJNI.setUpdateRate(0.01);
     AsyncUtils.setAsyncRunner(Runnable::run);
     NetworkTablesJNI.putDouble("/value", 0.5);
+    NetworkTableUtils.waitForNtcoreEvents();
   }
 
   @After
