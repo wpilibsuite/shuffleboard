@@ -137,6 +137,20 @@ public class WidgetPane extends TilePane {
   }
 
   /**
+   * Adds a widget to the tile view in the specified location. The tile will be the specified
+   * size.
+   *
+   * @param widget the widget to add
+   * @param size   the size of the tile used to display the widget
+   */
+  public WidgetTile addWidget(Widget widget, GridPoint location, TileSize size) {
+    WidgetTile tile = new WidgetTile(widget, size);
+    tile.sizeProperty().addListener(__ -> setSize(tile, tile.getSize()));
+    addTile(tile, location, size);
+    return tile;
+  }
+
+  /**
    * @return Returns the expected size of the widget, in tiles.
    */
   public TileSize sizeOfWidget(Widget widget) {

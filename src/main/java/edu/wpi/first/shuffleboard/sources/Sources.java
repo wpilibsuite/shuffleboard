@@ -25,9 +25,8 @@ public final class Sources {
     sources.put(source.getId(), source);
   }
 
-  @SuppressWarnings("unchecked") //NOPMD multiple occurrences of string literal
-  public static <T> DataSource<T> getOrDefault(String uri, DataSource<T> defaultSource) {
-    return sources.getOrDefault(uri, defaultSource);
+  public static DataSource<?> forUri(String uri) {
+    return computeIfAbsent(uri, () -> SourceType.fromUri(uri));
   }
 
   @SuppressWarnings("unchecked") //NOPMD multiple occurrences of string literal

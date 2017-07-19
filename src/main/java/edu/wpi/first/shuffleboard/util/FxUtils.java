@@ -1,6 +1,11 @@
 package edu.wpi.first.shuffleboard.util;
 
 import edu.wpi.first.shuffleboard.sources.DataSource;
+
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
+
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.When;
@@ -10,10 +15,7 @@ import javafx.beans.value.ObservableBooleanValue;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
-
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Function;
+import javafx.scene.paint.Color;
 
 import static java.util.Objects.requireNonNull;
 
@@ -118,6 +120,20 @@ public final class FxUtils {
     SimpleBooleanProperty realCondition = new SimpleBooleanProperty();
     realCondition.bind(condition);
     return Bindings.when(realCondition);
+  }
+
+  /**
+   * Converts a JavaFX color to a hex web string in the format {@code #RRGGBBAA}. The string can be read with
+   * {@link Color#web(String) Color.web} to create a {@code Color} object that the string represents.
+   *
+   * @param color the color to convert to a hex string.
+   */
+  public static String toHexString(Color color) {
+    return String.format("#%02X%02X%02X%02X",
+        (int) (color.getRed() * 255),
+        (int) (color.getGreen() * 255),
+        (int) (color.getBlue() * 255),
+        (int) (color.getOpacity() * 255));
   }
 
 }

@@ -8,6 +8,7 @@
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.control.SeparatorMenuItem?>
 <BorderPane fx:id="root" maxHeight="Infinity" maxWidth="Infinity"
             xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="edu.wpi.first.shuffleboard.MainWindowController">
@@ -15,8 +16,12 @@
     <top>
         <MenuBar>
             <Menu mnemonicParsing="false" text="File">
-                <MenuItem onAction="#close" text="Close"/>
+                <MenuItem onAction="#save" text="Save layout" accelerator="SHORTCUT+S"/>
+                <MenuItem onAction="#saveAs" text="Save as..." accelerator="SHORTCUT+SHIFT+S"/>
+                <MenuItem onAction="#load" text="Load layout" accelerator="SHORTCUT+O"/>
                 <MenuItem onAction="#showPrefs" text="Preferences" accelerator="SHORTCUT+,"/>
+                <SeparatorMenuItem/>
+                <MenuItem onAction="#close" text="Close"/>
             </Menu>
             <Menu text="Recording">
                 <MenuItem text="Start recording" fx:id="recordingMenu" onAction="#toggleRecording" accelerator="SHORTCUT+SHIFT+R"/>
@@ -26,7 +31,7 @@
     </top>
 
     <center>
-        <DashboardTabPane fx:id="dashboard" styleClass="dashboard-tabs"/>
+        <DashboardTabPane fx:id="dashboard"/>
     </center>
 
     <left>

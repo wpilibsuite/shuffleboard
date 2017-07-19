@@ -19,13 +19,13 @@ public class DummySource<T> extends AbstractDataSource<T> {
   public DummySource(DataType dataType, T value) {
     super(dataType);
     this.setActive(true);
-    this.setName("example");
+    this.setName(dataType.getName());
     this.setData(value);
   }
 
   @Override
   public SourceType getType() {
-    return SourceType.NONE;
+    return SourceType.STATIC;
   }
 
   /**
