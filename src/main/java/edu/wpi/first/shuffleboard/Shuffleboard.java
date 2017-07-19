@@ -40,6 +40,8 @@ public class Shuffleboard extends Application {
   @Override
   public void start(Stage primaryStage) throws IOException {
     primaryStage.setScene(new Scene(mainPane));
+    primaryStage.setMinWidth(640);
+    primaryStage.setMinHeight(480);
     primaryStage.show();
   }
 
