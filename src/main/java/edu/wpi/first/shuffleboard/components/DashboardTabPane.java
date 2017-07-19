@@ -1,6 +1,8 @@
 package edu.wpi.first.shuffleboard.components;
 
 import edu.wpi.first.shuffleboard.widget.Widget;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.scene.control.Tab;
@@ -19,15 +21,29 @@ public class DashboardTabPane extends TabPane {
    * Creates a dashboard with one default tab.
    */
   public DashboardTabPane() {
-    super(new DashboardTab("Tab 1"), new AdderTab());
-    getTabs().stream().map(optionalCast(AdderTab.class))
-            .forEach(tab -> tab.ifPresent(addTab -> addTab.setAddTabCallback(this::addNewTab)));
+    this(new DashboardTab("Tab 1"));
   }
 
-  private void addNewTab() {
+  /**
+   * Create a dashboard with the given tabs.
+   */
+  public DashboardTabPane(Tab... tabs) {
+    super(tabs);
+    getStyleClass().add("dashboard-tabs");
+    AdderTab adder = new AdderTab();
+    adder.setAddTabCallback(this::addNewTab);
+    getTabs().add(adder);
+  }
+
+  private DashboardTab addNewTab() {
     int existingTabs = getTabs().size();
-    getTabs().add(existingTabs - 1,
-            new DashboardTab("Tab " + existingTabs));
+    DashboardTab tab = new DashboardTab("Tab " + existingTabs);
+    if (existingTabs > 0) {
+      getTabs().add(existingTabs - 1, tab);
+    } else {
+      getTabs().add(tab);
+    }
+    return tab;
   }
 
   /**
@@ -49,7 +65,7 @@ public class DashboardTabPane extends TabPane {
   }
 
   public static class DashboardTab extends Tab implements HandledTab {
-    private final WidgetPane widgetPane;
+    private final ObjectProperty<WidgetPane> widgetPane = new SimpleObjectProperty<>(this, "widgetPane");
     private final StringProperty title = new SimpleStringProperty(this, "title", "");
 
     /**
@@ -60,12 +76,20 @@ public class DashboardTabPane extends TabPane {
       this.title.set(title);
       setGraphic(new TabHandle(this));
 
-      widgetPane = new WidgetPane();
-      setContent(widgetPane);
+      setWidgetPane(new WidgetPane());
+      this.contentProperty().bind(widgetPane);
     }
 
     public WidgetPane getWidgetPane() {
+      return widgetPane.get();
+    }
+
+    public ObjectProperty<WidgetPane> widgetPaneProperty() {
       return widgetPane;
+    }
+
+    public void setWidgetPane(WidgetPane widgetPane) {
+      this.widgetPane.set(widgetPane);
     }
 
     @Override
@@ -76,6 +100,14 @@ public class DashboardTabPane extends TabPane {
     @Override
     public StringProperty titleProperty() {
       return title;
+    }
+
+    public String getTitle() {
+      return title.get();
+    }
+
+    public void setTitle(String title) {
+      this.title.set(title);
     }
   }
 }

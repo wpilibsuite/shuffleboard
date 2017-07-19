@@ -237,8 +237,27 @@ public class TilePane extends GridPane {
     setRowSpan(node, size.getHeight());
   }
 
+  /**
+   * Adds a node in the first available spot. The node will be wrapped in a pane to make it
+   * easier to add single controls (buttons, labels, etc). This will fail (return {@code null}) iff:
+   * <ul>
+   * <li>{@code node} is {@code null}; or</li>
+   * <li>{@code width} is zero or negative; or</li>
+   * <li>{@code height} is zero or negative; or</li>
+   * <li>there is no available space for a tile with the given dimensions</li>
+   * </ul>
+   *
+   * @param node the node to add
+   * @param size the size of the node to add
+   * @return the node added to the view
+   */
   public Node addTile(Node node, TileSize size) {
-    return addTile(node, size.getWidth(), size.getHeight());
+    GridPoint placement = firstPoint(size.getWidth(), size.getHeight());
+    if (placement == null) {
+      // Nowhere to place the node
+      return null;
+    }
+    return addTile(node, placement, size);
   }
 
   /**
@@ -252,26 +271,17 @@ public class TilePane extends GridPane {
    * </ul>
    *
    * @param node   the node to add
-   * @param width  the width of the tile for the node. Must be >= 1
-   * @param height the height of the tile for the node. Must be >= 1
+   * @param location the location to add the node
+   * @param size the size of the node to add
    * @return the node added to the view
    */
-  public Node addTile(Node node, int width, int height) {
+  public Node addTile(Node node, GridPoint location, TileSize size) {
     if (node == null) {
       // Can't add a null tile
       return null;
     }
-    if (width < 1 || height < 1) {
-      // Illegal dimensions
-      return null;
-    }
-    GridPoint placement = firstPoint(width, height);
-    if (placement == null) {
-      // Nowhere to place the node
-      return null;
-    }
 
-    add(node, placement.col, placement.row, width, height);
+    add(node, location.col, location.row, size.getWidth(), size.getHeight());
     setHalignment(node, HPos.LEFT);
     setValignment(node, VPos.TOP);
     return node;
