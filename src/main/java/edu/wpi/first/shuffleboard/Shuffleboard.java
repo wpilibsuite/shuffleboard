@@ -8,9 +8,11 @@ import java.io.IOException;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
 import javafx.scene.text.Font;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 @SuppressWarnings("JavadocMethod")
@@ -40,6 +42,11 @@ public class Shuffleboard extends Application {
   @Override
   public void start(Stage primaryStage) throws IOException {
     primaryStage.setScene(new Scene(mainPane));
+    Rectangle2D primaryScreenBounds = Screen.getPrimary().getVisualBounds();
+    primaryStage.setX(primaryScreenBounds.getMinX());
+    primaryStage.setY(primaryScreenBounds.getMinY());
+    primaryStage.setWidth(primaryScreenBounds.getWidth());
+    primaryStage.setHeight(primaryScreenBounds.getHeight());
     primaryStage.show();
   }
 
