@@ -206,7 +206,11 @@ public class WidgetPaneController {
     ContextMenu menu = new ContextMenu();
     MenuItem remove = new MenuItem("Remove");
     remove.setOnAction(__ -> pane.removeWidget(tile));
-    menu.getItems().addAll(createChangeMenus(tile), new SeparatorMenuItem(), remove);
+    Menu changeMenus = createChangeMenus(tile);
+    if (changeMenus.getItems().size() > 1) {
+      menu.getItems().addAll(changeMenus, new SeparatorMenuItem());
+    }
+    menu.getItems().add(remove);
     return menu;
   }
 
@@ -215,7 +219,7 @@ public class WidgetPaneController {
    *
    * @param tile the tile for the widget to create the change menus for
    */
-  private MenuItem createChangeMenus(WidgetTile tile) {
+  private Menu createChangeMenus(WidgetTile tile) {
     Widget widget = tile.getWidget();
     Menu changeView = new Menu("Show as...");
     Widgets.widgetNamesForType(widget.getSource().getDataType())
