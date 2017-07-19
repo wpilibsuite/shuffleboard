@@ -228,9 +228,8 @@ public class WidgetPaneController {
              } else {
                // only need to change if it's to another type
                changeItem.setOnAction(__ -> {
-                 pane.removeWidget(tile);
                  Widgets.createWidget(name, widget.getSource())
-                        .ifPresent(pane::addWidget);
+                        .ifPresent(tile::setWidget);
                });
              }
              changeView.getItems().add(changeItem);
