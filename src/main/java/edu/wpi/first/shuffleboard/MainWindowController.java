@@ -129,7 +129,7 @@ public class MainWindowController {
 
   private void makeSourceRowDraggable(TreeTableRow<? extends SourceEntry> row) {
     row.setOnDragDetected(event -> {
-      if (row.isEmpty() || selectedEntry == null) {
+      if (selectedEntry == null) {
         return;
       }
       Dragboard dragboard = row.startDragAndDrop(TransferMode.COPY_OR_MOVE);
