@@ -1,6 +1,8 @@
 package edu.wpi.first.shuffleboard;
 
 import com.google.common.io.Files;
+
+import edu.wpi.first.shuffleboard.components.AdderTab;
 import edu.wpi.first.shuffleboard.components.DashboardTabPane;
 import edu.wpi.first.shuffleboard.components.WidgetGallery;
 import edu.wpi.first.shuffleboard.dnd.DataFormats;
@@ -18,6 +20,7 @@ import edu.wpi.first.shuffleboard.util.Storage;
 import edu.wpi.first.shuffleboard.widget.NetworkTableTreeWidget;
 import edu.wpi.first.shuffleboard.widget.Widget;
 import edu.wpi.first.shuffleboard.widget.Widgets;
+
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
@@ -125,6 +128,16 @@ public class MainWindowController {
     sourcesTab.setContent(networkTables.getView());
 
     widgetGallery.loadWidgets(Widgets.allWidgets());
+
+    root.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
+      if (e.isShortcutDown() && e.getCode().isDigitKey()) {
+        // DIGIT1 is named "1", DIGIT2 is "2", etc.
+        int tabIndex = Integer.valueOf(e.getCode().getName()) - 1;
+        if (dashboard.getTabs().size() >= tabIndex) {
+          dashboard.getSelectionModel().select(tabIndex);
+        }
+      }
+    });
   }
 
   private void makeSourceRowDraggable(TreeTableRow<? extends SourceEntry> row) {
@@ -320,4 +333,19 @@ public class MainWindowController {
     Playback playback = Playback.load(selected.getAbsolutePath());
     playback.start();
   }
+
+  @FXML
+  private void closeCurrentTab() {
+    Tab current = dashboard.getSelectionModel().getSelectedItem();
+    if (!(current instanceof AdderTab)) {
+      dashboard.getTabs().remove(current);
+    }
+  }
+
+  @FXML
+  private void newTab() {
+    DashboardTabPane.DashboardTab newTab = dashboard.addNewTab();
+    dashboard.getSelectionModel().select(newTab);
+  }
+
 }
