@@ -9,7 +9,6 @@ import org.controlsfx.property.editor.PropertyEditor;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javafx.beans.property.Property;
@@ -26,7 +25,7 @@ public class WidgetPropertySheet extends PropertySheet {
    */
   public WidgetPropertySheet(List<Property<?>> properties) {
     super(properties.stream()
-        .map((Function<Property, PropertyItem>) PropertyItem::new)
+        .map(property -> new PropertyItem<>(property))
         .collect(Collectors.toCollection(FXCollections::observableArrayList)));
     setModeSwitcherVisible(false);
     setSearchBoxVisible(false);
@@ -47,9 +46,34 @@ public class WidgetPropertySheet extends PropertySheet {
   private static class PropertyItem<T> implements Item {
 
     private final Property<T> property;
+    private final String name;
 
     PropertyItem(Property<T> property) {
       this.property = property;
+      this.name = camelCaseToSentence(property.getName());
+    }
+
+    /**
+     * Converts a "CamelCase" string to "Sentence case".
+     */
+    private static String camelCaseToSentence(String camel) {
+      if (camel == null) {
+        return null;
+      } else if (camel.isEmpty()) {
+        return "";
+      }
+      final char[] chars = camel.toCharArray();
+      StringBuilder builder = new StringBuilder();
+      builder.append(Character.toUpperCase(chars[0]));
+      for (int i = 1; i < chars.length; i++) {
+        char c = chars[i];
+        if (Character.isUpperCase(c)) {
+          builder.append(' ').append(Character.toLowerCase(c));
+        } else {
+          builder.append(c);
+        }
+      }
+      return builder.toString();
     }
 
     @Override
@@ -64,7 +88,7 @@ public class WidgetPropertySheet extends PropertySheet {
 
     @Override
     public String getName() {
-      return property.getName();
+      return name;
     }
 
     @Override
