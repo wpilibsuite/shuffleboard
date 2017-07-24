@@ -6,6 +6,7 @@ import edu.wpi.first.shuffleboard.components.WidgetTile;
 import edu.wpi.first.shuffleboard.dnd.DataFormats;
 import edu.wpi.first.shuffleboard.dnd.TileDragResizer;
 import edu.wpi.first.shuffleboard.sources.DataSource;
+import edu.wpi.first.shuffleboard.util.FxUtils;
 import edu.wpi.first.shuffleboard.util.GridPoint;
 import edu.wpi.first.shuffleboard.widget.TileSize;
 import edu.wpi.first.shuffleboard.widget.Widget;
@@ -204,8 +205,7 @@ public class WidgetPaneController {
    */
   private ContextMenu createContextMenu(WidgetTile tile) {
     ContextMenu menu = new ContextMenu();
-    MenuItem remove = new MenuItem("Remove");
-    remove.setOnAction(__ -> pane.removeWidget(tile));
+    MenuItem remove = FxUtils.menuItem("Remove", __ -> pane.removeWidget(tile));
     Menu changeMenus = createChangeMenus(tile);
     if (changeMenus.getItems().size() > 1) {
       menu.getItems().addAll(changeMenus, new SeparatorMenuItem());

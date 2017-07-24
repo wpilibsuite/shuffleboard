@@ -141,12 +141,8 @@ public class MainWindowController {
   }
 
   private MenuItem createShowAsMenuItem(String widgetName, DataSource<?> source) {
-    MenuItem menuItem = new MenuItem("Show as: " + widgetName);
-    menuItem.setOnAction(action -> {
-      Widgets.createWidget(widgetName, source)
-          .ifPresent(dashboard::addWidgetToActivePane);
-    });
-    return menuItem;
+    return FxUtils.menuItem("Show as: " + widgetName,
+        e -> Widgets.createWidget(widgetName, source).ifPresent(dashboard::addWidgetToActivePane));
   }
 
   /**
