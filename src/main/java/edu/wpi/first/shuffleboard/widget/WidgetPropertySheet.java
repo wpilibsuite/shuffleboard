@@ -7,7 +7,9 @@ import org.controlsfx.property.editor.AbstractPropertyEditor;
 import org.controlsfx.property.editor.DefaultPropertyEditorFactory;
 import org.controlsfx.property.editor.PropertyEditor;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javafx.beans.property.Property;
@@ -22,9 +24,9 @@ public class WidgetPropertySheet extends PropertySheet {
   /**
    * Creates a new property sheet for the given widget.
    */
-  public WidgetPropertySheet(Widget widget) {
-    super(widget.getProperties().stream()
-        .map(property -> new PropertyItem<>(property))
+  public WidgetPropertySheet(List<Property<?>> properties) {
+    super(properties.stream()
+        .map((Function<Property, PropertyItem>) PropertyItem::new)
         .collect(Collectors.toCollection(FXCollections::observableArrayList)));
     setModeSwitcherVisible(false);
     setSearchBoxVisible(false);

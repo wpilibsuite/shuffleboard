@@ -47,7 +47,7 @@ public class WidgetTileController {
   }
 
   private Node createPrefsController(Widget widget) {
-    WidgetPropertySheet propertySheet = new WidgetPropertySheet(widget);
+    WidgetPropertySheet propertySheet = new WidgetPropertySheet(widget.getProperties());
     propertySheet.setOnDragDetected(tile.getOnDragDetected());
     propertySheet.addEventHandler(MouseEvent.MOUSE_CLICKED, this::changeView);
     return propertySheet;

@@ -5,6 +5,13 @@ import edu.wpi.first.shuffleboard.sources.DataSource;
 import edu.wpi.first.shuffleboard.util.GridPoint;
 import edu.wpi.first.shuffleboard.widget.TileSize;
 import edu.wpi.first.shuffleboard.widget.Widget;
+
+import org.fxmisc.easybind.EasyBind;
+
+import java.io.IOException;
+import java.util.Optional;
+import java.util.function.Predicate;
+
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -15,11 +22,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
-import org.fxmisc.easybind.EasyBind;
-
-import java.io.IOException;
-import java.util.Optional;
-import java.util.function.Predicate;
 
 /**
  * A type of tile pane specifically for widgets.
@@ -79,6 +81,10 @@ public class WidgetPane extends TilePane {
           !isOpen(getHighlightPoint(), size, DragUtils.isDraggedWidget));
     });
 
+    tileSizeProperty().addListener((__, prev, cur) -> resizeTiles());
+    hgapProperty().addListener((__, prev, cur) -> resizeTiles());
+    vgapProperty().addListener((__, prev, cur) -> resizeTiles());
+
     FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("WidgetPane.fxml"));
     fxmlLoader.setRoot(this);
 
@@ -103,6 +109,16 @@ public class WidgetPane extends TilePane {
     return tiles.stream()
                 .filter(predicate)
                 .findFirst();
+  }
+
+  /**
+   * Resizes all tiles in this pane to reflect the current tile size, vgap, and hgap.
+   */
+  private void resizeTiles() {
+    tiles.forEach(tile -> {
+      tile.setMaxWidth(tileSizeToWidth(tile.getSize().getWidth()));
+      tile.setMaxHeight(tileSizeToHeight(tile.getSize().getHeight()));
+    });
   }
 
   /**

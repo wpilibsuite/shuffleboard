@@ -1,14 +1,24 @@
 package edu.wpi.first.shuffleboard.components;
 
+import edu.wpi.first.shuffleboard.util.FxUtils;
 import edu.wpi.first.shuffleboard.widget.Widget;
+import edu.wpi.first.shuffleboard.widget.WidgetPropertySheet;
+
+import org.controlsfx.control.PropertySheet;
+import org.fxmisc.easybind.EasyBind;
+
+import java.util.Arrays;
+import java.util.function.Predicate;
+
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
-
-import java.util.function.Predicate;
 
 import static edu.wpi.first.shuffleboard.util.TypeUtils.optionalCast;
 
@@ -78,6 +88,20 @@ public class DashboardTabPane extends TabPane {
 
       setWidgetPane(new WidgetPane());
       this.contentProperty().bind(widgetPane);
+      setContextMenu(new ContextMenu(FxUtils.menuItem("Preferences", e -> {
+        PropertySheet propertySheet = new WidgetPropertySheet(
+            Arrays.asList(
+                this.title,
+                getWidgetPane().tileSizeProperty(),
+                getWidgetPane().hgapProperty(),
+                getWidgetPane().vgapProperty()
+            ));
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.titleProperty().bind(EasyBind.map(this.title, t -> "Preferences for " + t));
+        dialog.getDialogPane().setContent(propertySheet);
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CLOSE);
+        dialog.showAndWait();
+      })));
     }
 
     public WidgetPane getWidgetPane() {
