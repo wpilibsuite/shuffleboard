@@ -7,6 +7,7 @@ import edu.wpi.first.shuffleboard.dnd.DataFormats;
 import edu.wpi.first.shuffleboard.dnd.TileDragResizer;
 import edu.wpi.first.shuffleboard.sources.DataSource;
 import edu.wpi.first.shuffleboard.util.GridPoint;
+import edu.wpi.first.shuffleboard.util.RoundingMode;
 import edu.wpi.first.shuffleboard.widget.TileSize;
 import edu.wpi.first.shuffleboard.widget.Widget;
 import edu.wpi.first.shuffleboard.widget.Widgets;
@@ -105,11 +106,11 @@ public class WidgetPaneController {
         Region region = (Region) parent;
         Binding<Integer> colBinding =
             EasyBind.combine(region.widthProperty(), pane.hgapProperty(), pane.tileSizeProperty(),
-                (width, gap, size) -> pane.roundWidthToNearestTile(width.doubleValue()))
+                (width, gap, size) -> pane.roundWidthToNearestTile(width.doubleValue(), RoundingMode.DOWN))
                 .map(numCols -> Math.max(1, numCols));
         Binding<Integer> rowBinding =
             EasyBind.combine(region.heightProperty(), pane.vgapProperty(), pane.tileSizeProperty(),
-                (height, gap, size) -> pane.roundHeightToNearestTile(height.doubleValue()))
+                (height, gap, size) -> pane.roundHeightToNearestTile(height.doubleValue(), RoundingMode.DOWN))
                 .map(numRows -> Math.max(numRows, 1));
 
 

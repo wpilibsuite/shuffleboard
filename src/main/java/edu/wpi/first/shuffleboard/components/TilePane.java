@@ -1,6 +1,7 @@
 package edu.wpi.first.shuffleboard.components;
 
 import edu.wpi.first.shuffleboard.util.GridPoint;
+import edu.wpi.first.shuffleboard.util.RoundingMode;
 import edu.wpi.first.shuffleboard.widget.TileSize;
 
 import java.util.function.Predicate;
@@ -191,20 +192,40 @@ public class TilePane extends GridPane {
    * Rounds a tile's width in pixels to the nearest tile size.
    */
   public int roundWidthToNearestTile(double width) {
+    return roundWidthToNearestTile(width, RoundingMode.NEAREST);
+  }
+
+  /**
+   * Rounds a tile's width in pixels to the nearest tile size.
+   *
+   * @param width        the width to round
+   * @param roundingMode the mode to use to round the fractional tile size
+   */
+  public int roundWidthToNearestTile(double width, RoundingMode roundingMode) {
     // w = (n * tile_size) + ((n - 1) * vgap)
     //   = (n * tile_size) + (n * vgap) - vgap
     // w + vgap = (n * tile_size) + (n * vgap)
     //          = n * (tile_size + vgap)
     // n = (w + vgap) / (tile_size + vgap) QED
     // round n to nearest integer
-    return (int) Math.max(1, Math.round((width + getVgap()) / (getTileSize() + getVgap())));
+    return Math.max(1, roundingMode.round((width + getHgap()) / (getTileSize() + getHgap())));
   }
 
   /**
    * Rounds a tile's height in pixels to the nearest tile size.
    */
   public int roundHeightToNearestTile(double height) {
-    return (int) Math.max(1, Math.round((height + getHgap()) / (getTileSize() + getVgap())));
+    return roundHeightToNearestTile(height, RoundingMode.NEAREST);
+  }
+
+  /**
+   * Rounds a tile's height in pixels to the nearest tile size.
+   *
+   * @param height       the height to round
+   * @param roundingMode the mode to use to round the fractional tile size
+   */
+  public int roundHeightToNearestTile(double height, RoundingMode roundingMode) {
+    return Math.max(1, roundingMode.round((height + getVgap()) / (getTileSize() + getVgap())));
   }
 
   /**
