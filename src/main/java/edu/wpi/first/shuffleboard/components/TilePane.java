@@ -355,7 +355,7 @@ public class TilePane extends GridPane {
    * @param ignore     the nodes to ignore when determining collisions
    */
   public boolean isOpen(int col, int row, int tileWidth, int tileHeight, Predicate<Node> ignore) {
-    if (col + tileWidth > getNumColumns() || row + tileHeight > getNumRows()) {
+    if (col < 0 || col + tileWidth > getNumColumns() || row < 0 || row + tileHeight > getNumRows()) {
       return false;
     }
 
@@ -387,6 +387,10 @@ public class TilePane extends GridPane {
     }
 
     return true;
+  }
+
+  public TileLayout getTileLayout(WidgetTile tile) {
+    return new TileLayout(new GridPoint(getColumnIndex(tile), getRowIndex(tile)), tile.getSize());
   }
 
 }

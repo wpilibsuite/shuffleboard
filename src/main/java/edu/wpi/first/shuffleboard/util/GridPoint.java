@@ -1,6 +1,7 @@
 package edu.wpi.first.shuffleboard.util;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -44,4 +45,22 @@ public class GridPoint implements Serializable {
     return String.format("GridPoint(%d, %d)", col, row);
   }
 
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (obj == null || getClass() != obj.getClass()) {
+      return false;
+    }
+
+    GridPoint that = (GridPoint) obj;
+    return this.col == that.col
+        && this.row == that.row;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(col, row);
+  }
 }
