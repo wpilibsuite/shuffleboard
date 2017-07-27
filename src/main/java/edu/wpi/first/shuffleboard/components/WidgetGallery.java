@@ -8,6 +8,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
@@ -35,10 +36,10 @@ public class WidgetGallery extends TilePane {
    */
   public void loadWidgets(Collection<WidgetType> widgets) {
     widgets.stream().map(WidgetType::get)
-            .peek(widget -> {
+            .peek(widget ->
               DummySource.forTypes(widget.getDataTypes())
-                         .ifPresent(widget::setSource);
-            })
+                         .ifPresent(widget::setSource)
+            )
             .forEach(this::addWidget);
   }
 
@@ -61,8 +62,10 @@ public class WidgetGallery extends TilePane {
           dragTarget.getStyleClass().add("tile");
           dragTarget.getChildren().add(newWidget.getView());
           dragTarget.getChildren().add(new Pane());
+          dragTarget.setMaxSize(128, 128);
 
           this.getChildren().add(dragTarget);
+          setVgrow(dragTarget, Priority.ALWAYS);
           this.getChildren().add(new Label(newWidget.getName()));
         }
       });
