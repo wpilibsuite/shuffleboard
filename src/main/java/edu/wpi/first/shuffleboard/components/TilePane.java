@@ -355,38 +355,45 @@ public class TilePane extends GridPane {
    * @param ignore     the nodes to ignore when determining collisions
    */
   public boolean isOpen(int col, int row, int tileWidth, int tileHeight, Predicate<Node> ignore) {
-    if (col < 0 || col + tileWidth > getNumColumns() || row < 0 || row + tileHeight > getNumRows()) {
+    if (col < 0 || col + tileWidth > getNumColumns()
+        || row < 0 || row + tileHeight > getNumRows()) {
       return false;
     }
+    return !isOverlapping(col, row, tileWidth, tileHeight, ignore);
+  }
 
-    int x;
-    int y;
-    int width;
-    int height;
-
-    for (Node tile : getChildren()) {
-      if (ignore.test(tile)) {
+  /**
+   * Checks if a tile with the given width and height would overlap a pre-existing tile at the point {@code (col, row)},
+   * ignoring some nodes when calculating collisions. Note that this method does <i>not</i> perform bounds checking;
+   * use {@link #isOpen(int, int, int, int, Predicate) isOpen} to check if a widget can be placed at that point.
+   *
+   * @param col        the column index of the point to check
+   * @param row        the row index of the point to check
+   * @param tileWidth  the width of the tile
+   * @param tileHeight the height of the tile
+   * @param ignore     a predicate to use to ignore nodes when calculating collisions
+   */
+  public boolean isOverlapping(int col, int row, int tileWidth, int tileHeight, Predicate<Node> ignore) {
+    for (Node child : getChildren()) {
+      if (ignore.test(child)) {
         continue;
       }
-      try {
-        x = GridPane.getColumnIndex(tile);
-        y = GridPane.getRowIndex(tile);
-        width = GridPane.getColumnSpan(tile);
-        height = GridPane.getRowSpan(tile);
-      } catch (NullPointerException e) {
-        // Not a real child (Geppetto pls)
-        continue;
+      // All "real" children have a column index, row index, and column and row spans
+      // Other children (like the grid lines) don't have these properties and will throw null pointers
+      // when trying to access these properties
+      if (GridPane.getColumnIndex(child) != null) {
+        int x = GridPane.getColumnIndex(child);
+        int y = GridPane.getRowIndex(child);
+        int width = GridPane.getColumnSpan(child);
+        int height = GridPane.getRowSpan(child);
+        if (x + width > col && y + height > row
+            && x - tileWidth < col && y - tileHeight < row) {
+          // There's an intersection
+          return true;
+        }
       }
-
-      if (x + width > col && y + height > row
-          && x < col + tileWidth && y < row + tileHeight) {
-        // Check intersection
-        return false;
-      }
-
     }
-
-    return true;
+    return false;
   }
 
   public TileLayout getTileLayout(WidgetTile tile) {

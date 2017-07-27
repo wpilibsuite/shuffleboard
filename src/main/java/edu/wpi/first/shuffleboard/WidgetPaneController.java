@@ -15,7 +15,6 @@ import edu.wpi.first.shuffleboard.widget.Widgets;
 
 import org.fxmisc.easybind.EasyBind;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -305,22 +304,22 @@ public class WidgetPaneController {
   }
 
   private void moveTileLeft(WidgetTile tile, int count) {
-    List<Optional<Runnable>> runs = new ArrayList<>();
     for (int i = 0; i < count; i++) {
-      runs.add(moveTileLeft(tile));
-    }
-    if (runs.stream().allMatch(Optional::isPresent)) {
-      runs.stream()
-          .map(Optional::get)
-          .forEach(Runnable::run);
+      Optional<Runnable> move = moveTileLeft(tile);
+      if (move.isPresent()) {
+        move.get().run();
+      } else {
+        // Can't move any further, bail
+        break;
+      }
     }
   }
 
   private Optional<Runnable> moveTileLeft(WidgetTile tile) {
     TileLayout layout = pane.getTileLayout(tile);
     final int previousColumn = layout.origin.col - 1;
-    if (pane.isOpen(previousColumn, layout.origin.row,
-        layout.size.getWidth(), layout.size.getHeight(), n -> tile == n)) {
+    if (!pane.isOverlapping(previousColumn, layout.origin.row,
+        layout.size.getWidth(), layout.size.getHeight(), n -> tile == n) && previousColumn >= 0) {
       // Great, we can move it
       return Optional.of(() -> GridPane.setColumnIndex(tile, previousColumn));
     } else if (layout.origin.col > 0) {
@@ -350,22 +349,22 @@ public class WidgetPaneController {
   }
 
   private void moveTileUp(WidgetTile tile, int count) {
-    List<Optional<Runnable>> runs = new ArrayList<>();
     for (int i = 0; i < count; i++) {
-      runs.add(moveTileUp(tile));
-    }
-    if (runs.stream().allMatch(Optional::isPresent)) {
-      runs.stream()
-          .map(Optional::get)
-          .forEach(Runnable::run);
+      Optional<Runnable> move = moveTileUp(tile);
+      if (move.isPresent()) {
+        move.get().run();
+      } else {
+        // Can't move any further, bail
+        break;
+      }
     }
   }
 
   private Optional<Runnable> moveTileUp(WidgetTile tile) {
     TileLayout layout = pane.getTileLayout(tile);
     final int previousRow = layout.origin.row - 1;
-    if (pane.isOpen(layout.origin.col, previousRow,
-        layout.size.getWidth(), layout.size.getHeight(), n -> tile == n)) {
+    if (!pane.isOverlapping(layout.origin.col, previousRow,
+        layout.size.getWidth(), layout.size.getHeight(), n -> tile == n) && previousRow >= 0) {
       // Great, we can move it
       return Optional.of(() -> GridPane.setRowIndex(tile, previousRow));
     } else if (layout.origin.row > 0) {
