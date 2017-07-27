@@ -11,6 +11,9 @@ import edu.wpi.first.shuffleboard.widget.TileSize;
 import edu.wpi.first.shuffleboard.widget.Widget;
 import edu.wpi.first.shuffleboard.widget.Widgets;
 
+import java.util.List;
+import java.util.Optional;
+
 import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -44,6 +47,7 @@ public class WidgetPaneController {
       pane.setGridLinesVisible(true);
       GridPoint point = pane.pointAt(event.getX(), event.getY());
       boolean isWidget = event.getDragboard().hasContent(DataFormats.widgetTile);
+      boolean isSource = event.getDragboard().hasContent(DataFormats.source);
 
       // preview the location of the widget if one is being dragged
       if (isWidget) {
@@ -52,6 +56,18 @@ public class WidgetPaneController {
         DataFormats.WidgetData data = (DataFormats.WidgetData) event.getDragboard().getContent(DataFormats.widgetTile);
         pane.tileMatching(tile -> tile.getId().equals(data.getId()))
             .ifPresent(tile -> previewWidget(tile, point.subtract(data.getDragPoint())));
+      } else if (isSource) {
+        SourceEntry entry = (SourceEntry) event.getDragboard().getContent(DataFormats.source);
+        DataSource source = entry.get();
+        List<String> names = Widgets.widgetNamesForSource(source);
+        Optional<DummySource> dummySource = DummySource.forTypes(source.getDataType());
+        if (!names.isEmpty() && dummySource.isPresent()) {
+          Widgets.createWidget(names.get(0), (DataSource<?>) dummySource.get()).ifPresent(w -> {
+            pane.setHighlight(true);
+            pane.setHighlightPoint(point);
+            pane.setHighlightSize(pane.sizeOfWidget(w));
+          });
+        }
       }
 
       // setting grid lines visible puts them above every child, so move every widget view
@@ -148,6 +164,7 @@ public class WidgetPaneController {
            .stream()
            .findAny()
            .flatMap(name -> Widgets.createWidget(name, source))
+           .filter(widget -> pane.isOpen(point, pane.sizeOfWidget(widget), n -> widget == n))
            .map(pane::addWidget);
     pane.widgetForSource(source)
         .ifPresent(node -> pane.moveNode(node, point));
