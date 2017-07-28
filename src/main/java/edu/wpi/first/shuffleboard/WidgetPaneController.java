@@ -165,9 +165,8 @@ public class WidgetPaneController {
            .findAny()
            .flatMap(name -> Widgets.createWidget(name, source))
            .filter(widget -> pane.isOpen(point, pane.sizeOfWidget(widget), n -> widget == n))
-           .map(pane::addWidget);
-    pane.widgetForSource(source)
-        .ifPresent(node -> pane.moveNode(node, point));
+           .map(pane::addWidget)
+           .ifPresent(tile -> pane.moveNode(tile, point));
   }
 
   /**
