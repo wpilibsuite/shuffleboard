@@ -8,11 +8,8 @@ coverage:
   range: "70...100"
 
   status:
-    project: no
+    project: yes
     patch: yes
     changes: no
 
-comment:
-  layout: "diff"
-  behavior: new
-  require_changes: yes
+comment: off
