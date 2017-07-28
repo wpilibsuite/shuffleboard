@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/wpilibsuite/shuffleboard.svg?token=fZbCZqHZXBEsYFUSBifL&branch=master)](https://travis-ci.com/wpilibsuite/shuffleboard)
+[![Build Status](https://travis-ci.org/wpilibsuite/shuffleboard.svg?branch=master)](https://travis-ci.org/wpilibsuite/shuffleboard)
 
 # shuffleboard
 
