@@ -135,7 +135,8 @@ public class MainWindowController {
          * Numpad digits have a name of "Numpad n"; where n is the number. We need to remove the
          * leading "Numpad " to parse the number.  Digit keys do not have this issue.
          */
-        dashboard.selectTab(Integer.valueOf(e.getCode().getName().replace("Numpad ", "")) - 1);
+        int digitPressed = Integer.valueOf(e.getCode().getName().replace("Numpad ", ""));
+        dashboard.selectTab(digitPressed - 1);
       }
     });
   }
