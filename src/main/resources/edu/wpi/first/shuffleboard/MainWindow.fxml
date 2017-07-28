@@ -28,6 +28,10 @@
                 <MenuItem text="Start recording" fx:id="recordingMenu" onAction="#toggleRecording" accelerator="SHORTCUT+SHIFT+R"/>
                 <MenuItem text="Load playback..." onAction="#loadPlayback" accelerator="SHORTCUT+SHIFT+P"/>
             </Menu>
+            <Menu text="Tab">
+                <MenuItem text="New tab" onAction="#newTab" accelerator="SHORTCUT+T"/>
+                <MenuItem text="Close current tab" onAction="#closeCurrentTab" accelerator="SHORTCUT+W"/>
+            </Menu>
         </MenuBar>
     </top>
 
