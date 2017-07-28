@@ -53,6 +53,25 @@ public class DashboardTabPane extends TabPane {
   }
 
   /**
+   * Selects the tab with the given index. If the index is negative or larger than the highest index, no tab is
+   * selected.
+   *
+   * @param tabIndex the index of the tab to select
+   */
+  public void selectTab(int tabIndex) {
+    if (tabIndex >= 0 && tabIndex < getTabs().size() && getTabs().get(tabIndex) instanceof DashboardTab) {
+      getSelectionModel().select(tabIndex);
+    }
+  }
+
+  /**
+   * Closes the currently selected tab.
+   */
+  public void closeCurrentTab() {
+    getTabs().remove(getSelectionModel().getSelectedItem());
+  }
+
+  /**
    * Add a widget to the active tab pane.
    * Should only be done by the result of specific user interaction.
    */

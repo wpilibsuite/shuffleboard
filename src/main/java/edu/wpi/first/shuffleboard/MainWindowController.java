@@ -2,7 +2,6 @@ package edu.wpi.first.shuffleboard;
 
 import com.google.common.io.Files;
 
-import edu.wpi.first.shuffleboard.components.AdderTab;
 import edu.wpi.first.shuffleboard.components.DashboardTabPane;
 import edu.wpi.first.shuffleboard.components.WidgetGallery;
 import edu.wpi.first.shuffleboard.dnd.DataFormats;
@@ -20,6 +19,18 @@ import edu.wpi.first.shuffleboard.util.Storage;
 import edu.wpi.first.shuffleboard.widget.NetworkTableTreeWidget;
 import edu.wpi.first.shuffleboard.widget.Widget;
 import edu.wpi.first.shuffleboard.widget.Widgets;
+
+import org.controlsfx.control.PropertySheet;
+import org.fxmisc.easybind.EasyBind;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
+import java.nio.charset.Charset;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
@@ -40,17 +51,6 @@ import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import org.controlsfx.control.PropertySheet;
-import org.fxmisc.easybind.EasyBind;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
-import java.nio.charset.Charset;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static edu.wpi.first.shuffleboard.util.TypeUtils.optionalCast;
 
@@ -131,11 +131,15 @@ public class MainWindowController {
 
     root.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
       if (e.isShortcutDown() && e.getCode().isDigitKey()) {
-        // DIGIT1 is named "1", DIGIT2 is "2", etc.
-        int tabIndex = Integer.valueOf(e.getCode().getName()) - 1;
-        if (dashboard.getTabs().size() >= tabIndex) {
-          dashboard.getSelectionModel().select(tabIndex);
+        int tabIndex;
+        if (e.getCode().getName().contains("Numpad")) {
+          // remove leading "Numpad " to parse the number
+          tabIndex = Integer.valueOf(e.getCode().getName().substring(7)) - 1;
+        } else {
+          // DIGIT1 is named "1", DIGIT2 is "2", etc.
+          tabIndex = Integer.valueOf(e.getCode().getName()) - 1;
         }
+        dashboard.selectTab(tabIndex);
       }
     });
   }
@@ -336,10 +340,7 @@ public class MainWindowController {
 
   @FXML
   private void closeCurrentTab() {
-    Tab current = dashboard.getSelectionModel().getSelectedItem();
-    if (!(current instanceof AdderTab)) {
-      dashboard.getTabs().remove(current);
-    }
+    dashboard.closeCurrentTab();
   }
 
   @FXML
