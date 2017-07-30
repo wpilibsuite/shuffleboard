@@ -1,6 +1,7 @@
 package edu.wpi.first.shuffleboard;
 
 import com.google.common.io.Files;
+
 import edu.wpi.first.shuffleboard.components.DashboardTabPane;
 import edu.wpi.first.shuffleboard.components.WidgetGallery;
 import edu.wpi.first.shuffleboard.dnd.DataFormats;
@@ -18,6 +19,19 @@ import edu.wpi.first.shuffleboard.util.Storage;
 import edu.wpi.first.shuffleboard.widget.NetworkTableTreeWidget;
 import edu.wpi.first.shuffleboard.widget.Widget;
 import edu.wpi.first.shuffleboard.widget.Widgets;
+
+import org.controlsfx.control.PropertySheet;
+import org.fxmisc.easybind.EasyBind;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
+import java.nio.charset.Charset;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
@@ -37,17 +51,6 @@ import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import org.controlsfx.control.PropertySheet;
-import org.fxmisc.easybind.EasyBind;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
-import java.nio.charset.Charset;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static edu.wpi.first.shuffleboard.util.TypeUtils.optionalCast;
 
@@ -125,6 +128,17 @@ public class MainWindowController {
     sourcesTab.setContent(networkTables.getView());
 
     widgetGallery.loadWidgets(Widgets.allWidgets());
+
+    root.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
+      if (e.isShortcutDown() && e.getCode().isDigitKey()) {
+        /*
+         * Numpad digits have a name of "Numpad n"; where n is the number. We need to remove the
+         * leading "Numpad " to parse the number.  Digit keys do not have this issue.
+         */
+        int digitPressed = Integer.valueOf(e.getCode().getName().replace("Numpad ", ""));
+        dashboard.selectTab(digitPressed - 1);
+      }
+    });
   }
 
   private void makeSourceRowDraggable(TreeTableRow<? extends SourceEntry> row) {
@@ -320,4 +334,16 @@ public class MainWindowController {
     Playback playback = Playback.load(selected.getAbsolutePath());
     playback.start();
   }
+
+  @FXML
+  private void closeCurrentTab() {
+    dashboard.closeCurrentTab();
+  }
+
+  @FXML
+  private void newTab() {
+    DashboardTabPane.DashboardTab newTab = dashboard.addNewTab();
+    dashboard.getSelectionModel().select(newTab);
+  }
+
 }
