@@ -43,8 +43,8 @@ public class Shuffleboard extends Application {
     primaryStage.setScene(new Scene(mainPane));
     primaryStage.setMinWidth(640);
     primaryStage.setMinHeight(480);
-    primaryStage.setWidth(Screen.getPrimary().getBounds().getWidth());
-    primaryStage.setHeight(Screen.getPrimary().getBounds().getHeight());
+    primaryStage.setWidth(Screen.getPrimary().getVisualBounds().getWidth());
+    primaryStage.setHeight(Screen.getPrimary().getVisualBounds().getHeight());
     primaryStage.show();
   }
 
