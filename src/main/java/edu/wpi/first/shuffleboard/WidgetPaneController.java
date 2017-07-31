@@ -153,7 +153,7 @@ public class WidgetPaneController {
               final TileLayout layout = pane.getTileLayout(tile);
               return layout.origin.col + layout.size.getWidth() > newCount;
             })
-            .forEach(tile -> moveTileLeft(tile, oldCount - newCount));
+            .forEach(tile -> moveTile(tile, oldCount - newCount, true));
       }
     });
     pane.numRowsProperty().addListener((__, oldCount, newCount) -> {
@@ -167,7 +167,7 @@ public class WidgetPaneController {
               final TileLayout layout = pane.getTileLayout(tile);
               return layout.origin.row + layout.size.getHeight() > newCount;
             })
-            .forEach(tile -> moveTileUp(tile, oldCount - newCount));
+            .forEach(tile -> moveTile(tile, oldCount - newCount, false));
       }
     });
   }
@@ -316,9 +316,9 @@ public class WidgetPaneController {
     return changeView;
   }
 
-  private void moveTileLeft(WidgetTile tile, int count) {
+  private void moveTile(WidgetTile tile, int count, boolean left) {
     for (int i = 0; i < count; i++) {
-      Optional<Runnable> move = moveTileLeft(tile);
+      Optional<Runnable> move = left ? moveTileLeft(tile) : moveTileUp(tile);
       if (move.isPresent()) {
         move.get().run();
       } else {
@@ -336,40 +336,26 @@ public class WidgetPaneController {
       // Great, we can move it
       return Optional.of(() -> GridPane.setColumnIndex(tile, previousColumn));
     } else if (layout.origin.col > 0) {
-      // Check to see if we can move any tiles to the left, if possible
-      List<Runnable> runs = IntStream.range(layout.origin.row, layout.origin.row + layout.size.getHeight())
+      // Check to see if we can move or shrink any tiles to the left, if possible
+      List<Optional<Runnable>> runs = IntStream.range(layout.origin.row, layout.origin.row + layout.size.getHeight())
           .mapToObj(row -> pane.tileAt(previousColumn, row))
           .filter(Optional::isPresent) // guaranteed to be at least one tile
           .map(Optional::get)
           .distinct() // need to make sure we have no repeats, or n-row tiles will get moved n times
           .filter(t -> tile != t)
           .map(this::moveTileLeft) // recursion here
-          .filter(Optional::isPresent)
-          .map(Optional::get)
           .collect(Collectors.toList());
-      if (runs.isEmpty()) {
-        // Can't move or shrink any tiles to the left of this one to make it move
-        return tryShrinkTile(tile, t -> t.getSize().getWidth(), t -> new TileSize(t.getWidth() - 1, t.getHeight()));
-      } else {
+      if (runs.stream().allMatch(Optional::isPresent)) {
         return Optional.of(() -> {
-          runs.forEach(Runnable::run);
+          runs.forEach(o -> o.get().run());
           GridPane.setColumnIndex(tile, previousColumn);
         });
+      } else {
+        // Can't move or shrink any tiles to the left of this one to make it move
+        return tryShrinkTile(tile, t -> t.getSize().getWidth(), t -> new TileSize(t.getWidth() - 1, t.getHeight()));
       }
     } else {
       return tryShrinkTile(tile, t -> t.getSize().getWidth(), t -> new TileSize(t.getWidth() - 1, t.getHeight()));
-    }
-  }
-
-  private void moveTileUp(WidgetTile tile, int count) {
-    for (int i = 0; i < count; i++) {
-      Optional<Runnable> move = moveTileUp(tile);
-      if (move.isPresent()) {
-        move.get().run();
-      } else {
-        // Can't move any further, bail
-        break;
-      }
     }
   }
 
@@ -381,25 +367,23 @@ public class WidgetPaneController {
       // Great, we can move it
       return Optional.of(() -> GridPane.setRowIndex(tile, previousRow));
     } else if (layout.origin.row > 0) {
-      // Check to see if we can move any tiles up, if possible
-      List<Runnable> runs = IntStream.range(layout.origin.col, layout.origin.col + layout.size.getWidth())
+      // Check to see if we can move or shrink any tiles up, if possible
+      List<Optional<Runnable>> runs = IntStream.range(layout.origin.col, layout.origin.col + layout.size.getWidth())
           .mapToObj(col -> pane.tileAt(col, previousRow))
           .filter(Optional::isPresent) // guaranteed to be at least one tile
           .map(Optional::get)
           .distinct() // need to make sure we have no repeats, or n-row tiles will get moved n times
           .filter(t -> tile != t)
           .map(this::moveTileUp) // recursion here
-          .filter(Optional::isPresent)
-          .map(Optional::get)
           .collect(Collectors.toList());
-      if (runs.isEmpty()) {
-        // Can't move or shrink any tiles to the left of this one to make it move
-        return tryShrinkTile(tile, t -> t.getSize().getHeight(), t -> new TileSize(t.getWidth(), t.getHeight() - 1));
-      } else {
+      if (runs.stream().allMatch(Optional::isPresent)) {
         return Optional.of(() -> {
-          runs.forEach(Runnable::run);
+          runs.forEach(o -> o.get().run());
           GridPane.setRowIndex(tile, previousRow);
         });
+      } else {
+        // Can't move or shrink any tiles above this one to make it move
+        return tryShrinkTile(tile, t -> t.getSize().getHeight(), t -> new TileSize(t.getWidth(), t.getHeight() - 1));
       }
     } else {
       return tryShrinkTile(tile, t -> t.getSize().getHeight(), t -> new TileSize(t.getWidth(), t.getHeight() - 1));
