@@ -1,3 +1,4 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import edu.wpi.first.wpilib.versioning.ReleaseType
 import groovy.util.Node
 import groovy.util.XmlParser
@@ -17,12 +18,11 @@ plugins {
     idea
     checkstyle
     `maven-publish`
+    pmd
+    findbugs
+    jacoco
     id("edu.wpi.first.wpilib.versioning.WPILibVersioningPlugin") version "1.6"
-}
-apply {
-    plugin("pmd")
-    plugin("findbugs")
-    plugin("jacoco")
+    id("com.github.johnrengelman.shadow") version "2.0.1"
 }
 
 repositories {
@@ -123,8 +123,10 @@ tasks.withType<Test> {
 
 }
 
+val theMainClassName = "edu.wpi.first.shuffleboard.Shuffleboard"
+
 application {
-    mainClassName = "edu.wpi.first.shuffleboard.Shuffleboard"
+    mainClassName = theMainClassName
 }
 
 val sourceJar = task<Jar>("sourceJar") {
@@ -134,8 +136,18 @@ val sourceJar = task<Jar>("sourceJar") {
 }
 
 tasks.withType<Jar> {
-    if (WPILibVersion.version != "") {
-        version = WPILibVersion.version
+    getWPILibVersion()?.let { version = it }
+    manifest {
+        attributes(mapOf(
+            "Implementation-Version" to getWPILibVersion(),
+            "Main-Class" to theMainClassName
+        ).filterValues { it != null })
+    }
+}
+
+tasks {
+    "shadowJar"(ShadowJar::class) {
+        classifier = null
     }
 }
 
@@ -144,9 +156,8 @@ publishing {
         create<MavenPublication>("shadow") {
             groupId = "edu.wpi.first.shuffleboard"
             artifactId = "Shuffleboard"
-            if (WPILibVersion.version != "") {
-                version = WPILibVersion.version
-            }
+            getWPILibVersion()?.let { version = it }
+            shadow.component(this)
             from(components["java"])
             artifact(sourceJar)
         }
@@ -161,61 +172,12 @@ if (!hasProperty("releaseType")) {
     }
 }
 
+/**
+ * @return [edu.wpi.first.wpilib.versioning.WPILibVersioningPluginExtension.version] value or null
+ * if that value is the empty string.
+ */
+fun getWPILibVersion(): String? = if (WPILibVersion.version != "") WPILibVersion.version else null
+
 task<Wrapper>("wrapper") {
     gradleVersion = "4.0.2"
 }
-
-/**
- * Retrieves the [java][org.gradle.api.plugins.JavaPluginConvention] project convention.
- */
-val Project.`java`: org.gradle.api.plugins.JavaPluginConvention get() =
-convention.getPluginByName<org.gradle.api.plugins.JavaPluginConvention>("java")
-
-
-/**
- * Configures the [checkstyle][org.gradle.api.plugins.quality.CheckstyleExtension] project extension.
- */
-fun Project.`checkstyle`(configure: org.gradle.api.plugins.quality.CheckstyleExtension.() -> Unit): Unit =
-    extensions.configure("checkstyle", configure)
-
-/**
- * Configures the [pmd][org.gradle.api.plugins.quality.PmdExtension] project extension.
- */
-fun Project.`pmd`(configure: org.gradle.api.plugins.quality.PmdExtension.() -> Unit): Unit =
-    extensions.configure("pmd", configure)
-
-/**
- * Configures the [findbugs][org.gradle.api.plugins.quality.FindBugsExtension] project extension.
- */
-fun Project.`findbugs`(configure: org.gradle.api.plugins.quality.FindBugsExtension.() -> Unit): Unit =
-    extensions.configure("findbugs", configure)
-
-/**
- * Retrieves the [application][org.gradle.api.plugins.ApplicationPluginConvention] project convention.
- */
-val Project.`application`: org.gradle.api.plugins.ApplicationPluginConvention get() =
-convention.getPluginByName<org.gradle.api.plugins.ApplicationPluginConvention>("application")
-
-/**
- * Configures the [application][org.gradle.api.plugins.ApplicationPluginConvention] project convention.
- */
-fun Project.`application`(configure: org.gradle.api.plugins.ApplicationPluginConvention.() -> Unit): Unit =
-    configure(`application`)
-
-/**
- * Configures the [publishing][org.gradle.api.publish.PublishingExtension] project extension.
- */
-fun Project.`publishing`(configure: org.gradle.api.publish.PublishingExtension.() -> Unit): Unit =
-    extensions.configure("publishing", configure)
-
-/**
- * Retrieves the [WPILibVersion][edu.wpi.first.wpilib.versioning.WPILibVersioningPluginExtension] project extension.
- */
-val Project.`WPILibVersion`: edu.wpi.first.wpilib.versioning.WPILibVersioningPluginExtension get() =
-extensions.getByName("WPILibVersion") as edu.wpi.first.wpilib.versioning.WPILibVersioningPluginExtension
-
-/**
- * Configures the [WPILibVersion][edu.wpi.first.wpilib.versioning.WPILibVersioningPluginExtension] project extension.
- */
-fun Project.`WPILibVersion`(configure: edu.wpi.first.wpilib.versioning.WPILibVersioningPluginExtension.() -> Unit): Unit =
-    extensions.configure("WPILibVersion", configure)
