@@ -33,14 +33,15 @@ dependencies {
     compile(group = "com.google.guava", name = "guava", version = "21.0")
     compile(group = "org.fxmisc.easybind", name = "easybind", version = "1.0.3")
     compile(group = "org.controlsfx", name = "controlsfx", version = "8.40.11")
-    compile("edu.wpi.first.wpilib.networktables.java:NetworkTables:+:desktop")
+    compile(group = "edu.wpi.first.wpilib.networktables.java", name = "NetworkTables", version = "+", classifier = "desktop")
     compile(group = "com.google.code.gson", name = "gson", version = "2.8.1")
 
     testCompile(group = "com.google.guava", name = "guava-testlib", version = "21.0")
-    testCompile("junit:junit:+")
-    testCompile("org.testfx:testfx-core:4.0.+")
-    testCompile("org.testfx:testfx-junit:4.0.+")
-    testRuntime(group = "org.testfx", name = "openjfx-monocle", version = "8u76-b04")
+    testCompile(group = "junit", name = "junit", version = "+")
+    fun testFx(name: String, version: String = "4.0.+") = create(group = "org.testfx", name = name, version = version)
+    testCompile(testFx(name = "testfx-core"))
+    testCompile(testFx(name = "testfx-junit"))
+    testRuntime(testFx(name = "openjfx-monocle", version = "8u76-b04"))
 }
 
 checkstyle {
