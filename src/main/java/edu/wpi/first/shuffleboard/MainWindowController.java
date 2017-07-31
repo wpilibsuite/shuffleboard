@@ -131,15 +131,12 @@ public class MainWindowController {
 
     root.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
       if (e.isShortcutDown() && e.getCode().isDigitKey()) {
-        int tabIndex;
-        if (e.getCode().getName().contains("Numpad")) {
-          // remove leading "Numpad " to parse the number
-          tabIndex = Integer.valueOf(e.getCode().getName().substring(7)) - 1;
-        } else {
-          // DIGIT1 is named "1", DIGIT2 is "2", etc.
-          tabIndex = Integer.valueOf(e.getCode().getName()) - 1;
-        }
-        dashboard.selectTab(tabIndex);
+        /*
+         * Numpad digits have a name of "Numpad n"; where n is the number. We need to remove the
+         * leading "Numpad " to parse the number.  Digit keys do not have this issue.
+         */
+        int digitPressed = Integer.valueOf(e.getCode().getName().replace("Numpad ", ""));
+        dashboard.selectTab(digitPressed - 1);
       }
     });
   }
