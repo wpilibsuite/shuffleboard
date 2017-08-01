@@ -11,6 +11,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
 import javafx.scene.text.Font;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 @SuppressWarnings("JavadocMethod")
@@ -40,6 +41,10 @@ public class Shuffleboard extends Application {
   @Override
   public void start(Stage primaryStage) throws IOException {
     primaryStage.setScene(new Scene(mainPane));
+    primaryStage.setMinWidth(640);
+    primaryStage.setMinHeight(480);
+    primaryStage.setWidth(Screen.getPrimary().getVisualBounds().getWidth());
+    primaryStage.setHeight(Screen.getPrimary().getVisualBounds().getHeight());
     primaryStage.show();
   }
 

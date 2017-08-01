@@ -1,19 +1,27 @@
 package edu.wpi.first.shuffleboard;
 
 
+import edu.wpi.first.shuffleboard.components.TileLayout;
 import edu.wpi.first.shuffleboard.components.WidgetPane;
 import edu.wpi.first.shuffleboard.components.WidgetTile;
 import edu.wpi.first.shuffleboard.dnd.DataFormats;
 import edu.wpi.first.shuffleboard.dnd.TileDragResizer;
 import edu.wpi.first.shuffleboard.sources.DataSource;
 import edu.wpi.first.shuffleboard.util.GridPoint;
+import edu.wpi.first.shuffleboard.util.RoundingMode;
 import edu.wpi.first.shuffleboard.widget.TileSize;
 import edu.wpi.first.shuffleboard.widget.Widget;
 import edu.wpi.first.shuffleboard.widget.Widgets;
 
+import org.fxmisc.easybind.EasyBind;
+
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
+import javafx.beans.binding.Binding;
 import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -26,6 +34,8 @@ import javafx.scene.image.WritableImage;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Region;
 
 public class WidgetPaneController {
 
@@ -110,6 +120,54 @@ public class WidgetPaneController {
 
       cleanupWidgetDrag();
       event.consume();
+    });
+
+    pane.parentProperty().addListener((__, old, parent) -> {
+      if (parent instanceof Region) {
+        Region region = (Region) parent;
+        Binding<Integer> colBinding =
+            EasyBind.combine(region.widthProperty(), pane.hgapProperty(), pane.tileSizeProperty(),
+                (width, gap, size) -> pane.roundWidthToNearestTile(width.doubleValue(), RoundingMode.DOWN))
+                .map(numCols -> Math.max(1, numCols));
+        Binding<Integer> rowBinding =
+            EasyBind.combine(region.heightProperty(), pane.vgapProperty(), pane.tileSizeProperty(),
+                (height, gap, size) -> pane.roundHeightToNearestTile(height.doubleValue(), RoundingMode.DOWN))
+                .map(numRows -> Math.max(numRows, 1));
+
+
+        pane.numColumnsProperty().bind(colBinding);
+        pane.numRowsProperty().bind(rowBinding);
+      }
+    });
+
+    pane.numColumnsProperty().addListener((__, oldCount, newCount) -> {
+      if (pane.getTiles().isEmpty()) {
+        // No tiles, bail
+        return;
+      }
+      if (newCount < oldCount) {
+        // shift and shrink tiles to the left
+        pane.getTiles().stream()
+            .filter(tile -> {
+              final TileLayout layout = pane.getTileLayout(tile);
+              return layout.origin.col + layout.size.getWidth() > newCount;
+            })
+            .forEach(tile -> moveTile(tile, oldCount - newCount, true));
+      }
+    });
+    pane.numRowsProperty().addListener((__, oldCount, newCount) -> {
+      if (pane.getTiles().isEmpty()) {
+        return;
+      }
+      if (newCount < oldCount) {
+        // shift and shrink tiles up
+        pane.getTiles().stream()
+            .filter(tile -> {
+              final TileLayout layout = pane.getTileLayout(tile);
+              return layout.origin.row + layout.size.getHeight() > newCount;
+            })
+            .forEach(tile -> moveTile(tile, oldCount - newCount, false));
+      }
     });
   }
 
@@ -255,6 +313,77 @@ public class WidgetPaneController {
              changeView.getItems().add(changeItem);
            });
     return changeView;
+  }
+
+  private void moveTile(WidgetTile tile, int count, boolean left) {
+    Function<TileLayout, TileLayout> moveLeft = l -> l.withCol(l.origin.col - 1);
+    Function<TileLayout, TileLayout> moveUp = l -> l.withRow(l.origin.row - 1);
+    Function<TileSize, TileSize> shrinkLeft = s -> new TileSize(Math.max(1, s.getWidth() - 1), s.getHeight());
+    Function<TileSize, TileSize> shrinkUp = s -> new TileSize(s.getWidth(), Math.max(1, s.getHeight() - 1));
+    for (int i = 0; i < count; i++) {
+      Optional<Runnable> move;
+      if (left) {
+        move = moveTile(tile, moveLeft, shrinkLeft);
+      } else {
+        move = moveTile(tile, moveUp, shrinkUp);
+      }
+      if (move.isPresent()) {
+        move.get().run();
+      } else {
+        // Can't move any further, bail
+        break;
+      }
+    }
+  }
+
+  /**
+   * Creates a {@link Runnable} that will move or shrink the given tile, as well as moving or shrinking any tiles
+   * in the way of moving it. If the tile cannot be shrunk or moved, returns an empty Optional.
+   *
+   * @param tile                 the tile to move
+   * @param targetLayoutFunction the function to use to set the origin for the target location
+   * @param shrink               the function to use to shrink the tile
+   */
+  private Optional<Runnable> moveTile(WidgetTile tile,
+                                      Function<TileLayout, TileLayout> targetLayoutFunction,
+                                      Function<TileSize, TileSize> shrink) {
+    TileLayout layout = pane.getTileLayout(tile);
+    TileLayout targetLayout = targetLayoutFunction.apply(layout);
+    boolean left = targetLayout.origin.col < layout.origin.col;
+    int importantDim = left ? layout.size.getWidth() : layout.size.getHeight();
+    if (!pane.isOverlapping(targetLayout, n -> n == tile) && !targetLayout.origin.equals(layout.origin)) { // NOPMD
+      // Great, we can move it
+      return Optional.of(() -> {
+        GridPane.setColumnIndex(tile, targetLayout.origin.col);
+        GridPane.setRowIndex(tile, targetLayout.origin.row);
+      });
+    } else if (importantDim > 1) {
+      // Shrink the tile
+      return Optional.of(() -> tile.setSize(shrink.apply(tile.getSize())));
+    } else if (!targetLayout.origin.equals(layout.origin)) { // NOPMD
+      // Try to move or shrink other tiles in the way, then move this one into the free space
+      int lower = left ? layout.origin.row : layout.origin.col;
+      int upper = lower + importantDim;
+      List<Optional<Runnable>> runs = IntStream.range(lower, upper)
+          .mapToObj(i -> left ? pane.tileAt(targetLayout.origin.col, i) : pane.tileAt(i, targetLayout.origin.row))
+          .filter(Optional::isPresent) // guaranteed to be at least one tile
+          .map(Optional::get)
+          .distinct() // need to make sure we have no repeats, or n-row tiles will get moved n times
+          .filter(t -> tile != t)
+          .map(t -> moveTile(t, targetLayoutFunction, shrink)) // recursion here
+          .collect(Collectors.toList());
+      if (runs.stream().allMatch(Optional::isPresent)) {
+        return Optional.of(() -> {
+          runs.forEach(r -> r.get().run());
+          GridPane.setColumnIndex(tile, targetLayout.origin.col);
+          GridPane.setRowIndex(tile, targetLayout.origin.row);
+        });
+      } else {
+        return Optional.empty();
+      }
+    } else {
+      return Optional.empty();
+    }
   }
 
 }
