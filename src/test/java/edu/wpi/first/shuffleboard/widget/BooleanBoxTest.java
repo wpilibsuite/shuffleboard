@@ -2,18 +2,19 @@ package edu.wpi.first.shuffleboard.widget;
 
 import edu.wpi.first.shuffleboard.DummySource;
 import edu.wpi.first.shuffleboard.data.DataTypes;
-
-import org.junit.Test;
-import org.testfx.framework.junit.ApplicationTest;
-import org.testfx.util.WaitForAsyncUtils;
-
 import javafx.scene.Scene;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.stage.Stage;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.testfx.framework.junit5.ApplicationExtension;
+import org.testfx.framework.junit5.ApplicationTest;
+import org.testfx.util.WaitForAsyncUtils;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@ExtendWith(ApplicationExtension.class)
 public class BooleanBoxTest extends ApplicationTest {
 
   private BooleanBox widget;
@@ -31,14 +32,14 @@ public class BooleanBoxTest extends ApplicationTest {
   public void testColorWhenTrue() {
     widget.getSource().setData(true);
     WaitForAsyncUtils.waitForFxEvents();
-    assertEquals("Background should be the 'true' color", widget.getTrueColor(), getBackground());
+    assertEquals(widget.getTrueColor(), getBackground(), "Background should be the 'true' color");
   }
 
   @Test
   public void testColorWhenFalse() {
     widget.getSource().setData(false);
     WaitForAsyncUtils.waitForFxEvents();
-    assertEquals("Background should be the 'false' color", widget.getFalseColor(), getBackground());
+    assertEquals(widget.getFalseColor(), getBackground(), "Background should be the 'false' color");
   }
 
   @Test
@@ -47,7 +48,7 @@ public class BooleanBoxTest extends ApplicationTest {
     widget.getSource().setData(true);
     widget.setTrueColor(color);
     WaitForAsyncUtils.waitForFxEvents();
-    assertEquals("Background was the wrong color", color, getBackground());
+    assertEquals(color, getBackground(), "Background was the wrong color");
   }
 
   @Test
@@ -55,7 +56,7 @@ public class BooleanBoxTest extends ApplicationTest {
     widget.getSource().setData(false);
     widget.setFalseColor(Color.BLACK);
     WaitForAsyncUtils.waitForFxEvents();
-    assertEquals("Background was the wrong color", widget.getFalseColor(), getBackground());
+    assertEquals(widget.getFalseColor(), getBackground(), "Background was the wrong color");
   }
 
   private Paint getBackground() {

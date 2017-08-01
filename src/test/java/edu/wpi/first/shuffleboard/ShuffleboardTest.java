@@ -5,10 +5,13 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
-import org.junit.After;
-import org.junit.Before;
-import org.testfx.framework.junit.ApplicationTest;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.testfx.framework.junit5.ApplicationExtension;
+import org.testfx.framework.junit5.ApplicationTest;
 
+@ExtendWith(ApplicationExtension.class)
 public class ShuffleboardTest extends ApplicationTest {
 
   @Override
@@ -19,12 +22,12 @@ public class ShuffleboardTest extends ApplicationTest {
     stage.show();
   }
 
-  @Before
+  @BeforeEach
   public void setUp() {
     NetworkTableUtils.shutdown();
   }
 
-  @After
+  @AfterEach
   public void tearDown() {
     NetworkTableUtils.shutdown();
   }

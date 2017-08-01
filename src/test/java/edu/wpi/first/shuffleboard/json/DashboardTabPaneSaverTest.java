@@ -7,16 +7,19 @@ import edu.wpi.first.shuffleboard.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.widget.Widgets;
 import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
 import javafx.stage.Stage;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.testfx.framework.junit.ApplicationTest;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.testfx.framework.junit5.ApplicationExtension;
+import org.testfx.framework.junit5.ApplicationTest;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@ExtendWith(ApplicationExtension.class)
 public class DashboardTabPaneSaverTest extends ApplicationTest {
 
   @Override
@@ -24,7 +27,7 @@ public class DashboardTabPaneSaverTest extends ApplicationTest {
     Widgets.discover();
   }
 
-  @Before
+  @BeforeEach
   public void setUp() {
     NetworkTableUtils.shutdown();
     NetworkTablesJNI.setUpdateRate(0.01);
@@ -40,7 +43,7 @@ public class DashboardTabPaneSaverTest extends ApplicationTest {
     NetworkTableUtils.waitForNtcoreEvents();
   }
 
-  @After
+  @AfterEach
   public void tearDown() {
     AsyncUtils.setAsyncRunner(FxUtils::runOnFxThread);
     NetworkTableUtils.shutdown();

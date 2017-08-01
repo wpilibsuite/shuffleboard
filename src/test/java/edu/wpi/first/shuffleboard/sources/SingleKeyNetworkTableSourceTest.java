@@ -1,26 +1,30 @@
 package edu.wpi.first.shuffleboard.sources;
 
+import edu.wpi.first.shuffleboard.data.DataType;
 import edu.wpi.first.shuffleboard.data.DataTypes;
 import edu.wpi.first.shuffleboard.util.AsyncUtils;
 import edu.wpi.first.shuffleboard.util.FxUtils;
 import edu.wpi.first.shuffleboard.util.NetworkTableUtils;
-import edu.wpi.first.shuffleboard.data.DataType;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
 import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
 import edu.wpi.first.wpilibj.tables.ITable;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.TimeoutException;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 public class SingleKeyNetworkTableSourceTest {
 
   private ITable table;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     NetworkTableUtils.shutdown();
     NetworkTablesJNI.setUpdateRate(0.01);
@@ -28,7 +32,7 @@ public class SingleKeyNetworkTableSourceTest {
     table = NetworkTable.getTable("");
   }
 
-  @After
+  @AfterEach
   public void tearDown() {
     AsyncUtils.setAsyncRunner(FxUtils::runOnFxThread);
     NetworkTableUtils.shutdown();
@@ -40,8 +44,8 @@ public class SingleKeyNetworkTableSourceTest {
     DataType type = DataTypes.String;
     SingleKeyNetworkTableSource<String> source
         = new SingleKeyNetworkTableSource<>(table, key, type);
-    assertFalse("The source should not be active without any data", source.isActive());
-    assertNull("The source should not have any data", source.getData());
+    assertFalse(source.isActive(), "The source should not be active without any data");
+    assertNull(source.getData(), "The source should not have any data");
   }
 
   @Test
@@ -52,8 +56,8 @@ public class SingleKeyNetworkTableSourceTest {
         = new SingleKeyNetworkTableSource<>(table, key, type);
     table.putString(key, "a value");
     NetworkTableUtils.waitForNtcoreEvents();
-    assertEquals("a value", source.getData());
-    assertTrue("The source should be active", source.isActive());
+    assertEquals(source.getData(), "a value");
+    assertTrue(source.isActive(), "The source should be active");
   }
 
   @Test
@@ -63,7 +67,7 @@ public class SingleKeyNetworkTableSourceTest {
     SingleKeyNetworkTableSource<String> source
         = new SingleKeyNetworkTableSource<>(table, key, type);
     table.putNumber(key, 12345);
-    assertEquals("The source should not have any data", null, source.getData());
+    assertEquals(null, source.getData(), "The source should not have any data");
     assertFalse(source.isActive());
   }
 

@@ -1,8 +1,8 @@
 package edu.wpi.first.shuffleboard.sources.recording.serialization;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 public class NumberArrayAdapterTest {
 
@@ -19,7 +19,7 @@ public class NumberArrayAdapterTest {
   public void testDecodeEmpty() {
     byte[] buffer = {0, 0, 0, 0};
     double[] expected = {};
-    assertArrayEquals(expected, adapter.deserialize(buffer, 0), 0);
+    assertArrayEquals(expected, adapter.deserialize(buffer, 0));
   }
 
   @Test
@@ -33,7 +33,7 @@ public class NumberArrayAdapterTest {
         Double.NEGATIVE_INFINITY,
         Double.POSITIVE_INFINITY
     };
-    assertArrayEquals(array, adapter.deserialize(adapter.serialize(array), 0), 0);
+    assertArrayEquals(array, adapter.deserialize(adapter.serialize(array), 0));
   }
 
 }

@@ -11,16 +11,21 @@ import javafx.scene.Scene;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.testfx.framework.junit.ApplicationTest;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.testfx.framework.junit5.ApplicationExtension;
+import org.testfx.framework.junit5.ApplicationTest;
 import org.testfx.matcher.base.NodeMatchers;
 import org.testfx.util.WaitForAsyncUtils;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@ExtendWith(ApplicationExtension.class)
 public class MainWindowControllerTest extends ApplicationTest {
 
   @Override
@@ -32,12 +37,12 @@ public class MainWindowControllerTest extends ApplicationTest {
     stage.show();
   }
 
-  @Before
+  @BeforeEach
   public void setUp() {
     NetworkTableUtils.shutdown();
   }
 
-  @After
+  @AfterEach
   public void tearDown() {
     NetworkTableUtils.shutdown();
   }
@@ -56,7 +61,7 @@ public class MainWindowControllerTest extends ApplicationTest {
   }
 
   @Test
-  @Category(NonHeadlessTests.class)
+  @Tag("NonHeadlessTests")
   public void testNetworkTableSourceContextMenu() {
     NetworkTablesJNI.putString("/testSourceContextMenu", "value");
     NetworkTableUtils.waitForNtcoreEvents();

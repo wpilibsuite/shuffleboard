@@ -1,20 +1,28 @@
 package edu.wpi.first.shuffleboard.util;
 
 import edu.wpi.first.wpilibj.tables.ITable;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 
-import static org.junit.Assert.*;
+import java.util.HashSet;
+import java.util.Set;
+
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 public class NetworkTableUtilsTest {
 
-  @Before
+  @BeforeEach
   public void setUp() {
     NetworkTableUtils.shutdown();
   }
 
-  @After
+  @AfterEach
   public void tearDown() {
     NetworkTableUtils.shutdown();
   }
@@ -62,15 +70,17 @@ public class NetworkTableUtilsTest {
         ITable.NOTIFY_FLAGS
     };
 
+    final Set<Executable> assertions = new HashSet<>();
     for (int flag : flags) {
       // Make sure that n == n
-      assertTrue(NetworkTableUtils.flagMatches(flag, flag));
+      assertions.add(() -> assertTrue(NetworkTableUtils.flagMatches(flag, flag)));
 
       for (int f2 : flags) {
         // and that (n | m) == n
-        assertTrue(NetworkTableUtils.flagMatches(flag | f2, flag));
+        assertions.add(() -> assertTrue(NetworkTableUtils.flagMatches(flag | f2, flag)));
       }
     }
+    assertAll(assertions.stream());
   }
 
 }

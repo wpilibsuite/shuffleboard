@@ -22,9 +22,6 @@
     <rule ref="rulesets/java/imports.xml">
         <exclude name="TooManyStaticImports"/>
     </rule>
-    <rule ref="rulesets/java/junit.xml">
-        <exclude name="JUnitTestContainsTooManyAsserts"/>
-    </rule>
     <rule ref="rulesets/java/unnecessary.xml">
         <exclude name="UselessParentheses"/>
     </rule>

@@ -1,16 +1,30 @@
+
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import edu.wpi.first.wpilib.versioning.ReleaseType
 import groovy.util.Node
 import groovy.util.XmlParser
 import groovy.xml.XmlUtil
-import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.gradle.api.Project
+import org.gradle.api.plugins.quality.FindBugs
+import org.gradle.api.publish.maven.MavenPublication
+import org.gradle.api.tasks.JavaExec
+import org.gradle.api.tasks.wrapper.Wrapper
 import org.gradle.jvm.tasks.Jar
+import org.gradle.script.lang.kotlin.*
+import org.gradle.testing.jacoco.tasks.JacocoReport
+import org.junit.platform.gradle.plugin.JUnitPlatformExtension
+import java.io.File
 
 buildscript {
     repositories {
         mavenCentral()
-        jcenter()
     }
+    dependencies {
+        classpath("org.junit.platform:junit-platform-gradle-plugin:1.0.0-RC2")
+    }
+}
+apply {
+    plugin("org.junit.platform.gradle.plugin")
 }
 plugins {
     java
@@ -36,11 +50,14 @@ dependencies {
     compile(group = "edu.wpi.first.wpilib.networktables.java", name = "NetworkTables", version = "+", classifier = "desktop")
     compile(group = "com.google.code.gson", name = "gson", version = "2.8.1")
 
-    testCompile(group = "com.google.guava", name = "guava-testlib", version = "21.0")
-    testCompile(group = "junit", name = "junit", version = "+")
+    fun junitJupiter(name: String, version: String = "5.0.0-M4") =
+            create(group = "org.junit.jupiter", name = name, version = version)
+    testCompile(junitJupiter(name = "junit-jupiter-api"))
+    testCompile(junitJupiter(name = "junit-jupiter-engine"))
+    testRuntime(group = "org.junit.platform", name = "junit-platform-launcher", version = "1.0.0-M4")
     fun testFx(name: String, version: String = "4.0.+") = create(group = "org.testfx", name = name, version = version)
     testCompile(testFx(name = "testfx-core"))
-    testCompile(testFx(name = "testfx-junit"))
+    testCompile(testFx(name = "testfx-junit5"))
     testRuntime(testFx(name = "openjfx-monocle", version = "8u76-b04"))
 }
 
@@ -54,7 +71,6 @@ pmd {
     sourceSets = setOf(java.sourceSets["main"], java.sourceSets["test"])
     reportsDir = file("${project.buildDir}/reports/pmd")
     ruleSetFiles = files(file("$rootDir/pmd-ruleset.xml"))
-    ruleSets = emptyList()
 }
 
 findbugs {
@@ -94,34 +110,34 @@ tasks.withType<JacocoReport> {
     }
 }
 
-tasks.withType<Test> {
-    testLogging {
-        if (project.hasProperty("logTests") || project.hasProperty("jenkinsBuild")) {
-            events("started", "passed", "skipped", "failed")
-        } else {
-            events("failed")
-        }
-        exceptionFormat = TestExceptionFormat.FULL
-    }
-    /*
-     * Allows you to run the UI tests in headless mode by calling gradle with the -Pheadless argument
-     */
-    if (project.hasProperty("jenkinsBuild") || project.hasProperty("headless")) {
-        println("Running UI Tests Headless")
-
-        jvmArgs = listOf(
-            "-Djava.awt.headless=true",
-            "-Dtestfx.robot=glass",
-            "-Dtestfx.headless=true",
-            "-Dprism.order=sw",
-            "-Dprism.text=t2k"
-        )
-        useJUnit {
-            this as JUnitOptions
-            excludeCategories("edu.wpi.first.shuffleboard.NonHeadlessTests")
+/*
+ * Allows you to run the UI tests in headless mode by calling gradle with the -Pheadless argument
+ */
+if (project.hasProperty("jenkinsBuild") || project.hasProperty("headless")) {
+    println("Running UI Tests Headless")
+    junitPlatform {
+        filters {
+            tags {
+                /*
+                 * A category for UI tests that cannot run in headless mode, ie work properly with real windows
+                 * but not with the virtualized ones in headless mode.
+                 */
+                exclude("NonHeadlessTests")
+            }
         }
     }
 
+    tasks {
+        "junitPlatformTest"(JavaExec::class) {
+            jvmArgs = listOf(
+                "-Djava.awt.headless=true",
+                "-Dtestfx.robot=glass",
+                "-Dtestfx.headless=true",
+                "-Dprism.order=sw",
+                "-Dprism.text=t2k"
+            )
+        }
+    }
 }
 
 val theMainClassName = "edu.wpi.first.shuffleboard.Shuffleboard"
@@ -140,8 +156,8 @@ tasks.withType<Jar> {
     getWPILibVersion()?.let { version = it }
     manifest {
         attributes(mapOf(
-            "Implementation-Version" to getWPILibVersion(),
-            "Main-Class" to theMainClassName
+                "Implementation-Version" to getWPILibVersion(),
+                "Main-Class" to theMainClassName
         ).filterValues { it != null })
     }
 }
@@ -182,3 +198,6 @@ fun getWPILibVersion(): String? = if (WPILibVersion.version != "") WPILibVersion
 task<Wrapper>("wrapper") {
     gradleVersion = "4.0.2"
 }
+
+fun Project.`junitPlatform`(action: JUnitPlatformExtension.() -> Unit = {}) =
+        extensions.configure("junitPlatform", action)

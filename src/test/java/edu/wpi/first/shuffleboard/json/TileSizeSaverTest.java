@@ -4,15 +4,17 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParseException;
 import edu.wpi.first.shuffleboard.widget.TileSize;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 
 public class TileSizeSaverTest {
   Gson gson;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     gson = new GsonBuilder()
             .registerTypeAdapter(TileSize.class, new TileSizeSaver())
@@ -31,9 +33,9 @@ public class TileSizeSaverTest {
     assertEquals(tileSize, new TileSize(1, 2));
   }
 
-  @Test(expected = JsonParseException.class)
+  @Test
   public void deserializeInvalid() throws Exception {
-    gson.fromJson("[1,-2]", TileSize.class);
+    assertThrows(JsonParseException.class, () -> gson.fromJson("[1,-2]", TileSize.class));
   }
 
 }
