@@ -17,6 +17,14 @@ public final class TileLayout {
     this.size = requireNonNull(size, "size");
   }
 
+  public TileLayout withCol(int col) {
+    return new TileLayout(new GridPoint(Math.max(0, col), origin.row), size);
+  }
+
+  public TileLayout withRow(int row) {
+    return new TileLayout(new GridPoint(origin.col, Math.max(0, row)), size);
+  }
+
   @Override
   public boolean equals(Object obj) {
     if (this == obj) {

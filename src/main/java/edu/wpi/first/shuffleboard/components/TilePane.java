@@ -363,6 +363,16 @@ public class TilePane extends GridPane {
   }
 
   /**
+   * Identical to {@link #isOverlapping(int, int, int, int, Predicate)} but takes a tile layout that contains the
+   * row, column, width, and height data.
+   *
+   * @see #isOverlapping(int, int, int, int, Predicate)
+   */
+  public boolean isOverlapping(TileLayout layout, Predicate<Node> ignore) {
+    return isOverlapping(layout.origin.col, layout.origin.row, layout.size.getWidth(), layout.size.getHeight(), ignore);
+  }
+
+  /**
    * Checks if a tile with the given width and height would overlap a pre-existing tile at the point {@code (col, row)},
    * ignoring some nodes when calculating collisions. Note that this method does <i>not</i> perform bounds checking;
    * use {@link #isOpen(int, int, int, int, Predicate) isOpen} to check if a widget can be placed at that point.
