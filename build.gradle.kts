@@ -71,6 +71,7 @@ pmd {
     sourceSets = setOf(java.sourceSets["main"], java.sourceSets["test"])
     reportsDir = file("${project.buildDir}/reports/pmd")
     ruleSetFiles = files(file("$rootDir/pmd-ruleset.xml"))
+    toolVersion = "5.8.0"
 }
 
 findbugs {
