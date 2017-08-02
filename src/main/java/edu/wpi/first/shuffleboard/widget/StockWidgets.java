@@ -23,7 +23,7 @@ public final class StockWidgets {
                .stream()
                .filter(ci -> ci.getPackageName().startsWith("edu.wpi.first.shuffleboard"))
                .map(ClassPath.ClassInfo::load)
-               .filter(SimpleAnnotatedWidget.class::isAssignableFrom)
+               .filter(AnnotatedWidget.class::isAssignableFrom)
                .map(c -> (Class<Widget>) c)
                .filter(c -> c.isAnnotationPresent(Description.class))
                .forEach(Widgets::register);

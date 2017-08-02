@@ -3,12 +3,13 @@ package edu.wpi.first.shuffleboard.widget;
 import edu.wpi.first.shuffleboard.data.DataType;
 import edu.wpi.first.shuffleboard.sources.DataSource;
 import edu.wpi.first.shuffleboard.sources.IncompatibleSourceException;
-import javafx.beans.property.Property;
-import javafx.collections.ObservableMap;
-import javafx.scene.layout.Pane;
 
 import java.util.List;
 import java.util.Set;
+
+import javafx.beans.property.Property;
+import javafx.collections.ObservableMap;
+import javafx.scene.layout.Pane;
 
 /**
  * A widget is a UI element that displays data from a {@link DataSource} and has the ability to
@@ -63,10 +64,25 @@ public interface Widget {
    */
   Set<DataType> getDataTypes();
 
+  /**
+   * Sets the source for this widget.
+   *
+   * @param source the new source
+   *
+   * @throws IncompatibleSourceException if the source is for a data type this widget does not support
+   */
   void setSource(DataSource source) throws IncompatibleSourceException;
 
+  /**
+   * Gets the source for this widget.
+   */
   DataSource<?> getSource();
 
+  Property<DataSource> sourceProperty();
+
+  /**
+   * Gets the user-configurable properties for this widget.
+   */
   List<Property<?>> getProperties();
 
 }
