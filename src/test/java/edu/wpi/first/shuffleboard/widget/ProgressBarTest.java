@@ -51,4 +51,44 @@ public class ProgressBarTest extends ApplicationTest {
     assertEquals(0.5, widget.progressBar.getProgress(), 0);
   }
 
+  @Test
+  public void testAllowIndeterminateValueNegativeTrue() {
+    widget.minValue.setValue(0);
+    widget.maxValue.setValue(1);
+    widget.allowIndeterminateValue.setValue(true);
+    source.setData(-0.5);
+
+    assertTrue(widget.progressBar.isIndeterminate());
+  }
+
+  @Test
+  public void testAllowIndeterminateValueNegativeFalse() {
+    widget.minValue.setValue(0);
+    widget.maxValue.setValue(1);
+    widget.allowIndeterminateValue.setValue(false);
+    source.setData(-0.5);
+
+    assertFalse(widget.progressBar.isIndeterminate());
+  }
+
+  @Test
+  public void testAllowIndeterminateValuePositiveTrue() {
+    widget.minValue.setValue(0);
+    widget.maxValue.setValue(1);
+    widget.allowIndeterminateValue.setValue(true);
+    source.setData(1.5);
+
+    assertTrue(widget.progressBar.isIndeterminate());
+  }
+
+  @Test
+  public void testAllowIndeterminateValuePositiveFalse() {
+    widget.minValue.setValue(0);
+    widget.maxValue.setValue(1);
+    widget.allowIndeterminateValue.setValue(false);
+    source.setData(1.5);
+
+    assertFalse(widget.progressBar.isIndeterminate());
+  }
+
 }
