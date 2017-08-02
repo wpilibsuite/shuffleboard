@@ -14,6 +14,8 @@ import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 
+import java.util.Objects;
+
 @Description(
     name = "Boolean Box",
     dataTypes = BooleanType.class)
@@ -46,7 +48,9 @@ public class BooleanBox extends SimpleAnnotatedWidget<Boolean> {
     final Boolean data = getData();
     if (data == null) {
       return Color.BLACK;
-    } else if (data.equals(Boolean.TRUE)) {
+    }
+
+    if (data) {
       return trueColor.getValue();
     } else {
       return falseColor.getValue();
