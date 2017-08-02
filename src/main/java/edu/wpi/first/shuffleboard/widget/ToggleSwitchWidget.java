@@ -7,7 +7,7 @@ import javafx.scene.layout.Pane;
 
 @Description(name = "Toggle Switch", dataTypes = BooleanType.class)
 @ParametrizedController("ToggleSwitch.fxml")
-public class ToggleSwitch extends SimpleAnnotatedWidget<Boolean> {
+public class ToggleSwitchWidget extends SimpleAnnotatedWidget<Boolean> {
 
   @FXML
   private Pane root;

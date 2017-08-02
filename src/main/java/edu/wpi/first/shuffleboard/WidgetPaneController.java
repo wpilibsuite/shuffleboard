@@ -133,7 +133,7 @@ public class WidgetPaneController {
         Binding<Integer> rowBinding =
             EasyBind.combine(region.heightProperty(), pane.vgapProperty(), pane.tileSizeProperty(),
                 (height, gap, size) -> pane.roundHeightToNearestTile(height.doubleValue(), RoundingMode.DOWN))
-                .map(numRows -> Math.max(numRows, 1));
+                .map(numRows -> Math.max(1, numRows));
 
 
         pane.numColumnsProperty().bind(colBinding);

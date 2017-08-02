@@ -1,19 +1,28 @@
 package edu.wpi.first.shuffleboard.components;
 
+import edu.wpi.first.shuffleboard.data.DataTypes;
+import edu.wpi.first.shuffleboard.sources.SourceType;
 import edu.wpi.first.shuffleboard.util.FxUtils;
+import edu.wpi.first.shuffleboard.util.NetworkTableUtils;
+import edu.wpi.first.shuffleboard.util.PropertyUtils;
 import edu.wpi.first.shuffleboard.widget.Widget;
 import edu.wpi.first.shuffleboard.widget.WidgetPropertySheet;
+import edu.wpi.first.shuffleboard.widget.Widgets;
 
-import org.controlsfx.control.PropertySheet;
 import org.fxmisc.easybind.EasyBind;
 
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.function.Predicate;
 
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Dialog;
@@ -31,7 +40,15 @@ public class DashboardTabPane extends TabPane {
    * Creates a dashboard with one default tab.
    */
   public DashboardTabPane() {
-    this(new DashboardTab("Tab 1"));
+    this(createAutoPopulateTab("SmartDashboard", "/SmartDashboard/"),
+        createAutoPopulateTab("LiveWindow", "/LiveWindow/"));
+  }
+
+  private static DashboardTab createAutoPopulateTab(String name, String sourcePrefix) {
+    DashboardTab tab = new DashboardTab(name);
+    tab.setAutoPopulate(true);
+    tab.setSourcePrefix(sourcePrefix);
+    return tab;
   }
 
   /**
@@ -87,7 +104,7 @@ public class DashboardTabPane extends TabPane {
    */
   public void addWidgetToActivePane(Widget widget) {
     optionalCast(getSelectionModel().getSelectedItem(), DashboardTab.class)
-            .ifPresent(tab -> tab.getWidgetPane().addWidget(widget));
+        .ifPresent(tab -> tab.getWidgetPane().addWidget(widget));
   }
 
   /**
@@ -102,6 +119,12 @@ public class DashboardTabPane extends TabPane {
   public static class DashboardTab extends Tab implements HandledTab {
     private final ObjectProperty<WidgetPane> widgetPane = new SimpleObjectProperty<>(this, "widgetPane");
     private final StringProperty title = new SimpleStringProperty(this, "title", "");
+    private final BooleanProperty autoPopulate = new SimpleBooleanProperty(this, "autoPopulate", false);
+    private final StringProperty sourcePrefix = new SimpleStringProperty(this, "sourcePrefix", "");
+    private static final ObservableList<String> availableSourceIds =
+        PropertyUtils.combineLists(
+            SourceType.NETWORK_TABLE.getAvailableSourceIds(),
+            SourceType.CAMERA_SERVER.getAvailableSourceIds());
 
     /**
      * Creates a single dashboard tab with the given title.
@@ -112,21 +135,57 @@ public class DashboardTabPane extends TabPane {
       setGraphic(new TabHandle(this));
 
       setWidgetPane(new WidgetPane());
+
+      // UGLY HACK, REMOVE (makes autopopulation work)
+      getWidgetPane().setNumColumns(10);
+      getWidgetPane().setNumRows(6);
+
       this.contentProperty().bind(widgetPane);
+
+      autoPopulate.addListener(__ -> populate());
+      sourcePrefix.addListener(__ -> populate());
+      availableSourceIds.addListener((ListChangeListener<String>) c -> populate());
+
       setContextMenu(new ContextMenu(FxUtils.menuItem("Preferences", e -> {
-        PropertySheet propertySheet = new WidgetPropertySheet(
+        WidgetPropertySheet propertySheet = new WidgetPropertySheet(
             Arrays.asList(
                 this.title,
+                this.autoPopulate,
+                this.sourcePrefix,
                 getWidgetPane().tileSizeProperty(),
                 getWidgetPane().hgapProperty(),
                 getWidgetPane().vgapProperty()
             ));
         Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setResizable(true);
         dialog.titleProperty().bind(EasyBind.map(this.title, t -> "Preferences for " + t));
         dialog.getDialogPane().setContent(propertySheet);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CLOSE);
         dialog.showAndWait();
       })));
+    }
+
+    private void populate() {
+      if (!isAutoPopulate() || getSourcePrefix().isEmpty()) {
+        return;
+      }
+      availableSourceIds.stream()
+          .filter(id -> id.startsWith(getSourcePrefix())
+              || SourceType.stripProtocol(id).startsWith(getSourcePrefix()))
+          .filter(id -> SourceType.typeForUri(id) != SourceType.NETWORK_TABLE
+              || !NetworkTableUtils.isMetadata(SourceType.NETWORK_TABLE.removeProtocol(id)))
+          .filter(id -> getWidgetPane().getTiles().stream()
+              .map(t -> t.getWidget().getSource())
+              .noneMatch(s -> id.startsWith(s.getId())))
+          .sorted()
+          .map(SourceType::fromUri)
+          .filter(s -> s.getDataType() != DataTypes.Unknown) // Don't create widgets for the catchall types
+          .filter(s -> s.getDataType() != DataTypes.Map)
+          .filter(s -> !Widgets.widgetNamesForSource(s).isEmpty())
+          .map(s -> Widgets.createWidget(Widgets.widgetNamesForSource(s).get(0), s))
+          .filter(Optional::isPresent)
+          .map(Optional::get)
+          .forEach(w -> getWidgetPane().addWidget(w));
     }
 
     public WidgetPane getWidgetPane() {
@@ -157,6 +216,30 @@ public class DashboardTabPane extends TabPane {
 
     public void setTitle(String title) {
       this.title.set(title);
+    }
+
+    public boolean isAutoPopulate() {
+      return autoPopulate.get();
+    }
+
+    public BooleanProperty autoPopulateProperty() {
+      return autoPopulate;
+    }
+
+    public void setAutoPopulate(boolean autoPopulate) {
+      this.autoPopulate.set(autoPopulate);
+    }
+
+    public String getSourcePrefix() {
+      return sourcePrefix.get();
+    }
+
+    public StringProperty sourcePrefixProperty() {
+      return sourcePrefix;
+    }
+
+    public void setSourcePrefix(String sourceRegex) {
+      this.sourcePrefix.set(sourceRegex);
     }
   }
 }

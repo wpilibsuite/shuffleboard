@@ -4,7 +4,7 @@
 <?import javafx.scene.layout.StackPane?>
 <StackPane xmlns="http://javafx.com/javafx"
            xmlns:fx="http://javafx.com/fxml"
-           fx:controller="edu.wpi.first.shuffleboard.widget.ToggleSwitch"
+           fx:controller="edu.wpi.first.shuffleboard.widget.ToggleSwitchWidget"
            fx:id="root">
     <!-- Use a nested stack pane to center the toggle switch -->
     <StackPane StackPane.alignment="CENTER" maxHeight="0" maxWidth="0">

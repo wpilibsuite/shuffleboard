@@ -2,18 +2,63 @@ package edu.wpi.first.shuffleboard.sources;
 
 import edu.wpi.first.shuffleboard.DummySource;
 import edu.wpi.first.shuffleboard.data.DataType;
+import edu.wpi.first.shuffleboard.util.NetworkTableUtils;
+import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
 
+import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+
 public enum SourceType {
 
-  NONE(false, "", null),
-  STATIC(false, "example://", s -> DummySource.forTypes(DataType.forName(s)).get()),
-  NETWORK_TABLE(true, "network_table://", NetworkTableSource::forKey),
+  NONE(false, "", null) {
+    @Override
+    public ObservableList<String> getAvailableSourceIds() {
+      return FXCollections.emptyObservableList();
+    }
+  },
+  STATIC(false, "example://", s -> DummySource.forTypes(DataType.forName(s)).get()) {
+    @Override
+    public ObservableList<String> getAvailableSourceIds() {
+      return FXCollections.emptyObservableList();
+    }
+  },
+  NETWORK_TABLE(true, "network_table://", NetworkTableSource::forKey) {
+
+    private final ObservableList<String> ids = FXCollections.observableArrayList();
+
+    {
+      NetworkTablesJNI.addEntryListener("", (uid, key, value, flags) -> {
+        List<String> hierarchy = NetworkTableUtils.getHierarchy(key);
+        if (NetworkTableUtils.isDelete(flags)) {
+          hierarchy.stream()
+              .map(this::toUri)
+              .forEach(ids::remove);
+        } else {
+          hierarchy.stream()
+              .map(this::toUri)
+              .filter(uri -> !ids.contains(uri))
+              .forEach(ids::add);
+        }
+      }, 0xFF);
+    }
+
+    @Override
+    public ObservableList<String> getAvailableSourceIds() {
+      return ids;
+    }
+  },
   CAMERA_SERVER(true, "camera_server://", __ -> {
     throw new UnsupportedOperationException("Not implemented");
-  });
+  }) {
+    @Override
+    public ObservableList<String> getAvailableSourceIds() {
+      return FXCollections.emptyObservableList();
+    }
+  };
 
   public final boolean isRecordable;
   private final String protocol;
@@ -45,6 +90,29 @@ public enum SourceType {
       return text;
     }
   }
+
+  public static SourceType typeForUri(String uri) {
+    for (SourceType type : values()) {
+      if (!type.protocol.isEmpty() && uri.startsWith(type.protocol)) {
+        return type;
+      }
+    }
+    return NONE;
+  }
+
+  /**
+   * Tries to strip the protocol from a source URI. Has no affect if the uri does not start with a known protocol.
+   *
+   * @param uri the uri to strip the protocol from
+   */
+  public static String stripProtocol(String uri) {
+    return typeForUri(uri).removeProtocol(uri);
+  }
+
+  /**
+   * Gets a list of the IDs of all available sources of this type.
+   */
+  public abstract ObservableList<String> getAvailableSourceIds();
 
   /**
    * Given a URI-like string with a protocol and a pseudo-path, return a source for the current SourceType

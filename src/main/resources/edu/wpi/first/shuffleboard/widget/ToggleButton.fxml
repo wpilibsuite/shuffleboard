@@ -4,7 +4,7 @@
 <?import javafx.scene.layout.StackPane?>
 <StackPane xmlns="http://javafx.com/javafx"
            xmlns:fx="http://javafx.com/fxml"
-           fx:controller="edu.wpi.first.shuffleboard.widget.ToggleButton"
+           fx:controller="edu.wpi.first.shuffleboard.widget.ToggleButtonWidget"
            fx:id="root">
     <ToggleButton fx:id="button" alignment="CENTER" maxHeight="Infinity" maxWidth="Infinity"/>
 </StackPane>

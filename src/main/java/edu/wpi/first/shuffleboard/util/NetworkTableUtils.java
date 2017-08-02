@@ -119,6 +119,14 @@ public final class NetworkTableUtils {
   }
 
   /**
+   * Checks if the given key is metadata, eg matches the format "~METADATA~" or ".metadata"
+   */
+  public static boolean isMetadata(String key) {
+    return key.matches("^.*/\\..+(/.*)?$")
+        || key.matches("^.*/~.+~(/.*)?$");
+  }
+
+  /**
    * Gets the data type most closely associated with the value of the given network table key.
    *
    * @param key the network table key to get the data type for
@@ -140,7 +148,12 @@ public final class NetworkTableUtils {
       if (type == null) {
         return DataTypes.Map;
       } else {
-        return DataType.forName(type);
+        DataType<?> forName = DataType.forName(type);
+        if (forName == DataTypes.Unknown) {
+          return DataTypes.Map;
+        } else {
+          return forName;
+        }
       }
     }
     return DataTypes.Unknown;

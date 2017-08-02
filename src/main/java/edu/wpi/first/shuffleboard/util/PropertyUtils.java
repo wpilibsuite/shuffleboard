@@ -2,13 +2,18 @@ package edu.wpi.first.shuffleboard.util;
 
 import org.fxmisc.easybind.EasyBind;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.function.Function;
 
 import javafx.beans.binding.Binding;
 import javafx.beans.property.Property;
+import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.MapChangeListener;
+import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 
 /**
@@ -89,4 +94,30 @@ public final class PropertyUtils {
       }
     });
   }
+
+  /**
+   * Combines multiple observable lists into a single one.
+   *
+   * @param a    the first list
+   * @param b    the second list
+   * @param <T>  the type of data in the lists
+   */
+  public static <T> ObservableList<T> combineLists(ObservableList<T> a, ObservableList<T> b) {
+    ObservableList<T> combine = FXCollections.observableArrayList();
+    ListChangeListener<? super T> listener = c -> {
+      while (c.next()) {
+        if (c.wasAdded()) {
+          combine.addAll(c.getAddedSubList());
+        } else if (c.wasRemoved()) {
+          combine.removeAll(c.getRemoved());
+        }
+      }
+    };
+    combine.addAll(a);
+    combine.addAll(b);
+    a.addListener(listener);
+    b.addListener(listener);
+    return combine;
+  }
+
 }
