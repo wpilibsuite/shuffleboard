@@ -1,5 +1,9 @@
 package edu.wpi.first.shuffleboard.app;
 
+import de.codecentric.centerdevice.javafxsvg.SvgImageLoaderFactory;
+import it.sauronsoftware.junique.AlreadyLockedException;
+import it.sauronsoftware.junique.JUnique;
+
 import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
 import edu.wpi.first.shuffleboard.api.util.Storage;
 import edu.wpi.first.shuffleboard.app.plugin.PluginLoader;
@@ -9,15 +13,6 @@ import edu.wpi.first.shuffleboard.plugin.networktables.NetworkTablesPlugin;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
 
 import java.io.IOException;
-
-import it.sauronsoftware.junique.AlreadyLockedException;
-import it.sauronsoftware.junique.JUnique;
-
-import de.codecentric.centerdevice.javafxsvg.SvgImageLoaderFactory;
-
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -92,7 +87,6 @@ public class Shuffleboard extends Application {
 
     PluginLoader.getDefault().load(new BasePlugin());
     PluginLoader.getDefault().load(new NetworkTablesPlugin());
-    loadPluginsFromDir();
 
     Recorder.getInstance().start();
     primaryStage.setTitle("Shuffleboard");
@@ -114,11 +108,6 @@ public class Shuffleboard extends Application {
    * @throws IOException if the plugin directory could not be read
    */
   private void loadPluginsFromDir() throws IOException {
-    Path pluginPath = Paths.get(Storage.PLUGINS_DIR);
-    if (!Files.exists(pluginPath)) {
-      Files.createDirectories(pluginPath);
-    }
-    PluginLoader.getDefault().loadAllJarsFromDir(pluginPath);
+    PluginLoader.getDefault().loadAllJarsFromDir(Storage.getPluginPath());
   }
-
 }
