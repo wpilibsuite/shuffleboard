@@ -45,7 +45,13 @@ public class DashboardTabPane extends TabPane {
     getTabs().add(adder);
   }
 
-  private DashboardTab addNewTab() {
+  /**
+   * Adds a new tab at the end of the tab list. The default name is "Tab <i>n</i>", where <i>n</i> is the number
+   * of dashboard tabs in the pane.
+   *
+   * @return the newly created tab
+   */
+  public DashboardTab addNewTab() {
     int existingTabs = getTabs().size();
     DashboardTab tab = new DashboardTab("Tab " + existingTabs);
     if (existingTabs > 0) {
@@ -54,6 +60,25 @@ public class DashboardTabPane extends TabPane {
       getTabs().add(tab);
     }
     return tab;
+  }
+
+  /**
+   * Selects the tab with the given index. If the index is negative or larger than the highest index, no tab is
+   * selected.
+   *
+   * @param tabIndex the index of the tab to select
+   */
+  public void selectTab(int tabIndex) {
+    if (tabIndex >= 0 && tabIndex < getTabs().size() && getTabs().get(tabIndex) instanceof DashboardTab) {
+      getSelectionModel().select(tabIndex);
+    }
+  }
+
+  /**
+   * Closes the currently selected tab.
+   */
+  public void closeCurrentTab() {
+    getTabs().remove(getSelectionModel().getSelectedItem());
   }
 
   /**
@@ -70,8 +95,8 @@ public class DashboardTabPane extends TabPane {
    */
   public void selectWidgets(Predicate<Widget> selector) {
     getTabs().stream().map(optionalCast(DashboardTab.class))
-            .forEach(tab -> tab.map(DashboardTab::getWidgetPane)
-                    .ifPresent(pane -> pane.selectWidgets(selector)));
+        .forEach(tab -> tab.map(DashboardTab::getWidgetPane)
+            .ifPresent(pane -> pane.selectWidgets(selector)));
   }
 
   public static class DashboardTab extends Tab implements HandledTab {

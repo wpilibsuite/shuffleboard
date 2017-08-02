@@ -115,8 +115,6 @@ public final class TileDragResizer {
     final int boundedHeight = Math.min(tilePane.getNumRows() - GridPane.getRowIndex(tile),
                                        tileHeight);
 
-    tile.setMinWidth(tilePane.tileSizeToWidth(boundedWidth));
-    tile.setMinHeight(tilePane.tileSizeToHeight(boundedHeight));
     tile.setSize(new TileSize(boundedWidth, boundedHeight));
     GridPane.setColumnSpan(tile, boundedWidth);
     GridPane.setRowSpan(tile, boundedHeight);

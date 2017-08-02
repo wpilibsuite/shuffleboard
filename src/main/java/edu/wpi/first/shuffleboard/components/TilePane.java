@@ -1,7 +1,12 @@
 package edu.wpi.first.shuffleboard.components;
 
 import edu.wpi.first.shuffleboard.util.GridPoint;
+import edu.wpi.first.shuffleboard.util.RoundingMode;
 import edu.wpi.first.shuffleboard.widget.TileSize;
+
+import java.util.function.Predicate;
+import java.util.stream.IntStream;
+
 import javafx.beans.DefaultProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
@@ -14,10 +19,8 @@ import javafx.scene.Node;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.RowConstraints;
-
-import java.util.function.Predicate;
-import java.util.stream.IntStream;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -29,7 +32,7 @@ public class TilePane extends GridPane {
 
   private static final int DEFAULT_COL_COUNT = 1;
   private static final int DEFAULT_ROW_COUNT = 1;
-  private static final double MIN_TILE_SIZE = 32; // pixels
+  private static final double MIN_TILE_SIZE = 64; // pixels
   private static final double DEFAULT_TILE_SIZE = 128; // pixels
 
   private final ObjectProperty<Integer> numColumns =
@@ -79,7 +82,7 @@ public class TilePane extends GridPane {
 
   private ColumnConstraints createColumnConstraint() {
     ColumnConstraints constraints = new ColumnConstraints(
-        getTileSize(), getTileSize(), getTileSize(), Priority.NEVER, HPos.LEFT, true);
+        MIN_TILE_SIZE, getTileSize(), Region.USE_PREF_SIZE, Priority.NEVER, HPos.LEFT, true);
     constraints.minWidthProperty().bind(tileSize);
     constraints.prefWidthProperty().bind(tileSize);
     constraints.maxWidthProperty().bind(tileSize);
@@ -88,7 +91,7 @@ public class TilePane extends GridPane {
 
   private RowConstraints createRowConstraint() {
     RowConstraints constraints = new RowConstraints(
-        getTileSize(), getTileSize(), getTileSize(), Priority.NEVER, VPos.CENTER, true);
+        MIN_TILE_SIZE, getTileSize(), Region.USE_PREF_SIZE, Priority.NEVER, VPos.CENTER, true);
     constraints.minHeightProperty().bind(tileSize);
     constraints.prefHeightProperty().bind(tileSize);
     constraints.maxHeightProperty().bind(tileSize);
@@ -148,7 +151,7 @@ public class TilePane extends GridPane {
    * Sets the size of the tiles in the grid.
    */
   public final void setTileSize(double tileSize) {
-    checkArgument(tileSize > MIN_TILE_SIZE,
+    checkArgument(tileSize >= MIN_TILE_SIZE,
                   "Tile size must be at least " + MIN_TILE_SIZE + ", but was " + tileSize);
     this.tileSize.set(tileSize);
   }
@@ -189,20 +192,40 @@ public class TilePane extends GridPane {
    * Rounds a tile's width in pixels to the nearest tile size.
    */
   public int roundWidthToNearestTile(double width) {
+    return roundWidthToNearestTile(width, RoundingMode.NEAREST);
+  }
+
+  /**
+   * Rounds a tile's width in pixels to the nearest tile size.
+   *
+   * @param width        the width to round
+   * @param roundingMode the mode to use to round the fractional tile size
+   */
+  public int roundWidthToNearestTile(double width, RoundingMode roundingMode) {
     // w = (n * tile_size) + ((n - 1) * vgap)
     //   = (n * tile_size) + (n * vgap) - vgap
     // w + vgap = (n * tile_size) + (n * vgap)
     //          = n * (tile_size + vgap)
     // n = (w + vgap) / (tile_size + vgap) QED
     // round n to nearest integer
-    return (int) Math.max(1, Math.round((width + getVgap()) / (getTileSize() + getVgap())));
+    return Math.max(1, roundingMode.round((width + getHgap()) / (getTileSize() + getHgap())));
   }
 
   /**
    * Rounds a tile's height in pixels to the nearest tile size.
    */
   public int roundHeightToNearestTile(double height) {
-    return (int) Math.max(1, Math.round((height + getHgap()) / (getTileSize() + getVgap())));
+    return roundHeightToNearestTile(height, RoundingMode.NEAREST);
+  }
+
+  /**
+   * Rounds a tile's height in pixels to the nearest tile size.
+   *
+   * @param height       the height to round
+   * @param roundingMode the mode to use to round the fractional tile size
+   */
+  public int roundHeightToNearestTile(double height, RoundingMode roundingMode) {
+    return Math.max(1, roundingMode.round((height + getVgap()) / (getTileSize() + getVgap())));
   }
 
   /**
@@ -332,38 +355,59 @@ public class TilePane extends GridPane {
    * @param ignore     the nodes to ignore when determining collisions
    */
   public boolean isOpen(int col, int row, int tileWidth, int tileHeight, Predicate<Node> ignore) {
-    if (col + tileWidth > getNumColumns() || row + tileHeight > getNumRows()) {
+    if (col < 0 || col + tileWidth > getNumColumns()
+        || row < 0 || row + tileHeight > getNumRows()) {
       return false;
     }
+    return !isOverlapping(col, row, tileWidth, tileHeight, ignore);
+  }
 
-    int x;
-    int y;
-    int width;
-    int height;
+  /**
+   * Identical to {@link #isOverlapping(int, int, int, int, Predicate)} but takes a tile layout that contains the
+   * row, column, width, and height data.
+   *
+   * @see #isOverlapping(int, int, int, int, Predicate)
+   */
+  public boolean isOverlapping(TileLayout layout, Predicate<Node> ignore) {
+    return isOverlapping(layout.origin.col, layout.origin.row, layout.size.getWidth(), layout.size.getHeight(), ignore);
+  }
 
-    for (Node tile : getChildren()) {
-      if (ignore.test(tile)) {
+  /**
+   * Checks if a tile with the given width and height would overlap a pre-existing tile at the point {@code (col, row)},
+   * ignoring some nodes when calculating collisions. Note that this method does <i>not</i> perform bounds checking;
+   * use {@link #isOpen(int, int, int, int, Predicate) isOpen} to check if a widget can be placed at that point.
+   *
+   * @param col        the column index of the point to check
+   * @param row        the row index of the point to check
+   * @param tileWidth  the width of the tile
+   * @param tileHeight the height of the tile
+   * @param ignore     a predicate to use to ignore nodes when calculating collisions
+   */
+  public boolean isOverlapping(int col, int row, int tileWidth, int tileHeight, Predicate<Node> ignore) {
+    for (Node child : getChildren()) {
+      if (ignore.test(child)) {
         continue;
       }
-      try {
-        x = GridPane.getColumnIndex(tile);
-        y = GridPane.getRowIndex(tile);
-        width = GridPane.getColumnSpan(tile);
-        height = GridPane.getRowSpan(tile);
-      } catch (NullPointerException e) {
-        // Not a real child (Geppetto pls)
-        continue;
+      // All "real" children have a column index, row index, and column and row spans
+      // Other children (like the grid lines) don't have these properties and will throw null pointers
+      // when trying to access these properties
+      if (GridPane.getColumnIndex(child) != null) {
+        int x = GridPane.getColumnIndex(child);
+        int y = GridPane.getRowIndex(child);
+        int width = GridPane.getColumnSpan(child);
+        int height = GridPane.getRowSpan(child);
+        if (x + width > col && y + height > row
+            && x - tileWidth < col && y - tileHeight < row) {
+          // There's an intersection
+          return true;
+        }
       }
-
-      if (x + width > col && y + height > row
-          && x < col + tileWidth && y < row + tileHeight) {
-        // Check intersection
-        return false;
-      }
-
     }
+    return false;
+  }
 
-    return true;
+  public TileLayout getTileLayout(WidgetTile tile) {
+    return new TileLayout(new GridPoint(getColumnIndex(tile), getRowIndex(tile)), tile.getSize());
   }
 
 }

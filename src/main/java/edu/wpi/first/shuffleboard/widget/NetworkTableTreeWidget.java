@@ -8,6 +8,7 @@ import edu.wpi.first.shuffleboard.util.NetworkTableUtils;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -38,7 +39,7 @@ public class NetworkTableTreeWidget extends SimpleAnnotatedWidget<MapData> {
    * Compares tree items alphabetically.
    */
   private static final Comparator<TreeItem<NetworkTableEntry>> alphabetical
-      = Comparator.comparing(item -> item.getValue().getKey().toLowerCase());
+      = Comparator.comparing(item -> item.getValue().getKey().toLowerCase(Locale.getDefault()));
 
   private final TreeTableColumn<NetworkTableEntry, String> keyColumn =
       new TreeTableColumn<>("Name");

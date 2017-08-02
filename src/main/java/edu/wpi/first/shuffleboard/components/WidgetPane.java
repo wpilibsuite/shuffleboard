@@ -20,6 +20,7 @@ import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 
@@ -167,6 +168,21 @@ public class WidgetPane extends TilePane {
   }
 
   /**
+   * Sets the size of a widget tile in this pane. This calls {@link #setSize(Node, TileSize)} as well as setting the
+   * minimum and maximum size of the tile to ensure that it aligns properly with the grid.
+   *
+   * @param tile the tile to resize
+   * @param size the new size of the tile
+   */
+  public void setSize(WidgetTile tile, TileSize size) {
+    super.setSize(tile, size);
+    tile.setMinWidth(tileSizeToWidth(size.getWidth()));
+    tile.setMinHeight(tileSizeToHeight(size.getHeight()));
+    tile.setMaxWidth(tileSizeToWidth(size.getWidth()));
+    tile.setMaxHeight(tileSizeToHeight(size.getHeight()));
+  }
+
+  /**
    * @return Returns the expected size of the widget, in tiles.
    */
   public TileSize sizeOfWidget(Widget widget) {
@@ -180,6 +196,28 @@ public class WidgetPane extends TilePane {
 
   public void removeWidget(WidgetTile tile) {
     getChildren().remove(tile);
+  }
+
+  /**
+   * Gets the tile at the given point in the grid.
+   */
+  public Optional<WidgetTile> tileAt(GridPoint point) {
+    return tileAt(point.col, point.row);
+  }
+
+  /**
+   * Gets the tile at the given point in the grid.
+   *
+   * @param col the column of the point to check
+   * @param row the row of the point to check
+   */
+  public Optional<WidgetTile> tileAt(int col, int row) {
+    return tiles.stream()
+        .filter(tile -> GridPane.getColumnIndex(tile) <= col
+            && GridPane.getColumnIndex(tile) + tile.getSize().getWidth() > col)
+        .filter(tile -> GridPane.getRowIndex(tile) <= row
+            && GridPane.getRowIndex(tile) + tile.getSize().getHeight() > row)
+        .findAny();
   }
 
   @Override
