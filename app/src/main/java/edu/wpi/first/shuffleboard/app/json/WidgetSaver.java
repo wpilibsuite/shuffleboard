@@ -10,8 +10,13 @@ import edu.wpi.first.shuffleboard.api.widget.Widget;
 import edu.wpi.first.shuffleboard.api.widget.Widgets;
 import javafx.beans.property.Property;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 @AnnotatedTypeAdapter(forType = Widget.class)
 public class WidgetSaver implements ElementTypeAdapter<Widget> {
+  private static final Logger log = Logger.getLogger(WidgetSaver.class.getName());
+
   @Override
   public JsonElement serialize(Widget src, JsonSerializationContext context) {
     JsonObject object = new JsonObject();
@@ -33,8 +38,8 @@ public class WidgetSaver implements ElementTypeAdapter<Widget> {
     String source = obj.get("_source").getAsString();
     try {
       widget.setSource(Sources.getDefault().forUri(source));
-    } catch (RuntimeException ex) {
-      System.err.print("Skipping source " + source);
+    } catch (RuntimeException e) {
+      log.log(Level.WARNING, "Skipping source " + source, e);
     }
 
     for (Property p : widget.getProperties()) {
