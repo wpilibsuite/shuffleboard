@@ -4,7 +4,9 @@ import com.google.common.primitives.Doubles;
 import edu.wpi.first.shuffleboard.data.types.NumberType;
 
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.fxml.FXML;
 import javafx.scene.layout.Pane;
@@ -20,12 +22,13 @@ public class ProgressBar extends SimpleAnnotatedWidget<Number> {
 
   final DoubleProperty minValue = new SimpleDoubleProperty(this, "Min Value", 0);
   final DoubleProperty maxValue = new SimpleDoubleProperty(this, "Max Value", 1);
+  final BooleanProperty allowIndeterminateValue = new SimpleBooleanProperty(this, "Allow Indeterminate", false);
 
   @FXML
   private void initialize() {
     progressBar.progressProperty().bind(Bindings.createDoubleBinding(this::calculateProgress,
-        dataProperty(), minValue, maxValue));
-    exportProperties(minValue, maxValue);
+        dataProperty(), minValue, maxValue, allowIndeterminateValue));
+    exportProperties(minValue, maxValue, allowIndeterminateValue);
   }
 
   private double calculateProgress() {
@@ -40,6 +43,11 @@ public class ProgressBar extends SimpleAnnotatedWidget<Number> {
     }
 
     final double value = getData().doubleValue();
+    final boolean allowIndeterminate = allowIndeterminateValue.get();
+
+    if (allowIndeterminate && (value < min || value > max)) {
+      return -1;
+    }
 
     return (Doubles.constrainToRange(value, min, max) - min) / (max - min);
   }
