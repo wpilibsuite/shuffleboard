@@ -17,7 +17,7 @@ public class ProgressBar extends SimpleAnnotatedWidget<Number> {
   @FXML
   javafx.scene.control.ProgressBar progressBar;
 
-  final DoubleProperty minValue = new SimpleDoubleProperty(this, "Min Value", 0);
+  final DoubleProperty minValue = new SimpleDoubleProperty(this, "Min Value", -1);
   final DoubleProperty maxValue = new SimpleDoubleProperty(this, "Max Value", 1);
 
   @FXML
