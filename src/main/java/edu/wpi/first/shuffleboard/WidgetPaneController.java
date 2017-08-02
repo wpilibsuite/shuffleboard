@@ -323,9 +323,9 @@ public class WidgetPaneController {
     for (int i = 0; i < count; i++) {
       Optional<Runnable> move;
       if (left) {
-        move = moveTile(tile, moveLeft, shrinkLeft);
+        move = moveTile(tile, moveLeft, shrinkLeft, true);
       } else {
-        move = moveTile(tile, moveUp, shrinkUp);
+        move = moveTile(tile, moveUp, shrinkUp, false);
       }
       if (move.isPresent()) {
         move.get().run();
@@ -346,10 +346,10 @@ public class WidgetPaneController {
    */
   private Optional<Runnable> moveTile(WidgetTile tile,
                                       Function<TileLayout, TileLayout> targetLayoutFunction,
-                                      Function<TileSize, TileSize> shrink) {
+                                      Function<TileSize, TileSize> shrink,
+                                      boolean left) {
     TileLayout layout = pane.getTileLayout(tile);
     TileLayout targetLayout = targetLayoutFunction.apply(layout);
-    boolean left = targetLayout.origin.col < layout.origin.col;
     int importantDim = left ? layout.size.getWidth() : layout.size.getHeight();
     if (!pane.isOverlapping(targetLayout, n -> n == tile) && !targetLayout.origin.equals(layout.origin)) { // NOPMD
       // Great, we can move it
@@ -370,7 +370,7 @@ public class WidgetPaneController {
           .map(Optional::get)
           .distinct() // need to make sure we have no repeats, or n-row tiles will get moved n times
           .filter(t -> tile != t)
-          .map(t -> moveTile(t, targetLayoutFunction, shrink)) // recursion here
+          .map(t -> moveTile(t, targetLayoutFunction, shrink, left)) // recursion here
           .collect(Collectors.toList());
       if (runs.stream().allMatch(Optional::isPresent)) {
         return Optional.of(() -> {
