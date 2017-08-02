@@ -72,14 +72,12 @@ public class WidgetPaneController {
         SourceEntry entry = (SourceEntry) event.getDragboard().getContent(DataFormats.source);
         DataSource source = entry.get();
         Optional<String> widgetName = Widgets.getDefault().pickWidgetNameFor(source.getDataType());
-        Optional<DummySource> dummySource = DummySource.forTypes(source.getDataType());
-        if (widgetName.isPresent() && dummySource.isPresent()) {
-          Widgets.getDefault().createWidget(widgetName.get(), (DataSource<?>) dummySource.get()).ifPresent(w -> {
-            pane.setHighlight(true);
-            pane.setHighlightPoint(point);
-            pane.setHighlightSize(pane.sizeOfWidget(w));
-          });
-        }
+        DataSource<?> dummySource = DummySource.forTypes(source.getDataType());
+        widgetName.flatMap(s -> Widgets.getDefault().createWidget(s, dummySource)).ifPresent(w -> {
+          pane.setHighlight(true);
+          pane.setHighlightPoint(point);
+          pane.setHighlightSize(pane.sizeOfWidget(w));
+        });
       }
 
       // setting grid lines visible puts them above every child, so move every widget view

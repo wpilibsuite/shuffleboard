@@ -31,7 +31,11 @@ public class WidgetSaver implements ElementTypeAdapter<Widget> {
             .orElseThrow(() -> new JsonParseException("No widget found for " + type)).get();
 
     String source = obj.get("_source").getAsString();
-    widget.setSource(Sources.getDefault().forUri(source));
+    try {
+      widget.setSource(Sources.getDefault().forUri(source));
+    } catch (RuntimeException ex) {
+      System.err.print("Skipping source " + source);
+    }
 
     for (Property p : widget.getProperties()) {
       p.setValue(context.deserialize(obj.get(p.getName()), p.getValue().getClass()));

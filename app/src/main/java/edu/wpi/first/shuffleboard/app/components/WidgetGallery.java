@@ -4,6 +4,7 @@ import edu.wpi.first.shuffleboard.api.sources.DummySource;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 import edu.wpi.first.shuffleboard.api.widget.WidgetType;
 
+
 import java.io.IOException;
 import java.util.Collection;
 
@@ -39,8 +40,7 @@ public class WidgetGallery extends TilePane {
     clear();
     widgets.stream().map(WidgetType::get)
             .peek(widget ->
-              DummySource.forTypes(widget.getDataTypes())
-                         .ifPresent(widget::setSource)
+              widget.setSource(DummySource.forTypes(widget.getDataTypes()))
             )
             .forEach(this::addWidget);
   }

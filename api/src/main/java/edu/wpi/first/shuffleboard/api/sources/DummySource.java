@@ -3,8 +3,8 @@ package edu.wpi.first.shuffleboard.api.sources;
 import com.google.common.collect.ImmutableSet;
 
 import edu.wpi.first.shuffleboard.api.data.DataType;
+import edu.wpi.first.shuffleboard.api.data.DataTypes;
 
-import java.util.Optional;
 import java.util.Set;
 
 @SuppressWarnings("PMD.UseUtilityClass")
@@ -29,21 +29,26 @@ public class DummySource<T> extends AbstractDataSource<T> {
    * If no example source value could be found, then None is returned instead.
    */
   @SuppressWarnings("unchecked")
-  public static Optional<DummySource> forTypes(Set<DataType> types) {
+  public static DataSource<?> forTypes(Set<DataType> types) {
     if (types.isEmpty()) {
-      return Optional.empty();
+      return DataSource.none();
     }
+
     if (types.stream().anyMatch(DataType::isComplex)) {
       DataType type = types.stream().filter(DataType::isComplex).findFirst().get();
-      return Optional.of(new DummySource(type, type.getDefaultValue()));
+      return new DummySource(type, type.getDefaultValue());
     } else {
       DataType type = (DataType) types.toArray()[0];
-      return Optional.of(new DummySource(type, type.getDefaultValue()));
+      return new DummySource(type, type.getDefaultValue());
     }
   }
 
-  public static Optional<DummySource> forTypes(DataType... types) {
+  public static DataSource<?> forTypes(DataType... types) {
     return forTypes(ImmutableSet.copyOf(types));
   }
 
+  public static DataSource forName(String name) {
+    return DummySource.forTypes(DataTypes.getDefault().forName(name)
+        .orElseThrow(() -> new RuntimeException("No DataType " + name)));
+  }
 }
