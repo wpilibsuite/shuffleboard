@@ -46,7 +46,7 @@ public class BooleanBox extends SimpleAnnotatedWidget<Boolean> {
     final Boolean data = getData();
     if (data == null) {
       return Color.BLACK;
-    } else if (data == true) { //NOPMD
+    } else if (data) {
       return trueColor.getValue();
     } else {
       return falseColor.getValue();
