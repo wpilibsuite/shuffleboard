@@ -34,7 +34,7 @@ public class WidgetTile extends BorderPane {
       FXMLLoader loader = new FXMLLoader(WidgetTile.class.getResource("WidgetTile.fxml"));
       loader.setRoot(this);
       loader.load();
-      getStyleClass().add("tile");
+      getStyleClass().addAll("tile", "card");
       PropertyUtils.bindWithConverter(idProperty(), widget, w -> "widget-tile[" + w + "]");
     } catch (IOException e) {
       throw new RuntimeException("Could not load the widget tile FXML", e);
