@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.widget;
 
+import com.google.common.primitives.Doubles;
 import edu.wpi.first.shuffleboard.data.types.NumberType;
 
 import javafx.beans.binding.Bindings;
@@ -33,11 +34,14 @@ public class ProgressBar extends SimpleAnnotatedWidget<Number> {
     }
     final double min = minValue.get();
     final double max = maxValue.get();
-    final double value = getData().doubleValue();
-    if (min >= max || value < min || value > max) {
+
+    if (min >= max) {
       return -1;
     }
-    return (value - min) / (max - min);
+
+    final double value = getData().doubleValue();
+
+    return (Doubles.constrainToRange(value, min, max) - min) / (max - min);
   }
 
   @Override
