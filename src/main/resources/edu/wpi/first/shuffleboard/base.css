@@ -5,7 +5,6 @@
  * through all themes (like the tile highlight) or use CSS variables to make   *
  * them easy to reskin.                                                        *
  ******************************************************************************/
-
 @import "material.css";
 
 /*******************************************************************************
@@ -143,4 +142,29 @@
  ******************************************************************************/
 .slider .track, .range-slider .track {
     -fx-background-color: -swatch-300;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Linear indicator                                                            *
+ *                                                                             *
+ ******************************************************************************/
+.linear-indicator-control {
+}
+
+.linear-indicator .track {
+    -fx-pref-height: 4em;
+    -fx-background-color: -swatch-light-gray;
+}
+
+.linear-indicator .low-thumb, .linear-indicator .high-thumb {
+    -fx-background-radius: 0;
+    -fx-border-radius: 0;
+    -fx-border-width: 0;
+    -fx-border-color: transparent;
+    -fx-background-color: transparent;
+}
+
+.voltage-view .range-bar {
+    -fx-background-color: linear-gradient(to bottom, gold, goldenrod);
 }

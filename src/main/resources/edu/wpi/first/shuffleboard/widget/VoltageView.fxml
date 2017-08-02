@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.layout.StackPane?>
+<?import edu.wpi.first.shuffleboard.components.LinearIndicator?>
+<StackPane xmlns="http://javafx.com/javafx"
+           xmlns:fx="http://javafx.com/fxml"
+           fx:controller="edu.wpi.first.shuffleboard.widget.VoltageViewWidget"
+           fx:id="root">
+    <padding>
+        <Insets topRightBottomLeft="8"/>
+    </padding>
+    <LinearIndicator fx:id="indicator" styleClass="voltage-view" min="0" max="12" showTickLabels="true" showTickMarks="true"/>
+</StackPane>
