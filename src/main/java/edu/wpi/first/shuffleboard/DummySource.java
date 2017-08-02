@@ -43,6 +43,9 @@ public class DummySource<T> extends AbstractDataSource<T> {
     } else if (types.contains(DataTypes.SendableChooser)) {
       final SendableChooserData data = new SendableChooserData(new String[]{"A", "B", "C"}, "A", "A");
       return Optional.of(new DummySource(DataTypes.SendableChooser, data));
+    } else if (types.stream().anyMatch(DataType::isComplex)) {
+      DataType type = types.stream().filter(DataType::isComplex).findFirst().get();
+      return Optional.of(new DummySource(type, type.getDefaultValue()));
     } else {
       return Optional.empty();
     }

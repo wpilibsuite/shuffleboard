@@ -1,6 +1,7 @@
 package edu.wpi.first.shuffleboard.data;
 
 import edu.wpi.first.shuffleboard.data.types.AllType;
+import edu.wpi.first.shuffleboard.data.types.AnalogInputType;
 import edu.wpi.first.shuffleboard.data.types.BooleanArrayType;
 import edu.wpi.first.shuffleboard.data.types.BooleanType;
 import edu.wpi.first.shuffleboard.data.types.MapType;
@@ -39,6 +40,7 @@ public final class DataTypes {
   // Complex types
   public static final ComplexDataType<MapData> Map = new MapType();
   public static final ComplexDataType<SendableChooserData> SendableChooser = new SendableChooserType();
+  public static final ComplexDataType<AnalogInputData> AnalogInput = new AnalogInputType();
 
   private static final Map<String, DataType> dataTypes = new TreeMap<>();
 
@@ -55,6 +57,7 @@ public final class DataTypes {
     register(BooleanArray);
     register(Map);
     register(SendableChooser);
+    register(AnalogInput);
   }
 
   private DataTypes() {
