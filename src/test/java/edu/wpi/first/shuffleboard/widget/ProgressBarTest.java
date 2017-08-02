@@ -30,7 +30,7 @@ public class ProgressBarTest extends ApplicationTest {
 
   @Test
   public void testProgress() {
-    source.setData(0);
+    source.setData(-1);
     WaitForAsyncUtils.waitForFxEvents();
     assertEquals(0, widget.progressBar.getProgress(), 0);
 
@@ -43,12 +43,12 @@ public class ProgressBarTest extends ApplicationTest {
   public void testRangeChangeAffectsProgress() {
     source.setData(0);
     WaitForAsyncUtils.waitForFxEvents();
-    assertEquals(0, widget.progressBar.getProgress(), 0);
+    assertEquals(0.5, widget.progressBar.getProgress(), 0);
 
-    widget.minValue.setValue(-1);
+    widget.minValue.setValue(0);
     widget.maxValue.setValue(1);
     WaitForAsyncUtils.waitForFxEvents();
-    assertEquals(0.5, widget.progressBar.getProgress(), 0);
+    assertEquals(0, widget.progressBar.getProgress(), 0);
   }
 
 }
