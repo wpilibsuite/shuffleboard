@@ -7,7 +7,8 @@ import edu.wpi.first.shuffleboard.data.types.NumberType;
 import edu.wpi.first.shuffleboard.sources.DataSource;
 
 import org.fxmisc.easybind.EasyBind;
-import org.fxmisc.easybind.monadic.MonadicBinding;
+
+import java.util.logging.Logger;
 
 import javafx.fxml.FXML;
 import javafx.scene.layout.Pane;
@@ -16,6 +17,8 @@ import javafx.scene.layout.Pane;
 @ParametrizedController("VoltageView.fxml")
 public class VoltageViewWidget extends AnnotatedWidget {
 
+  private static final Logger log = Logger.getLogger(VoltageViewWidget.class.getName());
+
   @FXML
   private Pane root;
   @FXML
@@ -23,7 +26,7 @@ public class VoltageViewWidget extends AnnotatedWidget {
 
   @FXML
   private void initialize() {
-    MonadicBinding<Double> v = EasyBind.combine(
+    indicator.valueProperty().bind(EasyBind.combine(
         EasyBind.monadic(sourceProperty()).selectProperty(DataSource::dataProperty),
         indicator.minProperty(),
         indicator.maxProperty(),
@@ -38,12 +41,10 @@ public class VoltageViewWidget extends AnnotatedWidget {
             value = ((AnalogInputData) data).getValue();
           } else {
             value = 0;
-            System.err.println("Unexpected data: " + data + " (Source: " + getSource() + ")");
+            log.warning("Unexpected data: " + data + " (Source: " + getSource() + ")"); // NOPMD
           }
           return value;
-        });
-
-    indicator.valueProperty().bind(v);
+        }));
     exportProperties(indicator.minProperty(), indicator.maxProperty());
   }
 

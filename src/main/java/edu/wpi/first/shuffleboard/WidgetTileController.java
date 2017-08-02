@@ -2,14 +2,12 @@ package edu.wpi.first.shuffleboard;
 
 import edu.wpi.first.shuffleboard.components.WidgetTile;
 import edu.wpi.first.shuffleboard.sources.DataSource;
-import edu.wpi.first.shuffleboard.util.PropertyUtils;
 import edu.wpi.first.shuffleboard.widget.Widget;
 import edu.wpi.first.shuffleboard.widget.WidgetPropertySheet;
 
 import org.fxmisc.easybind.EasyBind;
 
 import javafx.beans.binding.Bindings;
-import javafx.beans.property.Property;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Label;

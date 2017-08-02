@@ -10,16 +10,17 @@ public class LinearIndicator extends RangeSlider {
 
   private final DoubleProperty value = new SimpleDoubleProperty(this, "value", 0);
 
+  @SuppressWarnings("JavadocMethod")
   public LinearIndicator() {
     getStyleClass().add("linear-indicator");
     value.addListener((__, prev, cur) -> {
-      double v = cur.doubleValue();
-      if (v < 0) {
-        setLowValue(v);
+      double currentValue = cur.doubleValue();
+      if (currentValue < 0) {
+        setLowValue(currentValue);
         setHighValue(0);
       } else {
         setLowValue(0);
-        setHighValue(v);
+        setHighValue(currentValue);
       }
     });
     setDisable(true);
