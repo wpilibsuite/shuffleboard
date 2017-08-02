@@ -46,7 +46,7 @@ dependencies {
 
 checkstyle {
     configFile = file("$rootDir/checkstyle.xml")
-    toolVersion = "6.19"
+    toolVersion = "8.1"
 }
 
 pmd {

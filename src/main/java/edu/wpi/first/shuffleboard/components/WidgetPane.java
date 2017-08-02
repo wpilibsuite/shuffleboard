@@ -167,7 +167,7 @@ public class WidgetPane extends TilePane {
   }
 
   /**
-   * @return Returns the expected size of the widget, in tiles.
+   * Get the expected size of the widget, in tiles.
    */
   public TileSize sizeOfWidget(Widget widget) {
     Pane view = widget.getView();
