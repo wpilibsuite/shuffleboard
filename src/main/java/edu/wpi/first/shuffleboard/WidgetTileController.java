@@ -1,11 +1,15 @@
 package edu.wpi.first.shuffleboard;
 
 import edu.wpi.first.shuffleboard.components.WidgetTile;
+import edu.wpi.first.shuffleboard.sources.DataSource;
 import edu.wpi.first.shuffleboard.util.PropertyUtils;
 import edu.wpi.first.shuffleboard.widget.Widget;
 import edu.wpi.first.shuffleboard.widget.WidgetPropertySheet;
 
+import org.fxmisc.easybind.EasyBind;
+
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.Property;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
@@ -21,10 +25,10 @@ public class WidgetTileController {
   @FXML
   private void initialize() {
     tile.addEventHandler(MouseEvent.MOUSE_CLICKED, this::changeView);
-    PropertyUtils.bindWithConverter(
-        titleLabel.textProperty(),
-        tile.widgetProperty(),
-        w -> w.getSource().getName());
+    titleLabel.textProperty().bind(
+        EasyBind.monadic(tile.widgetProperty())
+            .selectProperty(Widget::sourceProperty)
+            .selectProperty(DataSource::nameProperty));
     tile.centerProperty().bind(
         Bindings.createObjectBinding(
             this::createCenter, tile.widgetProperty(), tile.showWidgetProperty()));

@@ -2,6 +2,7 @@ package edu.wpi.first.shuffleboard.sources;
 
 import edu.wpi.first.shuffleboard.data.DataType;
 import javafx.beans.property.Property;
+import javafx.beans.property.StringProperty;
 import javafx.beans.value.ObservableValue;
 
 /**
@@ -35,7 +36,7 @@ public interface DataSource<T> {
     return activeProperty().getValue();
   }
 
-  ObservableValue<String> nameProperty();
+  StringProperty nameProperty();
 
   /**
    * Gets the name of this data source. This is typically a unique identifier for the data
