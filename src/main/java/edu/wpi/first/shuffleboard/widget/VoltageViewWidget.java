@@ -45,7 +45,7 @@ public class VoltageViewWidget extends AnnotatedWidget {
           }
           return value;
         }));
-    exportProperties(indicator.minProperty(), indicator.maxProperty());
+    exportProperties(indicator.minProperty(), indicator.maxProperty(), indicator.orientationProperty());
   }
 
   @Override

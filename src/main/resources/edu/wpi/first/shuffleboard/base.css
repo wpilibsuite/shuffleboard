@@ -149,12 +149,13 @@
  * Linear indicator                                                            *
  *                                                                             *
  ******************************************************************************/
-.linear-indicator-control {
-}
-
 .linear-indicator .track {
     -fx-pref-height: 4em;
     -fx-background-color: -swatch-light-gray;
+}
+
+.linear-indicator:vertical .track {
+    -fx-pref-width: 4em;
 }
 
 .linear-indicator .low-thumb, .linear-indicator .high-thumb {
@@ -166,5 +167,5 @@
 }
 
 .voltage-view .range-bar {
-    -fx-background-color: linear-gradient(to bottom, gold, goldenrod);
+    -fx-background-color: gold;
 }
