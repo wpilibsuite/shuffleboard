@@ -163,6 +163,8 @@
     -fx-border-radius: 0;
     -fx-border-width: 0;
     -fx-border-color: transparent;
+    -fx-pref-width: 0;
+    -fx-pref-height: 0;
     -fx-background-color: transparent;
 }
 
