@@ -3,9 +3,10 @@ package edu.wpi.first.shuffleboard.app;
 import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
 import edu.wpi.first.shuffleboard.api.util.Storage;
 import edu.wpi.first.shuffleboard.app.plugin.PluginLoader;
+import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
 import edu.wpi.first.shuffleboard.plugin.base.BasePlugin;
 import edu.wpi.first.shuffleboard.plugin.networktables.NetworkTablesPlugin;
-import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
+import edu.wpi.first.wpilibj.networktables.NetworkTable;
 
 import it.sauronsoftware.junique.AlreadyLockedException;
 import it.sauronsoftware.junique.JUnique;
@@ -41,7 +42,23 @@ public class Shuffleboard extends Application {
       throw alreadyLockedException;
     }
 
-    NetworkTablesJNI.startClient("localhost", 1735);
+    NetworkTable.setClientMode();
+    NetworkTable.initialize();
+
+    AppPreferences.getInstance().serverProperty().addListener(((observable, oldValue, newValue) -> {
+      NetworkTable.shutdown();
+      if (newValue.matches("[1-9](\\d{1,3})?")) {
+        NetworkTable.setTeam(Integer.parseInt(newValue));
+      } else {
+        NetworkTable.setIPAddress(newValue);
+      }
+      NetworkTable.initialize();
+    }));
+    AppPreferences.getInstance().portProperty().addListener(((observable, oldValue, newValue) -> {
+      NetworkTable.shutdown();
+      NetworkTable.setPort(newValue);
+      NetworkTable.initialize();
+    }));
 
     // Load the Roboto font
     Font.loadFont(getClass().getResource("font/roboto/Roboto-Regular.ttf").openStream(), -1);
