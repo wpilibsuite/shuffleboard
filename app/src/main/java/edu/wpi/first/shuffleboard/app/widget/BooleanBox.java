@@ -14,8 +14,6 @@ import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 
-import java.util.Objects;
-
 @Description(
     name = "Boolean Box",
     dataTypes = BooleanType.class)
