@@ -10,6 +10,8 @@ import org.fxmisc.easybind.EasyBind;
 
 import java.util.logging.Logger;
 
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.fxml.FXML;
 import javafx.scene.layout.Pane;
 
@@ -23,6 +25,8 @@ public class VoltageViewWidget extends AnnotatedWidget {
   private Pane root;
   @FXML
   private LinearIndicator indicator;
+
+  private final DoubleProperty numTicks = new SimpleDoubleProperty(this, "numTickMarks", 5);
 
   @FXML
   private void initialize() {
@@ -45,7 +49,17 @@ public class VoltageViewWidget extends AnnotatedWidget {
           }
           return value;
         }));
-    exportProperties(indicator.minProperty(), indicator.maxProperty(), indicator.orientationProperty());
+    indicator.majorTickUnitProperty().bind(
+        EasyBind.combine(indicator.minProperty(), indicator.maxProperty(), numTicks,
+            (min, max, numTicks) -> {
+              if (numTicks.intValue() > 1) {
+                return (max.doubleValue() - min.doubleValue()) / (numTicks.intValue() - 1);
+              } else {
+                return max.doubleValue() - min.doubleValue();
+              }
+            }));
+    exportProperties(indicator.minProperty(), indicator.maxProperty(), indicator.centerProperty(),
+        indicator.orientationProperty(), numTicks);
   }
 
   @Override

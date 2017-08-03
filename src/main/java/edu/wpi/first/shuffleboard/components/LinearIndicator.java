@@ -9,22 +9,30 @@ import javafx.css.PseudoClass;
 public class LinearIndicator extends RangeSlider {
 
   private final DoubleProperty value = new SimpleDoubleProperty(this, "value", 0);
+  private final DoubleProperty center = new SimpleDoubleProperty(this, "center", 0);
 
   @SuppressWarnings("JavadocMethod")
   public LinearIndicator() {
     getStyleClass().add("linear-indicator");
-    value.addListener((__, prev, cur) -> {
-      double currentValue = cur.doubleValue();
-      if (currentValue < 0) {
-        setLowValue(currentValue);
-        setHighValue(0);
-      } else {
-        setLowValue(0);
-        setHighValue(currentValue);
-      }
-    });
+    value.addListener(__ -> setRangeBounds());
+    center.addListener(__ -> setRangeBounds());
     setDisable(true);
     pseudoClassStateChanged(PseudoClass.getPseudoClass("disabled"), false);
+  }
+
+  /**
+   * Sets the low and high values as necessary based on changes to the current value or center properties.
+   */
+  private void setRangeBounds() {
+    double currentValue = getValue();
+    double center = getCenter();
+    if (currentValue < center) {
+      setLowValue(currentValue);
+      setHighValue(center);
+    } else {
+      setLowValue(center);
+      setHighValue(currentValue);
+    }
   }
 
   public double getValue() {
@@ -37,5 +45,17 @@ public class LinearIndicator extends RangeSlider {
 
   public void setValue(double value) {
     this.value.set(value);
+  }
+
+  public double getCenter() {
+    return center.get();
+  }
+
+  public DoubleProperty centerProperty() {
+    return center;
+  }
+
+  public void setCenter(double center) {
+    this.center.set(center);
   }
 }
