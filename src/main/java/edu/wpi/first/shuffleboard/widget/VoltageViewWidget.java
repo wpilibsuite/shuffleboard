@@ -5,6 +5,7 @@ import edu.wpi.first.shuffleboard.data.AnalogInputData;
 import edu.wpi.first.shuffleboard.data.types.AnalogInputType;
 import edu.wpi.first.shuffleboard.data.types.NumberType;
 import edu.wpi.first.shuffleboard.sources.DataSource;
+import edu.wpi.first.shuffleboard.util.UnitStringConverter;
 
 import org.fxmisc.easybind.EasyBind;
 
@@ -58,6 +59,7 @@ public class VoltageViewWidget extends AnnotatedWidget {
                 return max.doubleValue() - min.doubleValue();
               }
             }));
+    indicator.setLabelFormatter(new UnitStringConverter("V")); // "Volts" is too long and causes clipping issues
     exportProperties(indicator.minProperty(), indicator.maxProperty(), indicator.centerProperty(),
         indicator.orientationProperty(), numTicks);
   }
@@ -66,4 +68,5 @@ public class VoltageViewWidget extends AnnotatedWidget {
   public Pane getView() {
     return root;
   }
+
 }

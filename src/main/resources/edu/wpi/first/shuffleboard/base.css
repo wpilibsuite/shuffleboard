@@ -150,12 +150,12 @@
  *                                                                             *
  ******************************************************************************/
 .linear-indicator .track {
-    -fx-pref-height: 4em;
+    -fx-pref-height: 1em;
     -fx-background-color: -swatch-light-gray;
 }
 
 .linear-indicator:vertical .track {
-    -fx-pref-width: 4em;
+    -fx-pref-width: 1em;
 }
 
 .linear-indicator .low-thumb, .linear-indicator .high-thumb {
@@ -169,5 +169,9 @@
 }
 
 .voltage-view .range-bar {
-    -fx-background-color: gold;
+    -fx-background-color: linear-gradient(to bottom, gold, derive(gold, -10%));
+}
+
+.voltage-view:vertical .range-bar {
+    -fx-background-color: linear-gradient(to right, gold, derive(gold, -10%));
 }
