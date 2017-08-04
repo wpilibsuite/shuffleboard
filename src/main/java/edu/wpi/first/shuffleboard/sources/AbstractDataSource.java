@@ -7,6 +7,7 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.beans.value.ObservableValue;
 
 import static java.util.Objects.requireNonNull;
@@ -19,7 +20,7 @@ import static java.util.Objects.requireNonNull;
  */
 public abstract class AbstractDataSource<T> implements DataSource<T> {
 
-  protected final Property<String> name = new SimpleStringProperty(this, "name", "");
+  protected final StringProperty name = new SimpleStringProperty(this, "name", "");
   protected final Property<Boolean> active = new SimpleBooleanProperty(this, "active", false);
   protected final Property<T> data = new AsyncProperty<>(this, "data", null);
   protected final BooleanProperty connected = new SimpleBooleanProperty(this, "connected", false);
@@ -30,7 +31,7 @@ public abstract class AbstractDataSource<T> implements DataSource<T> {
   }
 
   @Override
-  public ObservableValue<String> nameProperty() {
+  public StringProperty nameProperty() {
     return name;
   }
 

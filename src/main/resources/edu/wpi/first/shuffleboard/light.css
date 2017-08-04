@@ -41,10 +41,6 @@
  * Tiles                                                                       *
  *                                                                             *
  ******************************************************************************/
-.tile {
-    -fx-background-color: -swatch-100;
-}
-
 .tile:selected {
     -fx-effect: dropshadow(gaussian, -swatch-500, 6, 0.1, 0, 4);
 }
