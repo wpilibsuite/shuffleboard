@@ -2,6 +2,7 @@ package edu.wpi.first.shuffleboard.widget;
 
 import com.google.common.primitives.Doubles;
 
+import edu.wpi.first.shuffleboard.LiveWindow;
 import edu.wpi.first.shuffleboard.components.LinearIndicator;
 import edu.wpi.first.shuffleboard.components.NumberField;
 import edu.wpi.first.shuffleboard.data.SpeedControllerData;
@@ -43,6 +44,12 @@ public class SpeedController extends SimpleAnnotatedWidget<SpeedControllerData> 
 
   @FXML
   private void initialize() {
+    viewOnly.set(!LiveWindow.isEnabled());
+    LiveWindow.enabledProperty().addListener((__, was, is) -> {
+      if (is) {
+        viewOnly.set(false);
+      }
+    });
     viewPane.visibleProperty().bind(viewOnly);
     controlPane.visibleProperty().bind(viewOnly.not());
     view.valueProperty().bind(EasyBind.monadic(dataProperty()).map(SpeedControllerData::getValue));
