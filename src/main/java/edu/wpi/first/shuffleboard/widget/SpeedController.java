@@ -22,7 +22,7 @@ import javafx.scene.layout.StackPane;
 @ParametrizedController("SpeedController.fxml")
 public class SpeedController extends SimpleAnnotatedWidget<SpeedControllerData> {
 
-  private final BooleanProperty viewOnly = new SimpleBooleanProperty(this, "viewOnly", true);
+  private final BooleanProperty controllable = new SimpleBooleanProperty(this, "controllable", true);
 
   @FXML
   private StackPane root;
@@ -44,14 +44,10 @@ public class SpeedController extends SimpleAnnotatedWidget<SpeedControllerData> 
 
   @FXML
   private void initialize() {
-    viewOnly.set(!LiveWindow.isEnabled());
-    LiveWindow.enabledProperty().addListener((__, was, is) -> {
-      if (is) {
-        viewOnly.set(false);
-      }
-    });
-    viewPane.visibleProperty().bind(viewOnly);
-    controlPane.visibleProperty().bind(viewOnly.not());
+    controllable.set(LiveWindow.isEnabled());
+    LiveWindow.enabledProperty().addListener((__, was, is) -> controllable.set(is));
+    viewPane.visibleProperty().bind(controllable.not());
+    controlPane.visibleProperty().bind(controllable);
     view.valueProperty().bind(EasyBind.monadic(dataProperty()).map(SpeedControllerData::getValue));
     control.valueProperty().addListener(numberUpdateListener);
     valueField.numberProperty().addListener(numberUpdateListener);
@@ -59,7 +55,7 @@ public class SpeedController extends SimpleAnnotatedWidget<SpeedControllerData> 
       control.setValue(cur.getValue());
       valueField.setNumber(cur.getValue());
     });
-    exportProperties(viewOnly);
+    exportProperties(controllable);
   }
 
   @Override
