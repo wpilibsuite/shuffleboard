@@ -1,4 +1,4 @@
-package edu.wpi.first.shuffleboard.api.sources;
+package edu.wpi.first.shuffleboard.app.sources;
 
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.data.MapData;

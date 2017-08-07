@@ -23,7 +23,7 @@ public class DummySource<T> extends AbstractDataSource<T> {
 
   @Override
   public SourceType getType() {
-    return SourceType.STATIC;
+    return SourceTypes.Static;
   }
 
   /**

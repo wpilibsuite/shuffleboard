@@ -1,6 +1,7 @@
-package edu.wpi.first.shuffleboard.api.sources;
+package edu.wpi.first.shuffleboard.app.sources;
 
 import edu.wpi.first.shuffleboard.api.data.DataType;
+import edu.wpi.first.shuffleboard.api.sources.Sources;
 import edu.wpi.first.shuffleboard.api.util.EqualityUtils;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 import edu.wpi.first.wpilibj.tables.ITable;

@@ -1,10 +1,10 @@
 package edu.wpi.first.shuffleboard.app.json;
 
-import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.util.AsyncUtils;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
+import edu.wpi.first.shuffleboard.app.sources.NetworkTableSourceType;
 import edu.wpi.first.shuffleboard.app.widget.Widgets;
 import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
 import javafx.stage.Stage;
@@ -60,7 +60,7 @@ public class WidgetSaverTest extends ApplicationTest {
     Widget widget = JsonBuilder.forSaveFile().fromJson(widgetJson, Widget.class);
 
     assertEquals("Number Slider", widget.getName());
-    assertEquals(SourceType.NETWORK_TABLE, widget.getSource().getType());
+    assertEquals(NetworkTableSourceType.INSTANCE, widget.getSource().getType());
     assertEquals(0.5, widget.getSource().getData());
 
     assertEquals(-1.0, getPropertyValue(widget, "min"));

@@ -1,7 +1,7 @@
 package edu.wpi.first.shuffleboard.app.components;
 
 import edu.wpi.first.shuffleboard.app.NetworkTableEntry;
-import edu.wpi.first.shuffleboard.api.sources.NetworkTableSource;
+import edu.wpi.first.shuffleboard.app.sources.NetworkTableSource;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.app.widget.NetworkTableTreeWidget;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;

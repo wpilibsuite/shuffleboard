@@ -26,7 +26,7 @@ public final class Sources {
   }
 
   public static DataSource<?> forUri(String uri) {
-    return computeIfAbsent(uri, () -> SourceType.fromUri(uri));
+    return computeIfAbsent(uri, () -> SourceTypes.forUri(uri));
   }
 
   @SuppressWarnings("unchecked") //NOPMD multiple occurrences of string literal

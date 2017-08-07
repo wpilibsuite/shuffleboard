@@ -1,35 +1,38 @@
 package edu.wpi.first.shuffleboard.api.sources;
 
-import edu.wpi.first.shuffleboard.api.data.DataType;
-
 import java.util.function.Function;
-import java.util.stream.Stream;
 
-public enum SourceType {
+public class SourceType {
 
-  NONE(false, "", null),
-  STATIC(false, "example://", s -> DummySource.forTypes(DataType.forName(s)).get()),
-  NETWORK_TABLE(true, "network_table://", NetworkTableSource::forKey),
-  CAMERA_SERVER(true, "camera_server://", __ -> {
-    throw new UnsupportedOperationException("Not implemented");
-  });
-
-  public final boolean isRecordable;
+  private final String name;
+  private final boolean isRecordable;
   private final String protocol;
   private final Function<String, DataSource> sourceSupplier;
 
-  SourceType(boolean isRecordable, String protocol, Function<String, DataSource> sourceSupplier) {
+  protected SourceType(String name,
+                       boolean isRecordable,
+                       String protocol,
+                       Function<String, DataSource> sourceSupplier) {
+    this.name = name;
     this.isRecordable = isRecordable;
     this.protocol = protocol;
     this.sourceSupplier = sourceSupplier;
   }
 
-  public String toUri(String sourceName) {
-    return protocol + sourceName;
+  public final String getName() {
+    return name;
+  }
+
+  public final boolean isRecordable() {
+    return isRecordable;
   }
 
   public String getProtocol() {
     return protocol;
+  }
+
+  public String toUri(String sourceName) {
+    return protocol + sourceName;
   }
 
   /**
@@ -58,14 +61,4 @@ public enum SourceType {
     return sourceSupplier.apply(removeProtocol(uri));
   }
 
-  /**
-   * Given a URI-like string with a protocol and a pseudo-path, return a source for that protocol.
-   */
-  public static DataSource<?> fromUri(String uri) {
-    return Stream.of(values())
-            .filter(type -> type != NONE && uri.startsWith(type.protocol))
-            .findFirst()
-            .map(type -> type.forUri(uri))
-            .orElseThrow(() -> new RuntimeException("Couldn't find SourceType for " + uri));
-  }
 }

@@ -10,7 +10,7 @@ import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
 import edu.wpi.first.shuffleboard.app.prefs.ObservableItem;
 import edu.wpi.first.shuffleboard.app.prefs.PropertyEditorFactory;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
-import edu.wpi.first.shuffleboard.api.sources.NetworkTableSource;
+import edu.wpi.first.shuffleboard.app.sources.NetworkTableSource;
 import edu.wpi.first.shuffleboard.app.sources.recording.Playback;
 import edu.wpi.first.shuffleboard.app.sources.recording.Recorder;
 import edu.wpi.first.shuffleboard.app.theme.Theme;

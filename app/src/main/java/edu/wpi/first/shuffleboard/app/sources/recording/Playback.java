@@ -1,10 +1,10 @@
 package edu.wpi.first.shuffleboard.app.sources.recording;
 
 import edu.wpi.first.shuffleboard.api.data.ComplexData;
-import edu.wpi.first.shuffleboard.api.sources.CompositeNetworkTableSource;
-import edu.wpi.first.shuffleboard.api.sources.SourceType;
+import edu.wpi.first.shuffleboard.app.sources.CompositeNetworkTableSource;
 import edu.wpi.first.shuffleboard.api.sources.Sources;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
+import edu.wpi.first.shuffleboard.app.sources.NetworkTableSourceType;
 import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
@@ -199,13 +199,14 @@ public final class Playback {
 
   private void set(TimestampedData data) {
     final String sourceId = data.getSourceId();
-    if (sourceId.startsWith(SourceType.NETWORK_TABLE.getProtocol())) {
+    // TODO move record/set logic to SourceType
+    if (sourceId.startsWith(NetworkTableSourceType.INSTANCE.getProtocol())) {
       // Update all possible sources for the entry
       // This is a special case because of the treelike structure of network tables
-      final String fullKey = SourceType.NETWORK_TABLE.removeProtocol(sourceId);
+      final String fullKey = NetworkTableSourceType.INSTANCE.removeProtocol(sourceId);
       List<String> hierarchy = NetworkTableUtils.getHierarchy(fullKey);
       hierarchy.stream()
-          .map(SourceType.NETWORK_TABLE::toUri)
+          .map(NetworkTableSourceType.INSTANCE::toUri)
           .map(Sources::get)
           .filter(Optional::isPresent)
           .map(Optional::get)

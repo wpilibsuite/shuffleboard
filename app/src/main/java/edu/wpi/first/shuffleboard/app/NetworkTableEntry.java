@@ -2,7 +2,7 @@ package edu.wpi.first.shuffleboard.app;
 
 
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
-import edu.wpi.first.shuffleboard.api.sources.NetworkTableSource;
+import edu.wpi.first.shuffleboard.app.sources.NetworkTableSource;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 
 import java.util.Arrays;

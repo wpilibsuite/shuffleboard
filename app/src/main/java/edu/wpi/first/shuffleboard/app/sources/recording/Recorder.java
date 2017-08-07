@@ -2,7 +2,7 @@ package edu.wpi.first.shuffleboard.app.sources.recording;
 
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
-import edu.wpi.first.shuffleboard.api.sources.SourceType;
+import edu.wpi.first.shuffleboard.app.sources.NetworkTableSourceType;
 import edu.wpi.first.shuffleboard.app.util.Storage;
 import edu.wpi.first.shuffleboard.app.util.ThreadUtils;
 import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
@@ -74,7 +74,7 @@ public final class Recorder {
     // in the recording (eg "/a/b/c" has 2 tables and 3 copies: "/a", "/a/b", and "/a/b/c")
     // This significantly reduces the size of recording files.
     NetworkTablesJNI.addEntryListener("", (uid, key, value, flags) -> {
-      getInstance().record(SourceType.NETWORK_TABLE.toUri(key), DataType.forJavaType(value.getClass()), value);
+      getInstance().record(NetworkTableSourceType.INSTANCE.toUri(key), DataType.forJavaType(value.getClass()), value);
     }, 0xFF);
   }
 

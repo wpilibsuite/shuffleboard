@@ -1,6 +1,10 @@
-package edu.wpi.first.shuffleboard.api.sources;
+package edu.wpi.first.shuffleboard.app.sources;
 
 import edu.wpi.first.shuffleboard.api.data.ComplexDataType;
+import edu.wpi.first.shuffleboard.api.sources.AbstractDataSource;
+import edu.wpi.first.shuffleboard.api.sources.DataSource;
+import edu.wpi.first.shuffleboard.api.sources.SourceType;
+import edu.wpi.first.shuffleboard.api.sources.Sources;
 import edu.wpi.first.shuffleboard.api.util.AsyncUtils;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
@@ -67,7 +71,7 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
 
   @Override
   public SourceType getType() {
-    return SourceType.NETWORK_TABLE;
+    return NetworkTableSourceType.INSTANCE;
   }
 
   @Override
@@ -99,7 +103,7 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
   @SuppressWarnings("unchecked")
   public static DataSource<?> forKey(String fullTableKey) {
     String key = NetworkTableUtils.normalizeKey(fullTableKey, false);
-    final String uri = SourceType.NETWORK_TABLE.toUri(key);
+    final String uri = NetworkTableSourceType.INSTANCE.toUri(key);
     if (NetworkTableUtils.rootTable.containsKey(key)) {
       // Key-value pair
       return Sources.computeIfAbsent(uri, () ->
