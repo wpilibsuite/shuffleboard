@@ -25,7 +25,7 @@ dependencies {
     testRuntime(testFx(name = "openjfx-monocle", version = "8u76-b04"))
 }
 
-val theMainClassName = "edu.wpi.first.shuffleboard.Shuffleboard"
+val theMainClassName = "edu.wpi.first.shuffleboard.app.Shuffleboard"
 
 application {
     mainClassName = theMainClassName

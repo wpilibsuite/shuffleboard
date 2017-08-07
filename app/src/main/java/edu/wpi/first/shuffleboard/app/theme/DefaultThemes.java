@@ -10,12 +10,12 @@ public final class DefaultThemes {
   /**
    * The default, "light" theme.
    */
-  public static final Theme LIGHT = new Theme("Light", "/edu/wpi/first/shuffleboard/light.css");
+  public static final Theme LIGHT = new Theme("Light", "/edu/wpi/first/shuffleboard/app/light.css");
 
   /**
    * The "dark" theme.
    */
-  public static final Theme DARK = new Theme("Dark", "/edu/wpi/first/shuffleboard/dark.css");
+  public static final Theme DARK = new Theme("Dark", "/edu/wpi/first/shuffleboard/app/dark.css");
 
   private DefaultThemes() {
   }
