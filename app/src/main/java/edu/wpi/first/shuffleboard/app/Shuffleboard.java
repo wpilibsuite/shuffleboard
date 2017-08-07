@@ -18,6 +18,7 @@ import java.nio.file.Paths;
 
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
@@ -45,20 +46,31 @@ public class Shuffleboard extends Application {
     NetworkTable.setClientMode();
     NetworkTable.initialize();
 
-    AppPreferences.getInstance().serverProperty().addListener(((observable, oldValue, newValue) -> {
+    ChangeListener<String> serverChangeListener = (observable, oldValue, newValue) -> {
+        if (newValue.matches("[1-9](\\d{1,3})?")) {
+          NetworkTable.setTeam(Integer.parseInt(newValue));
+        } else if (newValue.isEmpty()) {
+          NetworkTable.setIPAddress("127.0.0.1");
+        } else {
+          NetworkTable.setIPAddress(newValue);
+        }
+    };
+    AppPreferences.getInstance().serverProperty().addListener(serverChangeListener);
+
+    ChangeListener<Integer> portChangeListener = (observable, oldValue, newValue) -> {
       NetworkTable.shutdown();
-      if (newValue.matches("[1-9](\\d{1,3})?")) {
-        NetworkTable.setTeam(Integer.parseInt(newValue));
+      if (newValue == null || newValue <= 0 || newValue >= 65535) {
+        NetworkTable.setPort(NetworkTable.DEFAULT_PORT);
       } else {
-        NetworkTable.setIPAddress(newValue);
+        NetworkTable.setPort(newValue);
       }
       NetworkTable.initialize();
-    }));
-    AppPreferences.getInstance().portProperty().addListener(((observable, oldValue, newValue) -> {
-      NetworkTable.shutdown();
-      NetworkTable.setPort(newValue);
-      NetworkTable.initialize();
-    }));
+    };
+    AppPreferences.getInstance().portProperty().addListener(portChangeListener);
+
+    NetworkTable.setClientMode();
+    serverChangeListener.changed(null, null, AppPreferences.getInstance().getServer());
+    portChangeListener.changed(null, null, AppPreferences.getInstance().getPort());
 
     // Load the Roboto font
     Font.loadFont(getClass().getResource("font/roboto/Roboto-Regular.ttf").openStream(), -1);

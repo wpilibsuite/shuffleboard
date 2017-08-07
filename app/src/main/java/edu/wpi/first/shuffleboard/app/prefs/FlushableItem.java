@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.app.prefs;
 
+import javafx.beans.property.SimpleObjectProperty;
 import org.controlsfx.control.PropertySheet;
 
 import java.util.Optional;
@@ -8,31 +9,24 @@ import javafx.beans.property.Property;
 import javafx.beans.value.ObservableValue;
 
 /**
- * An implementation of {@link PropertySheet.Item} that is backed by a JavaFX property.
+ * An implementation of {@link PropertySheet.Item} that can be flushed to a JavaFX property.
  *
  * @param <T> the type of value in this item
  */
-public class ObservableItem<T> implements PropertySheet.Item {
+public class FlushableItem<T> implements PropertySheet.Item {
 
-  private final Class<T> type;
+  private final Class type;
   private final Property<T> property;
   private final String category;
-  private final String description;
 
-  /**
-   * Creates a new observable item from the given property and with the given category. The type
-   * is inferred from the current value of the property.
-   */
-  @SuppressWarnings("unchecked")
-  public ObservableItem(Property<T> property, String category) {
-    this((Class<T>) property.getValue().getClass(), property, category, null);
-  }
+  private Property<T> value;
 
-  private ObservableItem(Class<T> type, Property<T> property, String category, String description) {
-    this.type = type;
+  public FlushableItem(Property<T> property, String category) {
+    this.type = property.getValue().getClass();
     this.property = property;
     this.category = category;
-    this.description = description;
+
+    value = new SimpleObjectProperty(property.getValue());
   }
 
   @Override
@@ -52,12 +46,12 @@ public class ObservableItem<T> implements PropertySheet.Item {
 
   @Override
   public String getDescription() {
-    return description;
+    return null;
   }
 
   @Override
   public Object getValue() {
-    return property.getValue();
+    return value.getValue();
   }
 
   @Override
@@ -66,12 +60,22 @@ public class ObservableItem<T> implements PropertySheet.Item {
     if (!type.isInstance(value)) {
       throw new IllegalArgumentException("'" + value + "' is not of type " + type.getName());
     }
-    property.setValue((T) value);
+
+    this.value.setValue((T) value);
   }
 
   @Override
-  public Optional<ObservableValue<? extends Object>> getObservableValue() {
-    return Optional.of(property);
+  public Optional<ObservableValue<?>> getObservableValue() {
+    return Optional.of(value);
+  }
+
+  public boolean isChanged() {
+    return !property.getValue().equals(value.getValue());
+  }
+
+  public void flush() {
+    System.out.println("Property Updated!");
+    property.setValue(value.getValue());
   }
 
 }

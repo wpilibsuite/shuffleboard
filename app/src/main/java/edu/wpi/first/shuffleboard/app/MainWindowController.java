@@ -20,8 +20,14 @@ import edu.wpi.first.shuffleboard.app.components.WidgetPropertySheet;
 import edu.wpi.first.shuffleboard.app.json.JsonBuilder;
 import edu.wpi.first.shuffleboard.app.plugin.PluginLoader;
 import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
+
+import edu.wpi.first.shuffleboard.app.prefs.FlushableItem;
 import edu.wpi.first.shuffleboard.app.sources.recording.Playback;
 
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
+import javafx.scene.input.KeyCode;
+import javafx.stage.Stage;
 import org.controlsfx.control.PropertySheet;
 import org.fxmisc.easybind.EasyBind;
 
@@ -51,7 +57,6 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableRow;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
-import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
@@ -59,7 +64,6 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
-import javafx.stage.Stage;
 
 import static edu.wpi.first.shuffleboard.api.components.SourceTreeTable.alphabetical;
 import static edu.wpi.first.shuffleboard.api.components.SourceTreeTable.branchesFirst;
@@ -375,24 +379,25 @@ public class MainWindowController {
     propertySheet.setModeSwitcherVisible(false);
     propertySheet.setSearchBoxVisible(false);
     propertySheet.setMode(PropertySheet.Mode.NAME);
-    StackPane pane = new StackPane(propertySheet);
-    pane.setPadding(new Insets(8));
-    Scene scene = new Scene(pane);
-    EasyBind.listBind(scene.getRoot().getStylesheets(), root.getStylesheets());
 
-    Stage stage = new Stage();
-    stage.setScene(scene);
-    stage.initModality(Modality.APPLICATION_MODAL);
-    stage.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
-      if (event.getCode() == KeyCode.ESCAPE) {
-        stage.close();
-      }
-    });
-    stage.setTitle("Shuffleboard Preferences");
-    stage.sizeToScene();
-    stage.setResizable(false);
-    stage.requestFocus();
-    stage.showAndWait();
+    AppPreferences.getInstance().getProperties()
+        .stream()
+        .map(property -> new FlushableItem(property, "Application"))
+        .forEachOrdered(propertySheet.getItems()::add);
+
+    Dialog<Boolean> dialog = new Dialog<>();
+    dialog.getDialogPane().setContent(propertySheet);
+    dialog.initModality(Modality.APPLICATION_MODAL);
+    dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CANCEL, ButtonType.OK);
+    dialog.setTitle("Shuffleboard Preferences");
+    dialog.setResizable(true);
+    dialog.setResultConverter(button -> !button.getButtonData().isCancelButton());
+    if (dialog.showAndWait().orElse(false)) {
+      propertySheet.getItems().stream()
+          .map(item -> (FlushableItem) item)
+          .filter(FlushableItem::isChanged)
+          .forEach(FlushableItem::flush);
+    }
   }
 
   @FXML
