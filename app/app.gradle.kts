@@ -47,6 +47,27 @@ tasks {
     }
 }
 
+tasks.withType<Test> {
+    /*
+     * Allows you to run the UI tests in headless mode by calling gradle with the -Pheadless argument
+     */
+    if (project.hasProperty("jenkinsBuild") || project.hasProperty("headless")) {
+        println("Running UI Tests Headless")
+
+        jvmArgs = listOf(
+            "-Djava.awt.headless=true",
+            "-Dtestfx.robot=glass",
+            "-Dtestfx.headless=true",
+            "-Dprism.order=sw",
+            "-Dprism.text=t2k"
+        )
+        useJUnit {
+            this as JUnitOptions
+            excludeCategories("edu.wpi.first.shuffleboard.NonHeadlessTests")
+        }
+    }
+}
+
 /**
  * @return [edu.wpi.first.wpilib.versioning.WPILibVersioningPluginExtension.version] value or null
  * if that value is the empty string.

@@ -12,13 +12,7 @@ buildscript {
     }
 }
 plugins {
-    java
-    application
-    idea
-    checkstyle
     `maven-publish`
-    pmd
-    findbugs
     jacoco
     id("edu.wpi.first.wpilib.versioning.WPILibVersioningPlugin") version "1.6"
     id("com.github.johnrengelman.shadow") version "2.0.1"
@@ -101,25 +95,6 @@ subprojects {
             }
             exceptionFormat = TestExceptionFormat.FULL
         }
-        /*
-         * Allows you to run the UI tests in headless mode by calling gradle with the -Pheadless argument
-         */
-        if (project.hasProperty("jenkinsBuild") || project.hasProperty("headless")) {
-            println("Running UI Tests Headless")
-
-            jvmArgs = listOf(
-                "-Djava.awt.headless=true",
-                "-Dtestfx.robot=glass",
-                "-Dtestfx.headless=true",
-                "-Dprism.order=sw",
-                "-Dprism.text=t2k"
-            )
-            useJUnit {
-                this as JUnitOptions
-                excludeCategories("edu.wpi.first.shuffleboard.NonHeadlessTests")
-            }
-        }
-
     }
 }
 
@@ -163,3 +138,45 @@ fun getWPILibVersion(): String? = if (WPILibVersion.version != "") WPILibVersion
 task<Wrapper>("wrapper") {
     gradleVersion = "4.0.2"
 }
+
+/**
+ * Retrieves the [java][org.gradle.api.plugins.JavaPluginConvention] project convention.
+ */
+val Project.`java`: org.gradle.api.plugins.JavaPluginConvention get() =
+    convention.getPluginByName("java")
+
+/**
+ * Retrieves the [checkstyle][org.gradle.api.plugins.quality.CheckstyleExtension] project extension.
+ */
+val Project.`checkstyle`: org.gradle.api.plugins.quality.CheckstyleExtension get() =
+    extensions.getByName("checkstyle") as org.gradle.api.plugins.quality.CheckstyleExtension
+
+/**
+ * Configures the [checkstyle][org.gradle.api.plugins.quality.CheckstyleExtension] project extension.
+ */
+fun Project.`checkstyle`(configure: org.gradle.api.plugins.quality.CheckstyleExtension.() -> Unit) =
+    extensions.configure("checkstyle", configure)
+
+/**
+ * Retrieves the [pmd][org.gradle.api.plugins.quality.PmdExtension] project extension.
+ */
+val Project.`pmd`: org.gradle.api.plugins.quality.PmdExtension get() =
+    extensions.getByName("pmd") as org.gradle.api.plugins.quality.PmdExtension
+
+/**
+ * Configures the [pmd][org.gradle.api.plugins.quality.PmdExtension] project extension.
+ */
+fun Project.`pmd`(configure: org.gradle.api.plugins.quality.PmdExtension.() -> Unit) =
+    extensions.configure("pmd", configure)
+
+/**
+ * Retrieves the [findbugs][org.gradle.api.plugins.quality.FindBugsExtension] project extension.
+ */
+val Project.`findbugs`: org.gradle.api.plugins.quality.FindBugsExtension get() =
+    extensions.getByName("findbugs") as org.gradle.api.plugins.quality.FindBugsExtension
+
+/**
+ * Configures the [findbugs][org.gradle.api.plugins.quality.FindBugsExtension] project extension.
+ */
+fun Project.`findbugs`(configure: org.gradle.api.plugins.quality.FindBugsExtension.() -> Unit) =
+    extensions.configure("findbugs", configure)

@@ -2,7 +2,6 @@ package edu.wpi.first.shuffleboard.api.widget;
 
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 
-import edu.wpi.first.shuffleboard.api.widget.Widget;
 import javafx.beans.property.Property;
 
 public interface SingleTypeWidget<T> extends Widget {

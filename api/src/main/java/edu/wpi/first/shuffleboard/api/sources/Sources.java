@@ -1,8 +1,5 @@
 package edu.wpi.first.shuffleboard.api.sources;
 
-import edu.wpi.first.shuffleboard.api.sources.DataSource;
-import edu.wpi.first.shuffleboard.api.sources.SourceType;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;

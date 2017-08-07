@@ -2,9 +2,6 @@ package edu.wpi.first.shuffleboard.api.widget;
 
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
-import edu.wpi.first.shuffleboard.api.widget.AbstractWidget;
-import edu.wpi.first.shuffleboard.api.widget.Description;
-import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 
 import java.util.Set;
 

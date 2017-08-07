@@ -3,7 +3,6 @@ package edu.wpi.first.shuffleboard.api.widget;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
 
-import edu.wpi.first.shuffleboard.api.widget.Widget;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;

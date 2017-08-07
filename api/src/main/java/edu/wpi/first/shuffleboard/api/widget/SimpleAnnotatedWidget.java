@@ -2,8 +2,6 @@ package edu.wpi.first.shuffleboard.api.widget;
 
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 
-import edu.wpi.first.shuffleboard.api.widget.AnnotatedWidget;
-import edu.wpi.first.shuffleboard.api.widget.SingleTypeWidget;
 import org.fxmisc.easybind.EasyBind;
 
 import javafx.beans.property.Property;
