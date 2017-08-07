@@ -16,7 +16,7 @@ public final class JsonBuilder {
     return ClassPath.from(JsonBuilder.class.getClassLoader())
             .getAllClasses()
             .stream()
-            .filter(ci -> ci.getPackageName().startsWith("edu.wpi.first.shuffleboard.json"))
+            .filter(ci -> ci.getPackageName().startsWith("edu.wpi.first.shuffleboard.app.json"))
             .map(ClassPath.ClassInfo::load)
             .filter(c -> c.isAnnotationPresent(AnnotatedTypeAdapter.class))
             .collect(Collectors.toList());
