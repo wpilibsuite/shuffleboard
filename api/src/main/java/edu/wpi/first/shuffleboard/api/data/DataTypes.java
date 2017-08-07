@@ -1,15 +1,16 @@
 package edu.wpi.first.shuffleboard.api.data;
 
-import edu.wpi.first.shuffleboard.api.data.types.BooleanArrayType;
-import edu.wpi.first.shuffleboard.api.data.types.RawByteType;
-import edu.wpi.first.shuffleboard.api.data.types.SendableChooserType;
 import edu.wpi.first.shuffleboard.api.data.types.AllType;
 import edu.wpi.first.shuffleboard.api.data.types.AnalogInputType;
+import edu.wpi.first.shuffleboard.api.data.types.BooleanArrayType;
 import edu.wpi.first.shuffleboard.api.data.types.BooleanType;
 import edu.wpi.first.shuffleboard.api.data.types.MapType;
 import edu.wpi.first.shuffleboard.api.data.types.NoneType;
 import edu.wpi.first.shuffleboard.api.data.types.NumberArrayType;
 import edu.wpi.first.shuffleboard.api.data.types.NumberType;
+import edu.wpi.first.shuffleboard.api.data.types.RawByteType;
+import edu.wpi.first.shuffleboard.api.data.types.SendableChooserType;
+import edu.wpi.first.shuffleboard.api.data.types.SpeedControllerType;
 import edu.wpi.first.shuffleboard.api.data.types.StringArrayType;
 import edu.wpi.first.shuffleboard.api.data.types.StringType;
 import edu.wpi.first.shuffleboard.api.data.types.UnknownType;
@@ -41,6 +42,7 @@ public final class DataTypes {
   public static final ComplexDataType<MapData> Map = new MapType();
   public static final ComplexDataType<SendableChooserData> SendableChooser = new SendableChooserType();
   public static final ComplexDataType<AnalogInputData> AnalogInput = new AnalogInputType();
+  public static final ComplexDataType<SpeedControllerData> SpeedController = new SpeedControllerType();
 
   private static final Map<String, DataType> dataTypes = new TreeMap<>();
 
@@ -58,6 +60,7 @@ public final class DataTypes {
     register(Map);
     register(SendableChooser);
     register(AnalogInput);
+    register(SpeedController);
   }
 
   private DataTypes() {
