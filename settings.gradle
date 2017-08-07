@@ -1,0 +1,12 @@
+include ":api"
+include ":app"
+
+rootProject.children.each { project ->
+    final String groovyName = "${project.name}.gradle"
+    final String kotlinName = "${project.name}.gradle.kts"
+    project.buildFileName = groovyName
+    if (!project.buildFile.isFile()) {
+        project.buildFileName = kotlinName
+    }
+    assert project.buildFile.isFile() : "File named $groovyName or $kotlinName must exist."
+}
