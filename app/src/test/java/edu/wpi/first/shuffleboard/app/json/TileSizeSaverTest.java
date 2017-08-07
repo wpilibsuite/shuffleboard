@@ -3,7 +3,6 @@ package edu.wpi.first.shuffleboard.app.json;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParseException;
-import edu.wpi.first.shuffleboard.app.json.TileSizeSaver;
 import edu.wpi.first.shuffleboard.app.widget.TileSize;
 import org.junit.Before;
 import org.junit.Test;
@@ -11,7 +10,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
 public class TileSizeSaverTest {
-  Gson gson;
+  private Gson gson;
 
   @Before
   public void setUp() throws Exception {

@@ -63,7 +63,7 @@ tasks.withType<Test> {
         )
         useJUnit {
             this as JUnitOptions
-            excludeCategories("edu.wpi.first.shuffleboard.NonHeadlessTests")
+            excludeCategories("edu.wpi.first.shuffleboard.app.NonHeadlessTests")
         }
     }
 }

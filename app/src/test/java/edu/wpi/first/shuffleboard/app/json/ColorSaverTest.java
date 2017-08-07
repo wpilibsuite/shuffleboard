@@ -2,7 +2,6 @@ package edu.wpi.first.shuffleboard.app.json;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import edu.wpi.first.shuffleboard.app.json.ColorSaver;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import org.junit.Test;

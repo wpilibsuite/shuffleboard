@@ -6,7 +6,6 @@ import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.app.widget.NetworkTableTreeWidget;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
 
-import org.hamcrest.core.IsNot;
 import org.junit.After;
 import org.junit.Test;
 import org.testfx.framework.junit.ApplicationTest;
@@ -19,6 +18,11 @@ import javafx.scene.control.TreeTableView;
 import javafx.stage.Stage;
 
 import static edu.wpi.first.shuffleboard.api.util.NetworkTableUtils.waitForNtcoreEvents;
+import static edu.wpi.first.shuffleboard.app.components.NetworkTableTreeItemMatcher.hasDisplayString;
+import static edu.wpi.first.shuffleboard.app.components.NetworkTableTreeItemMatcher.hasKey;
+import static edu.wpi.first.shuffleboard.app.components.NetworkTableTreeItemMatcher.hasSimpleKey;
+import static edu.wpi.first.shuffleboard.app.components.NetworkTableTreeItemMatcher.isExpanded;
+import static edu.wpi.first.shuffleboard.app.components.NetworkTableTreeItemMatcher.isLeaf;
 import static org.hamcrest.core.IsNot.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -65,10 +69,10 @@ public class NetworkTableTreeTest extends ApplicationTest {
 
     ObservableList<TreeItem<NetworkTableEntry>> children = root.getChildren();
     TreeItem<NetworkTableEntry> child = children.get(0);
-    assertThat(child, NetworkTableTreeItemMatcher.hasKey("/entry"));
-    assertThat(child, NetworkTableTreeItemMatcher.hasSimpleKey("entry"));
-    assertThat(child, NetworkTableTreeItemMatcher.hasDisplayString("value"));
-    assertThat("Child should be a leaf", child, NetworkTableTreeItemMatcher.isLeaf());
+    assertThat(child, hasKey("/entry"));
+    assertThat(child, hasSimpleKey("entry"));
+    assertThat(child, hasDisplayString("value"));
+    assertThat("Child should be a leaf", child, isLeaf());
   }
 
   @Test
@@ -81,15 +85,15 @@ public class NetworkTableTreeTest extends ApplicationTest {
     final TreeItem<NetworkTableEntry> branch = children.get(0);
     final TreeItem<NetworkTableEntry> leaf = branch.getChildren().get(0);
 
-    assertThat(branch, NetworkTableTreeItemMatcher.hasKey("/branch"));
-    assertThat(branch, NetworkTableTreeItemMatcher.hasDisplayString(""));
-    assertThat("Branch should not be a leaf", branch, IsNot.not(NetworkTableTreeItemMatcher.isLeaf()));
-    assertThat("Branch should be expanded", branch, NetworkTableTreeItemMatcher.isExpanded());
+    assertThat(branch, hasKey("/branch"));
+    assertThat(branch, hasDisplayString(""));
+    assertThat("Branch should not be a leaf", branch, not(isLeaf()));
+    assertThat("Branch should be expanded", branch, isExpanded());
 
-    assertThat(leaf, NetworkTableTreeItemMatcher.hasKey("/branch/entry"));
-    assertThat(leaf, NetworkTableTreeItemMatcher.hasSimpleKey("entry"));
-    assertThat(leaf, NetworkTableTreeItemMatcher.hasDisplayString("x"));
-    assertThat(leaf, NetworkTableTreeItemMatcher.isLeaf());
+    assertThat(leaf, hasKey("/branch/entry"));
+    assertThat(leaf, hasSimpleKey("entry"));
+    assertThat(leaf, hasDisplayString("x"));
+    assertThat(leaf, isLeaf());
   }
 
   @Test
@@ -106,11 +110,11 @@ public class NetworkTableTreeTest extends ApplicationTest {
 
     ObservableList<TreeItem<NetworkTableEntry>> children = root.getChildren();
     assertEquals("There should be 5 children", 5, children.size());
-    assertThat(root, NetworkTableTreeItemMatcher.hasKey("/sub_a").atIndex(0));
-    assertThat(root, NetworkTableTreeItemMatcher.hasKey("/sub_b").atIndex(1));
-    assertThat(root, NetworkTableTreeItemMatcher.hasKey("/a").atIndex(2));
-    assertThat(root, NetworkTableTreeItemMatcher.hasKey("/b").atIndex(3));
-    assertThat(root, NetworkTableTreeItemMatcher.hasKey("/c").atIndex(4));
+    assertThat(root, hasKey("/sub_a").atIndex(0));
+    assertThat(root, hasKey("/sub_b").atIndex(1));
+    assertThat(root, hasKey("/a").atIndex(2));
+    assertThat(root, hasKey("/b").atIndex(3));
+    assertThat(root, hasKey("/c").atIndex(4));
 
     assertCellIndex("sub_a", 0);
     assertCellIndex("sub_entry_a", 1);
