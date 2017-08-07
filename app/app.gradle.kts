@@ -1,7 +1,5 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.gradle.jvm.tasks.Jar
-import org.gradle.script.lang.kotlin.create
-import org.gradle.script.lang.kotlin.invoke
 
 plugins {
     application
