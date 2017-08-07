@@ -48,16 +48,20 @@ public class SpeedController extends SimpleAnnotatedWidget<SpeedControllerData> 
   @FXML
   private void initialize() {
     controllable.set(LiveWindow.isEnabled());
+
     LiveWindow.enabledProperty().addListener((__, was, is) -> controllable.set(is));
     viewPane.visibleProperty().bind(controllable.not());
     controlPane.visibleProperty().bind(controllable);
+
     view.valueProperty().bind(EasyBind.monadic(dataProperty()).map(SpeedControllerData::getValue));
+
     control.valueProperty().addListener(numberUpdateListener);
     valueField.numberProperty().addListener(numberUpdateListener);
     dataProperty().addListener((__, prev, cur) -> {
       control.setValue(cur.getValue());
       valueField.setNumber(cur.getValue());
     });
+
     exportProperties(controllable);
   }
 
