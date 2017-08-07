@@ -1,7 +1,5 @@
 package edu.wpi.first.shuffleboard.app;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
 import edu.wpi.first.wpilibj.tables.ITable;
 
@@ -14,8 +12,7 @@ import javafx.beans.property.SimpleBooleanProperty;
  */
 public final class LiveWindow {
 
-  @VisibleForTesting
-  static ITable liveWindowTable = NetworkTable.getTable("LiveWindow");
+  private static final ITable liveWindowTable = NetworkTable.getTable("LiveWindow");
 
   private static final BooleanProperty enabled = new SimpleBooleanProperty(LiveWindow.class, "enabled", false);
 
