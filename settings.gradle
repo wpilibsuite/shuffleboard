@@ -2,6 +2,10 @@ include ":api"
 include ":app"
 
 rootProject.children.each { project ->
+    /*
+     * Instead of every file being named build.gradle.kts we instead use the name ${project.name}.gradle.kts.
+     * This is much nicer for searching for the file in your IDE.
+     */
     final String groovyName = "${project.name}.gradle"
     final String kotlinName = "${project.name}.gradle.kts"
     project.buildFileName = groovyName
