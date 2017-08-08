@@ -4,6 +4,7 @@ import edu.wpi.first.shuffleboard.api.data.types.AllType;
 import edu.wpi.first.shuffleboard.api.data.types.AnalogInputType;
 import edu.wpi.first.shuffleboard.api.data.types.BooleanArrayType;
 import edu.wpi.first.shuffleboard.api.data.types.BooleanType;
+import edu.wpi.first.shuffleboard.api.data.types.EncoderType;
 import edu.wpi.first.shuffleboard.api.data.types.MapType;
 import edu.wpi.first.shuffleboard.api.data.types.NoneType;
 import edu.wpi.first.shuffleboard.api.data.types.NumberArrayType;
@@ -43,6 +44,7 @@ public final class DataTypes {
   public static final ComplexDataType<SendableChooserData> SendableChooser = new SendableChooserType();
   public static final ComplexDataType<AnalogInputData> AnalogInput = new AnalogInputType();
   public static final ComplexDataType<SpeedControllerData> SpeedController = new SpeedControllerType();
+  public static final ComplexDataType<EncoderData> Encoder = new EncoderType();
 
   private static final Map<String, DataType> dataTypes = new TreeMap<>();
 
@@ -61,6 +63,7 @@ public final class DataTypes {
     register(SendableChooser);
     register(AnalogInput);
     register(SpeedController);
+    register(Encoder);
   }
 
   private DataTypes() {

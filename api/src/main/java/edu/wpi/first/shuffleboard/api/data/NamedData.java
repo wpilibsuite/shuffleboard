@@ -1,6 +1,6 @@
 package edu.wpi.first.shuffleboard.api.data;
 
-import com.google.common.collect.ImmutableMap;
+import edu.wpi.first.shuffleboard.api.util.Maps;
 
 import java.util.Map;
 
@@ -16,7 +16,10 @@ public abstract class NamedData<T> extends ComplexData<NamedData<T>> {
 
   @Override
   public Map<String, Object> asMap() {
-    return ImmutableMap.of("Name", name, "Value", value);
+    return Maps.<String, Object>builder()
+        .put("Name", name)
+        .put("Value", value)
+        .build();
   }
 
   public final String getName() {
