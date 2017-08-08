@@ -1,6 +1,7 @@
 package edu.wpi.first.shuffleboard.app.components;
 
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
+import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
@@ -12,7 +13,6 @@ import edu.wpi.first.shuffleboard.app.widget.Widgets;
 import org.fxmisc.easybind.EasyBind;
 
 import java.util.Arrays;
-import java.util.Optional;
 import java.util.function.Predicate;
 
 import javafx.beans.property.BooleanProperty;
@@ -167,23 +167,41 @@ public class DashboardTabPane extends TabPane {
       if (!isAutoPopulate() || getSourcePrefix().isEmpty()) {
         return;
       }
-      availableSourceIds.stream()
-          .filter(id -> id.startsWith(getSourcePrefix())
-              || SourceTypes.stripProtocol(id).startsWith(getSourcePrefix()))
-          .filter(id -> SourceTypes.typeForUri(id) != NetworkTableSourceType.INSTANCE
-              || !NetworkTableUtils.isMetadata(NetworkTableSourceType.INSTANCE.removeProtocol(id)))
-          .filter(id -> getWidgetPane().getTiles().stream()
-              .map(t -> t.getWidget().getSource())
-              .noneMatch(s -> id.startsWith(s.getId())))
-          .sorted()
-          .map(SourceTypes::forUri)
-          .filter(s -> s.getDataType() != DataTypes.Unknown) // Don't create widgets for the catchall types
-          .filter(s -> s.getDataType() != DataTypes.Map)
-          .filter(s -> !Widgets.widgetNamesForSource(s).isEmpty())
-          .map(s -> Widgets.createWidget(Widgets.widgetNamesForSource(s).get(0), s))
-          .filter(Optional::isPresent)
-          .map(Optional::get)
-          .forEach(w -> getWidgetPane().addWidget(w));
+      for (String id : availableSourceIds) {
+        if (id.startsWith(getSourcePrefix())
+            || SourceTypes.stripProtocol(id).startsWith(getSourcePrefix())) {
+          if (SourceTypes.typeForUri(id) != NetworkTableSourceType.INSTANCE
+              || !NetworkTableUtils.isMetadata(NetworkTableSourceType.INSTANCE.removeProtocol(id))) {
+            if (noExistingWidgetsForSource(id)) {
+              DataSource<?> source = SourceTypes.forUri(id);
+
+              // Don't create widgets for the catchall types
+              if (source.getDataType() != DataTypes.Unknown
+                  && source.getDataType() != DataTypes.Map) {
+                if (!Widgets.widgetNamesForSource(source).isEmpty()) {
+                  Widgets.createWidget(Widgets.widgetNamesForSource(source).get(0), source)
+                      .ifPresent(w -> getWidgetPane().addWidget(w));
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    /**
+     * Checks if there are any widgets in the widget pane backed by a source with the given ID.
+     *
+     * @param id the ID of the source to check for
+     */
+    private boolean noExistingWidgetsForSource(String id) {
+      for (WidgetTile tile : getWidgetPane().getTiles()) {
+        DataSource<?> source = tile.getWidget().getSource();
+        if (id.startsWith(source.getId())) {
+          return false;
+        }
+      }
+      return true;
     }
 
     public WidgetPane getWidgetPane() {
