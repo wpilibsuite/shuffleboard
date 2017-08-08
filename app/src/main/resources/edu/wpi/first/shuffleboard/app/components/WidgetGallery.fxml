@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import edu.wpi.first.shuffleboard.app.components.WidgetGallery ?>
+
+<fx:root fx:id="root" type="WidgetGallery" xmlns="http://javafx.com/javafx"
+         xmlns:fx="http://javafx.com/fxml"
+         fx:controller="edu.wpi.first.shuffleboard.app.components.WidgetGalleryController"
+         styleClass="widget-gallery">
+
+</fx:root>
