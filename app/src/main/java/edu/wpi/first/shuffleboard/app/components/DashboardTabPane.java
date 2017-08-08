@@ -168,25 +168,30 @@ public class DashboardTabPane extends TabPane {
         return;
       }
       for (String id : availableSourceIds) {
-        if (id.startsWith(getSourcePrefix())
-            || SourceTypes.stripProtocol(id).startsWith(getSourcePrefix())) {
-          if (SourceTypes.typeForUri(id) != NetworkTableSourceType.INSTANCE
-              || !NetworkTableUtils.isMetadata(NetworkTableSourceType.INSTANCE.removeProtocol(id))) {
-            if (noExistingWidgetsForSource(id)) {
-              DataSource<?> source = SourceTypes.forUri(id);
+        if (shouldAutopopulate(id)
+            && isNotMetadata(id)
+            && noExistingWidgetsForSource(id)) {
+          DataSource<?> source = SourceTypes.forUri(id);
 
-              // Don't create widgets for the catchall types
-              if (source.getDataType() != DataTypes.Unknown
-                  && source.getDataType() != DataTypes.Map) {
-                if (!Widgets.widgetNamesForSource(source).isEmpty()) {
-                  Widgets.createWidget(Widgets.widgetNamesForSource(source).get(0), source)
-                      .ifPresent(w -> getWidgetPane().addWidget(w));
-                }
-              }
-            }
+          // Don't create widgets for the catchall types
+          if (source.getDataType() != DataTypes.Unknown
+              && source.getDataType() != DataTypes.Map
+              && !Widgets.widgetNamesForSource(source).isEmpty()) {
+            Widgets.createWidget(Widgets.widgetNamesForSource(source).get(0), source)
+                .ifPresent(w -> getWidgetPane().addWidget(w));
           }
         }
       }
+    }
+
+    private boolean shouldAutopopulate(String sourceId) {
+      return sourceId.startsWith(getSourcePrefix())
+          || SourceTypes.stripProtocol(sourceId).startsWith(getSourcePrefix());
+    }
+
+    private boolean isNotMetadata(String sourceId) {
+      return SourceTypes.typeForUri(sourceId) != NetworkTableSourceType.INSTANCE
+          || !NetworkTableUtils.isMetadata(NetworkTableSourceType.INSTANCE.removeProtocol(sourceId));
     }
 
     /**

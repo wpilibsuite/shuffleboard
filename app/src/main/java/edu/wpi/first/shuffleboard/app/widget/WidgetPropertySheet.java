@@ -2,7 +2,6 @@ package edu.wpi.first.shuffleboard.app.widget;
 
 import edu.wpi.first.shuffleboard.api.components.NumberField;
 
-import edu.wpi.first.shuffleboard.api.widget.Widget;
 import org.controlsfx.control.PropertySheet;
 import org.controlsfx.control.ToggleSwitch;
 import org.controlsfx.property.editor.AbstractPropertyEditor;
@@ -78,11 +77,11 @@ public class WidgetPropertySheet extends PropertySheet {
       StringBuilder builder = new StringBuilder();
       builder.append(Character.toUpperCase(chars[0]));
       for (int i = 1; i < chars.length; i++) {
-        char c = chars[i];
-        if (Character.isUpperCase(c)) {
-          builder.append(' ').append(Character.toLowerCase(c));
+        char next = chars[i];
+        if (Character.isUpperCase(next)) {
+          builder.append(' ').append(Character.toLowerCase(next));
         } else {
-          builder.append(c);
+          builder.append(next);
         }
       }
       return builder.toString();
