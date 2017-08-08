@@ -21,12 +21,16 @@ public final class NetworkTableSourceType extends SourceType {
   private NetworkTableSourceType() {
     super("NetworkTable", true, "network_table://", NetworkTableSource::forKey);
     NetworkTablesJNI.addEntryListener("", (uid, key, value, flags) -> {
-      final String uri = toUri(key);
-      if (NetworkTableUtils.isDelete(flags)) {
-        availableSourceIds.remove(uri);
-      } else if (!availableSourceIds.contains(uri)) {
-        availableSourceIds.add(uri);
-      }
+      NetworkTableUtils.getHierarchy(key)
+          .stream()
+          .map(this::toUri)
+          .forEach(uri -> {
+            if (NetworkTableUtils.isDelete(flags)) {
+              availableSourceIds.remove(uri);
+            } else if (!availableSourceIds.contains(uri)) {
+              availableSourceIds.add(uri);
+            }
+          });
     }, 0xFF);
   }
 
