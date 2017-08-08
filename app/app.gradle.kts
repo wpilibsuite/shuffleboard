@@ -18,6 +18,7 @@ dependencies {
     compile(group = "com.google.code.gson", name = "gson", version = "2.8.1")
     fun testFx(name: String, version: String = "4.0.+") =
         create(group = "org.testfx", name = name, version = version)
+    runtime(group = "edu.wpi.first.ntcore", name = "ntcore-jni", version = "3.1.7-20170808143930-12-gccfeab5", classifier = "all")
     testCompile(testFx(name = "testfx-core"))
     testCompile(testFx(name = "testfx-junit"))
     testRuntime(testFx(name = "openjfx-monocle", version = "8u76-b04"))

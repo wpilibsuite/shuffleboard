@@ -132,7 +132,7 @@ public final class NetworkTableUtils {
       return DataTypes.Map;
     }
     if (rootTable.containsKey(normalKey)) {
-      return DataType.forJavaType(rootTable.getValue(normalKey).getClass());
+      return DataType.forJavaType(rootTable.getValue(normalKey, null).getClass());
     }
     if (rootTable.containsSubTable(normalKey)) {
       ITable table = rootTable.getSubTable(normalKey);
