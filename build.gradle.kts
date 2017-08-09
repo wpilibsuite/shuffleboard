@@ -144,8 +144,6 @@ task<Wrapper>("wrapper") {
     gradleVersion = "4.1"
 }
 
-fun Project.`junitPlatform`(action: JUnitPlatformExtension.() -> Unit = {}) =
-        extensions.configure("junitPlatform", action)
 /**
  * Retrieves the [java][org.gradle.api.plugins.JavaPluginConvention] project convention.
  */
