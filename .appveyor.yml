@@ -1,0 +1,10 @@
+build_script:
+  - gradlew.bat shadowJar --no-daemon --stacktrace
+
+test_script:
+  - gradlew.bat check --stacktrace -PlogTests -Pheadless
+
+clone_depth: 1
+
+cache:
+  - '%USERPROFILE%\.gradle'

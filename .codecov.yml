@@ -12,4 +12,4 @@ coverage:
     patch: yes
     changes: no
 
-comment: off
+comment: false

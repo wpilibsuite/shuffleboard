@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import edu.wpi.first.shuffleboard.app.components.WidgetPane?>
+<?import javafx.geometry.Insets?>
+
+<fx:root fx:id="pane" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="edu.wpi.first.shuffleboard.app.WidgetPaneController"
+            hgap="16" vgap="16"
+            type="WidgetPane"
+            styleClass="widget-pane">
+    <padding>
+        <Insets topRightBottomLeft="10"/>
+    </padding>
+</fx:root>
