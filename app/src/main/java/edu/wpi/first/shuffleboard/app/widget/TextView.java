@@ -4,7 +4,6 @@ import edu.wpi.first.shuffleboard.api.data.types.BooleanType;
 import edu.wpi.first.shuffleboard.api.data.types.NumberType;
 import edu.wpi.first.shuffleboard.api.data.types.StringType;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
-import edu.wpi.first.shuffleboard.api.widget.DefaultWidgetFor;
 import edu.wpi.first.shuffleboard.api.widget.Description;
 import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 import edu.wpi.first.shuffleboard.api.widget.SimpleAnnotatedWidget;
@@ -24,7 +23,6 @@ import org.fxmisc.easybind.EasyBind;
     dataTypes = {
         StringType.class, NumberType.class, BooleanType.class
     })
-@DefaultWidgetFor(StringType.class)
 @ParametrizedController("TextView.fxml")
 public class TextView extends SimpleAnnotatedWidget<Object> {
 

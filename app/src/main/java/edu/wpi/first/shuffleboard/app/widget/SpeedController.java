@@ -6,7 +6,6 @@ import edu.wpi.first.shuffleboard.api.components.LinearIndicator;
 import edu.wpi.first.shuffleboard.api.components.NumberField;
 import edu.wpi.first.shuffleboard.api.data.SpeedControllerData;
 import edu.wpi.first.shuffleboard.api.data.types.SpeedControllerType;
-import edu.wpi.first.shuffleboard.api.widget.DefaultWidgetFor;
 import edu.wpi.first.shuffleboard.api.widget.Description;
 import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 import edu.wpi.first.shuffleboard.api.widget.SimpleAnnotatedWidget;
@@ -23,7 +22,6 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 
 @Description(name = "Speed Controller", dataTypes = SpeedControllerType.class)
-@DefaultWidgetFor(SpeedControllerType.class)
 @ParametrizedController("SpeedController.fxml")
 public class SpeedController extends SimpleAnnotatedWidget<SpeedControllerData> {
 

@@ -3,7 +3,6 @@ package edu.wpi.first.shuffleboard.app.widget;
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
-import edu.wpi.first.shuffleboard.api.widget.DefaultWidgetFor;
 import edu.wpi.first.shuffleboard.api.widget.Description;
 import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
@@ -58,7 +57,6 @@ public final class Widgets {
     Description description = widgetClass.getAnnotation(Description.class);
     validate(description);
     ParametrizedController controller = widgetClass.getAnnotation(ParametrizedController.class);
-    DefaultWidgetFor defaults = widgetClass.getAnnotation(DefaultWidgetFor.class);
 
     WidgetType widgetType = new AbstractWidgetType(description) {
       @Override
@@ -81,11 +79,6 @@ public final class Widgets {
     };
 
     widgets.put(widgetType.getName(), widgetType);
-    if (defaults != null) {
-      for (DataType dataType : DataTypes.forTypes(defaults.value())) {
-        defaultWidgets.put(dataType, widgetType);
-      }
-    }
   }
 
   /**
@@ -153,6 +146,30 @@ public final class Widgets {
         .map(WidgetType::getName)
         .sorted()
         .collect(Collectors.toList());
+  }
+
+  /**
+   * Sets the default widget to use for a given data type.
+   *
+   * @param dataType   the type to set the default widget for
+   * @param widgetType the type of widget to set as the default
+   */
+  public static void setDefaultWidget(DataType dataType, WidgetType widgetType) {
+    defaultWidgets.put(dataType, widgetType);
+  }
+
+  /**
+   * Sets the default widget to use for a given data type. Note that a widget must have already been registered
+   * with the given name for this method to have an affect.
+   *
+   * @param dataType   the type to set the default widget for
+   * @param widgetName the name of the widget to use as the default
+   */
+  public static void setDefaultWidget(DataType dataType, String widgetName) {
+    WidgetType widgetType = widgets.get(widgetName);
+    if (widgetName != null) {
+      setDefaultWidget(dataType, widgetType);
+    }
   }
 
   /**

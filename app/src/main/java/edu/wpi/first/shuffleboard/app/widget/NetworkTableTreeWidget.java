@@ -1,6 +1,5 @@
 package edu.wpi.first.shuffleboard.app.widget;
 
-import edu.wpi.first.shuffleboard.api.widget.DefaultWidgetFor;
 import edu.wpi.first.shuffleboard.app.NetworkTableEntry;
 import edu.wpi.first.shuffleboard.api.data.MapData;
 import edu.wpi.first.shuffleboard.api.data.types.MapType;
@@ -25,7 +24,6 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 
 @Description(name = "Network Table Tree", dataTypes = MapType.class)
-@DefaultWidgetFor(MapType.class)
 public class NetworkTableTreeWidget extends SimpleAnnotatedWidget<MapData> {
 
   private final StackPane pane = new StackPane();

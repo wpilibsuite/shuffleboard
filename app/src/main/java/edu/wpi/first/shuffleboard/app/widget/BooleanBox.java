@@ -2,7 +2,6 @@ package edu.wpi.first.shuffleboard.app.widget;
 
 import edu.wpi.first.shuffleboard.api.data.types.BooleanType;
 
-import edu.wpi.first.shuffleboard.api.widget.DefaultWidgetFor;
 import edu.wpi.first.shuffleboard.api.widget.Description;
 import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 import edu.wpi.first.shuffleboard.api.widget.SimpleAnnotatedWidget;
@@ -18,7 +17,6 @@ import javafx.scene.paint.Color;
 @Description(
     name = "Boolean Box",
     dataTypes = BooleanType.class)
-@DefaultWidgetFor(BooleanType.class)
 @ParametrizedController("BooleanBox.fxml")
 public class BooleanBox extends SimpleAnnotatedWidget<Boolean> {
 
