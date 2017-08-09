@@ -63,14 +63,19 @@ public class WidgetPropertySheet extends PropertySheet {
   /**
    * An item backed by a JavaFX property.
    */
-  private static class PropertyItem<T> implements Item {
+  public static class PropertyItem<T> implements Item {
 
     private final Property<T> property;
     private final String name;
 
-    PropertyItem(Property<T> property) {
+    public PropertyItem(Property<T> property) {
       this.property = property;
       this.name = camelCaseToSentence(property.getName());
+    }
+
+    public PropertyItem(Property<T> property, String name) {
+      this.property = property;
+      this.name = name;
     }
 
     /**

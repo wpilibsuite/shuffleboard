@@ -152,10 +152,12 @@ public class DashboardTabPane extends TabPane {
                 this.title,
                 this.autoPopulate,
                 dummySourcePrefix,
-                getWidgetPane().tileSizeProperty(),
-                getWidgetPane().hgapProperty(),
-                getWidgetPane().vgapProperty()
+                getWidgetPane().tileSizeProperty()
             ));
+        propertySheet.getItems().addAll(
+            new WidgetPropertySheet.PropertyItem<>(getWidgetPane().hgapProperty(), "Horizontal spacing"),
+            new WidgetPropertySheet.PropertyItem<>(getWidgetPane().vgapProperty(), "Vertical spacing")
+        );
         Dialog<ButtonType> dialog = new Dialog<>();
         dialog.setResizable(true);
         dialog.titleProperty().bind(EasyBind.map(this.title, t -> t + " Preferences"));
