@@ -9,7 +9,6 @@ import edu.wpi.first.wpilibj.networktables.NetworkTable;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static edu.wpi.first.shuffleboard.api.util.NetworkTableUtils.waitForNtcoreEvents;
@@ -39,7 +38,6 @@ public class CompositeNetworkTableSourceTest {
     assertTrue(source.getData().isEmpty());
   }
 
-  @Ignore
   @Test
   public void testDataUpdates() {
     CompositeNetworkTableSource<MapData> source
