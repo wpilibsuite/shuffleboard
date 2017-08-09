@@ -156,11 +156,11 @@ public final class NetworkTableUtils {
     NetworkTablesJNI.addEntryListener(indexKey, (uid, key, value, flags) -> {
       NetworkTablesJNI.deleteEntry(indexKey);
       NetworkTablesJNI.removeEntryListener(uid);
-    }, ITable.NOTIFY_LOCAL);
+    },  ITable.NOTIFY_NEW | ITable.NOTIFY_LOCAL);
     NetworkTablesJNI.addEntryListener(indexKey, (uid, key, value, flags) -> {
       NetworkTablesJNI.removeEntryListener(uid);
       future.complete(null);
-    }, ITable.NOTIFY_LOCAL & ITable.NOTIFY_DELETE);
+    }, ITable.NOTIFY_DELETE | ITable.NOTIFY_LOCAL);
 
     /*
      * This works because all notifications are put into a single queue and are processed by a
