@@ -155,7 +155,7 @@ public class DashboardTabPane extends TabPane {
             ));
         Dialog<ButtonType> dialog = new Dialog<>();
         dialog.setResizable(true);
-        dialog.titleProperty().bind(EasyBind.map(this.title, t -> "Preferences for " + t));
+        dialog.titleProperty().bind(EasyBind.map(this.title, t -> t + " Preferences"));
         dialog.getDialogPane().setContent(propertySheet);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CLOSE);
         dialog.showAndWait();
