@@ -15,6 +15,7 @@ import org.fxmisc.easybind.EasyBind;
 import java.util.Arrays;
 import java.util.function.Predicate;
 
+import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -124,6 +125,8 @@ public class DashboardTabPane extends TabPane {
     private static final ObservableList<String> availableSourceIds =
         NetworkTableSourceType.INSTANCE.getAvailableSourceIds();
 
+    private boolean deferPopulation = true;
+
     /**
      * Creates a single dashboard tab with the given title.
      */
@@ -133,10 +136,6 @@ public class DashboardTabPane extends TabPane {
       setGraphic(new TabHandle(this));
 
       setWidgetPane(new WidgetPane());
-
-      // UGLY HACK, REMOVE (makes autopopulation work)
-      getWidgetPane().setNumColumns(10);
-      getWidgetPane().setNumRows(6);
 
       this.contentProperty().bind(widgetPane);
 
@@ -164,6 +163,18 @@ public class DashboardTabPane extends TabPane {
     }
 
     private void populate() {
+      if (getWidgetPane().getScene() == null || getWidgetPane().getParent() == null) {
+        // Defer until the pane is visible and is laid out in the scene
+        deferPopulation = true;
+        Platform.runLater(this::populate);
+        return;
+      }
+      if (deferPopulation) {
+        // Defer one last time; this method tends to trigger before row/column bindings on the widget pane
+        // This makes sure the pane is properly sized before populating it
+        deferPopulation = false;
+        Platform.runLater(this::populate);
+      }
       if (!isAutoPopulate() || getSourcePrefix().isEmpty()) {
         return;
       }
