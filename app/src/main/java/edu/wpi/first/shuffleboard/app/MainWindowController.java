@@ -2,22 +2,21 @@ package edu.wpi.first.shuffleboard.app;
 
 import com.google.common.io.Files;
 
+import edu.wpi.first.shuffleboard.api.sources.DataSource;
+import edu.wpi.first.shuffleboard.api.util.FxUtils;
+import edu.wpi.first.shuffleboard.api.widget.Widget;
 import edu.wpi.first.shuffleboard.app.components.DashboardTabPane;
 import edu.wpi.first.shuffleboard.app.components.WidgetGallery;
 import edu.wpi.first.shuffleboard.app.dnd.DataFormats;
 import edu.wpi.first.shuffleboard.app.json.JsonBuilder;
 import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
-import edu.wpi.first.shuffleboard.app.prefs.ObservableItem;
-import edu.wpi.first.shuffleboard.app.prefs.PropertyEditorFactory;
-import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.app.sources.NetworkTableSource;
 import edu.wpi.first.shuffleboard.app.sources.recording.Playback;
 import edu.wpi.first.shuffleboard.app.sources.recording.Recorder;
 import edu.wpi.first.shuffleboard.app.theme.Theme;
-import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.app.util.Storage;
 import edu.wpi.first.shuffleboard.app.widget.NetworkTableTreeWidget;
-import edu.wpi.first.shuffleboard.api.widget.Widget;
+import edu.wpi.first.shuffleboard.app.widget.WidgetPropertySheet;
 import edu.wpi.first.shuffleboard.app.widget.Widgets;
 
 import org.controlsfx.control.PropertySheet;
@@ -279,15 +278,10 @@ public class MainWindowController {
   @FXML
   public void showPrefs() {
     // Create the property sheet
-    PropertySheet propertySheet = new PropertySheet();
+    PropertySheet propertySheet = new WidgetPropertySheet(AppPreferences.getInstance().getProperties());
     propertySheet.setModeSwitcherVisible(false);
     propertySheet.setSearchBoxVisible(false);
     propertySheet.setMode(PropertySheet.Mode.NAME);
-    AppPreferences.getInstance().getProperties()
-        .stream()
-        .map(property -> new ObservableItem(property, "Application"))
-        .forEachOrdered(propertySheet.getItems()::add);
-    propertySheet.setPropertyEditorFactory(new PropertyEditorFactory());
     StackPane pane = new StackPane(propertySheet);
     pane.setPadding(new Insets(8));
     Scene scene = new Scene(pane);

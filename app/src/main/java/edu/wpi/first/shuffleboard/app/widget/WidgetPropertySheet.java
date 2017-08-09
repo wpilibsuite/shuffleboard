@@ -1,6 +1,8 @@
 package edu.wpi.first.shuffleboard.app.widget;
 
 import edu.wpi.first.shuffleboard.api.components.NumberField;
+import edu.wpi.first.shuffleboard.app.theme.DefaultThemes;
+import edu.wpi.first.shuffleboard.app.theme.Theme;
 
 import org.controlsfx.control.PropertySheet;
 import org.controlsfx.control.ToggleSwitch;
@@ -17,8 +19,12 @@ import javafx.beans.property.Property;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Control;
 import javafx.scene.control.TextField;
+import javafx.util.StringConverter;
+
+import static javafx.collections.FXCollections.observableArrayList;
 
 /**
  * A property sheet for a specific widget.
@@ -45,6 +51,9 @@ public class WidgetPropertySheet extends PropertySheet {
         }
         if (item.getType() == Boolean.class) {
           return new ToggleSwitchEditor(item);
+        }
+        if (item.getType() == Theme.class) {
+          return new ThemePropertyEditor(item);
         }
         return super.call(item);
       }
@@ -182,7 +191,6 @@ public class WidgetPropertySheet extends PropertySheet {
 
   }
 
-
   private static class ToggleSwitchEditor extends AbstractEditor<Boolean, ToggleSwitch> {
 
     ToggleSwitchEditor(Item item) {
@@ -199,6 +207,38 @@ public class WidgetPropertySheet extends PropertySheet {
       getEditor().setSelected(value);
     }
 
+  }
+
+  private static class ThemePropertyEditor extends AbstractPropertyEditor<Theme, ComboBox<Theme>> {
+
+    private static class ThemeStringConverter extends StringConverter<Theme> {
+
+      @Override
+      public String toString(Theme object) {
+        return object.getName();
+      }
+
+      @Override
+      public Theme fromString(String string) {
+        return DefaultThemes.forName(string, DefaultThemes.LIGHT);
+      }
+    }
+
+    ThemePropertyEditor(PropertySheet.Item property) {
+      super(property, new ComboBox<>());
+      getEditor().setItems(observableArrayList(DefaultThemes.getThemes()));
+      getEditor().setConverter(new ThemeStringConverter());
+    }
+
+    @Override
+    protected ObservableValue<Theme> getObservableValue() {
+      return getEditor().getSelectionModel().selectedItemProperty();
+    }
+
+    @Override
+    public void setValue(Theme value) {
+      getEditor().getSelectionModel().select(value);
+    }
   }
 
 }

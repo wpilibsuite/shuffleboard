@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.app.components;
 
+import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
 import edu.wpi.first.shuffleboard.app.util.GridPoint;
 import edu.wpi.first.shuffleboard.app.util.RoundingMode;
 import edu.wpi.first.shuffleboard.app.widget.TileSize;
@@ -33,14 +34,13 @@ public class TilePane extends GridPane {
   private static final int DEFAULT_COL_COUNT = 1;
   private static final int DEFAULT_ROW_COUNT = 1;
   private static final double MIN_TILE_SIZE = 64; // pixels
-  private static final double DEFAULT_TILE_SIZE = 128; // pixels
 
   private final ObjectProperty<Integer> numColumns =
       new SimpleObjectProperty<>(this, "numColumns", 0);
   private final ObjectProperty<Integer> numRows =
       new SimpleObjectProperty<>(this, "numRows", 0);
   private final DoubleProperty tileSize =
-      new SimpleDoubleProperty(this, "tileSize", DEFAULT_TILE_SIZE);
+      new SimpleDoubleProperty(this, "tileSize", AppPreferences.getInstance().getDefaultTileSize());
 
   /**
    * Creates a tile pane with one row and one column.
