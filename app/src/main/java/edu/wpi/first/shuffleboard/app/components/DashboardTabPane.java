@@ -144,11 +144,14 @@ public class DashboardTabPane extends TabPane {
       availableSourceIds.addListener((ListChangeListener<String>) c -> populate());
 
       setContextMenu(new ContextMenu(FxUtils.menuItem("Preferences", e -> {
+        // Use a dummy property here to prevent a call to populate() on every keystroke in the editor (!)
+        StringProperty dummySourcePrefix
+            = new SimpleStringProperty(sourcePrefix.getBean(), sourcePrefix.getName(), sourcePrefix.getValue());
         WidgetPropertySheet propertySheet = new WidgetPropertySheet(
             Arrays.asList(
                 this.title,
                 this.autoPopulate,
-                this.sourcePrefix,
+                dummySourcePrefix,
                 getWidgetPane().tileSizeProperty(),
                 getWidgetPane().hgapProperty(),
                 getWidgetPane().vgapProperty()
@@ -158,6 +161,9 @@ public class DashboardTabPane extends TabPane {
         dialog.titleProperty().bind(EasyBind.map(this.title, t -> t + " Preferences"));
         dialog.getDialogPane().setContent(propertySheet);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CLOSE);
+        dialog.setOnCloseRequest(__ -> {
+          this.sourcePrefix.setValue(dummySourcePrefix.getValue());
+        });
         dialog.showAndWait();
       })));
     }
