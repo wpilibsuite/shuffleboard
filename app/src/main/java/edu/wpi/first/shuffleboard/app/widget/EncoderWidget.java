@@ -2,6 +2,7 @@ package edu.wpi.first.shuffleboard.app.widget;
 
 import edu.wpi.first.shuffleboard.api.data.EncoderData;
 import edu.wpi.first.shuffleboard.api.data.types.EncoderType;
+import edu.wpi.first.shuffleboard.api.widget.DefaultWidgetFor;
 import edu.wpi.first.shuffleboard.api.widget.Description;
 import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 import edu.wpi.first.shuffleboard.api.widget.SimpleAnnotatedWidget;
@@ -13,6 +14,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.Pane;
 
 @Description(name = "Encoder", dataTypes = EncoderType.class)
+@DefaultWidgetFor(EncoderType.class)
 @ParametrizedController("Encoder.fxml")
 public class EncoderWidget extends SimpleAnnotatedWidget<EncoderData> {
 

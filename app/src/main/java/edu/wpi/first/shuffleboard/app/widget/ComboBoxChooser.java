@@ -6,6 +6,7 @@ import edu.wpi.first.shuffleboard.api.data.types.SendableChooserType;
 import java.util.Map;
 
 import edu.wpi.first.shuffleboard.api.widget.ComplexAnnotatedWidget;
+import edu.wpi.first.shuffleboard.api.widget.DefaultWidgetFor;
 import edu.wpi.first.shuffleboard.api.widget.Description;
 import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 import javafx.fxml.FXML;
@@ -13,6 +14,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.layout.Pane;
 
 @Description(name = "ComboBox Chooser", dataTypes = SendableChooserType.class)
+@DefaultWidgetFor(SendableChooserType.class)
 @ParametrizedController("ComboBoxChooser.fxml")
 public class ComboBoxChooser extends ComplexAnnotatedWidget<SendableChooserData> {
 

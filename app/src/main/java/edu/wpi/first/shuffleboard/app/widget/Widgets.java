@@ -3,6 +3,7 @@ package edu.wpi.first.shuffleboard.app.widget;
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
+import edu.wpi.first.shuffleboard.api.widget.DefaultWidgetFor;
 import edu.wpi.first.shuffleboard.api.widget.Description;
 import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
@@ -10,6 +11,7 @@ import javafx.fxml.FXMLLoader;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -25,6 +27,7 @@ import java.util.stream.Collectors;
 public final class Widgets {
 
   private static Map<String, WidgetType> widgets = new TreeMap<>();
+  private static Map<DataType, WidgetType> defaultWidgets = new HashMap<>();
   private static boolean loadedStockWidgets = false;
 
   private Widgets() {
@@ -55,6 +58,7 @@ public final class Widgets {
     Description description = widgetClass.getAnnotation(Description.class);
     validate(description);
     ParametrizedController controller = widgetClass.getAnnotation(ParametrizedController.class);
+    DefaultWidgetFor defaults = widgetClass.getAnnotation(DefaultWidgetFor.class);
 
     WidgetType widgetType = new AbstractWidgetType(description) {
       @Override
@@ -77,6 +81,11 @@ public final class Widgets {
     };
 
     widgets.put(widgetType.getName(), widgetType);
+    if (defaults != null) {
+      for (DataType dataType : DataTypes.forTypes(defaults.value())) {
+        defaultWidgets.put(dataType, widgetType);
+      }
+    }
   }
 
   /**
@@ -131,11 +140,11 @@ public final class Widgets {
   }
 
   /**
-   * Gets the names of all the possible widget that can display the given type. A widget can be
+   * Gets the names of all the possible widget that can display the given type, sorted alphabetically. A widget can be
    * created for these with {@link #createWidget(String, DataSource) createWidget}.
    *
    * @param type the type of data to get possible widgets for.
-   * @return a list containing the names of all known widgets that can display data of the
+   * @return an alphabetically sorted list containing the names of all known widgets that can display data of the
    *         given type
    */
   public static List<String> widgetNamesForType(DataType type) {
@@ -144,6 +153,33 @@ public final class Widgets {
         .map(WidgetType::getName)
         .sorted()
         .collect(Collectors.toList());
+  }
+
+  /**
+   * Gets the name of the default widget for the given data type, or {@link Optional#empty()} if there is no default
+   * widget for that type.
+   */
+  public static Optional<String> defaultWidgetNameFor(DataType type) {
+    return Optional.ofNullable(defaultWidgets.get(type)).map(WidgetType::getName);
+  }
+
+  /**
+   * Gets the name of a widget that can handle data of the given type. If a default widget has been set for that type,
+   * the name of the default widget is returned; otherwise, the name of the first widget returned by
+   * {@link #widgetNamesForType(DataType)} is used.
+   */
+  public static Optional<String> pickWidgetNameFor(DataType type) {
+    Optional<String> defaultName = defaultWidgetNameFor(type);
+    if (defaultName.isPresent()) {
+      return defaultName;
+    } else {
+      List<String> names = widgetNamesForType(type);
+      if (names.isEmpty()) {
+        return Optional.empty();
+      } else {
+        return Optional.of(names.get(0));
+      }
+    }
   }
 
   /**
