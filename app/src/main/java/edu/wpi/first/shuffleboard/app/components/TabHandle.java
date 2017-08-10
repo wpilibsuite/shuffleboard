@@ -68,8 +68,8 @@ public class TabHandle extends StackPane {
 
   private void startDelayedDrag(DragEvent dragEvent) {
     Future<?> task = delayedDragService.schedule(
-            (() -> FxUtils.runOnFxThread(tab::onDragOver)),
-            DRAG_FOCUS_DELAY, TimeUnit.MILLISECONDS);
+        () -> FxUtils.runOnFxThread(tab::onDragOver),
+        DRAG_FOCUS_DELAY, TimeUnit.MILLISECONDS);
 
     setOnDragExited(__de -> task.cancel(false));
   }
