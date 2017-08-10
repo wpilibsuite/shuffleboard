@@ -1,21 +1,23 @@
 package edu.wpi.first.shuffleboard.app.json;
 
-import edu.wpi.first.shuffleboard.app.components.DashboardTabPane;
 import edu.wpi.first.shuffleboard.api.util.AsyncUtils;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
+import edu.wpi.first.shuffleboard.app.components.DashboardTabPane;
 import edu.wpi.first.shuffleboard.app.widget.Widgets;
 import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
-import javafx.stage.Stage;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.testfx.framework.junit.ApplicationTest;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.testfx.framework.junit5.ApplicationTest;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
 
-import static org.junit.Assert.assertEquals;
+import javafx.stage.Stage;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class DashboardTabPaneSaverTest extends ApplicationTest {
 
@@ -24,7 +26,7 @@ public class DashboardTabPaneSaverTest extends ApplicationTest {
     Widgets.discover();
   }
 
-  @Before
+  @BeforeEach
   public void setUp() {
     NetworkTableUtils.shutdown();
     NetworkTablesJNI.setUpdateRate(0.01);
@@ -40,7 +42,7 @@ public class DashboardTabPaneSaverTest extends ApplicationTest {
     NetworkTableUtils.waitForNtcoreEvents();
   }
 
-  @After
+  @AfterEach
   public void tearDown() {
     AsyncUtils.setAsyncRunner(FxUtils::runOnFxThread);
     NetworkTableUtils.shutdown();

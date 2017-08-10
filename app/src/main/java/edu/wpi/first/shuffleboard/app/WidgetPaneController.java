@@ -70,10 +70,10 @@ public class WidgetPaneController {
       } else if (isSource) {
         SourceEntry entry = (SourceEntry) event.getDragboard().getContent(DataFormats.source);
         DataSource source = entry.get();
-        List<String> names = Widgets.widgetNamesForSource(source);
+        Optional<String> widgetName = Widgets.pickWidgetNameFor(source.getDataType());
         Optional<DummySource> dummySource = DummySource.forTypes(source.getDataType());
-        if (!names.isEmpty() && dummySource.isPresent()) {
-          Widgets.createWidget(names.get(0), (DataSource<?>) dummySource.get()).ifPresent(w -> {
+        if (widgetName.isPresent() && dummySource.isPresent()) {
+          Widgets.createWidget(widgetName.get(), (DataSource<?>) dummySource.get()).ifPresent(w -> {
             pane.setHighlight(true);
             pane.setHighlightPoint(point);
             pane.setHighlightSize(pane.sizeOfWidget(w));
@@ -219,9 +219,7 @@ public class WidgetPaneController {
    * @param point  the point to place the widget for the source
    */
   private void dropSource(DataSource<?> source, GridPoint point) {
-    Widgets.widgetNamesForSource(source)
-           .stream()
-           .findAny()
+    Widgets.pickWidgetNameFor(source.getDataType())
            .flatMap(name -> Widgets.createWidget(name, source))
            .filter(widget -> pane.isOpen(point, pane.sizeOfWidget(widget), n -> widget == n))
            .map(pane::addWidget)

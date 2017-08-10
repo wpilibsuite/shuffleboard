@@ -1,11 +1,12 @@
 package edu.wpi.first.shuffleboard.api.util;
 
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class PropertyUtilsTest {
 

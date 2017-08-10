@@ -2,13 +2,20 @@ import edu.wpi.first.wpilib.versioning.ReleaseType
 import groovy.util.Node
 import groovy.util.XmlParser
 import groovy.xml.XmlUtil
-import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.gradle.api.Project
+import org.gradle.api.plugins.quality.FindBugs
+import org.gradle.api.publish.maven.MavenPublication
+import org.gradle.api.tasks.wrapper.Wrapper
 import org.gradle.jvm.tasks.Jar
+import org.gradle.testing.jacoco.tasks.JacocoReport
+import java.io.File
 
 buildscript {
     repositories {
         mavenCentral()
-        jcenter()
+    }
+    dependencies {
+        classpath("org.junit.platform:junit-platform-gradle-plugin:1.0.0-RC2")
     }
 }
 plugins {
@@ -26,6 +33,7 @@ subprojects {
         plugin("findbugs")
         plugin("jacoco")
         plugin("maven-publish")
+        plugin("org.junit.platform.gradle.plugin")
         plugin("edu.wpi.first.wpilib.versioning.WPILibVersioningPlugin")
     }
     repositories {
@@ -33,7 +41,11 @@ subprojects {
     }
 
     dependencies {
-        "testCompile"(create(group = "junit", name = "junit", version = "+"))
+        fun junitJupiter(name: String, version: String = "5.0.0-M5") =
+                create(group = "org.junit.jupiter", name = name, version = version)
+        "testCompile"(junitJupiter(name = "junit-jupiter-api"))
+        "testCompile"(junitJupiter(name = "junit-jupiter-engine"))
+        "testRuntime"(create(group = "org.junit.platform", name = "junit-platform-launcher", version = "1.0.0-M5"))
     }
 
     checkstyle {
@@ -83,17 +95,6 @@ subprojects {
         reports {
             xml.isEnabled = true
             html.isEnabled = true
-        }
-    }
-
-    tasks.withType<Test> {
-        testLogging {
-            if (project.hasProperty("logTests") || project.hasProperty("jenkinsBuild")) {
-                events("started", "passed", "skipped", "failed")
-            } else {
-                events("failed")
-            }
-            exceptionFormat = TestExceptionFormat.FULL
         }
     }
 }
@@ -155,7 +156,7 @@ val Project.`checkstyle`: org.gradle.api.plugins.quality.CheckstyleExtension get
  * Configures the [checkstyle][org.gradle.api.plugins.quality.CheckstyleExtension] project extension.
  */
 fun Project.`checkstyle`(configure: org.gradle.api.plugins.quality.CheckstyleExtension.() -> Unit) =
-    extensions.configure("checkstyle", configure)
+        extensions.configure("checkstyle", configure)
 
 /**
  * Retrieves the [pmd][org.gradle.api.plugins.quality.PmdExtension] project extension.
@@ -167,7 +168,7 @@ val Project.`pmd`: org.gradle.api.plugins.quality.PmdExtension get() =
  * Configures the [pmd][org.gradle.api.plugins.quality.PmdExtension] project extension.
  */
 fun Project.`pmd`(configure: org.gradle.api.plugins.quality.PmdExtension.() -> Unit) =
-    extensions.configure("pmd", configure)
+        extensions.configure("pmd", configure)
 
 /**
  * Retrieves the [findbugs][org.gradle.api.plugins.quality.FindBugsExtension] project extension.
@@ -179,4 +180,4 @@ val Project.`findbugs`: org.gradle.api.plugins.quality.FindBugsExtension get() =
  * Configures the [findbugs][org.gradle.api.plugins.quality.FindBugsExtension] project extension.
  */
 fun Project.`findbugs`(configure: org.gradle.api.plugins.quality.FindBugsExtension.() -> Unit) =
-    extensions.configure("findbugs", configure)
+        extensions.configure("findbugs", configure)

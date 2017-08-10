@@ -7,25 +7,26 @@ import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static edu.wpi.first.shuffleboard.api.util.NetworkTableUtils.waitForNtcoreEvents;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CompositeNetworkTableSourceTest {
 
   private static final String tableName = "CompositeNetworkTableSourceTest";
 
-  @Before
+  @BeforeEach
   public void setUp() {
     NetworkTableUtils.shutdown();
     AsyncUtils.setAsyncRunner(Runnable::run);
   }
 
-  @After
+  @AfterEach
   public void tearDown() {
     NetworkTableUtils.shutdown();
     AsyncUtils.setAsyncRunner(FxUtils::runOnFxThread);
@@ -39,7 +40,6 @@ public class CompositeNetworkTableSourceTest {
     assertTrue(source.getData().isEmpty());
   }
 
-  @Ignore
   @Test
   public void testDataUpdates() {
     CompositeNetworkTableSource<MapData> source
