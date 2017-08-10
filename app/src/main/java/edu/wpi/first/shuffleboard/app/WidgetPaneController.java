@@ -1,8 +1,5 @@
 package edu.wpi.first.shuffleboard.app;
 
-import edu.wpi.first.shuffleboard.app.components.TileLayout;
-import edu.wpi.first.shuffleboard.app.components.WidgetPane;
-import edu.wpi.first.shuffleboard.app.components.WidgetTile;
 import edu.wpi.first.shuffleboard.api.dnd.DataFormats;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.DummySource;
@@ -11,14 +8,24 @@ import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.GridPoint;
 import edu.wpi.first.shuffleboard.api.util.RoundingMode;
 import edu.wpi.first.shuffleboard.api.widget.TileSize;
+import edu.wpi.first.shuffleboard.api.widget.Viewable;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 import edu.wpi.first.shuffleboard.api.widget.Widgets;
+import edu.wpi.first.shuffleboard.app.components.LayoutTile;
+import edu.wpi.first.shuffleboard.app.components.Tile;
+import edu.wpi.first.shuffleboard.app.components.TileLayout;
+import edu.wpi.first.shuffleboard.app.components.WidgetPane;
+import edu.wpi.first.shuffleboard.app.components.WidgetTile;
 import edu.wpi.first.shuffleboard.app.dnd.TileDragResizer;
+import edu.wpi.first.shuffleboard.app.widget.Layout;
+import edu.wpi.first.shuffleboard.app.widget.ListLayout;
 
 import org.fxmisc.easybind.EasyBind;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.WeakHashMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -47,7 +54,7 @@ public class WidgetPaneController {
   @FXML
   private void initialize() {
 
-    pane.getTiles().addListener((ListChangeListener<WidgetTile>) changes -> {
+    pane.getTiles().addListener((ListChangeListener<Tile>) changes -> {
       while (changes.next()) {
         changes.getAddedSubList().forEach(this::setupTile);
       }
@@ -67,7 +74,7 @@ public class WidgetPaneController {
         pane.setHighlightPoint(point);
         DataFormats.WidgetData data = (DataFormats.WidgetData) event.getDragboard().getContent(DataFormats.widgetTile);
         pane.tileMatching(tile -> tile.getId().equals(data.getId()))
-            .ifPresent(tile -> previewWidget(tile, point.subtract(data.getDragPoint())));
+            .ifPresent(tile -> previewTile(tile, point.subtract(data.getDragPoint())));
       } else if (isSource) {
         SourceEntry entry = (SourceEntry) event.getDragboard().getContent(DataFormats.source);
         DataSource source = entry.get();
@@ -105,7 +112,7 @@ public class WidgetPaneController {
       if (dragboard.hasContent(DataFormats.widgetTile)) {
         DataFormats.WidgetData data = (DataFormats.WidgetData) dragboard.getContent(DataFormats.widgetTile);
         pane.tileMatching(tile -> tile.getId().equals(data.getId()))
-            .ifPresent(tile -> moveWidget(tile, point.subtract(data.getDragPoint())));
+            .ifPresent(tile -> moveTile(tile, point.subtract(data.getDragPoint())));
       }
 
       if (dragboard.hasContent(DataFormats.widgetType)) {
@@ -115,7 +122,7 @@ public class WidgetPaneController {
           TileSize size = pane.sizeOfWidget(widget);
           if (pane.isOpen(point, size, _t -> false)) {
             WidgetTile tile = pane.addWidget(widget);
-            moveWidget(tile, point);
+            moveTile(tile, point);
           }
         });
       }
@@ -154,7 +161,7 @@ public class WidgetPaneController {
               final TileLayout layout = pane.getTileLayout(tile);
               return layout.origin.col + layout.size.getWidth() > newCount;
             })
-            .forEach(tile -> moveTile(tile, oldCount - newCount, true));
+            .forEach(tile -> collapseTile(tile, oldCount - newCount, true));
       }
     });
     pane.numRowsProperty().addListener((__, oldCount, newCount) -> {
@@ -168,7 +175,7 @@ public class WidgetPaneController {
               final TileLayout layout = pane.getTileLayout(tile);
               return layout.origin.row + layout.size.getHeight() > newCount;
             })
-            .forEach(tile -> moveTile(tile, oldCount - newCount, false));
+            .forEach(tile -> collapseTile(tile, oldCount - newCount, false));
       }
     });
   }
@@ -184,7 +191,7 @@ public class WidgetPaneController {
   /**
    * Starts the drag of the given widget tile.
    */
-  private void dragWidget(WidgetTile tile, GridPoint point) {
+  private void dragWidget(Tile tile, GridPoint point) {
     Dragboard dragboard = tile.startDragAndDrop(TransferMode.MOVE);
     WritableImage preview =
         new WritableImage(
@@ -204,7 +211,7 @@ public class WidgetPaneController {
    * @param tile  the tile for the widget to drop
    * @param point the point in the tile pane to drop the widget at
    */
-  private void moveWidget(WidgetTile tile, GridPoint point) {
+  private void moveTile(Tile tile, GridPoint point) {
     TileSize size = tile.getSize();
     if (pane.isOpen(point, size, n -> n == tile)) {
       pane.moveNode(tile, point);
@@ -227,10 +234,18 @@ public class WidgetPaneController {
            .ifPresent(tile -> pane.moveNode(tile, point));
   }
 
+
+  private Map<Node, Boolean> alreadySetup = new WeakHashMap<>();
+
   /**
    * Sets up a tile with a context menu and lets it be dragged around.
    */
-  private void setupTile(WidgetTile tile) {
+  private void setupTile(Tile tile) {
+    if (alreadySetup.get(tile) != null) {
+      return;
+    }
+    alreadySetup.put(tile, true);
+
     tile.setOnContextMenuRequested(event -> {
       ContextMenu contextMenu = createContextMenu(tile);
       contextMenu.show(pane.getScene().getWindow(), event.getScreenX(), event.getScreenY());
@@ -249,12 +264,59 @@ public class WidgetPaneController {
       event.consume();
     });
 
+
     tile.setOnDragDropped(event -> {
       Dragboard dragboard = event.getDragboard();
-      if (dragboard.hasContent(DataFormats.source)) {
+      if (dragboard.hasContent(DataFormats.source) && tile instanceof WidgetTile) {
         SourceEntry entry = (SourceEntry) dragboard.getContent(DataFormats.source);
-        tile.getWidget().setSource(entry.get());
+
+        ((WidgetTile) tile).getContent().setSource(entry.get());
         event.consume();
+
+        return;
+      }
+
+      if (dragboard.hasContent(DataFormats.widgetTile) && tile instanceof LayoutTile) {
+        DataFormats.WidgetData data = (DataFormats.WidgetData) event.getDragboard().getContent(DataFormats.widgetTile);
+
+        if (tile.getId().equals(data.getId())) {
+          return;
+        }
+        pane.tileMatching(t -> t.getId().equals(data.getId()))
+                .ifPresent(t -> {
+                  Viewable content = pane.removeTile(t);
+                  ((LayoutTile) tile).getContent().addChild(content);
+                });
+        event.consume();
+
+        return;
+      }
+
+      if (dragboard.hasContent(DataFormats.widgetType) && tile instanceof LayoutTile) {
+        String widgetType = (String) dragboard.getContent(DataFormats.widgetType);
+
+        Widgets.getDefault().typeFor(widgetType).ifPresent(type -> {
+          Widget widget = type.get();
+          ((LayoutTile) tile).getContent().addChild(widget);
+        });
+        event.consume();
+
+        return;
+      }
+
+      if (dragboard.hasContent(DataFormats.source) && tile instanceof LayoutTile) {
+        SourceEntry entry = (SourceEntry) dragboard.getContent(DataFormats.source);
+
+        Layout container = ((LayoutTile) tile).getContent();
+        DataSource<?> source = entry.get();
+        Widgets.getDefault().widgetNamesForSource(entry.get())
+                .stream()
+                .findAny()
+                .flatMap(name -> Widgets.getDefault().createWidget(name, source))
+                .ifPresent(container::addChild);
+        event.consume();
+
+        return;
       }
     });
   }
@@ -265,7 +327,7 @@ public class WidgetPaneController {
    * @param tile  the tile for the widget to preview
    * @param point the point to preview the widget at
    */
-  private void previewWidget(WidgetTile tile, GridPoint point) {
+  private void previewTile(Tile tile, GridPoint point) {
     TileSize size = tile.getSize();
     pane.setHighlightPoint(point);
     pane.setHighlightSize(size);
@@ -276,14 +338,29 @@ public class WidgetPaneController {
    *
    * @param tile the tile for the widget to create a context menu for
    */
-  private ContextMenu createContextMenu(WidgetTile tile) {
+  private ContextMenu createContextMenu(Tile tile) {
     ContextMenu menu = new ContextMenu();
-    MenuItem remove = FxUtils.menuItem("Remove", __ -> pane.removeWidget(tile));
-    Menu changeMenus = createChangeMenus(tile);
-    if (changeMenus.getItems().size() > 1) {
-      menu.getItems().addAll(changeMenus, new SeparatorMenuItem());
-    }
+
+    MenuItem remove = FxUtils.menuItem("Remove", __ -> pane.removeTile(tile));
     menu.getItems().add(remove);
+
+    MenuItem wrapInVBox = new MenuItem("Wrap in VBox");
+    wrapInVBox.setOnAction(__ -> {
+      TileLayout was = pane.getTileLayout(tile);
+      Viewable content = pane.removeTile(tile);
+      Layout layout = Widgets.viewFor(ListLayout.class).get();
+      layout.addChild(content);
+      pane.addLayout(layout, was.origin, was.size);
+    });
+    menu.getItems().add(wrapInVBox);
+
+    if (tile instanceof WidgetTile) {
+      Menu changeMenus = createChangeMenusForWidget((WidgetTile) tile);
+      if (changeMenus.getItems().size() > 1) {
+        menu.getItems().addAll(changeMenus, new SeparatorMenuItem());
+      }
+    }
+
     return menu;
   }
 
@@ -292,21 +369,21 @@ public class WidgetPaneController {
    *
    * @param tile the tile for the widget to create the change menus for
    */
-  private Menu createChangeMenus(WidgetTile tile) {
-    Widget widget = tile.getWidget();
+  private Menu createChangeMenusForWidget(WidgetTile tile) {
+    Widget widget = tile.getContent();
     Menu changeView = new Menu("Show as...");
     Widgets.getDefault().widgetNamesForType(widget.getSource().getDataType())
            .stream()
            .sorted()
            .forEach(name -> {
              MenuItem changeItem = new MenuItem(name);
-             if (name.equals(widget.getName())) {
+             if (name.equals(widget.getType())) {
                changeItem.setGraphic(new Label("✓"));
              } else {
                // only need to change if it's to another type
                changeItem.setOnAction(__ -> {
                  Widgets.getDefault().createWidget(name, widget.getSource())
-                        .ifPresent(tile::setWidget);
+                        .ifPresent(tile::setContent);
                });
              }
              changeView.getItems().add(changeItem);
@@ -314,7 +391,7 @@ public class WidgetPaneController {
     return changeView;
   }
 
-  private void moveTile(WidgetTile tile, int count, boolean left) {
+  private void collapseTile(Tile tile, int count, boolean left) {
     Function<TileLayout, TileLayout> moveLeft = l -> l.withCol(l.origin.col - 1);
     Function<TileLayout, TileLayout> moveUp = l -> l.withRow(l.origin.row - 1);
     Function<TileSize, TileSize> shrinkLeft = s -> new TileSize(Math.max(1, s.getWidth() - 1), s.getHeight());
@@ -322,9 +399,9 @@ public class WidgetPaneController {
     for (int i = 0; i < count; i++) {
       Optional<Runnable> move;
       if (left) {
-        move = moveTile(tile, moveLeft, shrinkLeft, true);
+        move = collapseTile(tile, moveLeft, shrinkLeft, true);
       } else {
-        move = moveTile(tile, moveUp, shrinkUp, false);
+        move = collapseTile(tile, moveUp, shrinkUp, false);
       }
       if (move.isPresent()) {
         move.get().run();
@@ -343,10 +420,10 @@ public class WidgetPaneController {
    * @param targetLayoutFunction the function to use to set the origin for the target location
    * @param shrink               the function to use to shrink the tile
    */
-  private Optional<Runnable> moveTile(WidgetTile tile,
-                                      Function<TileLayout, TileLayout> targetLayoutFunction,
-                                      Function<TileSize, TileSize> shrink,
-                                      boolean left) {
+  private Optional<Runnable> collapseTile(Tile tile,
+                                          Function<TileLayout, TileLayout> targetLayoutFunction,
+                                          Function<TileSize, TileSize> shrink,
+                                          boolean left) {
     TileLayout layout = pane.getTileLayout(tile);
     TileLayout targetLayout = targetLayoutFunction.apply(layout);
     int importantDim = left ? layout.size.getWidth() : layout.size.getHeight();
@@ -369,7 +446,7 @@ public class WidgetPaneController {
           .map(Optional::get)
           .distinct() // need to make sure we have no repeats, or n-row tiles will get moved n times
           .filter(t -> tile != t)
-          .map(t -> moveTile(t, targetLayoutFunction, shrink, left)) // recursion here
+          .map(t -> collapseTile(t, targetLayoutFunction, shrink, left)) // recursion here
           .collect(Collectors.toList());
       if (runs.stream().allMatch(Optional::isPresent)) {
         return Optional.of(() -> {

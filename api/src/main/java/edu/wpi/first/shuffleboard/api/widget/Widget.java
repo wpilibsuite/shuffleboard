@@ -50,14 +50,12 @@ import javafx.scene.layout.Pane;
  * @param <T> the type of data the widget supports. For composite widgets, this is always
  *            {@link ObservableMap ObservableMap&lt;String, Object&gt;}.
  */
-public interface Widget {
-
-  Pane getView();
+public interface Widget extends Viewable {
 
   /**
-   * Gets the name of this widget.
+   * Gets the name of this widget type.
    */
-  String getName();
+  String getType();
 
   /**
    * Gets an unmodifiable copy of this widgets supported data types.
@@ -84,5 +82,4 @@ public interface Widget {
    * Gets the user-configurable properties for this widget.
    */
   List<Property<?>> getProperties();
-
 }

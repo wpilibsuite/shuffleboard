@@ -5,14 +5,16 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonSerializationContext;
-import edu.wpi.first.shuffleboard.app.components.WidgetPane;
-import edu.wpi.first.shuffleboard.app.components.WidgetTile;
+
 import edu.wpi.first.shuffleboard.api.util.GridPoint;
 import edu.wpi.first.shuffleboard.api.widget.TileSize;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
-import javafx.scene.layout.GridPane;
+import edu.wpi.first.shuffleboard.app.components.Tile;
+import edu.wpi.first.shuffleboard.app.components.WidgetPane;
 
 import java.util.Map;
+
+import javafx.scene.layout.GridPane;
 
 @AnnotatedTypeAdapter(forType = WidgetPane.class)
 public class WidgetPaneSaver implements ElementTypeAdapter<WidgetPane> {
@@ -21,14 +23,17 @@ public class WidgetPaneSaver implements ElementTypeAdapter<WidgetPane> {
   public JsonElement serialize(WidgetPane src, JsonSerializationContext context) {
     JsonObject object = new JsonObject();
 
-    for (WidgetTile tile : src.getTiles()) {
+    for (Tile<?> tile : src.getTiles()) {
+      if (!(tile.getContent() instanceof Widget)) {
+        continue; //FIXME
+      }
       String x = GridPane.getColumnIndex(tile).toString();
       String y = GridPane.getRowIndex(tile).toString();
       String coordinate = String.join(",", x, y);
 
       JsonObject tileObject = new JsonObject();
       tileObject.add("size", context.serialize(tile.getSize(), TileSize.class));
-      tileObject.add("widget", context.serialize(tile.getWidget(), Widget.class));
+      tileObject.add("widget", context.serialize(tile.getContent(), Widget.class));
 
       object.add(coordinate, tileObject);
     }

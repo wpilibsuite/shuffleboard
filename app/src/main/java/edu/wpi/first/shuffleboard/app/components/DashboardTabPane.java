@@ -223,13 +223,10 @@ public class DashboardTabPane extends TabPane {
      * @param id the ID of the source to check for
      */
     private boolean noExistingWidgetsForSource(String id) {
-      for (WidgetTile tile : getWidgetPane().getTiles()) {
-        DataSource<?> source = tile.getWidget().getSource();
-        if (id.startsWith(source.getId())) {
-          return false;
-        }
-      }
-      return true;
+      return getWidgetPane().getTiles().stream()
+          .filter(t -> t instanceof WidgetTile)
+          .map(t -> ((WidgetTile) t).getContent().getSource())
+          .noneMatch(s -> id.startsWith(s.getId()));
     }
 
     public WidgetPane getWidgetPane() {

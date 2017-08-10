@@ -72,7 +72,7 @@ public class WidgetGallery extends TilePane {
 
           this.getChildren().add(dragTarget);
           setVgrow(dragTarget, Priority.ALWAYS);
-          this.getChildren().add(new Label(newWidget.getName()));
+          this.getChildren().add(new Label(newWidget.getType()));
         }
       });
     }

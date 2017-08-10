@@ -73,7 +73,7 @@ public class MainWindowControllerTest extends ApplicationTest {
 
     WidgetTile tile = lookup(".tile").query();
     assertNotNull(tile);
-    Widget widget = tile.getWidget();
+    Widget widget = tile.getContent();
     assertTrue(widget.getSource().isActive());
     assertEquals("testSourceContextMenu", widget.getSource().getName());
     assertEquals("value", widget.getSource().getData());

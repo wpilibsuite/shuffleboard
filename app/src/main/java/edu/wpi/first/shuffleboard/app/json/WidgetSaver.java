@@ -15,7 +15,7 @@ public class WidgetSaver implements ElementTypeAdapter<Widget> {
   @Override
   public JsonElement serialize(Widget src, JsonSerializationContext context) {
     JsonObject object = new JsonObject();
-    object.addProperty("_type", src.getName());
+    object.addProperty("_type", src.getType());
     object.addProperty("_source", src.getSource().getId());
     for (Property p : src.getProperties()) {
       object.add(p.getName(), context.serialize(p.getValue()));

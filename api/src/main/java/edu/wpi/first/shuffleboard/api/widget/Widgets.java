@@ -59,6 +59,10 @@ public class Widgets extends Registry<Class<? extends Widget>> {
 
   @Override
   public void register(Class<? extends Widget> widgetClass) {
+    registerHelper(widgetClass);
+  }
+
+  private <T extends Widget> void registerHelper(Class<T> widgetClass) {
     requireNonNull(widgetClass, "widgetClass");
     if (isRegistered(widgetClass)) {
       throw new IllegalArgumentException("Widget class " + widgetClass.getName() + " is already registered");
@@ -69,25 +73,18 @@ public class Widgets extends Registry<Class<? extends Widget>> {
     }
     Description description = widgetClass.getAnnotation(Description.class);
     validate(description);
-    ParametrizedController controller = widgetClass.getAnnotation(ParametrizedController.class);
 
     WidgetType widgetType = new AbstractWidgetType(description) {
       @Override
       public Widget get() {
-        boolean fxml = controller != null;
-
-        try {
-          if (fxml) {
-            FXMLLoader loader = new FXMLLoader(widgetClass.getResource(controller.value()));
-            loader.load();
-            return loader.getController();
-          } else {
+        return viewFor(widgetClass).orElseGet(() -> {
+          try {
             return widgetClass.newInstance();
+          } catch (InstantiationException | IllegalAccessException e) {
+            Logger.getLogger("Widgets").log(Level.WARNING, "error creating widget", e);
+            return null;
           }
-        } catch (IllegalAccessException | IOException | InstantiationException e) {
-          Logger.getLogger("Widgets").log(Level.WARNING, "error creating widget", e);
-          return null;
-        }
+        });
       }
     };
 
@@ -111,6 +108,22 @@ public class Widgets extends Registry<Class<? extends Widget>> {
         .ifPresent(defaultWidgets::remove);
     registeredWidgets.remove(widgetClass);
     removeItem(widgetClass);
+  }
+
+  public static <T> Optional<T> viewFor(Class<T> annotatedClass) {
+    ParametrizedController controller = annotatedClass.getAnnotation(ParametrizedController.class);
+
+    if (controller != null) {
+      try {
+        FXMLLoader loader = new FXMLLoader(annotatedClass.getResource(controller.value()));
+        loader.load();
+        return Optional.of(loader.getController());
+      } catch (IOException e) {
+        Logger.getLogger("Widgets").log(Level.WARNING, "error creating widget", e);
+      }
+    }
+
+    return Optional.empty();
   }
 
   /**

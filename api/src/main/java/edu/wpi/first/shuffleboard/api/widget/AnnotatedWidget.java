@@ -14,7 +14,7 @@ public abstract class AnnotatedWidget extends AbstractWidget {
   private Description description = getClass().getAnnotation(Description.class);
 
   @Override
-  public final String getName() {
+  public final String getType() {
     return getDescription().name();
   }
 

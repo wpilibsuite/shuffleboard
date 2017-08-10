@@ -1,14 +1,15 @@
 package edu.wpi.first.shuffleboard.app.components;
 
 import edu.wpi.first.shuffleboard.api.dnd.DataFormats;
+
+import java.io.IOException;
+
 import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
-
-import java.io.IOException;
 
 public class WidgetGalleryController {
   @FXML
@@ -26,7 +27,7 @@ public class WidgetGalleryController {
 
               // TODO type safety
               ClipboardContent clipboard = new ClipboardContent();
-              clipboard.put(DataFormats.widgetType, galleryItem.getWidget().getName());
+              clipboard.put(DataFormats.widgetType, galleryItem.getWidget().getType());
               dragboard.setContent(clipboard);
               event.consume();
             });

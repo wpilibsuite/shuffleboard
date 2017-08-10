@@ -1,10 +1,13 @@
 package edu.wpi.first.shuffleboard.app.components;
 
-import edu.wpi.first.shuffleboard.app.dnd.DragUtils;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.util.GridPoint;
+import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 import edu.wpi.first.shuffleboard.api.widget.TileSize;
+import edu.wpi.first.shuffleboard.api.widget.Viewable;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
+import edu.wpi.first.shuffleboard.app.dnd.DragUtils;
+import edu.wpi.first.shuffleboard.app.widget.Layout;
 
 import org.fxmisc.easybind.EasyBind;
 
@@ -28,7 +31,7 @@ import javafx.scene.layout.StackPane;
  */
 public class WidgetPane extends TilePane {
 
-  private final ObservableList<WidgetTile> tiles;
+  private final ObservableList<Tile> tiles;
   private final Pane gridHighlight = new StackPane();
 
   private final BooleanProperty highlight
@@ -45,7 +48,7 @@ public class WidgetPane extends TilePane {
   public WidgetPane() {
     gridHighlight.getStyleClass().add("grid-highlight");
 
-    tiles = EasyBind.map(getChildren().filtered(n -> n instanceof WidgetTile), n -> (WidgetTile) n);
+    tiles = EasyBind.map(getChildren().filtered(n -> n instanceof Tile), n -> (Tile) n);
 
     // Add the highlighter when we're told to highlight
     highlight.addListener((__, old, highlight) -> {
@@ -96,7 +99,7 @@ public class WidgetPane extends TilePane {
   }
 
 
-  public ObservableList<WidgetTile> getTiles() {
+  public ObservableList<Tile> getTiles() {
     return tiles;
   }
 
@@ -105,8 +108,10 @@ public class WidgetPane extends TilePane {
    *
    * @param predicate the predicate to use to find the desired widget tile
    */
-  public Optional<WidgetTile> tileMatching(Predicate<WidgetTile> predicate) {
+  public Optional<Tile> tileMatching(Predicate<Tile> predicate) {
     return tiles.stream()
+                .map(TypeUtils.optionalCast(Tile.class))
+                .filter(Optional::isPresent).map(Optional::get)
                 .filter(predicate)
                 .findFirst();
   }
@@ -125,7 +130,16 @@ public class WidgetPane extends TilePane {
    * Gets the tile for the widget containing the given source.
    */
   public Optional<WidgetTile> widgetForSource(DataSource<?> source) {
-    return tileMatching(tile -> tile.getWidget().getSource() == source);
+    return tileMatching(tile -> tile instanceof WidgetTile && ((WidgetTile) tile).getContent().getSource() == source)
+            .flatMap(TypeUtils.optionalCast(WidgetTile.class));
+  }
+
+  public Tile addLayout(Layout widget, GridPoint location, TileSize size) {
+    LayoutTile tile = new LayoutTile(widget);
+    tile.sizeProperty().addListener(__ -> setSize(tile, tile.getSize()));
+    addTile(tile, location, size);
+    tile.setSize(size);
+    return tile;
   }
 
   /**
@@ -173,7 +187,7 @@ public class WidgetPane extends TilePane {
    * @param tile the tile to resize
    * @param size the new size of the tile
    */
-  public void setSize(WidgetTile tile, TileSize size) {
+  public void setSize(Tile tile, TileSize size) {
     super.setSize(tile, size);
     tile.setMinWidth(tileSizeToWidth(size.getWidth()));
     tile.setMinHeight(tileSizeToHeight(size.getHeight()));
@@ -193,14 +207,17 @@ public class WidgetPane extends TilePane {
             (int) (height / getTileSize()));
   }
 
-  public void removeWidget(WidgetTile tile) {
+  public <T extends Viewable> T removeTile(Tile<T> tile) {
+    T content = tile.getContent();
     getChildren().remove(tile);
+    tile.setContent(null);
+    return content;
   }
 
   /**
    * Gets the tile at the given point in the grid.
    */
-  public Optional<WidgetTile> tileAt(GridPoint point) {
+  public Optional<Tile> tileAt(GridPoint point) {
     return tileAt(point.col, point.row);
   }
 
@@ -210,7 +227,7 @@ public class WidgetPane extends TilePane {
    * @param col the column of the point to check
    * @param row the row of the point to check
    */
-  public Optional<WidgetTile> tileAt(int col, int row) {
+  public Optional<Tile> tileAt(int col, int row) {
     return tiles.stream()
         .filter(tile -> getColumnIndex(tile) <= col
             && getColumnIndex(tile) + tile.getSize().getWidth() > col)
@@ -274,6 +291,9 @@ public class WidgetPane extends TilePane {
    * Will select the widgets that match predicate, and de-select all other widgets.
    */
   public void selectWidgets(Predicate<Widget> predicate) {
-    tiles.forEach(tile -> tile.setSelected(predicate.test(tile.getWidget())));
+    tiles.filtered(t -> t instanceof WidgetTile)
+         .forEach(tile -> tile.setSelected(
+                 predicate.test(((WidgetTile) tile).getContent())
+         ));
   }
 }

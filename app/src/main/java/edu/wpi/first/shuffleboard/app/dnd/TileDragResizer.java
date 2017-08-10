@@ -1,8 +1,9 @@
 package edu.wpi.first.shuffleboard.app.dnd;
 
+import edu.wpi.first.shuffleboard.api.widget.TileSize;
+import edu.wpi.first.shuffleboard.app.components.Tile;
 import edu.wpi.first.shuffleboard.app.components.TilePane;
 import edu.wpi.first.shuffleboard.app.components.WidgetTile;
-import edu.wpi.first.shuffleboard.api.widget.TileSize;
 
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -21,7 +22,7 @@ public final class TileDragResizer {
   /**
    * Keep track of resizers to avoid creating more than one for the same tile.
    */
-  private static final Map<WidgetTile, TileDragResizer> resizers = new WeakHashMap<>();
+  private static final Map<Tile, TileDragResizer> resizers = new WeakHashMap<>();
 
   /**
    * The margin around the control that a user can click in to start resizing the tile.
@@ -29,7 +30,7 @@ public final class TileDragResizer {
   private static final int RESIZE_MARGIN = 10;
 
   private final TilePane tilePane;
-  private final WidgetTile tile;
+  private final Tile tile;
 
   private double lastX;
   private double lastY;
@@ -69,7 +70,7 @@ public final class TileDragResizer {
     }
   }
 
-  private TileDragResizer(TilePane tilePane, WidgetTile tile) {
+  private TileDragResizer(TilePane tilePane, Tile tile) {
     this.tilePane = tilePane;
     this.tile = tile;
     tile.addEventHandler(MouseEvent.MOUSE_PRESSED, this::mousePressed);
@@ -85,7 +86,7 @@ public final class TileDragResizer {
    * @param tilePane the pane containing the tile to make resizable
    * @param tile     the tile to make resizable
    */
-  public static TileDragResizer makeResizable(TilePane tilePane, WidgetTile tile) {
+  public static TileDragResizer makeResizable(TilePane tilePane, Tile tile) {
     return resizers.computeIfAbsent(tile, __ -> new TileDragResizer(tilePane, tile));
   }
 
