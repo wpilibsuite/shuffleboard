@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import edu.wpi.first.shuffleboard.api.components.WidgetTile?>
+<?import edu.wpi.first.shuffleboard.app.components.WidgetTile?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.geometry.Insets?>

@@ -1,6 +1,6 @@
 package edu.wpi.first.shuffleboard.plugin.networktables;
 
-import edu.wpi.first.shuffleboard.api.components.DashboardTabPane;
+import edu.wpi.first.shuffleboard.api.Dashboard;
 import edu.wpi.first.shuffleboard.api.dnd.DataFormats;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceEntry;
@@ -26,7 +26,7 @@ public class NetworkTableSourceView extends StackPane {
 
   private final NetworkTableTreeWidget widget = new NetworkTableTreeWidget();
   private NetworkTableEntry selectedEntry;
-  private DashboardTabPane dashboard;
+  private Dashboard dashboard;
 
   public NetworkTableSourceView() {
     widget.setSource(NetworkTableSource.forKey("/"));
@@ -45,6 +45,7 @@ public class NetworkTableSourceView extends StackPane {
               .stream()
               .map(NetworkTableSourceType.INSTANCE::toUri)
               .collect(Collectors.toList());
+          dashboard.selectWidgets(w -> toHighlight.contains(w.getSource().getId()));
         }
       });
       makeSourceRowDraggable(row);
@@ -97,7 +98,7 @@ public class NetworkTableSourceView extends StackPane {
     return menuItem;
   }
 
-  public void setDashboard(DashboardTabPane dashboard) {
+  public void setDashboard(Dashboard dashboard) {
     this.dashboard = dashboard;
   }
 

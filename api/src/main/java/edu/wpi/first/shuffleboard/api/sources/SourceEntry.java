@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.function.Supplier;
 
 /**
- * A representation of a source.
+ * A representation of a source used for drag-and-drop of sources.
  */
 public interface SourceEntry extends Serializable, Supplier<DataSource> {
 

@@ -1,6 +1,6 @@
-package edu.wpi.first.shuffleboard.api.components;
+package edu.wpi.first.shuffleboard.app.components;
 
-import edu.wpi.first.shuffleboard.api.prefs.AppPreferences;
+import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
 import edu.wpi.first.shuffleboard.api.util.GridPoint;
 import edu.wpi.first.shuffleboard.api.util.RoundingMode;
 import edu.wpi.first.shuffleboard.api.widget.TileSize;

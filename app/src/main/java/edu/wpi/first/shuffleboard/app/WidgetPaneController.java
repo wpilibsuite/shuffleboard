@@ -1,8 +1,8 @@
 package edu.wpi.first.shuffleboard.app;
 
-import edu.wpi.first.shuffleboard.api.components.TileLayout;
-import edu.wpi.first.shuffleboard.api.components.WidgetPane;
-import edu.wpi.first.shuffleboard.api.components.WidgetTile;
+import edu.wpi.first.shuffleboard.app.components.TileLayout;
+import edu.wpi.first.shuffleboard.app.components.WidgetPane;
+import edu.wpi.first.shuffleboard.app.components.WidgetTile;
 import edu.wpi.first.shuffleboard.api.dnd.DataFormats;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.DummySource;

@@ -1,7 +1,7 @@
 package edu.wpi.first.shuffleboard.app.dnd;
 
-import edu.wpi.first.shuffleboard.api.components.TilePane;
-import edu.wpi.first.shuffleboard.api.components.WidgetTile;
+import edu.wpi.first.shuffleboard.app.components.TilePane;
+import edu.wpi.first.shuffleboard.app.components.WidgetTile;
 import edu.wpi.first.shuffleboard.api.widget.TileSize;
 
 import java.util.Map;

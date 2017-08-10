@@ -1,4 +1,4 @@
-package edu.wpi.first.shuffleboard.api.prefs;
+package edu.wpi.first.shuffleboard.app.prefs;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;

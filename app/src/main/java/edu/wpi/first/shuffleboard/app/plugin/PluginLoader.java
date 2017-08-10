@@ -1,6 +1,6 @@
 package edu.wpi.first.shuffleboard.app.plugin;
 
-import edu.wpi.first.shuffleboard.api.components.DashboardTabPane;
+import edu.wpi.first.shuffleboard.app.components.DashboardTabPane;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.plugin.Plugin;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;

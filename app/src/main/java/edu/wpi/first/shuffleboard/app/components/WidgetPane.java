@@ -1,6 +1,6 @@
-package edu.wpi.first.shuffleboard.api.components;
+package edu.wpi.first.shuffleboard.app.components;
 
-import edu.wpi.first.shuffleboard.api.dnd.DragUtils;
+import edu.wpi.first.shuffleboard.app.dnd.DragUtils;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.util.GridPoint;
 import edu.wpi.first.shuffleboard.api.widget.TileSize;

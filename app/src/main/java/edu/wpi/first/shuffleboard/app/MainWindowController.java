@@ -2,10 +2,10 @@ package edu.wpi.first.shuffleboard.app;
 
 import com.google.common.io.Files;
 
-import edu.wpi.first.shuffleboard.api.components.DashboardTabPane;
-import edu.wpi.first.shuffleboard.api.components.WidgetPropertySheet;
+import edu.wpi.first.shuffleboard.app.components.DashboardTabPane;
+import edu.wpi.first.shuffleboard.app.components.WidgetPropertySheet;
 import edu.wpi.first.shuffleboard.api.plugin.Plugin;
-import edu.wpi.first.shuffleboard.api.prefs.AppPreferences;
+import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
 import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
 import edu.wpi.first.shuffleboard.api.theme.Theme;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;

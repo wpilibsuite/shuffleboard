@@ -1,4 +1,4 @@
-package edu.wpi.first.shuffleboard.api.components;
+package edu.wpi.first.shuffleboard.app.components;
 
 import javafx.beans.property.StringProperty;
 import javafx.scene.control.Tab;

@@ -1,5 +1,6 @@
-package edu.wpi.first.shuffleboard.api.components;
+package edu.wpi.first.shuffleboard.app.components;
 
+import edu.wpi.first.shuffleboard.api.components.EditableLabel;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.ThreadUtils;
 import javafx.beans.property.Property;
