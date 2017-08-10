@@ -17,7 +17,6 @@ public final class SourceTypes {
 
   private static final Map<String, SourceType> types = new HashMap<>();
   private static final ObservableList<String> typeNames = FXCollections.observableArrayList();
-  private static final ObservableList<String> namesUnmodifiable = FXCollections.unmodifiableObservableList(typeNames);
   private static final ObservableList<String> allUris = FXCollections.observableArrayList();
 
 
@@ -103,13 +102,6 @@ public final class SourceTypes {
    */
   public static String stripProtocol(String uri) {
     return typeForUri(uri).removeProtocol(uri);
-  }
-
-  /**
-   * Gets a read-only observable list of the names of the registered source types.
-   */
-  public static ObservableList<String> getNames() {
-    return namesUnmodifiable;
   }
 
   /**
