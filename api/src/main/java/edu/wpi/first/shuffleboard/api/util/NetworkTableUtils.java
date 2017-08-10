@@ -151,10 +151,24 @@ public final class NetworkTableUtils {
    */
   public static void waitForNtcoreEvents() {
     CompletableFuture<?> future = new CompletableFuture<>();
-    NetworkTablesJNI.addEntryListener("", (uid, key, value, flags) -> {
-      future.complete(null);
+    final String indexKey = "waitForNtcoreEvents";
+
+    NetworkTablesJNI.addEntryListener(indexKey, (uid, key, value, flags) -> {
+      NetworkTablesJNI.deleteEntry(indexKey);
       NetworkTablesJNI.removeEntryListener(uid);
-    }, 0xFF);
+    },  ITable.NOTIFY_NEW | ITable.NOTIFY_LOCAL);
+    NetworkTablesJNI.addEntryListener(indexKey, (uid, key, value, flags) -> {
+      NetworkTablesJNI.removeEntryListener(uid);
+      future.complete(null);
+    }, ITable.NOTIFY_DELETE | ITable.NOTIFY_LOCAL);
+
+    /*
+     * This works because all notifications are put into a single queue and are processed by a
+     * single thread.
+     *
+     * https://github.com/wpilibsuite/shuffleboard/pull/118#issuecomment-321374691
+     */
+    NetworkTablesJNI.putBoolean(indexKey, false);
     future.join();
   }
 
