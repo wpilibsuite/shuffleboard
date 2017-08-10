@@ -1,19 +1,38 @@
 package edu.wpi.first.shuffleboard.api.sources;
 
 import edu.wpi.first.shuffleboard.api.data.DataType;
+import edu.wpi.first.shuffleboard.api.util.PropertyUtils;
+
+import org.fxmisc.easybind.EasyBind;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+
+import javafx.beans.InvalidationListener;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
 public final class SourceTypes {
 
   private static final Map<String, SourceType> types = new HashMap<>();
+  private static final ObservableList<String> typeNames = FXCollections.observableArrayList();
+  private static final ObservableList<String> allUris = FXCollections.observableArrayList();
 
-  public static final SourceType None = new SourceType("None", false, "", null);
+
+  public static final SourceType None = new SourceType("None", false, "", __ -> DataSource.none());
   public static final SourceType Static
       = new SourceType("Static", false, "example://", uri -> DummySource.forTypes(DataType.forName(uri)).get());
 
   static {
+    typeNames.addListener((InvalidationListener) __ -> {
+      Optional<ObservableList<String>> names = typeNames.stream()
+          .map(SourceTypes::forName)
+          .map(SourceType::getAvailableSourceUris)
+          .reduce(PropertyUtils::combineLists);
+      names.ifPresent(l -> EasyBind.listBind(allUris, l));
+    });
+
     register(None);
     register(Static);
   }
@@ -42,6 +61,7 @@ public final class SourceTypes {
       throw new IllegalArgumentException("A source type has already been registered with protocol '" + protocol + "'");
     }
     types.put(name, sourceType);
+    typeNames.add(name);
   }
 
   /**
@@ -51,12 +71,7 @@ public final class SourceTypes {
    * @param uri the URI to create a source for
    */
   public static DataSource<?> forUri(String uri) {
-    return types.values().stream()
-        .filter(t -> t != None)
-        .filter(t -> uri.startsWith(t.getProtocol()))
-        .map(t -> t.forUri(uri))
-        .findFirst()
-        .orElseGet(DataSource::none);
+    return typeForUri(uri).forUri(uri);
   }
 
   /**
@@ -66,6 +81,34 @@ public final class SourceTypes {
    */
   public static SourceType forName(String name) {
     return types.getOrDefault(name, None);
+  }
+
+  /**
+   * Gets the source type associated with the given URI, or {@link #None} if the protocol is not recognized.
+   */
+  public static SourceType typeForUri(String uri) {
+    for (SourceType type : types.values()) {
+      if (!type.getProtocol().isEmpty() && uri.startsWith(type.getProtocol())) {
+        return type;
+      }
+    }
+    return None;
+  }
+
+  /**
+   * Tries to strip the protocol from a source URI. Has no effect if the uri does not start with a known protocol.
+   *
+   * @param uri the uri to strip the protocol from
+   */
+  public static String stripProtocol(String uri) {
+    return typeForUri(uri).removeProtocol(uri);
+  }
+
+  /**
+   * Gets a read-only observable list of all available source URIs of all the known types.
+   */
+  public static ObservableList<String> allAvailableSourceUris() {
+    return allUris;
   }
 
 }

@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj.tables.ITableListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.regex.Pattern;
 
 /**
  * Utility class for working with network tables.
@@ -20,6 +21,9 @@ public final class NetworkTableUtils {
    * The root network table.
    */
   public static final ITable rootTable = NetworkTable.getTable("");
+
+  private static final Pattern oldMetadataPattern = Pattern.compile("/~\\w+~($|/)");
+  private static final Pattern newMetadataPattern = Pattern.compile("/\\.");
 
   private NetworkTableUtils() {
   }
@@ -119,6 +123,14 @@ public final class NetworkTableUtils {
   }
 
   /**
+   * Checks if the given key is metadata, eg matches the format "~METADATA~" or ".metadata"
+   */
+  public static boolean isMetadata(String key) {
+    return oldMetadataPattern.matcher(key).find()
+        || newMetadataPattern.matcher(key).find();
+  }
+
+  /**
    * Gets the data type most closely associated with the value of the given network table key.
    *
    * @param key the network table key to get the data type for
@@ -140,7 +152,12 @@ public final class NetworkTableUtils {
       if (type == null) {
         return DataTypes.Map;
       } else {
-        return DataType.forName(type);
+        DataType<?> forName = DataType.forName(type);
+        if (forName == DataTypes.Unknown) {
+          return DataTypes.Map;
+        } else {
+          return forName;
+        }
       }
     }
     return DataTypes.Unknown;

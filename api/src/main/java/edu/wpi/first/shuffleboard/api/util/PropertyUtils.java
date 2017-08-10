@@ -8,7 +8,10 @@ import java.util.function.Function;
 
 import javafx.beans.binding.Binding;
 import javafx.beans.property.Property;
+import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.MapChangeListener;
+import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 
 /**
@@ -89,4 +92,36 @@ public final class PropertyUtils {
       }
     });
   }
+
+  /**
+   * Combines multiple observable lists into a single one. The combined list is initially the concatenation of
+   * {@code second} to the end {@code first}. Subsequent additions to either list will be appended to the end of
+   * the combined list. Removing items from either list will also remove those specific items; in this case,
+   * reference equality is used instead of object equality to ensure that only the exact objects that were removed from
+   * the original list are removed from the combined one.
+   *
+   * @param first  the first list
+   * @param second the second list
+   * @param <T>    the type of data in the lists
+   */
+  public static <T> ObservableList<T> combineLists(ObservableList<T> first, ObservableList<T> second) {
+    ObservableList<T> combine = FXCollections.observableArrayList();
+    ListChangeListener<? super T> listener = c -> {
+      while (c.next()) {
+        if (c.wasAdded()) {
+          combine.addAll(c.getAddedSubList());
+        } else if (c.wasRemoved()) {
+          // Only remove the actual elements that were removed from the list
+          // Otherwise all instances of an element would be removed, which is not the desired behavior
+          c.getRemoved().forEach(e -> combine.removeIf(t -> e == t));
+        }
+      }
+    };
+    combine.addAll(first);
+    combine.addAll(second);
+    first.addListener(listener);
+    second.addListener(listener);
+    return combine;
+  }
+
 }

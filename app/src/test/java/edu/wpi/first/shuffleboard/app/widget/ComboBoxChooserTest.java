@@ -1,12 +1,13 @@
 package edu.wpi.first.shuffleboard.app.widget;
 
-import edu.wpi.first.shuffleboard.api.sources.DummySource;
+
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.data.SendableChooserData;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
+import edu.wpi.first.shuffleboard.api.sources.DummySource;
 
-import org.junit.Test;
-import org.testfx.framework.junit.ApplicationTest;
+import org.junit.jupiter.api.Test;
+import org.testfx.framework.junit5.ApplicationTest;
 import org.testfx.util.WaitForAsyncUtils;
 
 import javafx.application.Platform;
@@ -14,7 +15,7 @@ import javafx.collections.FXCollections;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ComboBoxChooserTest extends ApplicationTest {
 

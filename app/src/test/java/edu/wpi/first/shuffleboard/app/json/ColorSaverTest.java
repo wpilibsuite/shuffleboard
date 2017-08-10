@@ -2,12 +2,14 @@ package edu.wpi.first.shuffleboard.app.json;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+
+import org.junit.jupiter.api.Test;
+import org.testfx.framework.junit5.ApplicationTest;
+
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
-import org.junit.Test;
-import org.testfx.framework.junit.ApplicationTest;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ColorSaverTest extends ApplicationTest {
 

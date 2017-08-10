@@ -1,25 +1,29 @@
 package edu.wpi.first.shuffleboard.app;
 
-import edu.wpi.first.shuffleboard.app.components.WidgetTile;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
+import edu.wpi.first.shuffleboard.app.components.WidgetTile;
 import edu.wpi.first.shuffleboard.app.widget.Widgets;
 import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.testfx.framework.junit5.ApplicationTest;
+import org.testfx.matcher.base.NodeMatchers;
+import org.testfx.util.WaitForAsyncUtils;
+
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.testfx.framework.junit.ApplicationTest;
-import org.testfx.matcher.base.NodeMatchers;
-import org.testfx.util.WaitForAsyncUtils;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class MainWindowControllerTest extends ApplicationTest {
 
@@ -32,12 +36,12 @@ public class MainWindowControllerTest extends ApplicationTest {
     stage.show();
   }
 
-  @Before
+  @BeforeEach
   public void setUp() {
     NetworkTableUtils.shutdown();
   }
 
-  @After
+  @AfterEach
   public void tearDown() {
     NetworkTableUtils.shutdown();
   }
@@ -56,7 +60,7 @@ public class MainWindowControllerTest extends ApplicationTest {
   }
 
   @Test
-  @Category(NonHeadlessTests.class)
+  @Tag("NonHeadlessTests")
   public void testNetworkTableSourceContextMenu() {
     NetworkTablesJNI.putString("/testSourceContextMenu", "value");
     NetworkTableUtils.waitForNtcoreEvents();

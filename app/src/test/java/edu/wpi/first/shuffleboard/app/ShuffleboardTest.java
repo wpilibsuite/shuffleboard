@@ -1,13 +1,15 @@
 package edu.wpi.first.shuffleboard.app;
 
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.testfx.framework.junit5.ApplicationTest;
+
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
-import org.junit.After;
-import org.junit.Before;
-import org.testfx.framework.junit.ApplicationTest;
 
 public class ShuffleboardTest extends ApplicationTest {
 
@@ -19,12 +21,12 @@ public class ShuffleboardTest extends ApplicationTest {
     stage.show();
   }
 
-  @Before
+  @BeforeEach
   public void setUp() {
     NetworkTableUtils.shutdown();
   }
 
-  @After
+  @AfterEach
   public void tearDown() {
     NetworkTableUtils.shutdown();
   }
