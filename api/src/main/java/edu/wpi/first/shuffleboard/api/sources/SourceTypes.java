@@ -1,6 +1,6 @@
 package edu.wpi.first.shuffleboard.api.sources;
 
-import edu.wpi.first.shuffleboard.api.data.DataType;
+import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.util.PropertyUtils;
 
 import org.fxmisc.easybind.EasyBind;
@@ -22,7 +22,7 @@ public final class SourceTypes {
 
   public static final SourceType None = new SourceType("None", false, "", __ -> DataSource.none());
   public static final SourceType Static
-      = new SourceType("Static", false, "example://", uri -> DummySource.forTypes(DataType.forName(uri)).get());
+      = new SourceType("Static", false, "example://", uri -> DummySource.forTypes(DataTypes.forName(uri).get()).get());
 
   static {
     typeNames.addListener((InvalidationListener) __ -> {
@@ -84,6 +84,7 @@ public final class SourceTypes {
   }
 
   /**
+   * <<<<<<< d13462fe4829f201f7c4203580dcd7a745f35204
    * Gets the source type associated with the given URI, or {@link #None} if the protocol is not recognized.
    */
   public static SourceType typeForUri(String uri) {

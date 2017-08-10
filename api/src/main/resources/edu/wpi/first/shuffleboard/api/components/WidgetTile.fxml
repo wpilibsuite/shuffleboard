@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import edu.wpi.first.shuffleboard.api.components.WidgetTile?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.geometry.Insets?>
+<fx:root xmlns="http://javafx.com/javafx"
+         xmlns:fx="http://javafx.com/fxml"
+         type="WidgetTile"
+         fx:id="tile"
+         fx:controller="edu.wpi.first.shuffleboard.app.WidgetTileController">
+    <top>
+        <StackPane styleClass="tile-title-bar">
+            <padding>
+                <Insets top="4" right="0" bottom="2" left="0"/>
+            </padding>
+            <Label fx:id="titleLabel" alignment="CENTER" maxWidth="Infinity" styleClass="tile-title-label"/>
+        </StackPane>
+    </top>
+</fx:root>

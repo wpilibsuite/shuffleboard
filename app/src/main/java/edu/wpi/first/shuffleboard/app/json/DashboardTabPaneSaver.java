@@ -6,8 +6,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonSerializationContext;
-import edu.wpi.first.shuffleboard.app.components.DashboardTabPane;
-import edu.wpi.first.shuffleboard.app.components.WidgetPane;
+import edu.wpi.first.shuffleboard.api.components.DashboardTabPane;
+import edu.wpi.first.shuffleboard.api.components.WidgetPane;
 import javafx.scene.control.Tab;
 
 import java.util.ArrayList;

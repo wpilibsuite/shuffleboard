@@ -7,7 +7,7 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonSerializationContext;
 import edu.wpi.first.shuffleboard.api.sources.Sources;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
-import edu.wpi.first.shuffleboard.app.widget.Widgets;
+import edu.wpi.first.shuffleboard.api.widget.Widgets;
 import javafx.beans.property.Property;
 
 @AnnotatedTypeAdapter(forType = Widget.class)

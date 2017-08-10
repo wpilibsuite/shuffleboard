@@ -2,7 +2,11 @@ package edu.wpi.first.shuffleboard.app.components;
 
 import edu.wpi.first.shuffleboard.api.sources.DummySource;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
-import edu.wpi.first.shuffleboard.app.widget.WidgetType;
+import edu.wpi.first.shuffleboard.api.widget.WidgetType;
+
+import java.io.IOException;
+import java.util.Collection;
+
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.fxml.FXMLLoader;
@@ -12,9 +16,6 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
-
-import java.io.IOException;
-import java.util.Collection;
 
 public class WidgetGallery extends TilePane {
   /**
@@ -34,7 +35,8 @@ public class WidgetGallery extends TilePane {
   /**
    * Add the given widget types to the gallery.
    */
-  public void loadWidgets(Collection<WidgetType> widgets) {
+  public void setWidgets(Collection<WidgetType> widgets) {
+    clear();
     widgets.stream().map(WidgetType::get)
             .peek(widget ->
               DummySource.forTypes(widget.getDataTypes())
@@ -47,6 +49,10 @@ public class WidgetGallery extends TilePane {
     WidgetGalleryItem item = new WidgetGalleryItem();
     item.setWidget(widget);
     this.getChildren().add(item);
+  }
+
+  public void clear() {
+    getChildren().clear();
   }
 
   public static class WidgetGalleryItem extends VBox {

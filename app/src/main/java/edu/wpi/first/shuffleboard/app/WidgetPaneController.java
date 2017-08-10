@@ -1,18 +1,19 @@
 package edu.wpi.first.shuffleboard.app;
 
+import edu.wpi.first.shuffleboard.api.components.TileLayout;
+import edu.wpi.first.shuffleboard.api.components.WidgetPane;
+import edu.wpi.first.shuffleboard.api.components.WidgetTile;
+import edu.wpi.first.shuffleboard.api.dnd.DataFormats;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.DummySource;
+import edu.wpi.first.shuffleboard.api.sources.SourceEntry;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
+import edu.wpi.first.shuffleboard.api.util.GridPoint;
+import edu.wpi.first.shuffleboard.api.util.RoundingMode;
+import edu.wpi.first.shuffleboard.api.widget.TileSize;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
-import edu.wpi.first.shuffleboard.app.components.TileLayout;
-import edu.wpi.first.shuffleboard.app.components.WidgetPane;
-import edu.wpi.first.shuffleboard.app.components.WidgetTile;
-import edu.wpi.first.shuffleboard.app.dnd.DataFormats;
+import edu.wpi.first.shuffleboard.api.widget.Widgets;
 import edu.wpi.first.shuffleboard.app.dnd.TileDragResizer;
-import edu.wpi.first.shuffleboard.app.util.GridPoint;
-import edu.wpi.first.shuffleboard.app.util.RoundingMode;
-import edu.wpi.first.shuffleboard.app.widget.TileSize;
-import edu.wpi.first.shuffleboard.app.widget.Widgets;
 
 import org.fxmisc.easybind.EasyBind;
 

@@ -1,69 +1,35 @@
 package edu.wpi.first.shuffleboard.api.data;
 
 import edu.wpi.first.shuffleboard.api.data.types.AllType;
-import edu.wpi.first.shuffleboard.api.data.types.AnalogInputType;
-import edu.wpi.first.shuffleboard.api.data.types.BooleanArrayType;
-import edu.wpi.first.shuffleboard.api.data.types.BooleanType;
-import edu.wpi.first.shuffleboard.api.data.types.EncoderType;
-import edu.wpi.first.shuffleboard.api.data.types.MapType;
 import edu.wpi.first.shuffleboard.api.data.types.NoneType;
-import edu.wpi.first.shuffleboard.api.data.types.NumberArrayType;
-import edu.wpi.first.shuffleboard.api.data.types.NumberType;
-import edu.wpi.first.shuffleboard.api.data.types.RawByteType;
-import edu.wpi.first.shuffleboard.api.data.types.SendableChooserType;
-import edu.wpi.first.shuffleboard.api.data.types.SpeedControllerType;
-import edu.wpi.first.shuffleboard.api.data.types.StringArrayType;
-import edu.wpi.first.shuffleboard.api.data.types.StringType;
 import edu.wpi.first.shuffleboard.api.data.types.UnknownType;
 
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public final class DataTypes {
 
   // Catchall or wildcard types
-  public static final DataType<?> None = new NoneType();
-  public static final DataType<?> All = new AllType();
-  public static final DataType<?> Unknown = new UnknownType();
-
-  // Simple types
-  public static final DataType<Number> Number = new NumberType();
-  public static final DataType<String> String = new StringType();
-  public static final DataType<Boolean> Boolean = new BooleanType();
-  public static final DataType<double[]> NumberArray = new NumberArrayType();
-  public static final DataType<String[]> StringArray = new StringArrayType();
-  public static final DataType<boolean[]> BooleanArray = new BooleanArrayType();
-  public static final DataType<byte[]> RawBytes = new RawByteType();
-
-  // Complex types
-  public static final ComplexDataType<MapData> Map = new MapType();
-  public static final ComplexDataType<SendableChooserData> SendableChooser = new SendableChooserType();
-  public static final ComplexDataType<AnalogInputData> AnalogInput = new AnalogInputType();
-  public static final ComplexDataType<SpeedControllerData> SpeedController = new SpeedControllerType();
-  public static final ComplexDataType<EncoderData> Encoder = new EncoderType();
+  public static final DataType None = new NoneType();
+  public static final DataType All = new AllType();
+  public static final DataType Unknown = new UnknownType();
 
   private static final Map<String, DataType> dataTypes = new TreeMap<>();
 
-  // Register all builtin types
+  private static final Map<Class, Optional<DataType>> typeCache = new HashMap<>();
+
   static {
     register(All);
     register(None);
     register(Unknown);
-    register(Number);
-    register(String);
-    register(Boolean);
-    register(NumberArray);
-    register(StringArray);
-    register(BooleanArray);
-    register(Map);
-    register(SendableChooser);
-    register(AnalogInput);
-    register(SpeedController);
-    register(Encoder);
   }
 
   private DataTypes() {
@@ -76,6 +42,7 @@ public final class DataTypes {
    */
   public static void register(DataType<?> dataType) {
     dataTypes.put(dataType.getName(), dataType);
+    typeCache.put(dataType.getJavaClass(), Optional.of(dataType));
   }
 
   /**
@@ -83,6 +50,104 @@ public final class DataTypes {
    */
   public static Optional<DataType<?>> forName(String name) {
     return Optional.ofNullable(dataTypes.get(name));
+  }
+
+  /**
+   * Gets the data type most relevant to a Java class.
+   */
+  @SuppressWarnings("unchecked")
+  public static <T> Optional<DataType<T>> forJavaType(Class<T> type) {
+    if (type.isPrimitive()) {
+      return forJavaType((Class) boxedType(type));
+    }
+    return (Optional) typeCache.computeIfAbsent(type, __ -> {
+      if (DataType.class.isAssignableFrom(type)) {
+        return forType((Class<DataType>) type);
+      }
+      Optional<DataType> naive = dataTypes.values().stream()
+          .filter(t -> type.equals(t.getJavaClass()))
+          .findAny();
+      if (naive.isPresent()) {
+        return naive;
+      } else {
+        // Check Java class hierarchy
+        Comparator<Class<?>> classComparator = closestTo(type);
+        List<DataType> sorted = dataTypes.values().stream()
+            .filter(t -> t != All)
+            .sorted((t1, t2) -> classComparator.reversed().compare(t1.getJavaClass(), t2.getJavaClass()))
+            .collect(Collectors.toList());
+        return Optional.of(sorted.get(0));
+      }
+    });
+  }
+
+  private static Comparator<Class<?>> closestTo(Class<?> target) {
+    return (o1, o2) -> {
+      if (o1 == o2) {
+        return 0;
+      }
+      if (o1 == null) {
+        return -1;
+      } else if (o2 == null) {
+        return 1;
+      }
+      boolean isO1Superclass = o1.isAssignableFrom(target);
+      boolean isO2Superclass = o2.isAssignableFrom(target);
+      if (isO1Superclass && !isO2Superclass) {
+        return 1;
+      } else if (!isO1Superclass && isO2Superclass) {
+        return -1;
+      } else if (!isO1Superclass) { //NOPMD
+        // Neither is a superclass; order doesn't matter
+        return 0;
+      } else {
+        // Target inherits from both
+        int c1 = 0;
+        int c2 = 0;
+        Class sup = o1.getSuperclass();
+        while (sup != Object.class && sup != null) {
+          sup = sup.getSuperclass();
+          c1++;
+        }
+        sup = o2.getSuperclass();
+        while (sup != Object.class && sup != null) {
+          sup = sup.getSuperclass();
+          c2++;
+        }
+        return Integer.compare(c1, c2);
+      }
+    };
+  }
+
+  public static void clearCache() {
+    typeCache.clear();
+  }
+
+  /**
+   * A.
+   */
+  public static Set<DataType> forJavaTypes(Class<?>... types) {
+    return Stream.of(types)
+        .map(DataTypes::forJavaType)
+        .filter(Optional::isPresent)
+        .map(Optional::get)
+        .collect(Collectors.toSet());
+  }
+
+  private static Class<?> boxedType(Class<?> primitiveType) {
+    if (primitiveType == boolean.class) {
+      return Boolean.class;
+    }
+    if (primitiveType == double.class) {
+      return Double.class;
+    }
+    if (primitiveType == int.class) {
+      return Integer.class;
+    }
+    if (primitiveType == long.class) {
+      return Long.class;
+    }
+    return primitiveType;
   }
 
   /**

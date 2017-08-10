@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import edu.wpi.first.shuffleboard.app.components.DashboardTabPane?>
+<?import edu.wpi.first.shuffleboard.api.components.DashboardTabPane?>
 <?import edu.wpi.first.shuffleboard.app.components.WidgetGallery?>
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
@@ -41,7 +41,10 @@
 
     <left>
         <TabPane tabClosingPolicy="UNAVAILABLE" prefWidth="400">
-            <Tab text="Sources" fx:id="sourcesTab">
+            <Tab text="Sources">
+                <ScrollPane fitToWidth="true" fitToHeight="true">
+                    <TabPane fx:id="internalSourcesTab"/>
+                </ScrollPane>
             </Tab>
             <Tab text="Widgets">
                 <ScrollPane fitToWidth="true">

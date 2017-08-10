@@ -1,11 +1,21 @@
 package edu.wpi.first.shuffleboard.app.sources.recording;
 
-import edu.wpi.first.shuffleboard.api.data.ComplexData;
-import edu.wpi.first.shuffleboard.app.sources.CompositeNetworkTableSource;
+import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
 import edu.wpi.first.shuffleboard.api.sources.Sources;
-import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
-import edu.wpi.first.shuffleboard.app.sources.NetworkTableSourceType;
+import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
+import edu.wpi.first.shuffleboard.api.sources.recording.Recording;
+import edu.wpi.first.shuffleboard.api.sources.recording.Serialization;
+import edu.wpi.first.shuffleboard.api.sources.recording.TimestampedData;
 import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
+
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.Property;
@@ -13,16 +23,6 @@ import javafx.beans.property.ReadOnlyProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Handles playback of a recording file. Calling {@link #start()} will start a thread that auto-increments data frames
@@ -200,40 +200,8 @@ public final class Playback {
   private void set(TimestampedData data) {
     final String sourceId = data.getSourceId();
     // TODO move record/set logic to SourceType
-    if (sourceId.startsWith(NetworkTableSourceType.INSTANCE.getProtocol())) {
-      // Update all possible sources for the entry
-      // This is a special case because of the treelike structure of network tables
-      final String fullKey = NetworkTableSourceType.INSTANCE.removeProtocol(sourceId);
-      List<String> hierarchy = NetworkTableUtils.getHierarchy(fullKey);
-      hierarchy.stream()
-          .map(NetworkTableSourceType.INSTANCE::toUri)
-          .map(Sources::get)
-          .filter(Optional::isPresent)
-          .map(Optional::get)
-          .forEach(source -> {
-            if (source instanceof CompositeNetworkTableSource) {
-              @SuppressWarnings("unchecked")
-              CompositeNetworkTableSource<? extends ComplexData<?>> comp = (CompositeNetworkTableSource) source;
-              if (comp.getKey().equals("/")) {
-                updateTable(comp, fullKey, data.getData());
-              } else {
-                updateTable(comp, fullKey.substring(comp.getKey().length() + 1), data.getData());
-              }
-            } else {
-              // It's the source just for the key, set it
-              source.setData(data.getData());
-            }
-          });
-    } else {
-      Sources.get(sourceId)
-          .ifPresent(source -> source.setData(data.getData()));
-    }
-  }
-
-  private <T extends ComplexData<T>> void updateTable(CompositeNetworkTableSource<T> source, String key, Object value) {
-    Map<String, Object> map = new HashMap<>(source.getData().asMap());
-    map.put(key, value);
-    source.setData(source.getDataType().fromMap(map));
+    SourceTypes.typeForUri(sourceId)
+        .read(data);
   }
 
   /**

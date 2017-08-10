@@ -1,7 +1,10 @@
 package edu.wpi.first.shuffleboard.app;
 
-import edu.wpi.first.shuffleboard.app.sources.recording.Recorder;
-import edu.wpi.first.shuffleboard.app.widget.Widgets;
+import edu.wpi.first.shuffleboard.api.components.DashboardTabPane;
+import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
+import edu.wpi.first.shuffleboard.app.plugin.PluginLoader;
+import edu.wpi.first.shuffleboard.plugin.base.BasePlugin;
+import edu.wpi.first.shuffleboard.plugin.networktables.NetworkTablesPlugin;
 import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
 
 import java.io.IOException;
@@ -32,15 +35,18 @@ public class Shuffleboard extends Application {
     Font.loadFont(getClass().getResource("font/roboto/Roboto-Italic.ttf").openStream(), -1);
     Font.loadFont(getClass().getResource("font/roboto/Roboto-BoldItalic.ttf").openStream(), -1);
 
-    Widgets.discover();
-    Recorder.getInstance().start();
-
     mainPane = FXMLLoader.load(MainWindowController.class.getResource("MainWindow.fxml"));
   }
 
   @Override
   public void start(Stage primaryStage) throws IOException {
     primaryStage.setScene(new Scene(mainPane));
+
+    PluginLoader.getDefault().setDashboard((DashboardTabPane) mainPane.lookup(".dashboard-tabs"));
+    PluginLoader.getDefault().load(new BasePlugin());
+    PluginLoader.getDefault().load(new NetworkTablesPlugin());
+
+    Recorder.getInstance().start();
     primaryStage.setMinWidth(640);
     primaryStage.setMinHeight(480);
     primaryStage.setWidth(Screen.getPrimary().getVisualBounds().getWidth());

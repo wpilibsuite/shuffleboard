@@ -8,23 +8,27 @@ import java.util.function.Function;
  *
  * @param <T> the self type
  */
-public interface ComplexDataType<T extends ComplexData> extends DataType<T> {
+public abstract class ComplexDataType<T extends ComplexData> extends DataType<T> {
+
+  protected ComplexDataType(String name, Class<T> javaClass) {
+    super(name, javaClass);
+  }
 
   /**
    * Gets a function used to create a new data object from a map of values to property names.
    */
-  Function<Map<String, Object>, T> fromMap();
+  public abstract Function<Map<String, Object>, T> fromMap();
 
   /**
    * Creates a new data object from the given map.
    *
-   * @param map the mp of values to create the data from
+   * @param map the map of values to create the data from
    */
-  default T fromMap(Map<String, Object> map) {
+  public T fromMap(Map<String, Object> map) {
     return fromMap().apply(map);
   }
 
-  default boolean isComplex() {
+  public final boolean isComplex() {
     return true;
   }
 

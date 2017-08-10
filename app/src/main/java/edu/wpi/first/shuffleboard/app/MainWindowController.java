@@ -2,22 +2,19 @@ package edu.wpi.first.shuffleboard.app;
 
 import com.google.common.io.Files;
 
-import edu.wpi.first.shuffleboard.api.sources.DataSource;
+import edu.wpi.first.shuffleboard.api.components.DashboardTabPane;
+import edu.wpi.first.shuffleboard.api.components.WidgetPropertySheet;
+import edu.wpi.first.shuffleboard.api.plugin.Plugin;
+import edu.wpi.first.shuffleboard.api.prefs.AppPreferences;
+import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
+import edu.wpi.first.shuffleboard.api.theme.Theme;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
-import edu.wpi.first.shuffleboard.api.widget.Widget;
-import edu.wpi.first.shuffleboard.app.components.DashboardTabPane;
+import edu.wpi.first.shuffleboard.api.util.Storage;
+import edu.wpi.first.shuffleboard.api.widget.Widgets;
 import edu.wpi.first.shuffleboard.app.components.WidgetGallery;
-import edu.wpi.first.shuffleboard.app.dnd.DataFormats;
 import edu.wpi.first.shuffleboard.app.json.JsonBuilder;
-import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
-import edu.wpi.first.shuffleboard.app.sources.NetworkTableSource;
+import edu.wpi.first.shuffleboard.app.plugin.PluginLoader;
 import edu.wpi.first.shuffleboard.app.sources.recording.Playback;
-import edu.wpi.first.shuffleboard.app.sources.recording.Recorder;
-import edu.wpi.first.shuffleboard.app.theme.Theme;
-import edu.wpi.first.shuffleboard.app.util.Storage;
-import edu.wpi.first.shuffleboard.app.widget.NetworkTableTreeWidget;
-import edu.wpi.first.shuffleboard.app.widget.WidgetPropertySheet;
-import edu.wpi.first.shuffleboard.app.widget.Widgets;
 
 import org.controlsfx.control.PropertySheet;
 import org.fxmisc.easybind.EasyBind;
@@ -27,31 +24,26 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import java.nio.charset.Charset;
+import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javafx.beans.value.ObservableValue;
+import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
-import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tab;
-import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeTableRow;
-import javafx.scene.input.ClipboardContent;
-import javafx.scene.input.Dragboard;
+import javafx.scene.control.TabPane;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-
-import static edu.wpi.first.shuffleboard.app.util.TypeUtils.optionalCast;
 
 
 /**
@@ -70,13 +62,12 @@ public class MainWindowController {
   @FXML
   private DashboardTabPane dashboard;
   @FXML
-  private Tab sourcesTab;
+  private TabPane internalSourcesTab;
 
   File currentFile = null;
 
   private final ObservableValue<List<String>> stylesheets
       = EasyBind.map(AppPreferences.getInstance().themeProperty(), Theme::getStyleSheets);
-  private NetworkTableEntry selectedEntry = null;
 
   @FXML
   private void initialize() throws IOException {
@@ -85,48 +76,24 @@ public class MainWindowController {
             Recorder.getInstance().runningProperty(),
             running -> running ? "Stop recording" : "Start recording"));
     FxUtils.bind(root.getStylesheets(), stylesheets);
-    NetworkTableTreeWidget networkTables = new NetworkTableTreeWidget();
-    networkTables.getTree().getSelectionModel().selectedItemProperty().addListener((__, prev, cur) -> {
-      if (cur == null) {
-        selectedEntry = null;
-      } else {
-        selectedEntry = cur.getValue();
-      }
-    });
-    networkTables.getTree().setRowFactory(view -> {
-      TreeTableRow<NetworkTableEntry> row = new TreeTableRow<>();
-      row.hoverProperty().addListener((__, wasHover, isHover) -> {
-        if (!row.isEmpty()) {
-          setHighlightedWithChildren(row.getTreeItem(), isHover);
+
+    PluginLoader.getDefault().getLoadedPlugins().addListener((ListChangeListener<Plugin>) c -> {
+      while (c.next()) {
+        if (c.wasAdded()) {
+          c.getAddedSubList().forEach(plugin -> {
+            plugin.getSourceTypes().forEach(sourceType -> {
+              Tab sourceTab = new Tab(sourceType.getName());
+              sourceTab.setContent(sourceType.getSourcesView());
+              internalSourcesTab.getTabs().add(sourceTab);
+            });
+          });
+        } else if (c.wasRemoved()) { //NOPMD empty if statement
+          //TODO
         }
-      });
-      makeSourceRowDraggable(row);
-      return row;
-    });
-    networkTables.getTree().setOnContextMenuRequested(e -> {
-      TreeItem<NetworkTableEntry> selectedItem = networkTables.getTree().getSelectionModel().getSelectedItem();
-      if (selectedItem == null) {
-        return;
+        internalSourcesTab.getTabs().sort(Comparator.comparing(Tab::getText));
       }
-
-      DataSource<?> source = selectedItem.getValue().get();
-      List<String> widgetNames = Widgets.widgetNamesForSource(source);
-      if (widgetNames.isEmpty()) {
-        // No known widgets that can show this data
-        return;
-      }
-
-      ContextMenu menu = new ContextMenu();
-      widgetNames.stream()
-          .map(name -> createShowAsMenuItem(name, source))
-          .forEach(menu.getItems()::add);
-
-      menu.show(root.getScene().getWindow(), e.getScreenX(), e.getScreenY());
+      widgetGallery.setWidgets(Widgets.allWidgets());
     });
-    networkTables.setSource(NetworkTableSource.forKey(""));
-    sourcesTab.setContent(networkTables.getView());
-
-    widgetGallery.loadWidgets(Widgets.allWidgets());
 
     root.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
       if (e.isShortcutDown() && e.getCode().isDigitKey()) {
@@ -138,44 +105,6 @@ public class MainWindowController {
         dashboard.selectTab(digitPressed - 1);
       }
     });
-  }
-
-  private void makeSourceRowDraggable(TreeTableRow<? extends SourceEntry> row) {
-    row.setOnDragDetected(event -> {
-      if (selectedEntry == null) {
-        return;
-      }
-      Dragboard dragboard = row.startDragAndDrop(TransferMode.COPY_OR_MOVE);
-      ClipboardContent content = new ClipboardContent();
-      content.put(DataFormats.source, selectedEntry);
-      dragboard.setContent(content);
-      event.consume();
-    });
-  }
-
-  private MenuItem createShowAsMenuItem(String widgetName, DataSource<?> source) {
-    return FxUtils.menuItem("Show as: " + widgetName,
-        e -> Widgets.createWidget(widgetName, source).ifPresent(dashboard::addWidgetToActivePane));
-  }
-
-  /**
-   * Highlight or de-highlight any widgets with sources that are descendants of this NT key.
-   */
-  private void setHighlightedWithChildren(TreeItem<NetworkTableEntry> node,
-                                          boolean highlightValue) {
-    String key = node.getValue().getKey();
-
-    if (highlightValue) {
-      dashboard.selectWidgets((Widget widget) ->
-          optionalCast(widget.getSource(), NetworkTableSource.class)
-              .map(s ->
-                  s.getKey().equals(key) || (!node.isLeaf() && s.getKey().startsWith(key))
-              )
-              .orElse(false)
-      );
-    } else {
-      dashboard.selectWidgets(widget -> false);
-    }
   }
 
   /**
@@ -213,7 +142,7 @@ public class MainWindowController {
   private void saveAs() {
     FileChooser chooser = new FileChooser();
     chooser.getExtensionFilters().setAll(
-            new FileChooser.ExtensionFilter("SmartDashboard Save File (.json)", "*.json"));
+        new FileChooser.ExtensionFilter("SmartDashboard Save File (.json)", "*.json"));
     if (currentFile == null) {
       chooser.setInitialDirectory(new File(Storage.STORAGE_DIR));
       chooser.setInitialFileName("smartdashboard.json");
@@ -251,7 +180,7 @@ public class MainWindowController {
     FileChooser chooser = new FileChooser();
     chooser.setInitialDirectory(new File(Storage.STORAGE_DIR));
     chooser.getExtensionFilters().setAll(
-            new FileChooser.ExtensionFilter("SmartDashboard Save File (.json)", "*.json"));
+        new FileChooser.ExtensionFilter("SmartDashboard Save File (.json)", "*.json"));
 
     final File selected = chooser.showOpenDialog(root.getScene().getWindow());
 

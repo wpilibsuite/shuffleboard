@@ -8,7 +8,7 @@ import edu.wpi.first.shuffleboard.api.data.DataTypes;
 class EmptyDataSource<T> extends AbstractDataSource<T> {
 
   public EmptyDataSource() {
-    super(DataTypes.Unknown);
+    super(DataTypes.None);
     setName("");
     setData(null);
     setActive(false);

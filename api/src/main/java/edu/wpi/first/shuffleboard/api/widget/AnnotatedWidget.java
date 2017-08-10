@@ -20,7 +20,7 @@ public abstract class AnnotatedWidget extends AbstractWidget {
 
   @Override
   public final Set<DataType> getDataTypes() {
-    return DataTypes.forTypes(getDescription().dataTypes());
+    return DataTypes.forJavaTypes(getDescription().dataTypes());
   }
 
   private Description getDescription() {

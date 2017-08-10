@@ -2,11 +2,10 @@ package edu.wpi.first.shuffleboard.api.data.types;
 
 import edu.wpi.first.shuffleboard.api.data.SimpleDataType;
 
-public class UnknownType implements SimpleDataType<Object> {
+public class UnknownType extends SimpleDataType<Object> {
 
-  @Override
-  public String getName() {
-    return "Unknown";
+  public UnknownType() {
+    super("Unknown", null);
   }
 
   @Override

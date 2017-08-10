@@ -2,6 +2,7 @@ package edu.wpi.first.shuffleboard.api.util;
 
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
+import edu.wpi.first.shuffleboard.api.data.MapData;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
 import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
 import edu.wpi.first.wpilibj.tables.ITable;
@@ -135,32 +136,28 @@ public final class NetworkTableUtils {
    *
    * @param key the network table key to get the data type for
    *
-   * @return the data type most closely associated with the given key, or {@link DataTypes#Unknown}
-   *         if there is no network table value for the given key
+   * @return the data type most closely associated with the given key
    */
   public static DataType dataTypeForEntry(String key) {
     String normalKey = normalizeKey(key, false);
     if (normalKey.isEmpty() || "/".equals(normalKey)) {
-      return DataTypes.Map;
+      return DataTypes.forJavaType(MapData.class).get();
     }
     if (rootTable.containsKey(normalKey)) {
-      return DataType.forJavaType(rootTable.getValue(normalKey, null).getClass());
+      return DataTypes.forJavaType(rootTable.getValue(normalKey, null).getClass()).get();
     }
     if (rootTable.containsSubTable(normalKey)) {
       ITable table = rootTable.getSubTable(normalKey);
       String type = table.getString("~TYPE~", table.getString(".type", null));
       if (type == null) {
-        return DataTypes.Map;
+        return DataTypes.forJavaType(MapData.class).get();
       } else {
-        DataType<?> forName = DataType.forName(type);
-        if (forName == DataTypes.Unknown) {
-          return DataTypes.Map;
-        } else {
-          return forName;
-        }
+        return DataTypes.forName(type)
+            .orElse(DataTypes.forJavaType(MapData.class)
+                .orElse(DataTypes.None));
       }
     }
-    return DataTypes.Unknown;
+    return null;
   }
 
   /**
