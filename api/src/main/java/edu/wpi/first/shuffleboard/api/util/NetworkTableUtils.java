@@ -22,7 +22,7 @@ public final class NetworkTableUtils {
    */
   public static final ITable rootTable = NetworkTable.getTable("");
 
-  private static final Pattern oldMetadataPattern = Pattern.compile("/~\\w+~/?");
+  private static final Pattern oldMetadataPattern = Pattern.compile("/~\\w+~($|/)");
   private static final Pattern newMetadataPattern = Pattern.compile("/\\.");
 
   private NetworkTableUtils() {
