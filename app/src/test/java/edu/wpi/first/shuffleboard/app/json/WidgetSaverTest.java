@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
 import javafx.stage.Stage;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.testfx.framework.junit.ApplicationTest;
 
@@ -45,6 +46,7 @@ public class WidgetSaverTest extends ApplicationTest {
             .getValue();
   }
 
+  @Ignore
   @Test
   public void loadSimpleWidget() throws Exception {
     String widgetJson = "{\n"
