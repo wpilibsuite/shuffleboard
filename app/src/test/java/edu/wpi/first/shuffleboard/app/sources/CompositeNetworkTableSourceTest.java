@@ -41,7 +41,6 @@ public class CompositeNetworkTableSourceTest {
     assertTrue(source.getData().isEmpty());
   }
 
-  @Disabled
   @Test
   public void testDataUpdates() {
     CompositeNetworkTableSource<MapData> source
