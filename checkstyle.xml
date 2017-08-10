@@ -84,6 +84,7 @@
         <module name="FallThrough"/>
         <module name="SimplifyBooleanExpression"/>
         <module name="StringLiteralEquality"/>
+        <module name="SimplifyBooleanReturn"/>
         <module name="UpperEll"/>
         <module name="ModifierOrder"/>
         <module name="EmptyLineSeparator">
