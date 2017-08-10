@@ -1,8 +1,8 @@
 package edu.wpi.first.shuffleboard.app;
 
-
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.DummySource;
+import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 import edu.wpi.first.shuffleboard.app.components.TileLayout;
 import edu.wpi.first.shuffleboard.app.components.WidgetPane;
@@ -133,7 +133,7 @@ public class WidgetPaneController {
         Binding<Integer> rowBinding =
             EasyBind.combine(region.heightProperty(), pane.vgapProperty(), pane.tileSizeProperty(),
                 (height, gap, size) -> pane.roundHeightToNearestTile(height.doubleValue(), RoundingMode.DOWN))
-                .map(numRows -> Math.max(numRows, 1));
+                .map(numRows -> Math.max(1, numRows));
 
 
         pane.numColumnsProperty().bind(colBinding);
@@ -277,8 +277,7 @@ public class WidgetPaneController {
    */
   private ContextMenu createContextMenu(WidgetTile tile) {
     ContextMenu menu = new ContextMenu();
-    MenuItem remove = new MenuItem("Remove");
-    remove.setOnAction(__ -> pane.removeWidget(tile));
+    MenuItem remove = FxUtils.menuItem("Remove", __ -> pane.removeWidget(tile));
     Menu changeMenus = createChangeMenus(tile);
     if (changeMenus.getItems().size() > 1) {
       menu.getItems().addAll(changeMenus, new SeparatorMenuItem());

@@ -2,6 +2,9 @@ package edu.wpi.first.shuffleboard.api.sources;
 
 import java.util.function.Function;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+
 public class SourceType {
 
   private final String name;
@@ -59,6 +62,13 @@ public class SourceType {
       throw new IllegalArgumentException("URI does not start with the correct protocol: " + uri);
     }
     return sourceSupplier.apply(removeProtocol(uri));
+  }
+
+  /**
+   * Gets a list of the URIs of all available sources of this type.
+   */
+  public ObservableList<String> getAvailableSourceUris() {
+    return FXCollections.emptyObservableList();
   }
 
 }

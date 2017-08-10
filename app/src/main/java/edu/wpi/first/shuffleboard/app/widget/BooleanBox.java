@@ -24,9 +24,9 @@ public class BooleanBox extends SimpleAnnotatedWidget<Boolean> {
   private Pane root;
 
   private final Property<Color> trueColor
-      = new SimpleObjectProperty<>(this, "True Color", Color.LAWNGREEN);
+      = new SimpleObjectProperty<>(this, "colorWhenTrue", Color.LAWNGREEN);
   private final Property<Color> falseColor
-      = new SimpleObjectProperty<>(this, "False Color", Color.DARKRED);
+      = new SimpleObjectProperty<>(this, "colorWhenFalse", Color.DARKRED);
 
   @FXML
   private void initialize() {
