@@ -1,17 +1,17 @@
 package edu.wpi.first.shuffleboard.app;
 
 
+import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.DummySource;
+import edu.wpi.first.shuffleboard.api.widget.Widget;
 import edu.wpi.first.shuffleboard.app.components.TileLayout;
 import edu.wpi.first.shuffleboard.app.components.WidgetPane;
 import edu.wpi.first.shuffleboard.app.components.WidgetTile;
 import edu.wpi.first.shuffleboard.app.dnd.DataFormats;
 import edu.wpi.first.shuffleboard.app.dnd.TileDragResizer;
-import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.app.util.GridPoint;
 import edu.wpi.first.shuffleboard.app.util.RoundingMode;
 import edu.wpi.first.shuffleboard.app.widget.TileSize;
-import edu.wpi.first.shuffleboard.api.widget.Widget;
 import edu.wpi.first.shuffleboard.app.widget.Widgets;
 
 import org.fxmisc.easybind.EasyBind;
@@ -70,10 +70,10 @@ public class WidgetPaneController {
       } else if (isSource) {
         SourceEntry entry = (SourceEntry) event.getDragboard().getContent(DataFormats.source);
         DataSource source = entry.get();
-        List<String> names = Widgets.widgetNamesForSource(source);
+        Optional<String> widgetName = Widgets.pickWidgetNameFor(source.getDataType());
         Optional<DummySource> dummySource = DummySource.forTypes(source.getDataType());
-        if (!names.isEmpty() && dummySource.isPresent()) {
-          Widgets.createWidget(names.get(0), (DataSource<?>) dummySource.get()).ifPresent(w -> {
+        if (widgetName.isPresent() && dummySource.isPresent()) {
+          Widgets.createWidget(widgetName.get(), (DataSource<?>) dummySource.get()).ifPresent(w -> {
             pane.setHighlight(true);
             pane.setHighlightPoint(point);
             pane.setHighlightSize(pane.sizeOfWidget(w));
@@ -219,9 +219,7 @@ public class WidgetPaneController {
    * @param point  the point to place the widget for the source
    */
   private void dropSource(DataSource<?> source, GridPoint point) {
-    Widgets.widgetNamesForSource(source)
-           .stream()
-           .findAny()
+    Widgets.pickWidgetNameFor(source.getDataType())
            .flatMap(name -> Widgets.createWidget(name, source))
            .filter(widget -> pane.isOpen(point, pane.sizeOfWidget(widget), n -> widget == n))
            .map(pane::addWidget)
