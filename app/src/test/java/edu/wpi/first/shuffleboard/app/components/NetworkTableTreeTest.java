@@ -8,8 +8,6 @@ import edu.wpi.first.wpilibj.networktables.NetworkTable;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.testfx.framework.junit5.ApplicationExtension;
 import org.testfx.framework.junit5.ApplicationTest;
 
 import javafx.collections.ObservableList;
@@ -34,7 +32,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.testfx.matcher.base.NodeMatchers.hasText;
 import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
 
-@ExtendWith(ApplicationExtension.class)
 public class NetworkTableTreeTest extends ApplicationTest {
 
   private NetworkTable table;

@@ -10,8 +10,6 @@ import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.testfx.framework.junit5.ApplicationExtension;
 import org.testfx.framework.junit5.ApplicationTest;
 
 import java.io.InputStreamReader;
@@ -21,7 +19,6 @@ import javafx.stage.Stage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@ExtendWith(ApplicationExtension.class)
 public class DashboardTabPaneSaverTest extends ApplicationTest {
 
   @Override
