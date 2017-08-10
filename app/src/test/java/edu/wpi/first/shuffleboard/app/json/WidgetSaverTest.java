@@ -7,14 +7,16 @@ import edu.wpi.first.shuffleboard.api.widget.Widget;
 import edu.wpi.first.shuffleboard.app.sources.NetworkTableSourceType;
 import edu.wpi.first.shuffleboard.app.widget.Widgets;
 import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
-import javafx.stage.Stage;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.testfx.framework.junit.ApplicationTest;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.testfx.framework.junit5.ApplicationTest;
+
+import javafx.stage.Stage;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class WidgetSaverTest extends ApplicationTest {
 
@@ -23,7 +25,7 @@ public class WidgetSaverTest extends ApplicationTest {
     Widgets.discover();
   }
 
-  @Before
+  @BeforeEach
   public void setUp() {
     NetworkTableUtils.shutdown();
     NetworkTablesJNI.setUpdateRate(0.01);
@@ -32,7 +34,7 @@ public class WidgetSaverTest extends ApplicationTest {
     NetworkTableUtils.waitForNtcoreEvents();
   }
 
-  @After
+  @AfterEach
   public void tearDown() {
     AsyncUtils.setAsyncRunner(FxUtils::runOnFxThread);
     NetworkTableUtils.shutdown();
@@ -40,22 +42,22 @@ public class WidgetSaverTest extends ApplicationTest {
 
   private static Object getPropertyValue(Widget widget, String name) {
     return widget.getProperties().stream()
-            .filter(p -> p.getName().equals(name))
-            .findFirst()
-            .orElseThrow(RuntimeException::new)
-            .getValue();
+        .filter(p -> p.getName().equals(name))
+        .findFirst()
+        .orElseThrow(RuntimeException::new)
+        .getValue();
   }
 
-  @Ignore
+  @Disabled
   @Test
   public void loadSimpleWidget() throws Exception {
     String widgetJson = "{\n"
-            + "\"_type\": \"Number Slider\",\n"
-            + "\"_source\": \"network_table:///value\",\n"
-            + "\"min\": -1.0,\n"
-            + "\"max\": 1.0,\n"
-            + "\"blockIncrement\": 0.0625\n"
-            + "}";
+        + "\"_type\": \"Number Slider\",\n"
+        + "\"_source\": \"network_table:///value\",\n"
+        + "\"min\": -1.0,\n"
+        + "\"max\": 1.0,\n"
+        + "\"blockIncrement\": 0.0625\n"
+        + "}";
 
     Widget widget = JsonBuilder.forSaveFile().fromJson(widgetJson, Widget.class);
 

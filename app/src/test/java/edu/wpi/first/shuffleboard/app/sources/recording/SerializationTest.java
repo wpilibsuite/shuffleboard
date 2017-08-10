@@ -2,13 +2,14 @@ package edu.wpi.first.shuffleboard.app.sources.recording;
 
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SuppressWarnings("PMD")
 public class SerializationTest {
@@ -104,7 +105,7 @@ public class SerializationTest {
     recording.append(new TimestampedData("foo", DataTypes.String, "baz", 1));
     Serialization.saveRecording(recording, file.getAbsolutePath());
     final Recording loaded = Serialization.loadRecording(file.getAbsolutePath());
-    assertEquals("The loaded recording differs from the encoded one", recording, loaded);
+    assertEquals(recording, loaded, "The loaded recording differs from the encoded one");
   }
 
 }

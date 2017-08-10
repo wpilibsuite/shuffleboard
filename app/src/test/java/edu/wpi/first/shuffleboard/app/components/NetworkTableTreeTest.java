@@ -1,14 +1,14 @@
 package edu.wpi.first.shuffleboard.app.components;
 
+import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.app.NetworkTableEntry;
 import edu.wpi.first.shuffleboard.app.sources.NetworkTableSource;
-import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.app.widget.NetworkTableTreeWidget;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
 
-import org.junit.After;
-import org.junit.Test;
-import org.testfx.framework.junit.ApplicationTest;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.testfx.framework.junit5.ApplicationTest;
 
 import javafx.collections.ObservableList;
 import javafx.scene.Scene;
@@ -23,12 +23,12 @@ import static edu.wpi.first.shuffleboard.app.components.NetworkTableTreeItemMatc
 import static edu.wpi.first.shuffleboard.app.components.NetworkTableTreeItemMatcher.hasSimpleKey;
 import static edu.wpi.first.shuffleboard.app.components.NetworkTableTreeItemMatcher.isExpanded;
 import static edu.wpi.first.shuffleboard.app.components.NetworkTableTreeItemMatcher.isLeaf;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNot.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.testfx.matcher.base.NodeMatchers.hasText;
 import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
 
@@ -51,14 +51,14 @@ public class NetworkTableTreeTest extends ApplicationTest {
     stage.show();
   }
 
-  @After
+  @AfterEach
   public void tearDown() {
     NetworkTableUtils.shutdown();
   }
 
   @Test
   public void testEmpty() {
-    assertTrue("There should be no children", root.getChildren().isEmpty());
+    assertTrue(root.getChildren().isEmpty(), "There should be no children");
   }
 
   @Test
@@ -109,7 +109,7 @@ public class NetworkTableTreeTest extends ApplicationTest {
     tree.sort();
 
     ObservableList<TreeItem<NetworkTableEntry>> children = root.getChildren();
-    assertEquals("There should be 5 children", 5, children.size());
+    assertEquals(5, children.size(), "There should be 5 children");
     assertThat(root, hasKey("/sub_a").atIndex(0));
     assertThat(root, hasKey("/sub_b").atIndex(1));
     assertThat(root, hasKey("/a").atIndex(2));
@@ -127,9 +127,9 @@ public class NetworkTableTreeTest extends ApplicationTest {
 
   private void assertCellIndex(String simpleKey, int index) {
     TreeTableCell cell = lookup(hasText(simpleKey)).query();
-    assertNotNull("No cell with text " + simpleKey, cell);
-    assertTrue("Cell is not visible", cell.isVisible());
-    assertEquals("Wrong index", index, cell.getTreeTableRow().getIndex());
+    assertNotNull(cell, "No cell with text " + simpleKey);
+    assertTrue(cell.isVisible(), "Cell is not visible");
+    assertEquals(index, cell.getTreeTableRow().getIndex(), "Wrong index");
   }
 
   @Test
@@ -139,12 +139,12 @@ public class NetworkTableTreeTest extends ApplicationTest {
     waitForNtcoreEvents();
     waitForFxEvents();
 
-    assertNotNull("There should be a cell for the entry", lookup(hasText(key)).query());
+    assertNotNull(lookup(hasText(key)).query(), "There should be a cell for the entry");
 
     table.delete(key);
     waitForNtcoreEvents();
     waitForFxEvents();
-    assertNull("The cell should have been removed", lookup(hasText(key)).query());
+    assertNull(lookup(hasText(key)).query(), "The cell should have been removed");
   }
 
   @Test
