@@ -4,7 +4,7 @@ build_script:
 test_script:
   - gradlew.bat check --stacktrace -PlogTests -Pheadless
 
-clone_depth: 1
+shallow_clone: true
 
 on_success:
   - 'del /f %USERPROFILE%\.gradle\caches\modules-2\modules-2.lock'
