@@ -74,4 +74,40 @@ public class NetworkTableUtilsTest {
     }
   }
 
+  @Test
+  public void testOldMetadata() {
+    String key = "/~metadata~";
+    assertTrue(NetworkTableUtils.isMetadata(key));
+  }
+
+  @Test
+  public void testOldMetadataSubkey() {
+    String key = "/table/~metadata~";
+    assertTrue(NetworkTableUtils.isMetadata(key));
+  }
+
+  @Test
+  public void testOldMetadataSubtable() {
+    String key = "/root/~metadata~/subkey";
+    assertTrue(NetworkTableUtils.isMetadata(key));
+  }
+
+  @Test
+  public void testNewMetadata() {
+    String key = "/.metadata";
+    assertTrue(NetworkTableUtils.isMetadata(key));
+  }
+
+  @Test
+  public void testNewMetadataSubkey() {
+    String key = "/table/.metadata";
+    assertTrue(NetworkTableUtils.isMetadata(key));
+  }
+
+  @Test
+  public void testNewMetadataSubtable() {
+    String key = "/root/.metadata/key";
+    assertTrue(NetworkTableUtils.isMetadata(key));
+  }
+
 }

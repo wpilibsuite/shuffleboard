@@ -122,8 +122,7 @@ public class DashboardTabPane extends TabPane {
     private final StringProperty title = new SimpleStringProperty(this, "title", "");
     private final BooleanProperty autoPopulate = new SimpleBooleanProperty(this, "autoPopulate", false);
     private final StringProperty sourcePrefix = new SimpleStringProperty(this, "sourcePrefix", "");
-    private static final ObservableList<String> availableSourceIds =
-        NetworkTableSourceType.INSTANCE.getAvailableSourceIds();
+    private static final ObservableList<String> availableSourceIds = SourceTypes.allAvailableSourceUris();
 
     private boolean deferPopulation = true;
 

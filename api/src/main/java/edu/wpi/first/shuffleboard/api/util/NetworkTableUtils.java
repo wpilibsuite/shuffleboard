@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj.tables.ITableListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.regex.Pattern;
 
 /**
  * Utility class for working with network tables.
@@ -20,6 +21,9 @@ public final class NetworkTableUtils {
    * The root network table.
    */
   public static final ITable rootTable = NetworkTable.getTable("");
+
+  private static final Pattern oldMetadataPattern = Pattern.compile("/~\\w+~/?");
+  private static final Pattern newMetadataPattern = Pattern.compile("/\\.");
 
   private NetworkTableUtils() {
   }
@@ -122,8 +126,8 @@ public final class NetworkTableUtils {
    * Checks if the given key is metadata, eg matches the format "~METADATA~" or ".metadata"
    */
   public static boolean isMetadata(String key) {
-    return key.matches("^.*/\\..+(/.*)?$")
-        || key.matches("^.*/~.+~(/.*)?$");
+    return oldMetadataPattern.matcher(key).find()
+        || newMetadataPattern.matcher(key).find();
   }
 
   /**

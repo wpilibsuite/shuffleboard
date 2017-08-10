@@ -65,9 +65,9 @@ public class SourceType {
   }
 
   /**
-   * Gets a list of the IDs of all available sources of this type.
+   * Gets a list of the URIs of all available sources of this type.
    */
-  public ObservableList<String> getAvailableSourceIds() {
+  public ObservableList<String> getAvailableSourceUris() {
     return FXCollections.emptyObservableList();
   }
 
