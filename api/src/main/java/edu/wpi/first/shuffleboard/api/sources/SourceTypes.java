@@ -1,6 +1,5 @@
 package edu.wpi.first.shuffleboard.api.sources;
 
-import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.util.PropertyUtils;
 import edu.wpi.first.shuffleboard.api.util.Registry;
 
