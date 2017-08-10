@@ -6,5 +6,10 @@ test_script:
 
 clone_depth: 1
 
+on_success:
+  - 'del /f %USERPROFILE%\.gradle\caches\modules-2\modules-2.lock'
+
 cache:
-  - '%USERPROFILE%\.gradle'
+  - '%USERPROFILE%\.gradle\caches -> **\*.gradle.kts'
+  - '%USERPROFILE%\.gradle\wrapper -> **\*.gradle.kts'
+  - '%USERPROFILE%\.m2 -> **\*.gradle.kts'
