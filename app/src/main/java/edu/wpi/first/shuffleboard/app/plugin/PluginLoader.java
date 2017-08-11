@@ -5,7 +5,6 @@ import edu.wpi.first.shuffleboard.api.plugin.Plugin;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
 import edu.wpi.first.shuffleboard.api.sources.recording.serialization.Serializers;
 import edu.wpi.first.shuffleboard.api.widget.Widgets;
-import edu.wpi.first.shuffleboard.app.components.DashboardTabPane;
 
 import java.io.File;
 import java.lang.reflect.Modifier;
@@ -22,16 +21,10 @@ public class PluginLoader {
 
   private static final PluginLoader defaultLoader = new PluginLoader();
 
-  private DashboardTabPane dashboard;
   private final ObservableList<Plugin> knownPlugins = FXCollections.observableArrayList();
 
   public static PluginLoader getDefault() {
     return defaultLoader;
-  }
-
-  public void setDashboard(DashboardTabPane dashboard) {
-    this.dashboard = dashboard;
-    knownPlugins.forEach(p -> p.setDashboard(dashboard));
   }
 
   /**
@@ -94,7 +87,6 @@ public class PluginLoader {
    * @param plugin the plugin to load
    */
   public void load(Plugin plugin) {
-    plugin.setDashboard(this.dashboard);
     plugin.getDataTypes().forEach(DataTypes::register);
     plugin.getSourceTypes().forEach(SourceTypes::register);
     plugin.getTypeAdapters().forEach(Serializers::add);

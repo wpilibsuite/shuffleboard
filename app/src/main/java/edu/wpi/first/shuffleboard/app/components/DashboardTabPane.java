@@ -1,6 +1,5 @@
 package edu.wpi.first.shuffleboard.app.components;
 
-import edu.wpi.first.shuffleboard.api.Dashboard;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.data.MapData;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
@@ -34,7 +33,7 @@ import static edu.wpi.first.shuffleboard.api.util.TypeUtils.optionalCast;
 /**
  * Represents a dashboard composed of multiple tabs.
  */
-public class DashboardTabPane extends TabPane implements Dashboard {
+public class DashboardTabPane extends TabPane {
 
   /**
    * Creates a dashboard with one default tab.
@@ -102,7 +101,6 @@ public class DashboardTabPane extends TabPane implements Dashboard {
    * Add a widget to the active tab pane.
    * Should only be done by the result of specific user interaction.
    */
-  @Override
   public void addWidgetToActivePane(Widget widget) {
     optionalCast(getSelectionModel().getSelectedItem(), DashboardTab.class)
         .ifPresent(tab -> tab.getWidgetPane().addWidget(widget));
@@ -111,7 +109,6 @@ public class DashboardTabPane extends TabPane implements Dashboard {
   /**
    * Highlights widgets matching a predicate on all tabs.
    */
-  @Override
   public void selectWidgets(Predicate<Widget> selector) {
     getTabs().stream().map(optionalCast(DashboardTab.class))
         .forEach(tab -> tab.map(DashboardTab::getWidgetPane)

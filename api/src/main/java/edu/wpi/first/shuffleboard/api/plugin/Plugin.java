@@ -2,7 +2,6 @@ package edu.wpi.first.shuffleboard.api.plugin;
 
 import com.google.common.collect.ImmutableList;
 
-import edu.wpi.first.shuffleboard.api.Dashboard;
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.recording.serialization.TypeAdapter;
@@ -20,7 +19,6 @@ import javafx.beans.property.SimpleBooleanProperty;
 public class Plugin {
 
   private final String name;
-  private Dashboard dashboard = null;
   private final BooleanProperty loaded = new SimpleBooleanProperty(this, "loaded", false);
 
   protected Plugin(String name) {
@@ -86,11 +84,4 @@ public class Plugin {
     this.loaded.set(loaded);
   }
 
-  public void setDashboard(Dashboard dashboard) {
-    this.dashboard = dashboard;
-  }
-
-  public Dashboard getDashboard() {
-    return dashboard;
-  }
 }

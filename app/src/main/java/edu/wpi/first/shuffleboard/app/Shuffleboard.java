@@ -1,6 +1,5 @@
 package edu.wpi.first.shuffleboard.app;
 
-import edu.wpi.first.shuffleboard.app.components.DashboardTabPane;
 import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
 import edu.wpi.first.shuffleboard.app.plugin.PluginLoader;
 import edu.wpi.first.shuffleboard.plugin.base.BasePlugin;
@@ -41,7 +40,6 @@ public class Shuffleboard extends Application {
     mainPane = FXMLLoader.load(MainWindowController.class.getResource("MainWindow.fxml"));
     primaryStage.setScene(new Scene(mainPane));
 
-    PluginLoader.getDefault().setDashboard((DashboardTabPane) mainPane.lookup(".dashboard-tabs"));
     PluginLoader.getDefault().load(new BasePlugin());
     PluginLoader.getDefault().load(new NetworkTablesPlugin());
 
