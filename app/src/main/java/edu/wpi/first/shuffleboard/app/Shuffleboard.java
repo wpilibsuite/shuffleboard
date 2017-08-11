@@ -55,7 +55,7 @@ public class Shuffleboard extends Application {
       primaryStage.setHeight(Screen.getPrimary().getVisualBounds().getHeight());
       primaryStage.show();
     } catch (AlreadyLockedException e) {
-      JUnique.sendMessage("alreadyRunning", "true");
+      JUnique.sendMessage(getClass().getCanonicalName(), "alreadyRunning");
     }
   }
 
