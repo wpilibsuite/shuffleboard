@@ -148,7 +148,7 @@ public class MainWindowController {
                   .forEach(tree::updateEntry);
               TitledPane titledPane = new TitledPane(sourceType.getName(), tree);
               sourcesAccordion.getPanes().add(titledPane);
-              titledPane.setExpanded(true);
+              sourcesAccordion.setExpandedPane(titledPane);
             });
           });
         } else if (c.wasRemoved()) { //NOPMD empty if statement
