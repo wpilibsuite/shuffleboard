@@ -89,7 +89,8 @@ public class SourceTreeTable<S extends SourceEntry, V> extends TreeTableView<S> 
     TreeItem<S> parent = current;
 
     // Get the appropriate node for the value, creating branches as needed
-    for (int i = 0; i < hierarchy.size(); i++) {
+    // Skip the first path in the hierarchy; it's always the root
+    for (int i = 1; i < hierarchy.size(); i++) {
       String path = hierarchy.get(i);
       parent = current;
       TreeItem<S> found = null;

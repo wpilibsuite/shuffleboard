@@ -101,7 +101,7 @@ public class MainWindowController {
             plugin.getSourceTypes().forEach(sourceType -> {
               SourceTreeTable<SourceEntry<?>, ?> tree = new SourceTreeTable<>();
               tree.setSourceType(sourceType);
-              tree.setRoot(new TreeItem<SourceEntry<?>>(sourceType.createSourceEntryForUri("")));
+              tree.setRoot(new TreeItem<SourceEntry<?>>(sourceType.createRootSourceEntry()));
               tree.setShowRoot(false);
               tree.setSortPolicy(__ -> {
                 sortTree(tree.getRoot());

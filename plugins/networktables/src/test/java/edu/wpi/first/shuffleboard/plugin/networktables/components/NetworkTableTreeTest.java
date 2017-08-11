@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.plugin.networktables.components;
 
+import edu.wpi.first.shuffleboard.api.components.SourceTreeTable;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.plugin.networktables.NetworkTableTreeWidget;
 import edu.wpi.first.shuffleboard.plugin.networktables.sources.NetworkTableEntry;
@@ -14,7 +15,6 @@ import javafx.collections.ObservableList;
 import javafx.scene.Scene;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableCell;
-import javafx.scene.control.TreeTableView;
 import javafx.stage.Stage;
 
 import static edu.wpi.first.shuffleboard.api.util.NetworkTableUtils.waitForNtcoreEvents;
@@ -35,7 +35,7 @@ import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
 public class NetworkTableTreeTest extends ApplicationTest {
 
   private NetworkTable table;
-  private TreeTableView<NetworkTableEntry> tree;
+  private SourceTreeTable<NetworkTableEntry, ?> tree;
   private TreeItem<NetworkTableEntry> root;
 
   @Override

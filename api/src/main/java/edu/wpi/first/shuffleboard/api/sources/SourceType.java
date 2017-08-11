@@ -15,10 +15,10 @@ public class SourceType {
   private final String protocol;
   private final Function<String, DataSource> sourceSupplier;
 
-  protected SourceType(String name,
-                       boolean isRecordable,
-                       String protocol,
-                       Function<String, DataSource> sourceSupplier) {
+  public SourceType(String name,
+                    boolean isRecordable,
+                    String protocol,
+                    Function<String, DataSource> sourceSupplier) {
     this.name = name;
     this.isRecordable = isRecordable;
     this.protocol = protocol;
@@ -89,6 +89,10 @@ public class SourceType {
     if (isRecordable) {
       throw new AbstractMethodError("A recordable source type must implement this method");
     }
+  }
+
+  public SourceEntry createRootSourceEntry() {
+    return createSourceEntryForUri("/");
   }
 
   public SourceEntry createSourceEntryForUri(String uri) {
