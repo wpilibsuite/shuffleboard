@@ -44,7 +44,6 @@ public class Shuffleboard extends Application {
     }
 
     NetworkTable.setClientMode();
-    NetworkTable.initialize();
 
     ChangeListener<String> serverChangeListener = (observable, oldValue, newValue) -> {
       if (newValue.matches("[1-9](\\d{1,3})?")) {
@@ -68,7 +67,6 @@ public class Shuffleboard extends Application {
     };
     AppPreferences.getInstance().portProperty().addListener(portChangeListener);
 
-    NetworkTable.setClientMode();
     serverChangeListener.changed(null, null, AppPreferences.getInstance().getServer());
     portChangeListener.changed(null, null, AppPreferences.getInstance().getPort());
 

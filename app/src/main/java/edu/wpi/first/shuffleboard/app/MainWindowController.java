@@ -20,7 +20,6 @@ import edu.wpi.first.shuffleboard.app.components.WidgetPropertySheet;
 import edu.wpi.first.shuffleboard.app.json.JsonBuilder;
 import edu.wpi.first.shuffleboard.app.plugin.PluginLoader;
 import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
-
 import edu.wpi.first.shuffleboard.app.prefs.FlushableItem;
 import edu.wpi.first.shuffleboard.app.sources.recording.Playback;
 
