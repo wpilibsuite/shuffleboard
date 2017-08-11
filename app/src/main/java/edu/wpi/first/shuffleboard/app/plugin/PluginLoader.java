@@ -1,13 +1,17 @@
 package edu.wpi.first.shuffleboard.app.plugin;
 
-import edu.wpi.first.shuffleboard.app.components.DashboardTabPane;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.plugin.Plugin;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
 import edu.wpi.first.shuffleboard.api.sources.recording.serialization.Serializers;
 import edu.wpi.first.shuffleboard.api.widget.Widgets;
+import edu.wpi.first.shuffleboard.app.components.DashboardTabPane;
 
+import java.io.File;
 import java.lang.reflect.Modifier;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.jar.JarFile;
 import java.util.stream.Stream;
 
@@ -19,7 +23,7 @@ public class PluginLoader {
   private static final PluginLoader defaultLoader = new PluginLoader();
 
   private DashboardTabPane dashboard;
-  private final ObservableList<Plugin> loadedPlugins = FXCollections.observableArrayList();
+  private final ObservableList<Plugin> knownPlugins = FXCollections.observableArrayList();
 
   public static PluginLoader getDefault() {
     return defaultLoader;
@@ -27,7 +31,7 @@ public class PluginLoader {
 
   public void setDashboard(DashboardTabPane dashboard) {
     this.dashboard = dashboard;
-    loadedPlugins.forEach(p -> p.setDashboard(dashboard));
+    knownPlugins.forEach(p -> p.setDashboard(dashboard));
   }
 
   /**
@@ -35,18 +39,23 @@ public class PluginLoader {
    *
    * @param jarFile the jar file to load plugins from
    */
-  public void loadPluginJar(JarFile jarFile) {
+  public void loadPluginJar(JarFile jarFile) throws MalformedURLException {
+    URL url = new File(jarFile.getName()).toURI().toURL();
+    URLClassLoader classLoader = new URLClassLoader(new URL[]{url}, ClassLoader.getSystemClassLoader());
+
     jarFile.stream()
         .filter(e -> e.getName().endsWith(".class"))
         .map(e -> e.getName().replace('/', '.'))
-        .flatMap(this::tryLoadClass)
+        .map(n -> n.substring(0, n.length() - 6)) // ".class".length() == 6
+        .flatMap(className -> tryLoadClass(className, classLoader))
         .forEach(this::loadPluginClass);
   }
 
-  private Stream<Class<?>> tryLoadClass(String name) {
+  private Stream<Class<?>> tryLoadClass(String name, ClassLoader classLoader) {
     try {
-      return Stream.of(ClassLoader.getSystemClassLoader().loadClass(name));
+      return Stream.of(Class.forName(name, false, classLoader));
     } catch (ClassNotFoundException e) {
+      e.printStackTrace();
       return Stream.empty();
     }
   }
@@ -63,7 +72,7 @@ public class PluginLoader {
       try {
         if (Modifier.isPublic(clazz.getConstructor().getModifiers())) {
           // Unload existing plugin, if it exists
-          loadedPlugins.stream()
+          knownPlugins.stream()
               .filter(p -> p.getClass().getName().equals(clazz.getName()))
               .forEach(this::unload);
           Plugin plugin = (Plugin) clazz.newInstance();
@@ -94,7 +103,9 @@ public class PluginLoader {
     plugin.onLoad();
     plugin.setLoaded(true);
 
-    loadedPlugins.add(plugin);
+    if (!knownPlugins.contains(plugin)) {
+      knownPlugins.add(plugin);
+    }
   }
 
   /**
@@ -103,22 +114,19 @@ public class PluginLoader {
    * @param plugin the plugin to unload
    */
   public void unload(Plugin plugin) {
-    // TODO:
-    //plugin.getWidgets().forEach(Widgets::unregister);
-    //plugin.getSourceTypes().forEach(SourceTypes::unregister);
-    //plugin.getDataTypes().forEach(DataTypes::unregister);
+    plugin.getWidgets().forEach(Widgets::unregister);
+    plugin.getSourceTypes().forEach(SourceTypes::unregister);
+    plugin.getDataTypes().forEach(DataTypes::unregister);
 
     plugin.onUnload();
     plugin.setLoaded(false);
-
-    loadedPlugins.remove(plugin);
   }
 
   /**
-   * Gets a list of all loaded plugins.
+   * Gets a list of all known plugins. These plugins may or not be loaded.
    */
-  public ObservableList<Plugin> getLoadedPlugins() {
-    return loadedPlugins;
+  public ObservableList<Plugin> getKnownPlugins() {
+    return knownPlugins;
   }
 
 }

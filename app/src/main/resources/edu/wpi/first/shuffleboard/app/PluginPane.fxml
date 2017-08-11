@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.StackPane?>
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="edu.wpi.first.shuffleboard.app.PluginPaneController"
+            fx:id="root"
+            prefHeight="400.0" prefWidth="600.0">
+    <padding>
+        <Insets topRightBottomLeft="8"/>
+    </padding>
+    <center>
+        <TableView fx:id="pluginTable" editable="true"/>
+    </center>
+    <bottom>
+        <StackPane alignment="CENTER_RIGHT">
+            <Button text="Load plugin" onAction="#loadPlugin"/>
+        </StackPane>
+    </bottom>
+</BorderPane>

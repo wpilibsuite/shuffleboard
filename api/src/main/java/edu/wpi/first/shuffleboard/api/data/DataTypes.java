@@ -48,6 +48,11 @@ public final class DataTypes {
     typeCache.put(dataType.getJavaClass(), Optional.of(dataType));
   }
 
+  public static void unregister(DataType dataType) {
+    dataTypes.remove(dataType.getName());
+    typeCache.remove(dataType.getJavaClass());
+  }
+
   /**
    * Gets the data type with the given name.
    */
@@ -174,5 +179,4 @@ public final class DataTypes {
         .map(Optional::get)
         .collect(Collectors.toSet());
   }
-
 }

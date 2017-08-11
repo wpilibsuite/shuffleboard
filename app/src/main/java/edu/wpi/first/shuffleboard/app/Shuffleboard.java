@@ -34,12 +34,11 @@ public class Shuffleboard extends Application {
     Font.loadFont(getClass().getResource("font/roboto/Roboto-Bold.ttf").openStream(), -1);
     Font.loadFont(getClass().getResource("font/roboto/Roboto-Italic.ttf").openStream(), -1);
     Font.loadFont(getClass().getResource("font/roboto/Roboto-BoldItalic.ttf").openStream(), -1);
-
-    mainPane = FXMLLoader.load(MainWindowController.class.getResource("MainWindow.fxml"));
   }
 
   @Override
   public void start(Stage primaryStage) throws IOException {
+    mainPane = FXMLLoader.load(MainWindowController.class.getResource("MainWindow.fxml"));
     primaryStage.setScene(new Scene(mainPane));
 
     PluginLoader.getDefault().setDashboard((DashboardTabPane) mainPane.lookup(".dashboard-tabs"));

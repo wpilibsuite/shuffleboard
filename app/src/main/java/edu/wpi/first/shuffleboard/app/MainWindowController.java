@@ -52,6 +52,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
@@ -78,6 +79,9 @@ public class MainWindowController {
   private DashboardTabPane dashboard;
   @FXML
   private Accordion sourcesAccordion;
+  @FXML
+  private Pane pluginPane;
+  private Stage pluginStage;
 
   private SourceEntry selectedEntry;
 
@@ -94,65 +98,21 @@ public class MainWindowController {
             running -> running ? "Stop recording" : "Start recording"));
     FxUtils.bind(root.getStylesheets(), stylesheets);
 
-    PluginLoader.getDefault().getLoadedPlugins().addListener((ListChangeListener<Plugin>) c -> {
+    PluginLoader.getDefault().getKnownPlugins().addListener((ListChangeListener<Plugin>) c -> {
       while (c.next()) {
         if (c.wasAdded()) {
           c.getAddedSubList().forEach(plugin -> {
-            plugin.getSourceTypes().forEach(sourceType -> {
-              SourceTreeTable<SourceEntry<?>, ?> tree = new SourceTreeTable<>();
-              tree.setSourceType(sourceType);
-              tree.setRoot(new TreeItem<SourceEntry<?>>(sourceType.createRootSourceEntry()));
-              tree.setShowRoot(false);
-              tree.setSortPolicy(__ -> {
-                sortTree(tree.getRoot());
-                return true;
-              });
-              tree.getSelectionModel().selectedItemProperty().addListener((__, oldItem, newItem) -> {
-                selectedEntry = newItem == null ? null : newItem.getValue();
-              });
-              tree.setRowFactory(__ -> {
-                TreeTableRow<SourceEntry<?>> row = new TreeTableRow<>();
-                makeSourceRowDraggable(row);
-                return row;
-              });
-              tree.setOnContextMenuRequested(e -> {
-                TreeItem<SourceEntry<?>> selectedItem = tree.getSelectionModel().getSelectedItem();
-                if (selectedItem == null) {
-                  return;
-                }
-
-                DataSource<?> source = selectedItem.getValue().get();
-                List<String> widgetNames = Widgets.widgetNamesForSource(source);
-                if (widgetNames.isEmpty()) {
-                  // No known widgets that can show this data
-                  return;
-                }
-
-                ContextMenu menu = new ContextMenu();
-                widgetNames.stream()
-                    .map(name -> createShowAsMenuItem(name, source))
-                    .forEach(menu.getItems()::add);
-
-                menu.show(tree.getScene().getWindow(), e.getScreenX(), e.getScreenY());
-              });
-              sourceType.getAvailableSources().addListener((MapChangeListener<String, Object>) change -> {
-                SourceEntry entry = sourceType.createSourceEntryForUri(change.getKey());
-                if (change.wasAdded()) {
-                  tree.updateEntry(entry);
-                } else if (change.wasRemoved()) {
-                  tree.removeEntry(entry);
-                }
-              });
-              sourceType.getAvailableSourceUris().stream()
-                  .map(sourceType::createSourceEntryForUri)
-                  .forEach(tree::updateEntry);
-              TitledPane titledPane = new TitledPane(sourceType.getName(), tree);
-              sourcesAccordion.getPanes().add(titledPane);
-              sourcesAccordion.setExpandedPane(titledPane);
+            plugin.loadedProperty().addListener((__, was, is) -> {
+              if (is) {
+                System.out.println("GENERATING FOR " + plugin.getName());
+                setup(plugin);
+              } else {
+                System.out.println("REMOVING ITEMS FOR " + plugin.getName());
+                tearDown(plugin);
+              }
             });
+            setup(plugin);
           });
-        } else if (c.wasRemoved()) { //NOPMD empty if statement
-          //TODO
         }
         sourcesAccordion.getPanes().sort(Comparator.comparing(TitledPane::getText));
       }
@@ -168,6 +128,76 @@ public class MainWindowController {
         int digitPressed = Integer.valueOf(e.getCode().getName().replace("Numpad ", ""));
         dashboard.selectTab(digitPressed - 1);
       }
+    });
+
+    pluginStage = new Stage();
+    pluginStage.setScene(new Scene(pluginPane));
+    pluginStage.setTitle("Loaded Plugins");
+    EasyBind.listBind(pluginPane.getStylesheets(), root.getStylesheets());
+  }
+
+  private void setup(Plugin plugin) {
+    plugin.getSourceTypes().forEach(sourceType -> {
+      SourceTreeTable<SourceEntry<?>, ?> tree = new SourceTreeTable<>();
+      tree.setSourceType(sourceType);
+      tree.setRoot(new TreeItem<SourceEntry<?>>(sourceType.createRootSourceEntry()));
+      tree.setShowRoot(false);
+      tree.setSortPolicy(__ -> {
+        sortTree(tree.getRoot());
+        return true;
+      });
+      tree.getSelectionModel().selectedItemProperty().addListener((__, oldItem, newItem) -> {
+        selectedEntry = newItem == null ? null : newItem.getValue();
+      });
+      tree.setRowFactory(__ -> {
+        TreeTableRow<SourceEntry<?>> row = new TreeTableRow<>();
+        makeSourceRowDraggable(row);
+        return row;
+      });
+      tree.setOnContextMenuRequested(e -> {
+        TreeItem<SourceEntry<?>> selectedItem = tree.getSelectionModel().getSelectedItem();
+        if (selectedItem == null) {
+          return;
+        }
+
+        DataSource<?> source = selectedItem.getValue().get();
+        List<String> widgetNames = Widgets.widgetNamesForSource(source);
+        if (widgetNames.isEmpty()) {
+          // No known widgets that can show this data
+          return;
+        }
+
+        ContextMenu menu = new ContextMenu();
+        widgetNames.stream()
+            .map(name -> createShowAsMenuItem(name, source))
+            .forEach(menu.getItems()::add);
+
+        menu.show(tree.getScene().getWindow(), e.getScreenX(), e.getScreenY());
+      });
+      sourceType.getAvailableSources().addListener((MapChangeListener<String, Object>) change -> {
+        SourceEntry entry = sourceType.createSourceEntryForUri(change.getKey());
+        if (change.wasAdded()) {
+          tree.updateEntry(entry);
+        } else if (change.wasRemoved()) {
+          tree.removeEntry(entry);
+        }
+      });
+      sourceType.getAvailableSourceUris().stream()
+          .map(sourceType::createSourceEntryForUri)
+          .forEach(tree::updateEntry);
+      TitledPane titledPane = new TitledPane(sourceType.getName(), tree);
+      sourcesAccordion.getPanes().add(titledPane);
+      sourcesAccordion.setExpandedPane(titledPane);
+    });
+  }
+
+  private void tearDown(Plugin plugin) {
+    plugin.getSourceTypes().forEach(sourceType -> {
+      sourcesAccordion.getPanes().stream()
+          .filter(p -> p.getText() == sourceType.getName())
+          .peek(p -> System.out.println("Removing pane " + p))
+          .findFirst()
+          .ifPresent(sourcesAccordion.getPanes()::remove);
     });
   }
 
@@ -362,6 +392,11 @@ public class MainWindowController {
   private void newTab() {
     DashboardTabPane.DashboardTab newTab = dashboard.addNewTab();
     dashboard.getSelectionModel().select(newTab);
+  }
+
+  @FXML
+  private void showPlugins() {
+    pluginStage.show();
   }
 
 }

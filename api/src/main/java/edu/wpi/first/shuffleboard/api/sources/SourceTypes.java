@@ -64,6 +64,11 @@ public final class SourceTypes {
     typeNames.add(name);
   }
 
+  public static void unregister(SourceType sourceType) {
+    typeNames.remove(sourceType.getName());
+    types.remove(sourceType.getName());
+  }
+
   /**
    * Creates a data source corresponding to the given URI. If the protocol is not recognized, {@link DataSource#none()}
    * is returned.
@@ -110,5 +115,4 @@ public final class SourceTypes {
   public static ObservableList<String> allAvailableSourceUris() {
     return allUris;
   }
-
 }

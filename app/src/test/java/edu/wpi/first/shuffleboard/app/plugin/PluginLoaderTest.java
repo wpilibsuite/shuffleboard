@@ -23,8 +23,8 @@ public class PluginLoaderTest {
     PluginLoader loader = new PluginLoader();
     boolean loaded = loader.loadPluginClass(MockPlugin.class);
     assertTrue(loaded, "Plugin was not loaded");
-    assertEquals(1, loader.getLoadedPlugins().size(), "Should be 1 loaded plugin");
-    assertTrue(loader.getLoadedPlugins().get(0) instanceof MockPlugin, "Wrong plugin was loaded");
+    assertEquals(1, loader.getKnownPlugins().size(), "Should be 1 loaded plugin");
+    assertTrue(loader.getKnownPlugins().get(0) instanceof MockPlugin, "Wrong plugin was loaded");
   }
 
 }

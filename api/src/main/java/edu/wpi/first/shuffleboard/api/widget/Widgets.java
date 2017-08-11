@@ -23,6 +23,7 @@ import javafx.fxml.FXMLLoader;
  */
 public final class Widgets {
 
+  private static Map<Class<? extends Widget>, WidgetType> registeredWidgets = new HashMap<>();
   private static Map<String, WidgetType> widgets = new TreeMap<>();
   private static Map<DataType, WidgetType> defaultWidgets = new HashMap<>();
 
@@ -62,7 +63,23 @@ public final class Widgets {
       }
     };
 
+    registeredWidgets.put(widgetClass, widgetType);
     widgets.put(widgetType.getName(), widgetType);
+  }
+
+  public static void unregister(Class<? extends Widget> widgetClass) {
+    WidgetType widgetType = registeredWidgets.get(widgetClass);
+    widgets.entrySet().stream()
+        .filter(e -> e.getValue() == widgetType)
+        .map(Map.Entry::getKey)
+        .findFirst()
+        .ifPresent(widgets::remove);
+    defaultWidgets.entrySet().stream()
+        .filter(e -> e.getValue() == widgetType)
+        .map(Map.Entry::getKey)
+        .findFirst()
+        .ifPresent(defaultWidgets::remove);
+    registeredWidgets.remove(widgetClass);
   }
 
   /**
@@ -189,5 +206,4 @@ public final class Widgets {
   public static List<String> widgetNamesForSource(DataSource<?> source) {
     return widgetNamesForType(source.getDataType());
   }
-
 }
