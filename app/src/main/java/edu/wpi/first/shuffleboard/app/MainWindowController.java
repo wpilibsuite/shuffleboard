@@ -392,6 +392,7 @@ public class MainWindowController {
     dialog.setTitle("Shuffleboard Preferences");
     dialog.setResizable(true);
     dialog.setResultConverter(button -> !button.getButtonData().isCancelButton());
+    EasyBind.listBind(dialog.getDialogPane().getStylesheets(), root.getStylesheets());
     if (dialog.showAndWait().orElse(false)) {
       propertySheet.getItems().stream()
           .map(item -> (FlushableItem) item)
