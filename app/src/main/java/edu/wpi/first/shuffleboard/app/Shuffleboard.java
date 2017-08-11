@@ -42,25 +42,20 @@ public class Shuffleboard extends Application {
 
   @Override
   public void start(Stage primaryStage) throws IOException {
-    boolean alreadyRunning = false;
     try {
       JUnique.acquireLock(getClass().getCanonicalName(), message -> {
         primaryStage.toFront();
         return null;
       });
-    } catch (AlreadyLockedException e) {
-      alreadyRunning = true;
-    }
 
-    if (alreadyRunning) {
-      JUnique.sendMessage("alreadyRunning", String.valueOf(alreadyRunning));
-    } else {
       primaryStage.setScene(new Scene(mainPane));
       primaryStage.setMinWidth(640);
       primaryStage.setMinHeight(480);
       primaryStage.setWidth(Screen.getPrimary().getVisualBounds().getWidth());
       primaryStage.setHeight(Screen.getPrimary().getVisualBounds().getHeight());
       primaryStage.show();
+    } catch (AlreadyLockedException e) {
+      JUnique.sendMessage("alreadyRunning", "true");
     }
   }
 
