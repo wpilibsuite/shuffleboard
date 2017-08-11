@@ -10,6 +10,8 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.control.SeparatorMenuItem?>
 <?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Accordion?>
+<?import javafx.scene.control.TitledPane?>
 <BorderPane fx:id="root" maxHeight="Infinity" maxWidth="Infinity"
             xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="edu.wpi.first.shuffleboard.app.MainWindowController">
@@ -43,7 +45,7 @@
         <TabPane tabClosingPolicy="UNAVAILABLE" prefWidth="400">
             <Tab text="Sources">
                 <ScrollPane fitToWidth="true" fitToHeight="true">
-                    <TabPane fx:id="internalSourcesTab"/>
+                    <Accordion fx:id="sourcesAccordion"/>
                 </ScrollPane>
             </Tab>
             <Tab text="Widgets">

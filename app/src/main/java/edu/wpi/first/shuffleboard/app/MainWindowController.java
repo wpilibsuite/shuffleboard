@@ -2,18 +2,22 @@ package edu.wpi.first.shuffleboard.app;
 
 import com.google.common.io.Files;
 
-import edu.wpi.first.shuffleboard.app.components.DashboardTabPane;
-import edu.wpi.first.shuffleboard.app.components.WidgetPropertySheet;
+import edu.wpi.first.shuffleboard.api.components.SourceTreeTable;
+import edu.wpi.first.shuffleboard.api.dnd.DataFormats;
 import edu.wpi.first.shuffleboard.api.plugin.Plugin;
-import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
+import edu.wpi.first.shuffleboard.api.sources.DataSource;
+import edu.wpi.first.shuffleboard.api.sources.SourceEntry;
 import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
 import edu.wpi.first.shuffleboard.api.theme.Theme;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.Storage;
 import edu.wpi.first.shuffleboard.api.widget.Widgets;
+import edu.wpi.first.shuffleboard.app.components.DashboardTabPane;
 import edu.wpi.first.shuffleboard.app.components.WidgetGallery;
+import edu.wpi.first.shuffleboard.app.components.WidgetPropertySheet;
 import edu.wpi.first.shuffleboard.app.json.JsonBuilder;
 import edu.wpi.first.shuffleboard.app.plugin.PluginLoader;
+import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
 import edu.wpi.first.shuffleboard.app.sources.recording.Playback;
 
 import org.controlsfx.control.PropertySheet;
@@ -30,20 +34,31 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
+import javafx.collections.MapChangeListener;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
+import javafx.scene.control.Accordion;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
+import javafx.scene.control.TitledPane;
+import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeTableRow;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.Dragboard;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+
+import static edu.wpi.first.shuffleboard.api.components.SourceTreeTable.alphabetical;
+import static edu.wpi.first.shuffleboard.api.components.SourceTreeTable.branchesFirst;
 
 
 /**
@@ -62,7 +77,9 @@ public class MainWindowController {
   @FXML
   private DashboardTabPane dashboard;
   @FXML
-  private TabPane internalSourcesTab;
+  private Accordion sourcesAccordion;
+
+  private SourceEntry selectedEntry;
 
   File currentFile = null;
 
@@ -82,15 +99,61 @@ public class MainWindowController {
         if (c.wasAdded()) {
           c.getAddedSubList().forEach(plugin -> {
             plugin.getSourceTypes().forEach(sourceType -> {
-              Tab sourceTab = new Tab(sourceType.getName());
-              sourceTab.setContent(sourceType.getSourcesView());
-              internalSourcesTab.getTabs().add(sourceTab);
+              SourceTreeTable<SourceEntry<?>, ?> tree = new SourceTreeTable<>();
+              tree.setSourceType(sourceType);
+              tree.setRoot(new TreeItem<SourceEntry<?>>(sourceType.createSourceEntryForUri(sourceType.getProtocol() + "//")));
+              tree.setShowRoot(false);
+              tree.setSortPolicy(__ -> {
+                sortTree(tree.getRoot());
+                return true;
+              });
+              tree.setRowFactory(__ -> {
+                TreeTableRow<SourceEntry<?>> row = new TreeTableRow<>();
+                makeSourceRowDraggable(row);
+                return row;
+              });
+              tree.setOnContextMenuRequested(e -> {
+                TreeItem<SourceEntry<?>> selectedItem = tree.getSelectionModel().getSelectedItem();
+                if (selectedItem == null) {
+                  return;
+                }
+
+                DataSource<?> source = selectedItem.getValue().get();
+                List<String> widgetNames = Widgets.widgetNamesForSource(source);
+                if (widgetNames.isEmpty()) {
+                  // No known widgets that can show this data
+                  return;
+                }
+
+                ContextMenu menu = new ContextMenu();
+                widgetNames.stream()
+                    .map(name -> createShowAsMenuItem(name, source))
+                    .forEach(menu.getItems()::add);
+
+                menu.show(tree.getScene().getWindow(), e.getScreenX(), e.getScreenY());
+              });
+              sourceType.getAvailableSources().addListener((MapChangeListener<String, Object>) change -> {
+                if (change.wasAdded()) {
+                  SourceEntry entry = sourceType.createSourceEntryForUri(change.getKey());
+                  if (change.wasAdded()) {
+                    tree.updateEntry(entry);
+                  } else if (change.wasRemoved()) {
+                    tree.removeEntry(entry);
+                  }
+                }
+              });
+              sourceType.getAvailableSourceUris().stream()
+                  .map(sourceType::createSourceEntryForUri)
+                  .forEach(tree::updateEntry);
+              TitledPane titledPane = new TitledPane(sourceType.getName(), tree);
+              sourcesAccordion.getPanes().add(titledPane);
+              titledPane.setExpanded(true);
             });
           });
         } else if (c.wasRemoved()) { //NOPMD empty if statement
           //TODO
         }
-        internalSourcesTab.getTabs().sort(Comparator.comparing(Tab::getText));
+        sourcesAccordion.getPanes().sort(Comparator.comparing(TitledPane::getText));
       }
       widgetGallery.setWidgets(Widgets.allWidgets());
     });
@@ -105,6 +168,41 @@ public class MainWindowController {
         dashboard.selectTab(digitPressed - 1);
       }
     });
+  }
+
+  /**
+   * Sorts tree nodes recursively in order of branches before leaves, then alphabetically.
+   *
+   * @param root the root node to sort
+   */
+  private void sortTree(TreeItem<? extends SourceEntry> root) {
+    if (!root.isLeaf()) {
+      FXCollections.sort(root.getChildren(),
+          branchesFirst.thenComparing(alphabetical));
+      root.getChildren().forEach(this::sortTree);
+    }
+  }
+
+  private void makeSourceRowDraggable(TreeTableRow<? extends SourceEntry> row) {
+    row.setOnDragDetected(event -> {
+      if (selectedEntry == null) {
+        return;
+      }
+      Dragboard dragboard = row.startDragAndDrop(TransferMode.COPY_OR_MOVE);
+      ClipboardContent content = new ClipboardContent();
+      content.put(DataFormats.source, selectedEntry);
+      dragboard.setContent(content);
+      event.consume();
+    });
+  }
+
+  private MenuItem createShowAsMenuItem(String widgetName, DataSource<?> source) {
+    MenuItem menuItem = new MenuItem("Show as: " + widgetName);
+    menuItem.setOnAction(action -> {
+      Widgets.createWidget(widgetName, source)
+          .ifPresent(dashboard::addWidgetToActivePane);
+    });
+    return menuItem;
   }
 
   /**

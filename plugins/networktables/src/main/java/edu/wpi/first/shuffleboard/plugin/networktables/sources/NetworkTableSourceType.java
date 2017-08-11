@@ -1,12 +1,12 @@
 package edu.wpi.first.shuffleboard.plugin.networktables.sources;
 
 import edu.wpi.first.shuffleboard.api.data.ComplexData;
+import edu.wpi.first.shuffleboard.api.sources.SourceEntry;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.Sources;
 import edu.wpi.first.shuffleboard.api.sources.recording.TimestampedData;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
-import edu.wpi.first.shuffleboard.plugin.networktables.NetworkTableSourceView;
 import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
 
 import java.util.HashMap;
@@ -16,13 +16,14 @@ import java.util.Optional;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.ObservableMap;
 
 public final class NetworkTableSourceType extends SourceType {
 
   public static final NetworkTableSourceType INSTANCE = new NetworkTableSourceType();
 
   private final ObservableList<String> availableSourceIds = FXCollections.observableArrayList();
-  private NetworkTableSourceView sourcesView;
+  private final ObservableMap<String, Object> availableSources = FXCollections.observableHashMap();
 
   private NetworkTableSourceType() {
     super("NetworkTable", true, "network_table://", NetworkTableSource::forKey);
@@ -32,6 +33,7 @@ public final class NetworkTableSourceType extends SourceType {
             .stream()
             .map(this::toUri)
             .forEach(uri -> {
+              availableSources.put(uri, value);
               if (NetworkTableUtils.isDelete(flags)) {
                 availableSourceIds.remove(uri);
               } else if (!availableSourceIds.contains(uri)) {
@@ -40,14 +42,6 @@ public final class NetworkTableSourceType extends SourceType {
             });
       });
     }, 0xFF);
-  }
-
-  @Override
-  public NetworkTableSourceView getSourcesView() {
-    if (sourcesView == null) {
-      sourcesView = new NetworkTableSourceView();
-    }
-    return sourcesView;
   }
 
   @Override
@@ -86,6 +80,22 @@ public final class NetworkTableSourceType extends SourceType {
   @Override
   public ObservableList<String> getAvailableSourceUris() {
     return availableSourceIds;
+  }
+
+  @Override
+  public ObservableMap<String, Object> getAvailableSources() {
+    return availableSources;
+  }
+
+  @Override
+  public SourceEntry createSourceEntryForUri(String uri) {
+    String key = removeProtocol(uri);
+    return new NetworkTableEntry(key, NetworkTablesJNI.getValue(key, null));
+  }
+
+  @Override
+  public String toUri(String sourceName) {
+    return super.toUri(NetworkTableUtils.normalizeKey(sourceName));
   }
 
 }

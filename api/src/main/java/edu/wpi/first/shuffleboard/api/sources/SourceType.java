@@ -6,6 +6,7 @@ import java.util.function.Function;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.ObservableMap;
 import javafx.scene.Node;
 
 public class SourceType {
@@ -74,6 +75,10 @@ public class SourceType {
     return FXCollections.emptyObservableList();
   }
 
+  public ObservableMap<String, Object> getAvailableSources() {
+    return FXCollections.emptyObservableMap();
+  }
+
   /**
    * Reads a data point and passes it to all appropriate sources of this type.The default
    * behavior is to do {
@@ -87,10 +92,7 @@ public class SourceType {
     }
   }
 
-  /**
-   * Gets a view used by the main window to show all available sources for this type.
-   */
-  public Node getSourcesView() {
+  public SourceEntry createSourceEntryForUri(String uri) {
     return null;
   }
 

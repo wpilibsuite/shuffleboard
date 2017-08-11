@@ -37,19 +37,17 @@ public class NetworkTablesPlugin extends Plugin {
             );
           });
     }, 0xFF);
-    NetworkTableSourceType.INSTANCE.getSourcesView().setDashboard(getDashboard());
   }
 
   @Override
   public void onUnload() {
     NetworkTablesJNI.removeEntryListener(recorderUid);
-    NetworkTableSourceType.INSTANCE.getSourcesView().setDashboard(null);
   }
 
   @Override
   public List<Class<? extends Widget>> getWidgets() {
     return ImmutableList.of(
-        NetworkTableTreeWidget.class
+        //NetworkTableTreeWidget.class
     );
   }
 

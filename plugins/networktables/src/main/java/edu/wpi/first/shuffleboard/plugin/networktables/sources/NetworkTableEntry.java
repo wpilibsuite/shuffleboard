@@ -11,22 +11,18 @@ import java.util.Objects;
 /**
  * A simple value class for information about an entry in NetworkTables.
  */
-public final class NetworkTableEntry implements SourceEntry {
+public final class NetworkTableEntry implements SourceEntry<String> {
 
   private final String key;
+  private final String simpleKey;
+  private final Object value;
   private final String displayString;
 
-  public NetworkTableEntry(String key, String displayString) {
-    this.key = key;
-    this.displayString = displayString;
-  }
-
   public NetworkTableEntry(String key, Object value) {
-    this(key, displayStringForValue(value));
-  }
-
-  public NetworkTableEntry() {
-    this("", "");
+    this.key = key;
+    this.simpleKey = NetworkTableUtils.simpleKey(key);
+    this.value = value;
+    this.displayString = displayStringForValue(value);
   }
 
   private static String displayStringForValue(Object value) {
@@ -51,8 +47,8 @@ public final class NetworkTableEntry implements SourceEntry {
   }
 
   @Override
-  public Class<? extends DataSource> getType() {
-    return NetworkTableSource.class;
+  public Object getValue() {
+    return value;
   }
 
   public String getKey() {
@@ -60,7 +56,17 @@ public final class NetworkTableEntry implements SourceEntry {
   }
 
   public String simpleKey() {
-    return NetworkTableUtils.simpleKey(key);
+    return simpleKey;
+  }
+
+  @Override
+  public String getViewName() {
+    return simpleKey;
+  }
+
+  @Override
+  public String getValueView() {
+    return displayString;
   }
 
   public String getDisplayString() {
