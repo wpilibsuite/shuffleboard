@@ -119,6 +119,7 @@ public class SourceTreeTable<S extends SourceEntry, V> extends TreeTableView<S> 
       if (current == null) {
         // Newly added value, create a tree item for it
         current = new TreeItem<>(entry);
+        current.setExpanded(true);
         parent.getChildren().add(current);
       } else if (EqualityUtils.isDifferent(current.getValue().getValue(), entry.getValue())) {
         // The value updated, so just update the existing node

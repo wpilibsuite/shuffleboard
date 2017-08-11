@@ -107,6 +107,9 @@ public class MainWindowController {
                 sortTree(tree.getRoot());
                 return true;
               });
+              tree.getSelectionModel().selectedItemProperty().addListener((__, oldItem, newItem) -> {
+                selectedEntry = newItem == null ? null : newItem.getValue();
+              });
               tree.setRowFactory(__ -> {
                 TreeTableRow<SourceEntry<?>> row = new TreeTableRow<>();
                 makeSourceRowDraggable(row);
@@ -133,13 +136,11 @@ public class MainWindowController {
                 menu.show(tree.getScene().getWindow(), e.getScreenX(), e.getScreenY());
               });
               sourceType.getAvailableSources().addListener((MapChangeListener<String, Object>) change -> {
+                SourceEntry entry = sourceType.createSourceEntryForUri(change.getKey());
                 if (change.wasAdded()) {
-                  SourceEntry entry = sourceType.createSourceEntryForUri(change.getKey());
-                  if (change.wasAdded()) {
-                    tree.updateEntry(entry);
-                  } else if (change.wasRemoved()) {
-                    tree.removeEntry(entry);
-                  }
+                  tree.updateEntry(entry);
+                } else if (change.wasRemoved()) {
+                  tree.removeEntry(entry);
                 }
               });
               sourceType.getAvailableSourceUris().stream()

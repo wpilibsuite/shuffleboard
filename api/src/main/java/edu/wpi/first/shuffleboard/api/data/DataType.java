@@ -60,4 +60,9 @@ public abstract class DataType<T> {
     return getClass().hashCode();
   }
 
+  @Override
+  public String toString() {
+    return getName();
+  }
+
 }
