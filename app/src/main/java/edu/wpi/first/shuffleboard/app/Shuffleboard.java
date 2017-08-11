@@ -47,13 +47,13 @@ public class Shuffleboard extends Application {
     NetworkTable.initialize();
 
     ChangeListener<String> serverChangeListener = (observable, oldValue, newValue) -> {
-        if (newValue.matches("[1-9](\\d{1,3})?")) {
-          NetworkTable.setTeam(Integer.parseInt(newValue));
-        } else if (newValue.isEmpty()) {
-          NetworkTable.setIPAddress("127.0.0.1");
-        } else {
-          NetworkTable.setIPAddress(newValue);
-        }
+      if (newValue.matches("[1-9](\\d{1,3})?")) {
+        NetworkTable.setTeam(Integer.parseInt(newValue));
+      } else if (newValue.isEmpty()) {
+        NetworkTable.setIPAddress("localhost");
+      } else {
+        NetworkTable.setIPAddress(newValue);
+      }
     };
     AppPreferences.getInstance().serverProperty().addListener(serverChangeListener);
 

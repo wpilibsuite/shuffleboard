@@ -19,14 +19,20 @@ public class FlushableItem<T> implements PropertySheet.Item {
   private final Property<T> property;
   private final String category;
 
-  private Property<T> value;
+  private final Property<T> value;
 
+  /**
+   * Create a new FlushableItem.
+   *
+   * @param property The property to flush to
+   * @param category The category this item should be sorted in
+   */
   public FlushableItem(Property<T> property, String category) {
     this.type = property.getValue().getClass();
     this.property = property;
     this.category = category;
 
-    value = new SimpleObjectProperty(property.getValue());
+    value = new SimpleObjectProperty<>(property.getValue());
   }
 
   @Override
@@ -74,7 +80,6 @@ public class FlushableItem<T> implements PropertySheet.Item {
   }
 
   public void flush() {
-    System.out.println("Property Updated!");
     property.setValue(value.getValue());
   }
 
