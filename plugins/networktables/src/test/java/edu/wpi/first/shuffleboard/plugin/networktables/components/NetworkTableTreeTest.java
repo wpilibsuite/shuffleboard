@@ -8,9 +8,7 @@ import edu.wpi.first.wpilibj.networktables.NetworkTable;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import org.testfx.framework.junit.ApplicationTest;
-import org.testfx.matcher.base.NodeMatchers;
-import org.testfx.util.WaitForAsyncUtils;
+import org.testfx.framework.junit5.ApplicationTest;
 
 import javafx.collections.ObservableList;
 import javafx.scene.Scene;
@@ -67,7 +65,7 @@ public class NetworkTableTreeTest extends ApplicationTest {
   public void testFirstLevel() {
     table.putString("entry", "value");
     waitForNtcoreEvents();
-    WaitForAsyncUtils.waitForFxEvents();
+    waitForFxEvents();
 
     ObservableList<TreeItem<NetworkTableEntry>> children = root.getChildren();
     TreeItem<NetworkTableEntry> child = children.get(0);
@@ -81,7 +79,7 @@ public class NetworkTableTreeTest extends ApplicationTest {
   public void testBranches() {
     table.putString("branch/entry", "x");
     waitForNtcoreEvents();
-    WaitForAsyncUtils.waitForFxEvents();
+    waitForFxEvents();
     ObservableList<TreeItem<NetworkTableEntry>> children = root.getChildren();
 
     final TreeItem<NetworkTableEntry> branch = children.get(0);
@@ -107,7 +105,7 @@ public class NetworkTableTreeTest extends ApplicationTest {
     table.putString("b", "");
     table.putString("sub_b/sub_entry_b", "");
     waitForNtcoreEvents();
-    WaitForAsyncUtils.waitForFxEvents();
+    waitForFxEvents();
     tree.sort();
 
     ObservableList<TreeItem<NetworkTableEntry>> children = root.getChildren();
@@ -139,7 +137,7 @@ public class NetworkTableTreeTest extends ApplicationTest {
     String key = "testDelete";
     table.putString(key, "value");
     waitForNtcoreEvents();
-    WaitForAsyncUtils.waitForFxEvents();
+    waitForFxEvents();
 
     assertNotNull(lookup(hasText(key)).query(), "There should be a cell for the entry");
 
@@ -156,17 +154,17 @@ public class NetworkTableTreeTest extends ApplicationTest {
     final String secondValue = "value 2";
     table.putString(key, firstValue);
     waitForNtcoreEvents();
-    WaitForAsyncUtils.waitForFxEvents();
+    waitForFxEvents();
     assertCellIndex(key, 0);
     assertCellIndex(firstValue, 0);
-    assertNotNull(lookup(NodeMatchers.hasText(firstValue)).query());
-    assertNull(lookup(NodeMatchers.hasText(secondValue)).query());
+    assertNotNull(lookup(hasText(firstValue)).query());
+    assertNull(lookup(hasText(secondValue)).query());
 
     table.putString(key, secondValue);
     waitForNtcoreEvents();
-    WaitForAsyncUtils.waitForFxEvents();
+    waitForFxEvents();
     assertCellIndex(key, 0);
-    assertNull(lookup(NodeMatchers.hasText(firstValue)).query());
+    assertNull(lookup(hasText(firstValue)).query());
     assertCellIndex(secondValue, 0);
   }
 

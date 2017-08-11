@@ -7,7 +7,6 @@ import java.util.function.Function;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
-import javafx.scene.Node;
 
 public class SourceType {
 

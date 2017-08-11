@@ -1,6 +1,7 @@
 package edu.wpi.first.shuffleboard.api.data;
 
 import edu.wpi.first.shuffleboard.api.data.types.AllType;
+import edu.wpi.first.shuffleboard.api.data.types.MapType;
 import edu.wpi.first.shuffleboard.api.data.types.NoneType;
 import edu.wpi.first.shuffleboard.api.data.types.UnknownType;
 
@@ -21,6 +22,7 @@ public final class DataTypes {
   public static final DataType None = new NoneType();
   public static final DataType All = new AllType();
   public static final DataType Unknown = new UnknownType();
+  public static final ComplexDataType<MapData> Map = new MapType();
 
   private static final Map<String, DataType> dataTypes = new TreeMap<>();
 
@@ -30,6 +32,7 @@ public final class DataTypes {
     register(All);
     register(None);
     register(Unknown);
+    register(Map);
   }
 
   private DataTypes() {

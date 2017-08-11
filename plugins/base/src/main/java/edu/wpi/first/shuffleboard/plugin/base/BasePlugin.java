@@ -12,7 +12,7 @@ import edu.wpi.first.shuffleboard.plugin.base.data.types.AnalogInputType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.BooleanArrayType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.BooleanType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.EncoderType;
-import edu.wpi.first.shuffleboard.plugin.base.data.types.MapType;
+import edu.wpi.first.shuffleboard.api.data.types.MapType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.NumberArrayType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.NumberType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.RawByteType;

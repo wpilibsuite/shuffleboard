@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CompositeNetworkTableSourceTest {
 
-  private static final String tableName = "CompositeNetworkTableSourceTest";
+  private static final String tableName = "/CompositeNetworkTableSourceTest";
 
   @BeforeEach
   public void setUp() {
@@ -44,6 +44,7 @@ public class CompositeNetworkTableSourceTest {
   public void testDataUpdates() {
     CompositeNetworkTableSource<MapData> source
         = new CompositeNetworkTableSource<>(tableName, DataTypes.Map);
+    source.setConnected(true);
     final String key = "key1";
 
     NetworkTable.getTable(tableName).putString(key, "value1");
@@ -58,11 +59,11 @@ public class CompositeNetworkTableSourceTest {
   @Test
   public void testTypeDetectedCorrectly() {
     CompositeNetworkTableSource<?> source
-        = new CompositeNetworkTableSource<>(tableName, DataTypes.SendableChooser);
+        = new CompositeNetworkTableSource<>(tableName, DataTypes.Map);
 
-    NetworkTable.getTable(tableName).putString(".type", "SendableChooser");
+    NetworkTable.getTable(tableName).putString(".type", "Map");
     waitForNtcoreEvents();
-    assertTrue(source.isActive());
+    assertTrue(source.isActive(), "Source not active");
   }
 
 }

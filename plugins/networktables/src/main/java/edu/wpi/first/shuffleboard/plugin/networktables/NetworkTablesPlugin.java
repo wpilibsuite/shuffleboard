@@ -7,7 +7,6 @@ import edu.wpi.first.shuffleboard.api.plugin.Plugin;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
-import edu.wpi.first.shuffleboard.plugin.networktables.sources.NetworkTableSource;
 import edu.wpi.first.shuffleboard.plugin.networktables.sources.NetworkTableSourceType;
 import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
 
@@ -47,7 +46,7 @@ public class NetworkTablesPlugin extends Plugin {
   @Override
   public List<Class<? extends Widget>> getWidgets() {
     return ImmutableList.of(
-        //NetworkTableTreeWidget.class
+        NetworkTableTreeWidget.class
     );
   }
 

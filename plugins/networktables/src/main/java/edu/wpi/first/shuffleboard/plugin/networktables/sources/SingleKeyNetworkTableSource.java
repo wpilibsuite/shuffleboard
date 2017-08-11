@@ -22,7 +22,7 @@ public class SingleKeyNetworkTableSource<T> extends NetworkTableSource<T> {
    *                 type is considered "null" and will make the source inactive
    */
   public SingleKeyNetworkTableSource(ITable table, String key, DataType dataType) {
-    super(key);
+    super(key, dataType);
     setName(key);
     setTableListener((__, value, flags) -> {
       if (EqualityUtils.isEqual(value, getData())) {

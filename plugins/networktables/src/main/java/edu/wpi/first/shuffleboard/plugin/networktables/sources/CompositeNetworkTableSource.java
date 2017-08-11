@@ -2,6 +2,7 @@ package edu.wpi.first.shuffleboard.plugin.networktables.sources;
 
 import edu.wpi.first.shuffleboard.api.data.ComplexData;
 import edu.wpi.first.shuffleboard.api.data.ComplexDataType;
+import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.sources.Sources;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
@@ -32,7 +33,7 @@ public class CompositeNetworkTableSource<D extends ComplexData<D>> extends Netwo
    */
   @SuppressWarnings("PMD.ConstructorCallsOverridableMethod") // PMD is dumb
   public CompositeNetworkTableSource(String tableName, ComplexDataType<D> dataType) {
-    super(tableName);
+    super(tableName, dataType);
     this.dataType = dataType;
     String path = NetworkTableUtils.normalizeKey(tableName, false);
     ITable table = NetworkTable.getTable(path);

@@ -1,6 +1,7 @@
 package edu.wpi.first.shuffleboard.plugin.networktables.sources;
 
 import edu.wpi.first.shuffleboard.api.data.ComplexDataType;
+import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.sources.AbstractDataSource;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
@@ -33,6 +34,12 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
   protected NetworkTableSource(String fullTableKey) {
     super(NetworkTableUtils.dataTypeForEntry(fullTableKey));
     this.fullTableKey = NetworkTableUtils.normalizeKey(fullTableKey, true);
+    setName(fullTableKey);
+  }
+
+  protected NetworkTableSource(String fullTableKey, DataType<T> dataType) {
+    super(dataType);
+    this.fullTableKey = fullTableKey;
     setName(fullTableKey);
   }
 

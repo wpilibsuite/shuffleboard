@@ -18,6 +18,12 @@ public final class NetworkTableEntry implements SourceEntry<String> {
   private final Object value;
   private final String displayString;
 
+  /**
+   * Creates a new network table source entry.
+   *
+   * @param key   the network table key the source would be for
+   * @param value the value that the source would contain
+   */
   public NetworkTableEntry(String key, Object value) {
     this.key = key;
     this.simpleKey = NetworkTableUtils.simpleKey(key);

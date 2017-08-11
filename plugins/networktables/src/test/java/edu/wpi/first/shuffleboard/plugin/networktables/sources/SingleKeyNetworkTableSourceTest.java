@@ -43,7 +43,7 @@ public class SingleKeyNetworkTableSourceTest {
   @Test
   public void testInactiveByDefault() {
     String key = "key";
-    DataType type = DataTypes.String;
+    DataType type = DataTypes.All;
     SingleKeyNetworkTableSource<String> source
         = new SingleKeyNetworkTableSource<>(table, key, type);
     assertFalse(source.isActive(), "The source should not be active without any data");
@@ -53,19 +53,19 @@ public class SingleKeyNetworkTableSourceTest {
   @Test
   public void testValueUpdates() throws TimeoutException {
     String key = "key";
-    DataType type = DataTypes.String;
+    DataType type = DataTypes.All;
     SingleKeyNetworkTableSource<String> source
         = new SingleKeyNetworkTableSource<>(table, key, type);
     table.putString(key, "a value");
     NetworkTableUtils.waitForNtcoreEvents();
-    assertEquals(source.getData(), "a value");
+    assertEquals("a value", source.getData());
     assertTrue(source.isActive(), "The source should be active");
   }
 
   @Test
   public void testWrongDataType() throws TimeoutException {
     String key = "key";
-    DataType type = DataTypes.String;
+    DataType type = DataTypes.All;
     SingleKeyNetworkTableSource<String> source
         = new SingleKeyNetworkTableSource<>(table, key, type);
     table.putNumber(key, 12345);

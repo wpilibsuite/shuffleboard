@@ -1,4 +1,4 @@
-package edu.wpi.first.shuffleboard.plugin.base.data.types;
+package edu.wpi.first.shuffleboard.api.data.types;
 
 import com.google.common.collect.ImmutableMap;
 

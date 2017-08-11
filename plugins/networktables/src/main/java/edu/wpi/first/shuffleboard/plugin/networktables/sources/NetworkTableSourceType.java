@@ -5,6 +5,7 @@ import edu.wpi.first.shuffleboard.api.sources.SourceEntry;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.Sources;
 import edu.wpi.first.shuffleboard.api.sources.recording.TimestampedData;
+import edu.wpi.first.shuffleboard.api.util.AsyncUtils;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
@@ -28,7 +29,7 @@ public final class NetworkTableSourceType extends SourceType {
   private NetworkTableSourceType() {
     super("NetworkTable", true, "network_table://", NetworkTableSource::forKey);
     NetworkTablesJNI.addEntryListener("", (uid, key, value, flags) -> {
-      FxUtils.runOnFxThread(() -> {
+      AsyncUtils.runAsync(() -> {
         NetworkTableUtils.getHierarchy(key)
             .stream()
             .map(this::toUri)
