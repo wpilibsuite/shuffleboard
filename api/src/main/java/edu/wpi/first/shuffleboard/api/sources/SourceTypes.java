@@ -84,7 +84,6 @@ public final class SourceTypes {
   }
 
   /**
-   * <<<<<<< d13462fe4829f201f7c4203580dcd7a745f35204
    * Gets the source type associated with the given URI, or {@link #None} if the protocol is not recognized.
    */
   public static SourceType typeForUri(String uri) {
