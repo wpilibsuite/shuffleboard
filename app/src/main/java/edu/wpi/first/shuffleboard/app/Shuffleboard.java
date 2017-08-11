@@ -6,6 +6,8 @@ import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
 
 import java.io.IOException;
 
+import it.sauronsoftware.junique.AlreadyLockedException;
+import it.sauronsoftware.junique.JUnique;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -14,11 +16,11 @@ import javafx.scene.text.Font;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 
-@SuppressWarnings("JavadocMethod")
 public class Shuffleboard extends Application {
 
   private Pane mainPane;
 
+  @SuppressWarnings("JavadocMethod")
   public static void main(String[] args) {
     NetworkTablesJNI.startClient("localhost", 1735);
     launch(args);
@@ -40,12 +42,26 @@ public class Shuffleboard extends Application {
 
   @Override
   public void start(Stage primaryStage) throws IOException {
-    primaryStage.setScene(new Scene(mainPane));
-    primaryStage.setMinWidth(640);
-    primaryStage.setMinHeight(480);
-    primaryStage.setWidth(Screen.getPrimary().getVisualBounds().getWidth());
-    primaryStage.setHeight(Screen.getPrimary().getVisualBounds().getHeight());
-    primaryStage.show();
+    boolean alreadyRunning = false;
+    try {
+      JUnique.acquireLock(getClass().getCanonicalName(), message -> {
+        primaryStage.toFront();
+        return null;
+      });
+    } catch (AlreadyLockedException e) {
+      alreadyRunning = true;
+    }
+
+    if (alreadyRunning) {
+      JUnique.sendMessage("alreadyRunning", String.valueOf(alreadyRunning));
+    } else {
+      primaryStage.setScene(new Scene(mainPane));
+      primaryStage.setMinWidth(640);
+      primaryStage.setMinHeight(480);
+      primaryStage.setWidth(Screen.getPrimary().getVisualBounds().getWidth());
+      primaryStage.setHeight(Screen.getPrimary().getVisualBounds().getHeight());
+      primaryStage.show();
+    }
   }
 
 }
