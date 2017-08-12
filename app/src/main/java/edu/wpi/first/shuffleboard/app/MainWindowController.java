@@ -373,12 +373,10 @@ public class MainWindowController {
   @SuppressWarnings("unchecked")
   @FXML
   public void showPrefs() {
-    // Create the property sheet
-    PropertySheet propertySheet = new WidgetPropertySheet(AppPreferences.getInstance().getProperties());
+    PropertySheet propertySheet = new PropertySheet();
     propertySheet.setModeSwitcherVisible(false);
     propertySheet.setSearchBoxVisible(false);
     propertySheet.setMode(PropertySheet.Mode.NAME);
-
     AppPreferences.getInstance().getProperties()
         .stream()
         .map(property -> new FlushableItem(property, "Application"))
@@ -391,7 +389,6 @@ public class MainWindowController {
     dialog.setTitle("Shuffleboard Preferences");
     dialog.setResizable(true);
     dialog.setResultConverter(button -> !button.getButtonData().isCancelButton());
-    EasyBind.listBind(dialog.getDialogPane().getStylesheets(), root.getStylesheets());
     if (dialog.showAndWait().orElse(false)) {
       propertySheet.getItems().stream()
           .map(item -> (FlushableItem) item)
