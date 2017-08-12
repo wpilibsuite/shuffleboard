@@ -15,3 +15,32 @@ dependencies {
     implementation(group = "edu.wpi.first.wpiutil", name = "wpiutil-java", version = "2.0.0-20170808143537-16-gf0cc5d9")
     implementation(group = "edu.wpi.first.ntcore", name = "ntcore-jni", version = "3.1.7-20170808143930-12-gccfeab5", classifier = "all")
 }
+
+/*
+ * Allows you to run the UI tests in headless mode by calling gradle with the -Pheadless argument
+ */
+if (project.hasProperty("jenkinsBuild") || project.hasProperty("headless")) {
+    println("Running UI Tests Headless")
+    junitPlatform {
+        filters {
+            tags {
+                /*
+                 * A category for UI tests that cannot run in headless mode, ie work properly with real windows
+                 * but not with the virtualized ones in headless mode.
+                 */
+                exclude("NonHeadlessTests")
+            }
+        }
+    }
+    tasks {
+        "junitPlatformTest"(JavaExec::class) {
+            jvmArgs = listOf(
+                    "-Djava.awt.headless=true",
+                    "-Dtestfx.robot=glass",
+                    "-Dtestfx.headless=true",
+                    "-Dprism.order=sw",
+                    "-Dprism.text=t2k"
+            )
+        }
+    }
+}

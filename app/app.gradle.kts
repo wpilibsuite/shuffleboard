@@ -19,6 +19,8 @@ dependencies {
     compile(project(path = ":plugins:networktables"))
     compile(group = "com.google.code.gson", name = "gson", version = "2.8.1")
     compile(group = "de.huxhorn.lilith", name = "de.huxhorn.lilith.3rdparty.junique", version = "1.0.4")
+
+    runtime(group = "edu.wpi.first.ntcore", name = "ntcore-jni", version = "3.1.7-20170808143930-12-gccfeab5", classifier = "all")
 }
 
 val theMainClassName = "edu.wpi.first.shuffleboard.app.Shuffleboard"
@@ -56,11 +58,11 @@ if (project.hasProperty("jenkinsBuild") || project.hasProperty("headless")) {
     tasks {
         "junitPlatformTest"(JavaExec::class) {
             jvmArgs = listOf(
-                "-Djava.awt.headless=true",
-                "-Dtestfx.robot=glass",
-                "-Dtestfx.headless=true",
-                "-Dprism.order=sw",
-                "-Dprism.text=t2k"
+                    "-Djava.awt.headless=true",
+                    "-Dtestfx.robot=glass",
+                    "-Dtestfx.headless=true",
+                    "-Dprism.order=sw",
+                    "-Dprism.text=t2k"
             )
         }
     }
