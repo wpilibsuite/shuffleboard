@@ -2,9 +2,16 @@ package edu.wpi.first.shuffleboard.plugin.base.widget;
 
 import com.google.common.primitives.Doubles;
 
+<<<<<<< HEAD:plugins/base/src/main/java/edu/wpi/first/shuffleboard/plugin/base/widget/SpeedController.java
 import edu.wpi.first.shuffleboard.api.LiveWindow;
 import edu.wpi.first.shuffleboard.api.components.LinearIndicator;
 import edu.wpi.first.shuffleboard.api.components.NumberField;
+=======
+import edu.wpi.first.shuffleboard.api.components.DoubleField;
+import edu.wpi.first.shuffleboard.api.components.LinearIndicator;
+import edu.wpi.first.shuffleboard.api.data.SpeedControllerData;
+import edu.wpi.first.shuffleboard.api.data.types.SpeedControllerType;
+>>>>>>> Rebase:app/src/main/java/edu/wpi/first/shuffleboard/app/widget/SpeedController.java
 import edu.wpi.first.shuffleboard.api.widget.Description;
 import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 import edu.wpi.first.shuffleboard.api.widget.SimpleAnnotatedWidget;
@@ -38,7 +45,7 @@ public class SpeedController extends SimpleAnnotatedWidget<SpeedControllerData> 
   @FXML
   private Slider control;
   @FXML
-  private NumberField valueField;
+  private DoubleField valueField;
 
   private final ChangeListener<? super Number> numberUpdateListener = (__, prev, cur) -> {
     double value = Doubles.constrainToRange(cur.doubleValue(), -1, 1);

@@ -1,8 +1,15 @@
 package edu.wpi.first.shuffleboard.app.components;
 
+<<<<<<< HEAD:app/src/main/java/edu/wpi/first/shuffleboard/app/components/WidgetPropertySheet.java
 import edu.wpi.first.shuffleboard.api.components.NumberField;
 import edu.wpi.first.shuffleboard.api.theme.Theme;
 import edu.wpi.first.shuffleboard.api.theme.Themes;
+=======
+import edu.wpi.first.shuffleboard.api.components.DoubleField;
+import edu.wpi.first.shuffleboard.api.components.IntegerField;
+import edu.wpi.first.shuffleboard.app.theme.DefaultThemes;
+import edu.wpi.first.shuffleboard.app.theme.Theme;
+>>>>>>> Rebase:app/src/main/java/edu/wpi/first/shuffleboard/app/widget/WidgetPropertySheet.java
 
 import org.controlsfx.control.PropertySheet;
 import org.controlsfx.control.ToggleSwitch;
@@ -44,8 +51,10 @@ public class WidgetPropertySheet extends PropertySheet {
         if (item.getType() == String.class) {
           return new TextPropertyEditor(item);
         }
-        if (Number.class.isAssignableFrom(item.getType())) {
-          return new NumberPropertyEditor(item);
+        if (item.getType() == Integer.class) {
+          return new IntegerPropertyEditor(item);
+        } else if (Number.class.isAssignableFrom(item.getType())) {
+          return new DoublePropertyEditor(item);
         }
         if (item.getType() == Boolean.class) {
           return new ToggleSwitchEditor(item);
@@ -153,15 +162,36 @@ public class WidgetPropertySheet extends PropertySheet {
 
   }
 
+  /**
+   * A property editor for numbers. We use this instead of the one bundled with ControlsFX because
+   * their implementation is bad.
+   */
+  private static class IntegerPropertyEditor extends AbstractEditor<Integer, IntegerField> {
+
+    IntegerPropertyEditor(Item item) {
+      super(item, new IntegerField((Integer) item.getValue()));
+    }
+
+    @Override
+    protected ObservableValue<Integer> getObservableValue() {
+      return getEditor().numberProperty();
+    }
+
+    @Override
+    public void setValue(Integer value) {
+      getEditor().setNumber(value);
+    }
+
+  }
 
   /**
    * A property editor for numbers. We use this instead of the one bundled with ControlsFX because
    * their implementation is bad.
    */
-  private static class NumberPropertyEditor extends AbstractEditor<Double, NumberField> {
+  private static class DoublePropertyEditor extends AbstractEditor<Double, DoubleField> {
 
-    NumberPropertyEditor(Item item) {
-      super(item, new NumberField(((Number) item.getValue()).doubleValue()));
+    DoublePropertyEditor(Item item) {
+      super(item, new DoubleField((Double) item.getValue()));
     }
 
     @Override

@@ -47,6 +47,18 @@ public final class AppPreferences {
     );
   }
 
+  /**
+   * Gets a read-only list of all the preference properties.
+   */
+  public ImmutableList<Property<?>> getFlushableProperties() {
+    return ImmutableList.of(
+        new FlushableProperty<>(theme),
+        new FlushableProperty<>(defaultTileSize),
+        new FlushableProperty<>(server),
+        new FlushableProperty<>(port)
+    );
+  }
+
   public Property<Theme> themeProperty() {
     return theme;
   }

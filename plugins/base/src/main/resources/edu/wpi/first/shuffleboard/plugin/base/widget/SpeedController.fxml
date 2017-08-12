@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import edu.wpi.first.shuffleboard.api.components.DoubleField?>
 <?import edu.wpi.first.shuffleboard.api.components.LinearIndicator?>
-<?import edu.wpi.first.shuffleboard.api.components.NumberField?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Slider?>
@@ -25,7 +25,7 @@
         </center>
         <bottom>
             <HBox alignment="CENTER">
-                <NumberField fx:id="valueField" number="0"/>
+                <DoubleField fx:id="valueField" number="0"/>
                 <Button text="Zero" onAction="#zero" minWidth="64"/>
             </HBox>
         </bottom>

@@ -12,7 +12,7 @@ import javafx.scene.control.TextFormatter;
 /**
  * A type of text field that only accepts valid floating-point decimal numbers.
  */
-public class NumberField extends TextField {
+public class DoubleField extends TextField {
 
   private final Property<Double> number = new SimpleObjectProperty<>(this, "number", 0.0);
   private static final Pattern startOfNumber = Pattern.compile("^[-+]?\\d*\\.?\\d*$");
@@ -21,7 +21,7 @@ public class NumberField extends TextField {
   /**
    * Creates a new number field with no value.
    */
-  public NumberField() {
+  public DoubleField() {
     super();
     setText("0.0"); // initial text to match the initial number
     setTextFormatter(new TextFormatter<>(change -> {
@@ -48,7 +48,7 @@ public class NumberField extends TextField {
    *
    * @param value the initial value of the text field
    */
-  public NumberField(double value) {
+  public DoubleField(double value) {
     this();
     setNumber(value);
   }

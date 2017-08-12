@@ -20,7 +20,7 @@ import edu.wpi.first.shuffleboard.app.components.WidgetPropertySheet;
 import edu.wpi.first.shuffleboard.app.json.JsonBuilder;
 import edu.wpi.first.shuffleboard.app.plugin.PluginLoader;
 import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
-import edu.wpi.first.shuffleboard.app.prefs.FlushableItem;
+import edu.wpi.first.shuffleboard.app.prefs.FlushableProperty;
 import edu.wpi.first.shuffleboard.app.sources.recording.Playback;
 
 import javafx.scene.control.ButtonType;
@@ -37,6 +37,7 @@ import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -373,14 +374,12 @@ public class MainWindowController {
   @SuppressWarnings("unchecked")
   @FXML
   public void showPrefs() {
-    PropertySheet propertySheet = new PropertySheet();
+    PropertySheet propertySheet
+        = new WidgetPropertySheet(AppPreferences.getInstance().getFlushableProperties());
+
     propertySheet.setModeSwitcherVisible(false);
     propertySheet.setSearchBoxVisible(false);
     propertySheet.setMode(PropertySheet.Mode.NAME);
-    AppPreferences.getInstance().getProperties()
-        .stream()
-        .map(property -> new FlushableItem(property, "Application"))
-        .forEachOrdered(propertySheet.getItems()::add);
 
     Dialog<Boolean> dialog = new Dialog<>();
     dialog.getDialogPane().setContent(propertySheet);
@@ -391,9 +390,12 @@ public class MainWindowController {
     dialog.setResultConverter(button -> !button.getButtonData().isCancelButton());
     if (dialog.showAndWait().orElse(false)) {
       propertySheet.getItems().stream()
-          .map(item -> (FlushableItem) item)
-          .filter(FlushableItem::isChanged)
-          .forEach(FlushableItem::flush);
+          .map(item -> (WidgetPropertySheet.PropertyItem) item)
+          .map(WidgetPropertySheet.PropertyItem::getObservableValue)
+          .filter(Optional::isPresent)
+          .map(property -> (FlushableProperty) property.get())
+          .filter(FlushableProperty::isChanged)
+          .forEach(FlushableProperty::flush);
     }
   }
 
