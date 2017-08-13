@@ -1,6 +1,7 @@
 package edu.wpi.first.shuffleboard.api.data;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.primitives.Primitives;
 
 import edu.wpi.first.shuffleboard.api.data.types.AllType;
 import edu.wpi.first.shuffleboard.api.data.types.MapType;
@@ -68,7 +69,7 @@ public final class DataTypes {
   @SuppressWarnings("unchecked")
   public static <T> Optional<DataType<T>> forJavaType(Class<T> type) {
     if (type.isPrimitive()) {
-      return forJavaType((Class) boxedType(type));
+      return forJavaType((Class) Primitives.wrap(type));
     }
     return (Optional) typeCache.computeIfAbsent(type, __ -> {
       if (DataType.class.isAssignableFrom(type)) {
@@ -173,22 +174,6 @@ public final class DataTypes {
         .filter(Optional::isPresent)
         .map(Optional::get)
         .collect(Collectors.toSet());
-  }
-
-  private static Class<?> boxedType(Class<?> primitiveType) {
-    if (primitiveType == boolean.class) {
-      return Boolean.class;
-    }
-    if (primitiveType == double.class) {
-      return Double.class;
-    }
-    if (primitiveType == int.class) {
-      return Integer.class;
-    }
-    if (primitiveType == long.class) {
-      return Long.class;
-    }
-    return primitiveType;
   }
 
   /**
