@@ -16,12 +16,16 @@ import java.net.URLClassLoader;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.jar.JarFile;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
 public class PluginLoader {
+
+  private static final Logger log = Logger.getLogger(PluginLoader.class.getName());
 
   private static final PluginLoader defaultLoader = new PluginLoader();
 
@@ -79,8 +83,7 @@ public class PluginLoader {
           return true;
         }
       } catch (ReflectiveOperationException e) {
-        // TODO log it?
-        //e.printStackTrace();
+        log.log(Level.WARNING, "Could not load plugin class", e);
         return false;
       }
     }
