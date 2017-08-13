@@ -19,7 +19,7 @@ import javafx.stage.Stage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@Disabled
+@Disabled("Depends on network tables")
 public class DashboardTabPaneSaverTest extends ApplicationTest {
 
   @Override
