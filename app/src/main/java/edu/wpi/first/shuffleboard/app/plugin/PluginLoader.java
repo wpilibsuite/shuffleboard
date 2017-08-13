@@ -1,10 +1,12 @@
 package edu.wpi.first.shuffleboard.app.plugin;
 
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
+import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
 import edu.wpi.first.shuffleboard.api.plugin.Plugin;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
 import edu.wpi.first.shuffleboard.api.sources.recording.serialization.Serializers;
+import edu.wpi.first.shuffleboard.api.widget.Widget;
 import edu.wpi.first.shuffleboard.api.widget.Widgets;
 import edu.wpi.first.shuffleboard.app.sources.DestroyedSource;
 
@@ -109,13 +111,22 @@ public class PluginLoader {
               || plugin.getSourceTypes().contains(source.getType());
         })
         .filter(w -> SourceTypes.isRegistered(w.getSource().getType()))
-        .forEach(w -> w.setSource(((DestroyedSource) w.getSource()).restore()));
+        .forEach(w -> trySetRestoredSource(w, (DestroyedSource) w.getSource()));
 
     plugin.onLoad();
     plugin.setLoaded(true);
 
     if (!knownPlugins.contains(plugin)) {
       knownPlugins.add(plugin);
+    }
+  }
+
+  private void trySetRestoredSource(Widget widget, DestroyedSource destroyedSource) {
+    try {
+      widget.setSource(destroyedSource.restore());
+    } catch (IncompatibleSourceException e) {
+      log.fine("Could not set the restored source of " + widget +
+          ". The plugin defining its data type was probably unloaded.");
     }
   }
 
