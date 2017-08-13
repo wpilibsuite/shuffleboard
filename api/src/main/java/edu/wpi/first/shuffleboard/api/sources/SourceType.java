@@ -82,6 +82,9 @@ public class SourceType {
     return FXCollections.emptyObservableList();
   }
 
+  /**
+   * Gets a observable map of available source URIs to their values.
+   */
   public ObservableMap<String, Object> getAvailableSources() {
     return FXCollections.emptyObservableMap();
   }
@@ -99,12 +102,24 @@ public class SourceType {
     }
   }
 
+  /**
+   * Creates a root source entry. The entry will not be used to create a source, but to represent the root node in
+   * the source tree view in the application window.
+   */
   public SourceEntry createRootSourceEntry() {
     return createSourceEntryForUri("/");
   }
 
+  /**
+   * Creates a source entry corresponding to the given URI. The default implementation throws an exception; custom
+   * source types should override this behavior.
+   *
+   * @param uri the source URI to create a source entry for
+   *
+   * @throws UnsupportedOperationException if this method has not been overridden by a subclass.
+   */
   public SourceEntry createSourceEntryForUri(String uri) {
-    return null;
+    throw new UnsupportedOperationException("Not implemented by " + getName());
   }
 
 }
