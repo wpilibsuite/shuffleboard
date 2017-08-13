@@ -76,11 +76,15 @@ public class PluginLoader {
     if (Plugin.class.isAssignableFrom(clazz) && !Modifier.isAbstract(clazz.getModifiers())) {
       try {
         if (Modifier.isPublic(clazz.getConstructor().getModifiers())) {
+          Plugin plugin = (Plugin) clazz.newInstance();
           // Unload existing plugin, if it exists
           knownPlugins.stream()
-              .filter(p -> p.getClass().getName().equals(clazz.getName()))
-              .forEach(this::unload);
-          Plugin plugin = (Plugin) clazz.newInstance();
+              .filter(p -> p.getName().equals(plugin.getName()))
+              .findFirst()
+              .ifPresent(oldPlugin -> {
+                unload(oldPlugin);
+                knownPlugins.remove(oldPlugin);
+              });
           load(plugin);
           return true;
         }
@@ -96,8 +100,14 @@ public class PluginLoader {
    * Loads a plugin.
    *
    * @param plugin the plugin to load
+   *
+   * @throws IllegalArgumentException if a plugin has already been loaded with the same name
    */
   public void load(Plugin plugin) {
+    if (knownPlugins.stream().anyMatch(p -> p.getName().equals(plugin.getName()))) {
+      throw new IllegalArgumentException("A plugin has already been loaded with the name " + plugin.getName());
+    }
+    log.info("Loading plugin " + plugin.getName());
     plugin.getDataTypes().forEach(DataTypes::register);
     plugin.getSourceTypes().forEach(SourceTypes::register);
     plugin.getTypeAdapters().forEach(Serializers::add);
@@ -136,6 +146,7 @@ public class PluginLoader {
    * @param plugin the plugin to unload
    */
   public void unload(Plugin plugin) {
+    log.info("Unloading plugin " + plugin.getName());
     Widgets.getActiveWidgets().stream()
         .filter(w -> !(w.getSource() instanceof DestroyedSource))
         .filter(w -> {

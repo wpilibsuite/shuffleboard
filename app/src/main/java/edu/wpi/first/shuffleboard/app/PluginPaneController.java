@@ -14,6 +14,8 @@ import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.CheckBoxTableCell;
@@ -70,7 +72,13 @@ public class PluginPaneController {
         try {
           JarFile jar = new JarFile(f);
           PluginLoader.getDefault().loadPluginJar(jar);
-        } catch (IOException e) {
+        } catch (IOException | IllegalArgumentException e) {
+          // TODO improve the dialog; use something like what GRIP has
+          Alert alert = new Alert(Alert.AlertType.ERROR, null, ButtonType.OK);
+          alert.setTitle("Could not load plugins");
+          alert.setHeaderText("Plugins in " + f.getName() + " could not be loaded");
+          alert.setContentText("Error message:\n\n    " + e.getMessage());
+          alert.showAndWait();
           log.log(Level.WARNING, "Could not load jar", e);
         }
       }
