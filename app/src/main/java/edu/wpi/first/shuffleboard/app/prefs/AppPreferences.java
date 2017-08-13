@@ -42,18 +42,6 @@ public final class AppPreferences {
     return ImmutableList.of(
         theme,
         defaultTileSize,
-        server,
-        port
-    );
-  }
-
-  /**
-   * Gets a read-only list of all the preference properties.
-   */
-  public ImmutableList<Property<?>> getFlushableProperties() {
-    return ImmutableList.of(
-        new FlushableProperty<>(theme),
-        new FlushableProperty<>(defaultTileSize),
         new FlushableProperty<>(server),
         new FlushableProperty<>(port)
     );

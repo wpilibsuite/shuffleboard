@@ -174,12 +174,12 @@ public class WidgetPropertySheet extends PropertySheet {
 
     @Override
     protected ObservableValue<Integer> getObservableValue() {
-      return getEditor().numberProperty();
+      return getEditor().integerProperty();
     }
 
     @Override
     public void setValue(Integer value) {
-      getEditor().setNumber(value);
+      getEditor().setInteger(value);
     }
 
   }

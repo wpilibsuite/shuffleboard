@@ -375,7 +375,7 @@ public class MainWindowController {
   @FXML
   public void showPrefs() {
     PropertySheet propertySheet
-        = new WidgetPropertySheet(AppPreferences.getInstance().getFlushableProperties());
+        = new WidgetPropertySheet(AppPreferences.getInstance().getProperties());
 
     propertySheet.setModeSwitcherVisible(false);
     propertySheet.setSearchBoxVisible(false);
@@ -393,7 +393,10 @@ public class MainWindowController {
           .map(item -> (WidgetPropertySheet.PropertyItem) item)
           .map(WidgetPropertySheet.PropertyItem::getObservableValue)
           .filter(Optional::isPresent)
-          .map(property -> (FlushableProperty) property.get())
+          .map(Optional::get)
+          .map(o -> optionalCast(o, FlushableProperty.class))
+          .filter(Optional::isPresent)
+          .map(Optional::get)
           .filter(FlushableProperty::isChanged)
           .forEach(FlushableProperty::flush);
     }

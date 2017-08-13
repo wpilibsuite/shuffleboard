@@ -58,11 +58,7 @@ public class Shuffleboard extends Application {
 
     ChangeListener<Integer> portChangeListener = (observable, oldValue, newValue) -> {
       NetworkTable.shutdown();
-      if (newValue == null || newValue <= 0 || newValue >= 65535) {
-        NetworkTable.setPort(NetworkTable.DEFAULT_PORT);
-      } else {
-        NetworkTable.setPort(newValue);
-      }
+      NetworkTable.setPort(newValue);
       NetworkTable.initialize();
     };
     AppPreferences.getInstance().portProperty().addListener(portChangeListener);

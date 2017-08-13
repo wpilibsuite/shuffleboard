@@ -12,7 +12,7 @@ import javafx.scene.control.TextFormatter;
 /**
  * A type of text field that only accepts valid whole numbers.
  */
-public class IntegerField extends TextField {
+public class PortField extends TextField {
 
   private final Property<Integer> number = new SimpleObjectProperty<>(this, "number", 0);
   private static final Pattern integerPattern = Pattern.compile("^[-+]?\\d*$");
@@ -20,12 +20,12 @@ public class IntegerField extends TextField {
   /**
    * Creates a new number field with no value.
    */
-  public IntegerField() {
+  public PortField() {
     super();
     setText("0"); // initial text to match the initial number
     setTextFormatter(new TextFormatter<>(change -> {
       String text = change.getControlNewText();
-      if (isInteger(text)) {
+      if (isPort(text)) {
         return change;
       }
       return null;
@@ -34,7 +34,7 @@ public class IntegerField extends TextField {
     PropertyUtils.bindBidirectionalWithConverter(
         textProperty(),
         number,
-        text -> isInteger(text) ? getNumberFromText(text) : getInteger(),
+        text -> isPort(text) ? getNumberFromText(text) : getPort(),
         num -> num == getNumberFromText(getText()) ? getText() : num.toString());
   }
 
@@ -47,28 +47,33 @@ public class IntegerField extends TextField {
    *
    * @param value the initial value of the text field
    */
-  public IntegerField(int value) {
+  public PortField(int value) {
     this();
-    setInteger(value);
+    setPort(value);
   }
 
   /**
    * Checks if the given string is a valid whole number.
    */
-  private static boolean isInteger(String text) {
-    return integerPattern.matcher(text).matches();
+  private static boolean isPort(String text) {
+    if (integerPattern.matcher(text).matches()) {
+      int intValue = Integer.parseInt(text);
+
+      return 0 <= intValue && intValue <= 65535;
+    }
+    return false;
   }
 
-  public final int getInteger() {
+  public final int getPort() {
     return number.getValue();
   }
 
-  public final Property<Integer> integerProperty() {
+  public final Property<Integer> portProperty() {
     return number;
   }
 
-  public final void setInteger(int number) {
-    this.number.setValue(number);
+  public final void setPort(int port) {
+    this.number.setValue(port);
   }
 
 }
