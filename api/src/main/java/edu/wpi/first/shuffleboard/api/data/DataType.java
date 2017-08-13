@@ -16,6 +16,12 @@ public abstract class DataType<T> {
   private final String name;
   private final Class<T> javaClass;
 
+  /**
+   * Creates a new data type instance.
+   *
+   * @param name      the name of the data type. <i>This must be unique among all data types</i>
+   * @param javaClass the Java class of the data objects this data type represents
+   */
   protected DataType(String name, Class<T> javaClass) {
     this.name = name;
     this.javaClass = javaClass;
@@ -28,6 +34,9 @@ public abstract class DataType<T> {
     return name;
   }
 
+  /**
+   * Gets the Java class of the data objects this data type represents.
+   */
   public final Class<T> getJavaClass() {
     return javaClass;
   }
@@ -47,6 +56,9 @@ public abstract class DataType<T> {
     if (obj == null) {
       return false;
     }
+    if (this == obj) {
+      return true;
+    }
     if (obj.getClass() != this.getClass()) {
       return false;
     }
@@ -57,7 +69,7 @@ public abstract class DataType<T> {
 
   @Override
   public int hashCode() {
-    return getClass().hashCode();
+    return Objects.hash(name, javaClass);
   }
 
   @Override

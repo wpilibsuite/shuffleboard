@@ -1,5 +1,7 @@
 package edu.wpi.first.shuffleboard.api.data;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import edu.wpi.first.shuffleboard.api.data.types.AllType;
 import edu.wpi.first.shuffleboard.api.data.types.MapType;
 import edu.wpi.first.shuffleboard.api.data.types.NoneType;
@@ -89,7 +91,28 @@ public final class DataTypes {
     });
   }
 
-  private static Comparator<Class<?>> closestTo(Class<?> target) {
+  /**
+   * Creates a comparator object that compares classes in order of closest to the target class, in terms of class
+   * hierarchy. For example, take a class hierarchy of
+   * <pre><code>
+   *      Foo
+   *     /   \
+   *   Bar   Baz
+   *    |     |
+   *  Object Buq
+   *          |
+   *        Object
+   * </code></pre>
+   *
+   * {@code closestTo(Object.class)} would be sorted as {@code [Bar, Buq], Baz, Foo}. The order of Bar, Baz is not
+   * deterministic and depends on the ordering of the source collection, hence the brackets.
+   *
+   * <p><b>This method does <i>not</i> support comparison of interfaces</b></p>
+   *
+   * @param target the class that should be compared to to determine ordering
+   */
+  @VisibleForTesting
+  static Comparator<Class<?>> closestTo(Class<?> target) {
     return (o1, o2) -> {
       if (o1 == o2) {
         return 0;
@@ -99,32 +122,42 @@ public final class DataTypes {
       } else if (o2 == null) {
         return 1;
       }
-      boolean isO1Superclass = o1.isAssignableFrom(target);
-      boolean isO2Superclass = o2.isAssignableFrom(target);
-      if (isO1Superclass && !isO2Superclass) {
+      if (o1 == target) {
         return 1;
-      } else if (!isO1Superclass && isO2Superclass) {
+      } else if (o2 == target) {
         return -1;
-      } else if (!isO1Superclass) { //NOPMD
-        // Neither is a superclass; order doesn't matter
-        return 0;
-      } else {
-        // Target inherits from both
-        int c1 = 0;
-        int c2 = 0;
-        Class sup = o1.getSuperclass();
-        while (sup != Object.class && sup != null) {
-          sup = sup.getSuperclass();
-          c1++;
-        }
-        sup = o2.getSuperclass();
-        while (sup != Object.class && sup != null) {
-          sup = sup.getSuperclass();
-          c2++;
-        }
-        return Integer.compare(c1, c2);
       }
+      // Negate the integer comparison, otherwise the order is backwards
+      return -Integer.compare(distance(o1, target), distance(o2, target));
     };
+  }
+
+  /**
+   * Calculates the distance between two classes in the class hierarchy. This does <i>not</i> support interfaces. If
+   * neither class subclasses the other, or either class object represents an interface, this method will return
+   * {@link Integer#MAX_VALUE}.
+   *
+   * @param first the first class to compare
+   * @param other the other class to compare
+   */
+  private static int distance(Class<?> first, Class<?> other) {
+    if (other == first) { // NOPMD use equals() to compare references -- not null safe
+      return 0;
+    }
+    if (first.isInterface() || other.isInterface()) {
+      // Doesn't support interfaces
+      return Integer.MAX_VALUE;
+    }
+    if (first.isAssignableFrom(other)) {
+      // other superclasses first
+      return distance(other.getSuperclass(), first) + 1;
+    } else if (other.isAssignableFrom(first)) {
+      // other subclasses first
+      return distance(first.getSuperclass(), other) + 1;
+    } else {
+      // Neither subclasses the other
+      return Integer.MAX_VALUE;
+    }
   }
 
   public static void clearCache() {
