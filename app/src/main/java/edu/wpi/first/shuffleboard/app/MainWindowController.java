@@ -15,6 +15,7 @@ import edu.wpi.first.shuffleboard.api.widget.Widgets;
 import edu.wpi.first.shuffleboard.app.components.DashboardTabPane;
 import edu.wpi.first.shuffleboard.app.components.WidgetGallery;
 import edu.wpi.first.shuffleboard.app.components.WidgetPropertySheet;
+import edu.wpi.first.shuffleboard.app.components.WidgetTile;
 import edu.wpi.first.shuffleboard.app.json.JsonBuilder;
 import edu.wpi.first.shuffleboard.app.plugin.PluginLoader;
 import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
@@ -32,6 +33,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -134,6 +136,9 @@ public class MainWindowController {
     EasyBind.listBind(pluginPane.getStylesheets(), root.getStylesheets());
   }
 
+  /**
+   * Sets up UI components to represent the sources that a plugin defines.
+   */
   private void setup(Plugin plugin) {
     plugin.getSourceTypes().forEach(sourceType -> {
       SourceTreeTable<SourceEntry<?>, ?> tree = new SourceTreeTable<>();
@@ -189,6 +194,10 @@ public class MainWindowController {
     });
   }
 
+  /**
+   * Removes all traces from a plugin from the application window. Source trees will be removed and all widgets
+   * defined by the plugin will be removed from all dashboard tabs.
+   */
   private void tearDown(Plugin plugin) {
     plugin.getSourceTypes().forEach(sourceType -> {
       sourcesAccordion.getPanes().stream()
@@ -196,6 +205,18 @@ public class MainWindowController {
           .findFirst()
           .ifPresent(sourcesAccordion.getPanes()::remove);
     });
+    // Remove widgets
+    dashboard.getTabs().stream()
+        .filter(tab -> tab instanceof DashboardTabPane.DashboardTab)
+        .map(tab -> (DashboardTabPane.DashboardTab) tab)
+        .map(DashboardTabPane.DashboardTab::getWidgetPane)
+        .forEach(pane -> {
+          pane.getTiles().stream()
+              .filter(tile -> plugin.getWidgets()
+                  .contains(tile.getWidget().getClass()))
+              .collect(Collectors.toList()) // collect into temporary list to prevent comodification
+              .forEach(tile -> pane.getChildren().remove(tile));
+        });
   }
 
   /**

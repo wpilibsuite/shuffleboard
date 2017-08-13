@@ -104,9 +104,6 @@ public class PluginLoader {
    * @throws IllegalArgumentException if a plugin has already been loaded with the same name
    */
   public void load(Plugin plugin) {
-    if (knownPlugins.stream().anyMatch(p -> p.getName().equals(plugin.getName()))) {
-      throw new IllegalArgumentException("A plugin has already been loaded with the name " + plugin.getName());
-    }
     log.info("Loading plugin " + plugin.getName());
     plugin.getDataTypes().forEach(DataTypes::register);
     plugin.getSourceTypes().forEach(SourceTypes::register);
@@ -121,7 +118,7 @@ public class PluginLoader {
               || plugin.getSourceTypes().contains(source.getType());
         })
         .filter(w -> SourceTypes.isRegistered(w.getSource().getType()))
-        .forEach(w -> trySetRestoredSource(w, (DestroyedSource) w.getSource()));
+        .forEach(w -> tryRestoreSource(w, (DestroyedSource) w.getSource()));
 
     plugin.onLoad();
     plugin.setLoaded(true);
@@ -131,7 +128,7 @@ public class PluginLoader {
     }
   }
 
-  private void trySetRestoredSource(Widget widget, DestroyedSource destroyedSource) {
+  private void tryRestoreSource(Widget widget, DestroyedSource destroyedSource) {
     try {
       widget.setSource(destroyedSource.restore());
     } catch (IncompatibleSourceException e) {
@@ -151,8 +148,7 @@ public class PluginLoader {
         .filter(w -> !(w.getSource() instanceof DestroyedSource))
         .filter(w -> {
           DataSource<?> source = w.getSource();
-          return plugin.getWidgets().contains(w.getClass())
-              || plugin.getDataTypes().contains(source.getDataType())
+          return plugin.getDataTypes().contains(source.getDataType())
               || plugin.getSourceTypes().contains(source.getType());
         })
         .forEach(w -> w.setSource(new DestroyedSource<>(w.getSource())));
