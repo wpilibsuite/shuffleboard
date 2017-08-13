@@ -26,6 +26,15 @@ public final class Serializers {
   }
 
   /**
+   * Removes the given type adapter.
+   *
+   * @param typeAdapter the type adapter to remove
+   */
+  public static void remove(TypeAdapter typeAdapter) {
+    serializers.remove(typeAdapter.getDataType());
+  }
+
+  /**
    * Gets the type adapter for the given data type, or {@code null} if no such adapter exists.
    *
    * @param type the data type to get the adapter for

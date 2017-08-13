@@ -1,10 +1,15 @@
 package edu.wpi.first.shuffleboard.api.sources;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
+/**
+ * Keeps track of all created data sources. This is primarily used for data recording and playback.
+ */
 public final class Sources {
 
   private static final Map<String, DataSource> sources = new HashMap<>();
@@ -23,6 +28,26 @@ public final class Sources {
       return;
     }
     sources.put(source.getId(), source);
+  }
+
+  /**
+   * Unregisters a data source.
+   *
+   * @param source the source to unregister
+   */
+  public static void unregister(DataSource<?> source) {
+    sources.remove(source.getId());
+  }
+
+  /**
+   * Gets a list of all the known data sources
+   *
+   * @param type the source type to get the sources for
+   */
+  public static List<DataSource> forType(SourceType type) {
+    return sources.values().stream()
+        .filter(s -> s.getType().equals(type))
+        .collect(Collectors.toList());
   }
 
   public static DataSource<?> forUri(String uri) {

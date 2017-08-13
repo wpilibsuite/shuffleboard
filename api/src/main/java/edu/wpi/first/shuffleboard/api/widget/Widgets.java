@@ -5,6 +5,7 @@ import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -26,6 +28,7 @@ public final class Widgets {
   private static Map<Class<? extends Widget>, WidgetType> registeredWidgets = new HashMap<>();
   private static Map<String, WidgetType> widgets = new TreeMap<>();
   private static Map<DataType, WidgetType> defaultWidgets = new HashMap<>();
+  private static WeakHashMap<Widget, Widget> activeWidgets = new WeakHashMap<>();
 
   private Widgets() {
     // Utility class, prevent instantiation
@@ -113,8 +116,19 @@ public final class Widgets {
    */
   public static <T> Optional<Widget> createWidget(String name, DataSource<T> source) {
     Optional<Widget> widget = typeFor(name).map(WidgetType::get);
+    widget.ifPresent(w -> activeWidgets.put(w, w));
     widget.ifPresent(w -> w.setSource(source));
     return widget;
+  }
+
+  /**
+   * Gets a list of the active widgets in the application.
+   *
+   * <p><strong>Do not keep a reference to this list.</strong> It prevents garbage collection of widget instances.</p>
+   */
+  public static List<Widget> getActiveWidgets() {
+    // Use a copy; don't want elements in the list to be removed by GC while someone's using it
+    return new ArrayList<>(activeWidgets.keySet());
   }
 
   /**

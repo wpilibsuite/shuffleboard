@@ -2,9 +2,11 @@ package edu.wpi.first.shuffleboard.app.plugin;
 
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.plugin.Plugin;
+import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
 import edu.wpi.first.shuffleboard.api.sources.recording.serialization.Serializers;
 import edu.wpi.first.shuffleboard.api.widget.Widgets;
+import edu.wpi.first.shuffleboard.app.sources.DestroyedSource;
 
 import java.io.File;
 import java.lang.reflect.Modifier;
@@ -91,6 +93,16 @@ public class PluginLoader {
     plugin.getSourceTypes().forEach(SourceTypes::register);
     plugin.getTypeAdapters().forEach(Serializers::add);
     plugin.getWidgets().forEach(Widgets::register);
+    Widgets.getActiveWidgets().stream()
+        .filter(w -> w.getSource() instanceof DestroyedSource)
+        .filter(w -> {
+          DataSource<?> source = w.getSource();
+          return plugin.getWidgets().contains(w.getClass())
+              || plugin.getDataTypes().contains(source.getDataType())
+              || plugin.getSourceTypes().contains(source.getType());
+        })
+        .filter(w -> SourceTypes.isRegistered(w.getSource().getType()))
+        .forEach(w -> w.setSource(((DestroyedSource) w.getSource()).restore()));
 
     plugin.onLoad();
     plugin.setLoaded(true);
@@ -106,8 +118,18 @@ public class PluginLoader {
    * @param plugin the plugin to unload
    */
   public void unload(Plugin plugin) {
+    Widgets.getActiveWidgets().stream()
+        .filter(w -> !(w.getSource() instanceof DestroyedSource))
+        .filter(w -> {
+          DataSource<?> source = w.getSource();
+          return plugin.getWidgets().contains(w.getClass())
+              || plugin.getDataTypes().contains(source.getDataType())
+              || plugin.getSourceTypes().contains(source.getType());
+        })
+        .forEach(w -> w.setSource(new DestroyedSource<>(w.getSource())));
     plugin.getWidgets().forEach(Widgets::unregister);
     plugin.getSourceTypes().forEach(SourceTypes::unregister);
+    plugin.getTypeAdapters().forEach(Serializers::remove);
     plugin.getDataTypes().forEach(DataTypes::unregister);
 
     plugin.onUnload();

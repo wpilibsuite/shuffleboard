@@ -69,6 +69,10 @@ public final class SourceTypes {
     types.remove(sourceType.getName());
   }
 
+  public static boolean isRegistered(SourceType sourceType) {
+    return types.containsKey(sourceType.getName());
+  }
+
   /**
    * Creates a data source corresponding to the given URI. If the protocol is not recognized, {@link DataSource#none()}
    * is returned.
