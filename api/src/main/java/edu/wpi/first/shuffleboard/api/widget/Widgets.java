@@ -70,6 +70,9 @@ public final class Widgets {
     widgets.put(widgetType.getName(), widgetType);
   }
 
+  /**
+   * Unregisters a widget class.
+   */
   public static void unregister(Class<? extends Widget> widgetClass) {
     WidgetType widgetType = registeredWidgets.get(widgetClass);
     widgets.entrySet().stream()

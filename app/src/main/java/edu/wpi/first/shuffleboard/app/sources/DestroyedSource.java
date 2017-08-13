@@ -26,6 +26,11 @@ public class DestroyedSource<T> implements DataSource<T> {
   private final ObjectProperty<T> data = new SimpleObjectProperty<>(this, "data", null);
   private final BooleanProperty active = new SimpleBooleanProperty(this, "active", false);
 
+  /**
+   * Creates a new instance that can restore the given data source.
+   *
+   * @param destroyed the destroyed source that the new instance should be able to restore.
+   */
   public DestroyedSource(DataSource<T> destroyed) {
     dataType = destroyed.getDataType();
     sourceType = destroyed.getType();
@@ -45,7 +50,8 @@ public class DestroyedSource<T> implements DataSource<T> {
     if (SourceTypes.isRegistered(sourceType)) {
       DataSource<T> restored = (DataSource<T>) sourceType.forUri(oldId);
       if (!restored.getDataType().equals(dataType)) {
-        throw new DataTypeChangedException("The new data type is " + restored.getDataType() + ", was expecting " + dataType);
+        throw new DataTypeChangedException(
+            "The new data type is " + restored.getDataType() + ", was expecting " + dataType);
       }
       restored.nameProperty().set(name.get());
       restored.activeProperty().set(true);

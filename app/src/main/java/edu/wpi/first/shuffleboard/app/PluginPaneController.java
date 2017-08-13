@@ -29,8 +29,8 @@ public class PluginPaneController {
   @FXML
   private TableView<Plugin> pluginTable;
 
-  private TableColumn<Plugin, String> nameColumn = new TableColumn<>("Plugin");
-  private TableColumn<Plugin, Boolean> loadedColumn = new TableColumn<>("Loaded");
+  private final TableColumn<Plugin, String> nameColumn = new TableColumn<>("Plugin");
+  private final TableColumn<Plugin, Boolean> loadedColumn = new TableColumn<>("Loaded");
 
   @FXML
   private void initialize() {
@@ -64,11 +64,9 @@ public class PluginPaneController {
       return;
     }
     files.forEach(f -> {
-      if (f.getName().endsWith(".class")) {
-        System.out.println("LOAD CLASS FILE");
+      if (f.getName().endsWith(".class")) { //NOPMD empty if statement
         //TODO
       } else if (f.getName().endsWith(".jar")) {
-        System.out.println("LOAD JAR FILE");
         try {
           JarFile jar = new JarFile(f);
           PluginLoader.getDefault().loadPluginJar(jar);

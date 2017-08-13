@@ -19,7 +19,7 @@ import javafx.stage.Stage;
 @SuppressWarnings("JavadocMethod")
 public class Shuffleboard extends Application {
 
-  private Pane mainPane;
+  private Pane mainPane; //NOPMD local variable
 
   public static void main(String[] args) {
     NetworkTablesJNI.startClient("localhost", 1735);

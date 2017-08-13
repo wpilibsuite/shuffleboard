@@ -3,7 +3,6 @@ package edu.wpi.first.shuffleboard.api.components;
 
 import edu.wpi.first.shuffleboard.api.sources.SourceEntry;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
-import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
 
 import org.junit.jupiter.api.Test;
 import org.testfx.framework.junit5.ApplicationTest;
@@ -19,9 +18,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class SourceTreeTableTest extends ApplicationTest {
 
-  private SourceType sourceType = new SourceType("Test", false, "test://", __ -> null);
+  private final SourceType sourceType = new SourceType("Test", false, "test://", __ -> null);
+  private final TreeItem<SourceEntry> root = new TreeItem<>(sourceType.createRootSourceEntry());
   private SourceTreeTable<SourceEntry, ?> tree;
-  private TreeItem<SourceEntry> root = new TreeItem<>(sourceType.createRootSourceEntry());
 
   @Override
   public void start(Stage stage) throws Exception {
@@ -35,8 +34,8 @@ public class SourceTreeTableTest extends ApplicationTest {
 
   @Test
   public void testUpdateFirstLevelEntry() {
-    SourceEntry e = sourceType.createSourceEntryForUri("firstLevel");
-    tree.updateEntry(e);
+    SourceEntry entry = sourceType.createSourceEntryForUri("firstLevel");
+    tree.updateEntry(entry);
     ObservableList<TreeItem<SourceEntry>> children = root.getChildren();
     assertEquals(1, children.size(), "Should be 1 child");
     TreeItem<SourceEntry> child = children.get(0);

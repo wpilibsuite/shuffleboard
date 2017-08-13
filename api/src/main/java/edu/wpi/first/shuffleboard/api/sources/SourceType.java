@@ -15,6 +15,14 @@ public class SourceType {
   private final String protocol;
   private final Function<String, DataSource> sourceSupplier;
 
+  /**
+   * Creates a new source type.
+   *
+   * @param name           the name of the new source type. <i>This must be unique among all source types.</i>
+   * @param isRecordable   if sources of this type may have their values recorded
+   * @param protocol       the protocol string for source URIs using this source type. For example, 'network_table://"
+   * @param sourceSupplier a function to use to create data sources of this type for a given name (<i>not</i> URI)
+   */
   public SourceType(String name,
                     boolean isRecordable,
                     String protocol,

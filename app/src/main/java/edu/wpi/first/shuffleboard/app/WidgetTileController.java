@@ -24,7 +24,7 @@ public class WidgetTileController {
   private Label titleLabel;
 
   // Store as a field to prevent GC
-  private PropertyBinding<DataSource> sourceProperty;
+  private PropertyBinding<DataSource> sourceProperty; //NOPMD could be a local variable
 
   /**
    * Pseudoclass used on tiles when the widget inside loses its source.

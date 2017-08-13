@@ -104,10 +104,8 @@ public class MainWindowController {
           c.getAddedSubList().forEach(plugin -> {
             plugin.loadedProperty().addListener((__, was, is) -> {
               if (is) {
-                System.out.println("GENERATING FOR " + plugin.getName());
                 setup(plugin);
               } else {
-                System.out.println("REMOVING ITEMS FOR " + plugin.getName());
                 tearDown(plugin);
               }
             });
@@ -194,8 +192,7 @@ public class MainWindowController {
   private void tearDown(Plugin plugin) {
     plugin.getSourceTypes().forEach(sourceType -> {
       sourcesAccordion.getPanes().stream()
-          .filter(p -> p.getText() == sourceType.getName())
-          .peek(p -> System.out.println("Removing pane " + p))
+          .filter(p -> p.getText().equals(sourceType.getName()))
           .findFirst()
           .ifPresent(sourcesAccordion.getPanes()::remove);
     });

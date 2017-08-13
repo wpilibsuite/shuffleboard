@@ -40,7 +40,7 @@ public final class Sources {
   }
 
   /**
-   * Gets a list of all the known data sources
+   * Gets a list of all the known data sources.
    *
    * @param type the source type to get the sources for
    */

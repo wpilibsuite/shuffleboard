@@ -13,6 +13,8 @@ import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.jar.JarFile;
 import java.util.stream.Stream;
 
@@ -36,7 +38,9 @@ public class PluginLoader {
    */
   public void loadPluginJar(JarFile jarFile) throws MalformedURLException {
     URL url = new File(jarFile.getName()).toURI().toURL();
-    URLClassLoader classLoader = new URLClassLoader(new URL[]{url}, ClassLoader.getSystemClassLoader());
+    URLClassLoader classLoader = AccessController.doPrivileged((PrivilegedAction<URLClassLoader>) () -> {
+      return new URLClassLoader(new URL[]{url}, ClassLoader.getSystemClassLoader());
+    });
 
     jarFile.stream()
         .filter(e -> e.getName().endsWith(".class"))
@@ -50,7 +54,7 @@ public class PluginLoader {
     try {
       return Stream.of(Class.forName(name, false, classLoader));
     } catch (ClassNotFoundException e) {
-      e.printStackTrace();
+      // TODO log
       return Stream.empty();
     }
   }

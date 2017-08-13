@@ -19,7 +19,6 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.MenuItem;
 import javafx.scene.paint.Color;
-import javafx.util.StringConverter;
 
 import static java.util.Objects.requireNonNull;
 
@@ -152,21 +151,6 @@ public final class FxUtils {
     MenuItem menuItem = new MenuItem(text);
     menuItem.setOnAction(eventHandler);
     return menuItem;
-  }
-
-  public static <T> StringConverter<T> stringConverter(Function<? super T, String> toString,
-                                                       Function<? super String, ? extends T> fromString) {
-    return new StringConverter<T>() {
-      @Override
-      public String toString(T object) {
-        return toString.apply(object);
-      }
-
-      @Override
-      public T fromString(String string) {
-        return fromString.apply(string);
-      }
-    };
   }
 
 }
