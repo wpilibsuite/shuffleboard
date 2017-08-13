@@ -1,9 +1,10 @@
 package edu.wpi.first.shuffleboard.api.sources;
 
 import edu.wpi.first.shuffleboard.api.data.DataType;
+
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.Property;
 import javafx.beans.property.StringProperty;
-import javafx.beans.value.ObservableValue;
 
 /**
  * A data source provides some kind of data that widgets can display and manipulate. It can be
@@ -30,7 +31,7 @@ public interface DataSource<T> {
    *
    * @return true if this data source is active, false if not
    */
-  ObservableValue<Boolean> activeProperty();
+  BooleanProperty activeProperty();
 
   default boolean isActive() {
     return activeProperty().getValue();

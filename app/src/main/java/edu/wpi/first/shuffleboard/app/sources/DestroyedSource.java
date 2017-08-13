@@ -12,7 +12,6 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import javafx.beans.value.ObservableValue;
 
 /**
  * A type of data source that represents the state of another source that has been destroyed or removed as a result
@@ -49,6 +48,7 @@ public class DestroyedSource<T> implements DataSource<T> {
         throw new DataTypeChangedException("The new data type is " + restored.getDataType() + ", was expecting " + dataType);
       }
       restored.nameProperty().set(name.get());
+      restored.activeProperty().set(true);
       restored.setData(getData());
       return restored;
     } else {
@@ -57,7 +57,7 @@ public class DestroyedSource<T> implements DataSource<T> {
   }
 
   @Override
-  public ObservableValue<Boolean> activeProperty() {
+  public BooleanProperty activeProperty() {
     return active;
   }
 

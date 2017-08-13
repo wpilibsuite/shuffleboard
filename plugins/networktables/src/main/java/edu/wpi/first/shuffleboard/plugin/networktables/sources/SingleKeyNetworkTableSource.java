@@ -51,7 +51,7 @@ public class SingleKeyNetworkTableSource<T> extends NetworkTableSource<T> {
       if (isActive()) {
         table.putValue(key, newValue);
       } else {
-        setData(oldValue);
+        throw new IllegalStateException("Source is not active");
       }
     });
 

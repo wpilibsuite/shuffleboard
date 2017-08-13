@@ -21,7 +21,7 @@ import static java.util.Objects.requireNonNull;
 public abstract class AbstractDataSource<T> implements DataSource<T> {
 
   protected final StringProperty name = new SimpleStringProperty(this, "name", "");
-  protected final Property<Boolean> active = new SimpleBooleanProperty(this, "active", false);
+  protected final BooleanProperty active = new SimpleBooleanProperty(this, "active", false);
   protected final Property<T> data = new AsyncProperty<>(this, "data", null);
   protected final BooleanProperty connected = new SimpleBooleanProperty(this, "connected", false);
   protected final DataType dataType;
@@ -36,7 +36,7 @@ public abstract class AbstractDataSource<T> implements DataSource<T> {
   }
 
   @Override
-  public ObservableValue<Boolean> activeProperty() {
+  public BooleanProperty activeProperty() {
     return active;
   }
 
