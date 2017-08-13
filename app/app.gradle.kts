@@ -18,11 +18,6 @@ dependencies {
     compile(project(path = ":plugins:base"))
     compile(project(path = ":plugins:networktables"))
     compile(group = "com.google.code.gson", name = "gson", version = "2.8.1")
-    fun testFx(name: String, version: String = "4.0.+") =
-        create(group = "org.testfx", name = name, version = version)
-    testCompile(testFx(name = "testfx-core"))
-    testCompile(testFx(name = "testfx-junit5"))
-    testRuntime(testFx(name = "openjfx-monocle", version = "8u76-b04"))
 }
 
 val theMainClassName = "edu.wpi.first.shuffleboard.app.Shuffleboard"
