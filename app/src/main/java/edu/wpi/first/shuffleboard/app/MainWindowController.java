@@ -116,7 +116,6 @@ public class MainWindowController {
         }
         sourcesAccordion.getPanes().sort(Comparator.comparing(TitledPane::getText));
       }
-      widgetGallery.setWidgets(Widgets.allWidgets());
     });
 
     root.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
@@ -195,6 +194,9 @@ public class MainWindowController {
       sourcesAccordion.getPanes().add(titledPane);
       sourcesAccordion.setExpandedPane(titledPane);
     });
+
+    // Add widgets to the gallery as well
+    widgetGallery.setWidgets(Widgets.allWidgets());
   }
 
   /**
@@ -220,6 +222,8 @@ public class MainWindowController {
               .collect(Collectors.toList()) // collect into temporary list to prevent comodification
               .forEach(tile -> pane.getChildren().remove(tile));
         });
+    // ... and from the gallery
+    widgetGallery.setWidgets(Widgets.allWidgets());
   }
 
   /**
