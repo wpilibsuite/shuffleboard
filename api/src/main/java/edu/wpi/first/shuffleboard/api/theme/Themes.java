@@ -55,7 +55,7 @@ public final class Themes {
    * @throws IllegalArgumentException if the theme is {@link #MODENA}
    */
   public static void unregister(Theme theme) {
-    if (theme == MODENA) {
+    if (theme == MODENA) { //NOPMD - this is _deliberately_ checking reference equality
       throw new IllegalArgumentException("The modena theme cannot be unregistered");
     }
     themes.remove(theme);

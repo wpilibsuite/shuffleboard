@@ -82,7 +82,7 @@ public class PluginPaneController {
     return "Plugin: " + plugin.getName()
         + "\nGroup ID: " + plugin.getGroupId()
         + "\nVersion: " + plugin.getVersion()
-        + "\n\n"+ plugin.getDescription();
+        + "\n\n" + plugin.getDescription();
   }
 
   @FXML

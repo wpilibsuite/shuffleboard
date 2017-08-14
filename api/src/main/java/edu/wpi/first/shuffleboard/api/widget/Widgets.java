@@ -117,7 +117,7 @@ public final class Widgets {
    * @param source the data source for the widget to use
    *
    * @return an optional containing the created view, or an empty optional if no widget could
-   * be created
+   *         be created
    */
   public static <T> Optional<Widget> createWidget(String name, DataSource<T> source) {
     Optional<Widget> widget = typeFor(name).map(WidgetType::get);
@@ -161,7 +161,7 @@ public final class Widgets {
    * @param type the type of data to get possible widgets for.
    *
    * @return an alphabetically sorted list containing the names of all known widgets that can display data of the
-   * given type
+   *         given type
    */
   public static List<String> widgetNamesForType(DataType type) {
     return getWidgetsForType(type)

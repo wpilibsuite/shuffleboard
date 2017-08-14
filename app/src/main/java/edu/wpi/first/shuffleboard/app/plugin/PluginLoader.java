@@ -111,7 +111,7 @@ public class PluginLoader {
     if (loadedPlugins.contains(plugin)) {
       throw new IllegalArgumentException("The plugin " + plugin + " is already loaded");
     }
-    log.info("Loading plugin " + plugin.getName());
+    log.info("Loading plugin " + plugin.getName()); //NOPMD log not in if statement
     plugin.getDataTypes().forEach(DataTypes::register);
     plugin.getSourceTypes().forEach(SourceTypes::register);
     plugin.getTypeAdapters().forEach(Serializers::add);
@@ -142,8 +142,8 @@ public class PluginLoader {
     try {
       widget.setSource(destroyedSource.restore());
     } catch (IncompatibleSourceException e) {
-      log.fine("Could not set the restored source of " + widget +
-          ". The plugin defining its data type was probably unloaded.");
+      log.fine("Could not set the restored source of " + widget // NOPMD log not in if statement
+          + ". The plugin defining its data type was probably unloaded.");
     }
   }
 
@@ -153,7 +153,7 @@ public class PluginLoader {
    * @param plugin the plugin to unload
    */
   public void unload(Plugin plugin) {
-    log.info("Unloading plugin " + plugin.getName());
+    log.info("Unloading plugin " + plugin.getName()); // NOPMD log not in if statement
     Widgets.getActiveWidgets().stream()
         .filter(w -> !(w.getSource() instanceof DestroyedSource))
         .filter(w -> {
