@@ -41,8 +41,8 @@ import java.util.Map;
 
 public class BasePlugin extends Plugin {
 
-  private final Theme lightTheme = new Theme("Light", "/edu/wpi/first/shuffleboard/plugin/base/light.css");
-  private final Theme darkTheme = new Theme("Dark", "/edu/wpi/first/shuffleboard/plugin/base/dark.css");
+  private final Theme lightTheme = new Theme("Material Light", "/edu/wpi/first/shuffleboard/plugin/base/light.css");
+  private final Theme darkTheme = new Theme("Material Dark", "/edu/wpi/first/shuffleboard/plugin/base/dark.css");
 
   public BasePlugin() {
     super("edu.wpi.first.shuffleboard", "Base", "1.0.0",
