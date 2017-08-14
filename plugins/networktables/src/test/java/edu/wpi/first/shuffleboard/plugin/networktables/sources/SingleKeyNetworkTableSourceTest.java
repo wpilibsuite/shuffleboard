@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj.tables.ITable;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.TimeoutException;
@@ -51,6 +52,7 @@ public class SingleKeyNetworkTableSourceTest {
   }
 
   @Test
+  @Disabled("Race conditions in dependencies")
   public void testValueUpdates() throws TimeoutException {
     String key = "key";
     DataType type = DataTypes.All;
