@@ -27,11 +27,11 @@ public class WidgetSaver implements ElementTypeAdapter<Widget> {
   public Widget deserialize(JsonElement json, JsonDeserializationContext context) throws JsonParseException {
     JsonObject obj = json.getAsJsonObject();
     String type = obj.get("_type").getAsString();
-    Widget widget = Widgets.typeFor(type)
+    Widget widget = Widgets.getDefault().typeFor(type)
             .orElseThrow(() -> new JsonParseException("No widget found for " + type)).get();
 
     String source = obj.get("_source").getAsString();
-    widget.setSource(Sources.forUri(source));
+    widget.setSource(Sources.getDefault().forUri(source));
 
     for (Property p : widget.getProperties()) {
       p.setValue(context.deserialize(obj.get(p.getName()), p.getValue().getClass()));

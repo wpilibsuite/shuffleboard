@@ -165,7 +165,7 @@ public class MainWindowController {
         }
 
         DataSource<?> source = selectedItem.getValue().get();
-        List<String> widgetNames = Widgets.widgetNamesForSource(source);
+        List<String> widgetNames = Widgets.getDefault().widgetNamesForSource(source);
         if (widgetNames.isEmpty()) {
           // No known widgets that can show this data
           return;
@@ -195,7 +195,7 @@ public class MainWindowController {
     });
 
     // Add widgets to the gallery as well
-    widgetGallery.setWidgets(Widgets.allWidgets());
+    widgetGallery.setWidgets(Widgets.getDefault().allWidgets());
   }
 
   /**
@@ -222,7 +222,7 @@ public class MainWindowController {
               .forEach(tile -> pane.getChildren().remove(tile));
         });
     // ... and from the gallery
-    widgetGallery.setWidgets(Widgets.allWidgets());
+    widgetGallery.setWidgets(Widgets.getDefault().allWidgets());
   }
 
   /**
@@ -254,7 +254,7 @@ public class MainWindowController {
   private MenuItem createShowAsMenuItem(String widgetName, DataSource<?> source) {
     MenuItem menuItem = new MenuItem("Show as: " + widgetName);
     menuItem.setOnAction(action -> {
-      Widgets.createWidget(widgetName, source)
+      Widgets.getDefault().createWidget(widgetName, source)
           .ifPresent(dashboard::addWidgetToActivePane);
     });
     return menuItem;

@@ -144,7 +144,7 @@ public final class Playback {
     }
     Recorder.getInstance().stop();
     unpause();
-    Sources.disconnectAll();
+    Sources.getDefault().disconnectAll();
     autoRunner = new Thread(() -> {
       TimestampedData previous;
       TimestampedData current = null;
@@ -186,7 +186,7 @@ public final class Playback {
           }
         }
       }
-      Sources.connectAll();
+      Sources.getDefault().connectAll();
     }, "PlaybackThread");
     autoRunner.setDaemon(true);
     autoRunner.start();
@@ -200,7 +200,7 @@ public final class Playback {
   private void set(TimestampedData data) {
     final String sourceId = data.getSourceId();
     // TODO move record/set logic to SourceType
-    SourceTypes.typeForUri(sourceId)
+    SourceTypes.getDefault().typeForUri(sourceId)
         .read(data);
   }
 
@@ -215,7 +215,7 @@ public final class Playback {
     autoRunner.interrupt();
     currentPlayback.setValue(null);
     NetworkTablesJNI.deleteAllEntries();
-    Sources.connectAll();
+    Sources.getDefault().connectAll();
     Recorder.getInstance().start();
   }
 

@@ -7,6 +7,7 @@ import edu.wpi.first.shuffleboard.api.data.types.AllType;
 import edu.wpi.first.shuffleboard.api.data.types.MapType;
 import edu.wpi.first.shuffleboard.api.data.types.NoneType;
 import edu.wpi.first.shuffleboard.api.data.types.UnknownType;
+import edu.wpi.first.shuffleboard.api.util.Registry;
 
 import java.util.Arrays;
 import java.util.Comparator;
@@ -19,7 +20,12 @@ import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public final class DataTypes {
+import static java.util.Objects.requireNonNull;
+
+public class DataTypes extends Registry<DataType> {
+
+  // TODO replace with DI eg Guice
+  private static DataTypes defaultInstance = null;
 
   // Catchall or wildcard types
   public static final DataType None = new NoneType();
@@ -27,18 +33,31 @@ public final class DataTypes {
   public static final DataType Unknown = new UnknownType();
   public static final ComplexDataType<MapData> Map = new MapType();
 
-  private static final Map<String, DataType> dataTypes = new TreeMap<>();
+  private final Map<String, DataType> dataTypes = new TreeMap<>();
 
-  private static final Map<Class, Optional<DataType>> typeCache = new HashMap<>();
+  private final Map<Class, Optional<DataType>> typeCache = new HashMap<>();
 
-  static {
-    register(All);
-    register(None);
-    register(Unknown);
-    register(Map);
+  /**
+   * Gets the default data type registry.
+   */
+  public static DataTypes getDefault() {
+    synchronized (DataTypes.class) {
+      if (defaultInstance == null) {
+        defaultInstance = new DataTypes();
+      }
+    }
+    return defaultInstance;
   }
 
-  private DataTypes() {
+  /**
+   * Creates a new data type registry. The registry will initially contain {@link #None}, {@link #All},
+   * {@link #Unknown}, and {@link #Map}, none of why may be unregistered.
+   */
+  public DataTypes() {
+    register(None);
+    register(All);
+    register(Unknown);
+    register(Map);
   }
 
   /**
@@ -46,20 +65,28 @@ public final class DataTypes {
    *
    * @param dataType the data type to register
    */
-  public static void register(DataType<?> dataType) {
+  @Override
+  public void register(DataType dataType) {
+    requireNonNull(dataType, "dataType");
+    if (isRegistered(dataType)) {
+      throw new IllegalArgumentException("Data type " + dataType + " has already been registered");
+    }
     dataTypes.put(dataType.getName(), dataType);
     typeCache.put(dataType.getJavaClass(), Optional.of(dataType));
+    addItem(dataType);
   }
 
-  public static void unregister(DataType dataType) {
+  @Override
+  public void unregister(DataType dataType) {
     dataTypes.remove(dataType.getName());
     typeCache.remove(dataType.getJavaClass());
+    removeItem(dataType);
   }
 
   /**
    * Gets the data type with the given name.
    */
-  public static Optional<DataType<?>> forName(String name) {
+  public Optional<DataType> forName(String name) {
     return Optional.ofNullable(dataTypes.get(name));
   }
 
@@ -67,7 +94,7 @@ public final class DataTypes {
    * Gets the data type most relevant to a Java class.
    */
   @SuppressWarnings("unchecked")
-  public static <T> Optional<DataType<T>> forJavaType(Class<T> type) {
+  public <T> Optional<DataType<T>> forJavaType(Class<T> type) {
     if (type.isPrimitive()) {
       return forJavaType((Class) Primitives.wrap(type));
     }
@@ -161,16 +188,16 @@ public final class DataTypes {
     }
   }
 
-  public static void clearCache() {
+  public void clearCache() {
     typeCache.clear();
   }
 
   /**
    * A.
    */
-  public static Set<DataType> forJavaTypes(Class<?>... types) {
+  public Set<DataType> forJavaTypes(Class<?>... types) {
     return Stream.of(types)
-        .map(DataTypes::forJavaType)
+        .map(this::forJavaType)
         .filter(Optional::isPresent)
         .map(Optional::get)
         .collect(Collectors.toSet());
@@ -180,7 +207,7 @@ public final class DataTypes {
    * Gets the registered data type of the given class.
    */
   @SuppressWarnings("unchecked")
-  public static <D extends DataType> Optional<D> forType(Class<D> clazz) {
+  public <D extends DataType> Optional<D> forType(Class<D> clazz) {
     return (Optional<D>) dataTypes.values()
         .stream()
         .filter(d -> d.getClass() == clazz)
@@ -190,9 +217,9 @@ public final class DataTypes {
   /**
    * Gets the registered data types of the given types.
    */
-  public static Set<DataType> forTypes(Class<? extends DataType>... types) {
+  public Set<DataType> forTypes(Class<? extends DataType>... types) {
     return Arrays.stream(types)
-        .map(DataTypes::forType)
+        .map(this::forType)
         .filter(Optional::isPresent)
         .map(Optional::get)
         .collect(Collectors.toSet());

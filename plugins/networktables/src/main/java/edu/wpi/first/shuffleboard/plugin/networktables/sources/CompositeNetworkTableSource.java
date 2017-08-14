@@ -62,7 +62,7 @@ public class CompositeNetworkTableSource<D extends ComplexData<D>> extends Netwo
       }
     });
 
-    Sources.register(this);
+    Sources.getDefault().register(this);
   }
 
   @Override

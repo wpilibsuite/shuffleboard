@@ -19,7 +19,7 @@ public abstract class AbstractWidgetType implements WidgetType {
   }
 
   public AbstractWidgetType(Description description) {
-    this(description.name(), DataTypes.forJavaTypes(description.dataTypes()));
+    this(description.name(), DataTypes.getDefault().forJavaTypes(description.dataTypes()));
   }
 
   @Override

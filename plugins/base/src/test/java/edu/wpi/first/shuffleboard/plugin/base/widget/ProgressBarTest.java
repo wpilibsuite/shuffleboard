@@ -21,7 +21,7 @@ public class ProgressBarTest extends ApplicationTest {
 
   @Override
   public void start(Stage stage) throws Exception {
-    widget = (ProgressBar) Widgets.createWidget(
+    widget = (ProgressBar) Widgets.getDefault().createWidget(
         "Progress Bar", DummySource.forTypes(new NumberType()).get()).get();
     source = widget.getSource();
     stage.setScene(new Scene(widget.getView()));

@@ -141,19 +141,19 @@ public final class NetworkTableUtils {
   public static DataType dataTypeForEntry(String key) {
     String normalKey = normalizeKey(key, false);
     if (normalKey.isEmpty() || "/".equals(normalKey)) {
-      return DataTypes.forJavaType(MapData.class).get();
+      return DataTypes.getDefault().forJavaType(MapData.class).get();
     }
     if (rootTable.containsKey(normalKey)) {
-      return DataTypes.forJavaType(rootTable.getValue(normalKey, null).getClass()).get();
+      return DataTypes.getDefault().forJavaType(rootTable.getValue(normalKey, null).getClass()).get();
     }
     if (rootTable.containsSubTable(normalKey)) {
       ITable table = rootTable.getSubTable(normalKey);
       String type = table.getString("~TYPE~", table.getString(".type", null));
       if (type == null) {
-        return DataTypes.forJavaType(MapData.class).get();
+        return DataTypes.getDefault().forJavaType(MapData.class).get();
       } else {
-        return DataTypes.forName(type)
-            .orElse(DataTypes.forJavaType(MapData.class)
+        return DataTypes.getDefault().forName(type)
+            .orElse(DataTypes.getDefault().forJavaType(MapData.class)
                 .orElse(DataTypes.None));
       }
     }

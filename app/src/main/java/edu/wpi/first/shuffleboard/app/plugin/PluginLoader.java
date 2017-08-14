@@ -117,12 +117,12 @@ public class PluginLoader {
       throw new IllegalArgumentException("The plugin " + plugin + " is already loaded");
     }
     log.info("Loading plugin " + plugin.fullIdString()); //NOPMD log not in if statement
-    plugin.getDataTypes().forEach(DataTypes::register);
-    plugin.getSourceTypes().forEach(SourceTypes::register);
+    plugin.getDataTypes().forEach(DataTypes.getDefault()::register);
+    plugin.getSourceTypes().forEach(SourceTypes.getDefault()::register);
     plugin.getTypeAdapters().forEach(Serializers::add);
-    plugin.getWidgets().forEach(Widgets::register);
-    plugin.getDefaultWidgets().forEach(Widgets::setDefaultWidget);
-    Widgets.getActiveWidgets().stream()
+    plugin.getWidgets().forEach(Widgets.getDefault()::register);
+    plugin.getDefaultWidgets().forEach(Widgets.getDefault()::setDefaultWidget);
+    Widgets.getDefault().getActiveWidgets().stream()
         .filter(w -> w.getSource() instanceof DestroyedSource)
         .filter(w -> {
           DataSource<?> source = w.getSource();
@@ -130,7 +130,7 @@ public class PluginLoader {
               || plugin.getDataTypes().contains(source.getDataType())
               || plugin.getSourceTypes().contains(source.getType());
         })
-        .filter(w -> SourceTypes.isRegistered(w.getSource().getType()))
+        .filter(w -> SourceTypes.getDefault().isRegistered(w.getSource().getType()))
         .forEach(w -> tryRestoreSource(w, (DestroyedSource) w.getSource()));
     plugin.getThemes().forEach(Themes::register);
 
@@ -159,7 +159,7 @@ public class PluginLoader {
    */
   public void unload(Plugin plugin) {
     log.info("Unloading plugin " + plugin.fullIdString()); // NOPMD log not in if statement
-    Widgets.getActiveWidgets().stream()
+    Widgets.getDefault().getActiveWidgets().stream()
         .filter(w -> !(w.getSource() instanceof DestroyedSource))
         .filter(w -> {
           DataSource<?> source = w.getSource();
@@ -167,10 +167,10 @@ public class PluginLoader {
               || plugin.getSourceTypes().contains(source.getType());
         })
         .forEach(w -> w.setSource(new DestroyedSource<>(w.getSource())));
-    plugin.getWidgets().forEach(Widgets::unregister);
-    plugin.getSourceTypes().forEach(SourceTypes::unregister);
+    plugin.getWidgets().forEach(Widgets.getDefault()::unregister);
+    plugin.getSourceTypes().forEach(SourceTypes.getDefault()::unregister);
     plugin.getTypeAdapters().forEach(Serializers::remove);
-    plugin.getDataTypes().forEach(DataTypes::unregister);
+    plugin.getDataTypes().forEach(DataTypes.getDefault()::unregister);
     // TODO figure out a good way to remember the theme & reapply it when reloading the plugin
     //plugin.getThemes().forEach(Themes::unregister);
 

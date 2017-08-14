@@ -90,7 +90,7 @@ public final class Serialization {
   }
 
   public static <T> byte[] encode(T value) {
-    return encode(value, (DataType<T>) DataTypes.forJavaType(value.getClass()).get());
+    return encode(value, (DataType<T>) DataTypes.getDefault().forJavaType(value.getClass()).get());
   }
 
   /**
@@ -151,7 +151,7 @@ public final class Serialization {
       cursor += SIZE_OF_INT + dataType.length();
 
       final Object value;
-      final Optional<DataType<?>> type = DataTypes.forName(dataType);
+      final Optional<DataType> type = DataTypes.getDefault().forName(dataType);
       if (type.isPresent() && Serializers.hasSerializer(type.get())) {
         TypeAdapter adapter = Serializers.get(type.get());
         value = adapter.deserialize(bytes, cursor);
@@ -162,7 +162,8 @@ public final class Serialization {
 
       // Since the data is guaranteed to be ordered in the file, we call recording.append()
       // instead of recording.add() because the latter sorts the data
-      TimestampedData data = new TimestampedData(sourceId, DataTypes.forName(dataType).get(), value, timeStamp);
+      TimestampedData data = new TimestampedData(
+          sourceId, DataTypes.getDefault().forName(dataType).get(), value, timeStamp);
       recording.append(data);
     }
     return recording;
@@ -408,7 +409,7 @@ public final class Serialization {
   }
 
   private static <T, U> U useSerializer(Class<T> type, Function<TypeAdapter<T>, U> function) {
-    return DataTypes.forJavaType(type)
+    return DataTypes.getDefault().forJavaType(type)
         .map(Serializers::get)
         .map(function)
         .orElseThrow(() -> new UnsupportedOperationException("No type adapter for " + type.getSimpleName()));

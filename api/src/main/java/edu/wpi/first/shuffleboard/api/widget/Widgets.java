@@ -3,6 +3,7 @@ package edu.wpi.first.shuffleboard.api.widget;
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
+import edu.wpi.first.shuffleboard.api.util.Registry;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -20,24 +21,34 @@ import java.util.stream.Collectors;
 
 import javafx.fxml.FXMLLoader;
 
+import static java.util.Objects.requireNonNull;
+
 /**
  * Utility class for keeping track of known widgets.
  */
-public final class Widgets {
+public class Widgets extends Registry<Class<? extends Widget>> {
 
-  private static Map<Class<? extends Widget>, WidgetType> registeredWidgets = new HashMap<>();
-  private static Map<String, WidgetType> widgets = new TreeMap<>();
-  private static Map<DataType, WidgetType> defaultWidgets = new HashMap<>();
-  private static WeakHashMap<Widget, Widget> activeWidgets = new WeakHashMap<>();
+  // TODO replace with DI eg Guice
+  private static final Widgets defaultInstance = new Widgets();
 
-  private Widgets() {
-    // Utility class, prevent instantiation
-  }
+  private final Map<Class<? extends Widget>, WidgetType> registeredWidgets = new HashMap<>();
+  private final Map<String, WidgetType> widgets = new TreeMap<>();
+  private final Map<DataType, WidgetType> defaultWidgets = new HashMap<>();
+  private final WeakHashMap<Widget, Widget> activeWidgets = new WeakHashMap<>();
 
   /**
-   * Registers a widget class.
+   * Gets the default widget registry.
    */
-  public static void register(Class<? extends Widget> widgetClass) {
+  public static Widgets getDefault() {
+    return defaultInstance;
+  }
+
+  @Override
+  public void register(Class<? extends Widget> widgetClass) {
+    requireNonNull(widgetClass, "widgetClass");
+    if (isRegistered(widgetClass)) {
+      throw new IllegalArgumentException("Widget class " + widgetClass.getName() + " is already registered");
+    }
     if (!widgetClass.isAnnotationPresent(Description.class)) {
       throw new InvalidWidgetException(
           "No description present on widget class " + widgetClass.getName());
@@ -68,12 +79,11 @@ public final class Widgets {
 
     registeredWidgets.put(widgetClass, widgetType);
     widgets.put(widgetType.getName(), widgetType);
+    addItem(widgetClass);
   }
 
-  /**
-   * Unregisters a widget class.
-   */
-  public static void unregister(Class<? extends Widget> widgetClass) {
+  @Override
+  public void unregister(Class<? extends Widget> widgetClass) {
     WidgetType widgetType = registeredWidgets.get(widgetClass);
     widgets.entrySet().stream()
         .filter(e -> e.getValue() == widgetType)
@@ -86,6 +96,7 @@ public final class Widgets {
         .findFirst()
         .ifPresent(defaultWidgets::remove);
     registeredWidgets.remove(widgetClass);
+    removeItem(widgetClass);
   }
 
   /**
@@ -95,7 +106,7 @@ public final class Widgets {
    *
    * @throws InvalidWidgetException if the widget is invalid
    */
-  private static void validate(Description description) throws InvalidWidgetException {
+  private void validate(Description description) throws InvalidWidgetException {
     if (description.name().isEmpty()) {
       throw new InvalidWidgetException("No name specified for the widget");
     }
@@ -105,7 +116,7 @@ public final class Widgets {
     }
   }
 
-  public static Collection<WidgetType> allWidgets() {
+  public Collection<WidgetType> allWidgets() {
     return widgets.values();
   }
 
@@ -119,7 +130,7 @@ public final class Widgets {
    * @return an optional containing the created view, or an empty optional if no widget could
    *         be created
    */
-  public static <T> Optional<Widget> createWidget(String name, DataSource<T> source) {
+  public <T> Optional<Widget> createWidget(String name, DataSource<T> source) {
     Optional<Widget> widget = typeFor(name).map(WidgetType::get);
     widget.ifPresent(w -> activeWidgets.put(w, w));
     widget.ifPresent(w -> w.setSource(source));
@@ -131,7 +142,7 @@ public final class Widgets {
    *
    * <p><strong>Do not keep a reference to this list.</strong> It prevents garbage collection of widget instances.</p>
    */
-  public static List<Widget> getActiveWidgets() {
+  public List<Widget> getActiveWidgets() {
     // Use a copy; don't want elements in the list to be removed by GC while someone's using it
     return new ArrayList<>(activeWidgets.keySet());
   }
@@ -143,11 +154,11 @@ public final class Widgets {
    *
    * @return a WidgetType to create widgets of the same class
    */
-  public static Optional<WidgetType> typeFor(String name) {
+  public Optional<WidgetType> typeFor(String name) {
     return Optional.ofNullable(widgets.get(name));
   }
 
-  private static Set<WidgetType> getWidgetsForType(DataType type) {
+  private Set<WidgetType> getWidgetsForType(DataType type) {
     return widgets.values().stream()
         .filter(d -> d.getDataTypes().contains(DataTypes.All)
             || d.getDataTypes().contains(type))
@@ -163,7 +174,7 @@ public final class Widgets {
    * @return an alphabetically sorted list containing the names of all known widgets that can display data of the
    *         given type
    */
-  public static List<String> widgetNamesForType(DataType type) {
+  public List<String> widgetNamesForType(DataType type) {
     return getWidgetsForType(type)
         .stream()
         .map(WidgetType::getName)
@@ -177,7 +188,7 @@ public final class Widgets {
    * @param dataType   the type to set the default widget for
    * @param widgetType the type of widget to set as the default
    */
-  public static void setDefaultWidget(DataType dataType, WidgetType widgetType) {
+  public void setDefaultWidget(DataType dataType, WidgetType widgetType) {
     defaultWidgets.put(dataType, widgetType);
   }
 
@@ -189,7 +200,7 @@ public final class Widgets {
    *
    * @throws IllegalArgumentException if the widget has not been registered
    */
-  public static void setDefaultWidget(DataType<?> dataType, Class<? extends Widget> widgetClass) {
+  public void setDefaultWidget(DataType<?> dataType, Class<? extends Widget> widgetClass) {
     if (!registeredWidgets.containsKey(widgetClass)) {
       throw new IllegalArgumentException("Widget class " + widgetClass.getName() + " has not been registered");
     }
@@ -203,7 +214,7 @@ public final class Widgets {
    * @param dataType   the type to set the default widget for
    * @param widgetName the name of the widget to use as the default
    */
-  public static void setDefaultWidget(DataType dataType, String widgetName) {
+  public void setDefaultWidget(DataType dataType, String widgetName) {
     WidgetType widgetType = widgets.get(widgetName);
     if (widgetName != null) {
       setDefaultWidget(dataType, widgetType);
@@ -214,7 +225,7 @@ public final class Widgets {
    * Gets the name of the default widget for the given data type, or {@link Optional#empty()} if there is no default
    * widget for that type.
    */
-  public static Optional<String> defaultWidgetNameFor(DataType type) {
+  public Optional<String> defaultWidgetNameFor(DataType type) {
     return Optional.ofNullable(defaultWidgets.get(type)).map(WidgetType::getName);
   }
 
@@ -223,7 +234,7 @@ public final class Widgets {
    * the name of the default widget is returned; otherwise, the name of the first widget returned by
    * {@link #widgetNamesForType(DataType)} is used.
    */
-  public static Optional<String> pickWidgetNameFor(DataType type) {
+  public Optional<String> pickWidgetNameFor(DataType type) {
     Optional<String> defaultName = defaultWidgetNameFor(type);
     if (defaultName.isPresent()) {
       return defaultName;
@@ -240,7 +251,7 @@ public final class Widgets {
   /**
    * Gets the names of all the possible widgets than can display the data in a given source.
    */
-  public static List<String> widgetNamesForSource(DataSource<?> source) {
+  public List<String> widgetNamesForSource(DataSource<?> source) {
     return widgetNamesForType(source.getDataType());
   }
 }

@@ -120,7 +120,7 @@ public class DashboardTabPane extends TabPane {
     private final StringProperty title = new SimpleStringProperty(this, "title", "");
     private final BooleanProperty autoPopulate = new SimpleBooleanProperty(this, "autoPopulate", false);
     private final StringProperty sourcePrefix = new SimpleStringProperty(this, "sourcePrefix", "");
-    private static final ObservableList<String> availableSourceIds = SourceTypes.allAvailableSourceUris();
+    private static final ObservableList<String> availableSourceIds = SourceTypes.getDefault().allAvailableSourceUris();
 
     private boolean deferPopulation = true;
 
@@ -186,13 +186,13 @@ public class DashboardTabPane extends TabPane {
       for (String id : availableSourceIds) {
         if (shouldAutopopulate(id)
             && noExistingWidgetsForSource(id)) {
-          DataSource<?> source = SourceTypes.forUri(id);
+          DataSource<?> source = SourceTypes.getDefault().forUri(id);
 
           // Don't create widgets for the catchall types
           if (source.getDataType() != DataTypes.Unknown
-              && source.getDataType() != DataTypes.forJavaType(MapData.class).orElse(DataTypes.None)
-              && !Widgets.widgetNamesForSource(source).isEmpty()) {
-            Widgets.createWidget(Widgets.widgetNamesForSource(source).get(0), source)
+              && source.getDataType() != DataTypes.getDefault().forJavaType(MapData.class).orElse(DataTypes.None)
+              && !Widgets.getDefault().widgetNamesForSource(source).isEmpty()) {
+            Widgets.getDefault().createWidget(Widgets.getDefault().widgetNamesForSource(source).get(0), source)
                 .ifPresent(w -> getWidgetPane().addWidget(w));
           }
         }
@@ -201,7 +201,7 @@ public class DashboardTabPane extends TabPane {
 
     private boolean shouldAutopopulate(String sourceId) {
       return sourceId.startsWith(getSourcePrefix())
-          || SourceTypes.stripProtocol(sourceId).startsWith(getSourcePrefix());
+          || SourceTypes.getDefault().stripProtocol(sourceId).startsWith(getSourcePrefix());
     }
 
     /**

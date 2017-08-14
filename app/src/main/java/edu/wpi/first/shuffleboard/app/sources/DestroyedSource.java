@@ -47,7 +47,7 @@ public class DestroyedSource<T> implements DataSource<T> {
    */
   @SuppressWarnings("unchecked")
   public DataSource<T> restore() throws DataTypeChangedException, IllegalStateException {
-    if (SourceTypes.isRegistered(sourceType)) {
+    if (SourceTypes.getDefault().isRegistered(sourceType)) {
       DataSource<T> restored = (DataSource<T>) sourceType.forUri(oldId);
       if (!restored.getDataType().equals(dataType)) {
         throw new DataTypeChangedException(

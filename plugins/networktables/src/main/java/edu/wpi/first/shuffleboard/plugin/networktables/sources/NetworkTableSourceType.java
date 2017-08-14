@@ -52,7 +52,7 @@ public final class NetworkTableSourceType extends SourceType {
     List<String> hierarchy = NetworkTableUtils.getHierarchy(fullKey);
     hierarchy.stream()
         .map(NetworkTableSourceType.INSTANCE::toUri)
-        .map(Sources::get)
+        .map(Sources.getDefault()::get)
         .filter(Optional::isPresent)
         .map(Optional::get)
         .forEach(source -> {

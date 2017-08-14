@@ -22,7 +22,7 @@ public class BooleanBoxTest extends ApplicationTest {
 
   @Override
   public void start(Stage stage) throws Exception {
-    widget = (BooleanBox) Widgets.createWidget("Boolean Box",
+    widget = (BooleanBox) Widgets.getDefault().createWidget("Boolean Box",
         DummySource.forTypes(new BooleanType()).get()).get();
     stage.setScene(new Scene(widget.getView()));
     stage.show();

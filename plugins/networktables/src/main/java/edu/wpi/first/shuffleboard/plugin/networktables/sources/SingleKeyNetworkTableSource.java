@@ -30,7 +30,7 @@ public class SingleKeyNetworkTableSource<T> extends NetworkTableSource<T> {
         return;
       }
       boolean deleted = NetworkTableUtils.isDelete(flags);
-      setActive(!deleted && DataTypes.forJavaType(value.getClass()).map(dataType::equals).orElse(false));
+      setActive(!deleted && DataTypes.getDefault().forJavaType(value.getClass()).map(dataType::equals).orElse(false));
 
       if (isActive()) {
         setData((T) value);
@@ -55,7 +55,7 @@ public class SingleKeyNetworkTableSource<T> extends NetworkTableSource<T> {
       }
     });
 
-    Sources.register(this);
+    Sources.getDefault().register(this);
   }
 
 }

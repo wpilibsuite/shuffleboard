@@ -26,7 +26,7 @@ public class ComboBoxChooserTest extends ApplicationTest {
   @Override
   public void start(Stage stage) throws Exception {
     widget = (ComboBoxChooser)
-        Widgets.createWidget("ComboBox Chooser",
+        Widgets.getDefault().createWidget("ComboBox Chooser",
             DummySource.forTypes(new SendableChooserType()).get()).get();
     source = widget.getSource();
 
