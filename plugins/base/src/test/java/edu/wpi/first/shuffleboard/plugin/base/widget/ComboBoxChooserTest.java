@@ -7,8 +7,8 @@ import edu.wpi.first.shuffleboard.api.widget.Widgets;
 import edu.wpi.first.shuffleboard.plugin.base.data.SendableChooserData;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.SendableChooserType;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.testfx.framework.junit5.ApplicationTest;
 import org.testfx.util.WaitForAsyncUtils;
 
 import javafx.application.Platform;
@@ -18,17 +18,21 @@ import javafx.stage.Stage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class ComboBoxChooserTest extends ApplicationTest {
+public class ComboBoxChooserTest extends AbstractWidgetTest {
 
   private ComboBoxChooser widget;
   private DataSource<SendableChooserData> source;
 
+  @BeforeAll
+  public static void register() {
+    setRequirements(ComboBoxChooser.class, new SendableChooserType());
+  }
+
   @Override
   public void start(Stage stage) throws Exception {
+    source = DummySource.forTypes(new SendableChooserType()).get();
     widget = (ComboBoxChooser)
-        Widgets.getDefault().createWidget("ComboBox Chooser",
-            DummySource.forTypes(new SendableChooserType()).get()).get();
-    source = widget.getSource();
+        Widgets.getDefault().createWidget("ComboBox Chooser", source).get();
 
     stage.setScene(new Scene(widget.getView()));
     stage.show();

@@ -6,9 +6,11 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
-public class BooleanArrayAdapterTest {
+public class BooleanArrayAdapterTest extends AbstractAdapterTest<boolean[]> {
 
-  private final BooleanArrayAdapter adapter = new BooleanArrayAdapter();
+  public BooleanArrayAdapterTest() {
+    super(new BooleanArrayAdapter(), new ByteArrayAdapter());
+  }
 
   @Test
   public void testEncodeEmptyArray() {

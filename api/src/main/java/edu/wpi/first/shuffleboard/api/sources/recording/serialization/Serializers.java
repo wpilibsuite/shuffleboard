@@ -4,6 +4,7 @@ import edu.wpi.first.shuffleboard.api.data.DataType;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -22,6 +23,7 @@ public final class Serializers {
    * @param typeAdapter the type adapter to add
    */
   public static void add(TypeAdapter<?> typeAdapter) {
+    Objects.requireNonNull(typeAdapter, "typeAdapter");
     serializers.put(typeAdapter.getDataType(), typeAdapter);
   }
 

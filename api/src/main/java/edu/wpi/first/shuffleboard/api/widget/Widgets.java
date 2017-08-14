@@ -1,9 +1,12 @@
 package edu.wpi.first.shuffleboard.api.widget;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.util.Registry;
+import edu.wpi.first.shuffleboard.api.util.TestUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -29,7 +32,7 @@ import static java.util.Objects.requireNonNull;
 public class Widgets extends Registry<Class<? extends Widget>> {
 
   // TODO replace with DI eg Guice
-  private static final Widgets defaultInstance = new Widgets();
+  private static Widgets defaultInstance = new Widgets();
 
   private final Map<Class<? extends Widget>, WidgetType> registeredWidgets = new HashMap<>();
   private final Map<String, WidgetType> widgets = new TreeMap<>();
@@ -41,6 +44,17 @@ public class Widgets extends Registry<Class<? extends Widget>> {
    */
   public static Widgets getDefault() {
     return defaultInstance;
+  }
+
+  /**
+   * Sets the default instance to use. <strong>This may only be called from tests</strong>.
+   *
+   * @throws IllegalStateException if not called from a test
+   */
+  @VisibleForTesting
+  public static void setDefault(Widgets instance) {
+    TestUtils.assertRunningFromTest();
+    defaultInstance = instance;
   }
 
   @Override

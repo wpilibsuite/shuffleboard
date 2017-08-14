@@ -8,9 +8,11 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
-public class SendableChooserAdapterTest {
+public class SendableChooserAdapterTest extends AbstractAdapterTest<SendableChooserData> {
 
-  private final SendableChooserAdapter adapter = new SendableChooserAdapter();
+  public SendableChooserAdapterTest() {
+    super(new SendableChooserAdapter(), new StringArrayAdapter(), new StringAdapter());
+  }
 
   @Test
   public void testEmpty() {

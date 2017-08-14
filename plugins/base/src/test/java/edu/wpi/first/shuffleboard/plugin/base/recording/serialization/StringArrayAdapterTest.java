@@ -4,9 +4,11 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
-public class StringArrayAdapterTest {
+public class StringArrayAdapterTest extends AbstractAdapterTest<String[]> {
 
-  private final StringArrayAdapter adapter = new StringArrayAdapter();
+  public StringArrayAdapterTest() {
+    super(new StringArrayAdapter(), new StringAdapter());
+  }
 
   @Test
   public void testEncodeEmpty() {

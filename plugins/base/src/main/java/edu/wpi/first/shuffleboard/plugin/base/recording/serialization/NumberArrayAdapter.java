@@ -21,7 +21,7 @@ public class NumberArrayAdapter extends TypeAdapter<double[]> {
     pos += Serialization.SIZE_OF_INT;
 
     for (double val : array) {
-      byte[] arr = Serialization.encode(val);
+      byte[] arr = Serialization.toByteArray(val);
       Serialization.put(buf, arr, pos);
       pos += Serialization.SIZE_OF_DOUBLE;
     }

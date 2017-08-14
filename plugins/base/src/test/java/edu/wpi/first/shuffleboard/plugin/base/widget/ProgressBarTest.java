@@ -5,8 +5,8 @@ import edu.wpi.first.shuffleboard.api.sources.DummySource;
 import edu.wpi.first.shuffleboard.api.widget.Widgets;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.NumberType;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.testfx.framework.junit5.ApplicationTest;
 import org.testfx.util.WaitForAsyncUtils;
 
 import javafx.scene.Scene;
@@ -14,10 +14,15 @@ import javafx.stage.Stage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class ProgressBarTest extends ApplicationTest {
+public class ProgressBarTest extends AbstractWidgetTest {
 
   private ProgressBar widget;
   private DataSource<Number> source;
+
+  @BeforeAll
+  public static void register() {
+    setRequirements(ProgressBar.class, new NumberType());
+  }
 
   @Override
   public void start(Stage stage) throws Exception {

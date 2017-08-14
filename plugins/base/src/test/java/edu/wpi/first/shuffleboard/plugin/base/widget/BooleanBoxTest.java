@@ -5,8 +5,8 @@ import edu.wpi.first.shuffleboard.api.sources.DummySource;
 import edu.wpi.first.shuffleboard.api.widget.Widgets;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.BooleanType;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.testfx.framework.junit5.ApplicationTest;
 import org.testfx.util.WaitForAsyncUtils;
 
 import javafx.scene.Scene;
@@ -16,9 +16,14 @@ import javafx.stage.Stage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class BooleanBoxTest extends ApplicationTest {
+public class BooleanBoxTest extends AbstractWidgetTest {
 
   private BooleanBox widget;
+
+  @BeforeAll
+  public static void register() {
+    setRequirements(BooleanBox.class, new BooleanType());
+  }
 
   @Override
   public void start(Stage stage) throws Exception {

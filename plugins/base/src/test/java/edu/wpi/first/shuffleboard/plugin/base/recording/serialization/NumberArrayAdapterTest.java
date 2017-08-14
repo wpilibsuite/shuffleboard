@@ -4,9 +4,11 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
-public class NumberArrayAdapterTest {
+public class NumberArrayAdapterTest extends AbstractAdapterTest<double[]> {
 
-  private final NumberArrayAdapter adapter = new NumberArrayAdapter();
+  public NumberArrayAdapterTest() {
+    super(new NumberArrayAdapter(), new ByteArrayAdapter());
+  }
 
   @Test
   public void testEncodeEmpty() {

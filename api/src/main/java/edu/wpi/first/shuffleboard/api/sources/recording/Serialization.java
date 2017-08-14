@@ -15,6 +15,8 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.logging.Logger;
@@ -97,7 +99,9 @@ public final class Serialization {
    * Encodes a value as a byte array.
    */
   public static <T> byte[] encode(T value, DataType<T> type) {
-    return Serializers.getOptional(type).map(s -> s.serialize(value)).orElse(null);
+    return Serializers.getOptional(type)
+        .map(s -> s.serialize(value))
+        .orElseThrow(() -> new NoSuchElementException("No serializer for " + type));
   }
 
   /**
@@ -298,6 +302,8 @@ public final class Serialization {
    * @param pos the position in {@code dst} to copy {@code src}
    */
   public static void put(byte[] dst, byte[] src, int pos) {
+    Objects.requireNonNull(dst, "dst array");
+    Objects.requireNonNull(src, "src array");
     System.arraycopy(src, 0, dst, pos, src.length);
   }
 

@@ -8,6 +8,7 @@ import edu.wpi.first.shuffleboard.api.data.types.MapType;
 import edu.wpi.first.shuffleboard.api.data.types.NoneType;
 import edu.wpi.first.shuffleboard.api.data.types.UnknownType;
 import edu.wpi.first.shuffleboard.api.util.Registry;
+import edu.wpi.first.shuffleboard.api.util.TestUtils;
 
 import java.util.Arrays;
 import java.util.Comparator;
@@ -58,6 +59,17 @@ public class DataTypes extends Registry<DataType> {
     register(All);
     register(Unknown);
     register(Map);
+  }
+
+  /**
+   * Sets the default instance to use. <strong>This may only be called from tests</strong>.
+   *
+   * @throws IllegalStateException if not called from a test
+   */
+  @VisibleForTesting
+  public static void setDefault(DataTypes instance) {
+    TestUtils.assertRunningFromTest();
+    defaultInstance = instance;
   }
 
   /**
