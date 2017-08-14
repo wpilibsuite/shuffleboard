@@ -1,7 +1,6 @@
 package edu.wpi.first.shuffleboard.app.components;
 
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
-import edu.wpi.first.shuffleboard.api.data.MapData;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
 import edu.wpi.first.shuffleboard.api.util.Debouncer;
@@ -170,10 +169,19 @@ public class DashboardTabPane extends TabPane {
       })));
     }
 
+    /**
+     * Debounce populate() calls so we don't freeze the app while a source type is doing its initial discovery of
+     * available source URIs. Not debouncing makes typical application startup take at least 5 seconds on an i7-6700HQ
+     * where the user sees nothing but a blank screen - no UI elements or anything!
+     */
     private void debouncePopulate() {
       populateDebouncer.debounce(() -> FxUtils.runOnFxThread(this::populate));
     }
 
+    /**
+     * Populates this tab with all available sources that begin with the set source prefix and don't already have a
+     * widget to display it or any higher-level source.
+     */
     private void populate() {
       if (getWidgetPane().getScene() == null || getWidgetPane().getParent() == null) {
         // Defer until the pane is visible and is laid out in the scene
@@ -197,7 +205,7 @@ public class DashboardTabPane extends TabPane {
 
           // Don't create widgets for the catchall types
           if (source.getDataType() != DataTypes.Unknown
-              && source.getDataType() != DataTypes.getDefault().forJavaType(MapData.class).orElse(DataTypes.None)
+              && source.getDataType() != DataTypes.Map
               && !Widgets.getDefault().widgetNamesForSource(source).isEmpty()) {
             Widgets.getDefault().createWidget(Widgets.getDefault().widgetNamesForSource(source).get(0), source)
                 .ifPresent(w -> getWidgetPane().addWidget(w));
