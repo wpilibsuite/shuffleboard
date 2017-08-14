@@ -125,15 +125,22 @@ public class Plugin {
     return ImmutableList.of();
   }
 
-  public boolean isLoaded() {
+  /**
+   * Checks if this plugin has been loaded.
+   */
+  public final boolean isLoaded() {
     return loaded.get();
   }
 
-  public BooleanProperty loadedProperty() {
+  public final BooleanProperty loadedProperty() {
     return loaded;
   }
 
-  public void setLoaded(boolean loaded) {
+  /**
+   * Flags this plugin as loaded or unloaded. <i>This does not perform any loading or unloading</i>, it merely sets the
+   * flag. This is used by the plugin loader to set the flag after executing the load/unload logic.
+   */
+  public final void setLoaded(boolean loaded) {
     this.loaded.set(loaded);
   }
 

@@ -36,13 +36,24 @@ public final class Themes {
         .orElse(MODENA);
   }
 
+  /**
+   * Registers a theme.
+   *
+   * @param theme the theme to register
+   */
   public static void register(Theme theme) {
-    if (themes.contains(theme)) {
-      throw new IllegalArgumentException("Theme " + theme.getName() + " has already been registered");
+    if (!themes.contains(theme)) {
+      themes.add(theme);
     }
-    themes.add(theme);
   }
 
+  /**
+   * Unregisters a theme.
+   *
+   * @param theme the theme to unregister
+   *
+   * @throws IllegalArgumentException if the theme is {@link #MODENA}
+   */
   public static void unregister(Theme theme) {
     if (theme == MODENA) {
       throw new IllegalArgumentException("The modena theme cannot be unregistered");
@@ -50,6 +61,9 @@ public final class Themes {
     themes.remove(theme);
   }
 
+  /**
+   * Gets an observable list of the registered themes.
+   */
   public static ObservableList<Theme> getThemes() {
     return themes;
   }
