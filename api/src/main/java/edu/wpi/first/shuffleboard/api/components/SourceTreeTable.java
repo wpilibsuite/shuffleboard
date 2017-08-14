@@ -101,7 +101,10 @@ public class SourceTreeTable<S extends SourceEntry, V> extends TreeTableView<S> 
         }
       }
       current = found;
-      if (!deleted && i < hierarchy.size() - 1 && current == null) {
+      if (current == null && deleted) {
+        // Done
+        break;
+      } else if (!deleted && i < hierarchy.size() - 1 && current == null) {
         // It's a branch (subtable); expand it
         S newEntry = (S) sourceType.createSourceEntryForUri(sourceType.toUri(path));
         current = new TreeItem<>(newEntry);
