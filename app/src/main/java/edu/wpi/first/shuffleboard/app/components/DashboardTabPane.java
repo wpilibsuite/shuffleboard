@@ -224,8 +224,8 @@ public class DashboardTabPane extends TabPane {
      */
     private boolean noExistingWidgetsForSource(String id) {
       return getWidgetPane().getTiles().stream()
-          .filter(t -> t instanceof WidgetTile)
-          .map(t -> ((WidgetTile) t).getContent().getSource())
+          .flatMap(t -> t.getContent().allWidgets())
+          .map(Widget::getSource)
           .noneMatch(s -> id.startsWith(s.getId()));
     }
 

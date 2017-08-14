@@ -41,7 +41,6 @@ public class WidgetTile extends Tile<Widget> {
 
   private WidgetTile() {
     super();
-    addEventHandler(MouseEvent.MOUSE_CLICKED, this::changeView);
 
     retainedSource = EasyBind.monadic(contentProperty()).selectProperty(Widget::sourceProperty);
     retainedSource.addListener((__, oldSource, newSource) -> {
@@ -54,19 +53,19 @@ public class WidgetTile extends Tile<Widget> {
       }
     });
 
-    titleProperty().bind(
-            EasyBind.monadic(contentProperty())
-                    .selectProperty(Widget::sourceProperty)
-                    .selectProperty(DataSource::nameProperty));
-
     centerProperty().unbind();
+    centerProperty().addListener((obv, oldV, newV) -> setupCenter(newV));
     centerProperty().bind(Bindings.createObjectBinding(
             this::createCenter, contentProperty(), showWidgetProperty()));
   }
 
-  private void changeView(MouseEvent event) {
-    if (event.getClickCount() == 2) {
-      toggleShowWidget();
+  private void setupCenter(Node newV) {
+    if (newV != null) {
+      newV.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
+        if (event.getClickCount() == 2) {
+          toggleShowWidget();
+        }
+      });
     }
   }
 
@@ -83,7 +82,6 @@ public class WidgetTile extends Tile<Widget> {
   private Node createPrefsController(Widget widget) {
     WidgetPropertySheet propertySheet = new WidgetPropertySheet(widget.getProperties());
     propertySheet.setOnDragDetected(getOnDragDetected());
-    propertySheet.addEventHandler(MouseEvent.MOUSE_CLICKED, this::changeView);
     return propertySheet;
   }
 

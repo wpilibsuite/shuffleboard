@@ -2,6 +2,8 @@ package edu.wpi.first.shuffleboard.api.components;
 
 import edu.wpi.first.shuffleboard.api.util.PseudoClassProperty;
 
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.Property;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.scene.control.Label;
@@ -12,12 +14,17 @@ public class EditableLabel extends StackPane {
   private final PseudoClassProperty editing = new PseudoClassProperty(this, "editing");
   private final StringProperty text = new SimpleStringProperty(this, "text");
 
+
+
   /**
    * A text label that you can double click to edit.
    */
   public EditableLabel() {
+    setMaxWidth(USE_PREF_SIZE);
+
     Label label = new Label();
     label.textProperty().bind(text);
+    label.visibleProperty().bind(Bindings.not(editing));
     getChildren().add(label);
 
     TextField editField = new AutoSizedTextField();
@@ -44,6 +51,11 @@ public class EditableLabel extends StackPane {
         editField.requestFocus();
       }
     });
+  }
+
+  public EditableLabel(Property<String> text) {
+    this();
+    textProperty().bindBidirectional(text);
   }
 
   public String getText() {

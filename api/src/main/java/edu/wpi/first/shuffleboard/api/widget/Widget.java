@@ -4,12 +4,14 @@ import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
 
+import org.fxmisc.easybind.EasyBind;
+
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import javafx.beans.property.Property;
 import javafx.collections.ObservableMap;
-import javafx.scene.layout.Pane;
 
 /**
  * A widget is a UI element that displays data from a {@link DataSource} and has the ability to
@@ -82,4 +84,14 @@ public interface Widget extends Viewable {
    * Gets the user-configurable properties for this widget.
    */
   List<Property<?>> getProperties();
+
+  @Override
+  default Property<String> nameProperty() {
+    return EasyBind.monadic(sourceProperty()).selectProperty(DataSource::nameProperty);
+  }
+
+  @Override
+  default Stream<Widget> allWidgets() {
+    return Stream.of(this);
+  }
 }

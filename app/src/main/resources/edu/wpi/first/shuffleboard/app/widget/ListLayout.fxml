@@ -7,9 +7,11 @@
            xmlns:fx="http://javafx.com/fxml"
            fx:controller="edu.wpi.first.shuffleboard.app.widget.ListLayout"
            fx:id="root"
-           styleClass="layout"
+           styleClass="layout--root"
            prefHeight="128" prefWidth="128">
-    <VBox fx:id="container" styleClass="layout--container">
+    <ScrollPane fitToWidth="true" fitToHeight="true" styleClass="layout--scroll">
+        <VBox fx:id="container" styleClass="layout--container">
 
-    </VBox>
+        </VBox>
+    </ScrollPane>
 </StackPane>

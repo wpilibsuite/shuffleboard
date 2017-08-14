@@ -1,9 +1,10 @@
 package edu.wpi.first.shuffleboard.app.components;
 
+import edu.wpi.first.shuffleboard.api.components.EditableLabel;
 import edu.wpi.first.shuffleboard.api.util.PropertyUtils;
-import edu.wpi.first.shuffleboard.api.widget.Viewable;
 import edu.wpi.first.shuffleboard.api.util.PseudoClassProperty;
 import edu.wpi.first.shuffleboard.api.widget.TileSize;
+import edu.wpi.first.shuffleboard.api.widget.Viewable;
 
 import org.fxmisc.easybind.EasyBind;
 
@@ -12,16 +13,12 @@ import java.io.IOException;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 
 public abstract class Tile<T extends Viewable> extends BorderPane {
 
   private final Property<T> content = new SimpleObjectProperty<>(this, "content", null);
-  private final StringProperty title = new SimpleStringProperty(this, "title");
 
   private final Property<TileSize> size = new SimpleObjectProperty<>(this, "size", null);
   private final BooleanProperty selected = new PseudoClassProperty(this, "selected");
@@ -41,7 +38,9 @@ public abstract class Tile<T extends Viewable> extends BorderPane {
 
     getStyleClass().addAll("tile", "card");
     PropertyUtils.bindWithConverter(idProperty(), contentProperty(), w -> "tile[" + w + "]");
-    ((Label) lookup("#titleLabel")).textProperty().bind(title);
+    ((EditableLabel) lookup("#titleLabel")).textProperty().bindBidirectional(
+        EasyBind.monadic(contentProperty()).selectProperty(Viewable::nameProperty)
+    );
     centerProperty().bind(EasyBind.monadic(contentProperty()).map(Viewable::getView));
   }
 
@@ -88,17 +87,5 @@ public abstract class Tile<T extends Viewable> extends BorderPane {
 
   public BooleanProperty selectedProperty() {
     return selected;
-  }
-
-  public String getTitle() {
-    return title.get();
-  }
-
-  public StringProperty titleProperty() {
-    return title;
-  }
-
-  public void setTitle(String title) {
-    this.title.set(title);
   }
 }

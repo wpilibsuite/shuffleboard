@@ -1,5 +1,8 @@
 package edu.wpi.first.shuffleboard.api.widget;
 
+import java.util.stream.Stream;
+
+import javafx.beans.property.Property;
 import javafx.scene.layout.Pane;
 
 public interface Viewable {
@@ -8,7 +11,10 @@ public interface Viewable {
   /**
    * Gets the name to label this item with
    */
-  default String getName() {
-    return "";
-  }
+  Property<String> nameProperty();
+
+  /**
+   * All of the widgets contained by or represented by this one, if any.
+   */
+  Stream<Widget> allWidgets();
 }

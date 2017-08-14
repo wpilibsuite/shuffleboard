@@ -83,16 +83,30 @@
 }
 
 .tile-title-bar {
+    -fx-padding: 4px;
     -fx-background-color: linear-gradient(to bottom, -swatch-100, -swatch-200);
-}
-
-.tile-title-label {
     -fx-font-weight: bold;
-    -fx-font-size: 12pt;
+    -fx-font-size: 11pt;
 }
 
 .tile .property-sheet * {
     /* TODO figure out exactly what needs to be set */
+    -fx-background-color: transparent;
+}
+
+/********/
+
+.layout--label {
+    -fx-padding: 0 12px 5px 12px;
+    -fx-font-size: 12px;
+}
+
+
+.layout--label * {
+    -fx-text-fill: #aaa;
+}
+
+.tile .scroll-pane, .tile .viewport {
     -fx-background-color: transparent;
 }
 
