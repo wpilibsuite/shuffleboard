@@ -52,6 +52,7 @@ public class Shuffleboard extends Application {
   public void start(Stage primaryStage) {
     onOtherAppStart = () -> Platform.runLater(primaryStage::toFront);
     primaryStage.setScene(new Scene(mainPane));
+    primaryStage.setTitle("Shuffleboard");
     primaryStage.setMinWidth(640);
     primaryStage.setMinHeight(480);
     primaryStage.setWidth(Screen.getPrimary().getVisualBounds().getWidth());
