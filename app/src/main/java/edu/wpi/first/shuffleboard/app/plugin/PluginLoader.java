@@ -171,7 +171,8 @@ public class PluginLoader {
     plugin.getSourceTypes().forEach(SourceTypes::unregister);
     plugin.getTypeAdapters().forEach(Serializers::remove);
     plugin.getDataTypes().forEach(DataTypes::unregister);
-    plugin.getThemes().forEach(Themes::unregister);
+    // TODO figure out a good way to remember the theme & reapply it when reloading the plugin
+    //plugin.getThemes().forEach(Themes::unregister);
 
     plugin.onUnload();
     plugin.setLoaded(false);
