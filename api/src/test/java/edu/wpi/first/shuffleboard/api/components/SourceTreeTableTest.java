@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class SourceTreeTableTest extends ApplicationTest {
 
-  private final SourceType sourceType = new SourceType("Test", false, "test://", __ -> null);
+  private final SourceType sourceType = new MockSourceType();
   private final TreeItem<SourceEntry> root = new TreeItem<>(sourceType.createRootSourceEntry());
   private SourceTreeTable<SourceEntry, ?> tree;
 
@@ -42,6 +42,49 @@ public class SourceTreeTableTest extends ApplicationTest {
     assertAll("", () -> {
       assertEquals("firstLevel", child.getValue().getName());
     });
+  }
+
+  private static class MockSourceType extends SourceType {
+
+    public MockSourceType() {
+      super("Test", false, "test://", __ -> null);
+    }
+
+    @Override
+    public SourceEntry createSourceEntryForUri(String uri) {
+      return new MockSourceEntry(uri);
+    }
+
+  }
+
+  private static class MockSourceEntry implements SourceEntry {
+
+    private final String uri;
+
+    public MockSourceEntry(String uri) {
+      this.uri = uri;
+    }
+
+    @Override
+    public String getName() {
+      return uri;
+    }
+
+    @Override
+    public Object getValue() {
+      return uri;
+    }
+
+    @Override
+    public Object getValueView() {
+      return uri;
+    }
+
+    @Override
+    public Object get() {
+      return uri;
+    }
+
   }
 
 }
