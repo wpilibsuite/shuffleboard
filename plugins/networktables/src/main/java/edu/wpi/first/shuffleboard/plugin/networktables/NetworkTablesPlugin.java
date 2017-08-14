@@ -17,7 +17,7 @@ public class NetworkTablesPlugin extends Plugin {
   private int recorderUid = -1;
 
   public NetworkTablesPlugin() {
-    super("NetworkTables");
+    super("edu.wpi.first.shuffleboard", "NetworkTables", "1.0.0", "Provides sources and widgets for NetworkTables");
   }
 
   @Override

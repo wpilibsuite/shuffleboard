@@ -3,6 +3,9 @@ package edu.wpi.first.shuffleboard.app;
 import edu.wpi.first.shuffleboard.api.plugin.Plugin;
 import edu.wpi.first.shuffleboard.app.plugin.PluginLoader;
 
+import org.fxmisc.easybind.EasyBind;
+import org.fxmisc.easybind.monadic.MonadicBinding;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -16,8 +19,11 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.SelectionModel;
+import javafx.scene.control.SplitPane;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
@@ -29,15 +35,25 @@ public class PluginPaneController {
   @FXML
   private Pane root;
   @FXML
+  private SplitPane splitPane;
+  @FXML
   private TableView<Plugin> pluginTable;
-
-  private final TableColumn<Plugin, String> nameColumn = new TableColumn<>("Plugin");
-  private final TableColumn<Plugin, Boolean> loadedColumn = new TableColumn<>("Loaded");
+  @FXML
+  private TableColumn<Plugin, String> nameColumn;
+  @FXML
+  private TableColumn<Plugin, Boolean> loadedColumn;
+  @FXML
+  private TableColumn<Plugin, String> versionColumn;
+  @FXML
+  private TextArea descriptionArea;
 
   @FXML
   private void initialize() {
-    nameColumn.setCellValueFactory(param -> new ReadOnlyStringWrapper(param.getValue().getName()));
-    final ObservableList<Plugin> loadedPlugins = PluginLoader.getDefault().getKnownPlugins();
+    pluginTable.maxWidthProperty().bind(splitPane.widthProperty().multiply(0.75));
+    splitPane.setDividerPositions(100);
+    nameColumn.setCellValueFactory(param -> new ReadOnlyStringWrapper(param.getValue().idString()));
+    versionColumn.setCellValueFactory(param -> new ReadOnlyStringWrapper(param.getValue().getVersion()));
+    final ObservableList<Plugin> knownPlugins = PluginLoader.getDefault().getKnownPlugins();
     loadedColumn.setCellValueFactory(param -> {
       Plugin plugin = param.getValue();
       SimpleBooleanProperty prop = new SimpleBooleanProperty(true);
@@ -50,10 +66,21 @@ public class PluginPaneController {
       });
       return prop;
     });
-    loadedColumn.setEditable(true);
-    loadedColumn.setCellFactory(param -> new CheckBoxTableCell<>());
-    pluginTable.getColumns().addAll(nameColumn, loadedColumn);
-    pluginTable.setItems(loadedPlugins);
+    loadedColumn.setCellFactory(param -> new CheckBoxTableCell<>()); //TODO use toggle switches
+    pluginTable.setItems(knownPlugins);
+    MonadicBinding<String> desc = EasyBind.monadic(pluginTable.selectionModelProperty())
+        .flatMap(SelectionModel::selectedItemProperty)
+        .map(this::createPluginDetailString);
+    descriptionArea.textProperty().bind(desc);
+    descriptionArea.minWidthProperty().bind(splitPane.widthProperty().multiply(0.25));
+  }
+
+  private String createPluginDetailString(Plugin plugin) {
+    // TODO better text formatting and styles
+    return "Plugin: " + plugin.getName()
+        + "\nGroup ID: " + plugin.getGroupId()
+        + "\nVersion: " + plugin.getVersion()
+        + "\n\n"+ plugin.getDescription();
   }
 
   @FXML

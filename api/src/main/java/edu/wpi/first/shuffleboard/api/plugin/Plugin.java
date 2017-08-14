@@ -18,11 +18,25 @@ import javafx.beans.property.SimpleBooleanProperty;
  */
 public class Plugin {
 
+  private final String groupId;
   private final String name;
+  private final String version;
+  private final String description;
   private final BooleanProperty loaded = new SimpleBooleanProperty(this, "loaded", false);
 
-  protected Plugin(String name) {
+  protected Plugin(String groupId, String name, String version, String description) {
+    this.groupId = groupId;
     this.name = name;
+    this.version = version;
+    this.description = description;
+  }
+
+  /**
+   * The group ID of this plugin. For example, the stock plugins have the group ID {@code edu.wpi.first.shuffleboard}.
+   * This must combine with {@link #getName()} to create a unique identifier for this plugin.
+   */
+  public final String getGroupId() {
+    return groupId;
   }
 
   /**
@@ -30,6 +44,28 @@ public class Plugin {
    */
   public final String getName() {
     return name;
+  }
+
+  /**
+   * Gets the version of this plugin. API consumers are strongly recommended to use
+   * <a href="http://semver.org">semantic versioning</a>, but any versioning scheme may be used.
+   */
+  public final String getVersion() {
+    return version;
+  }
+
+  /**
+   * Gets an ID string unique to this plugin in the format {@code "{groupId}.{name}"}.
+   */
+  public final String idString() {
+    return groupId + "." + name;
+  }
+
+  /**
+   * Gets a descriptive string describing what this plugin provides.
+   */
+  public final String getDescription() {
+    return description;
   }
 
   /**

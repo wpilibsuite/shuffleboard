@@ -3,6 +3,7 @@ package edu.wpi.first.shuffleboard.plugin.base;
 import com.google.common.collect.ImmutableList;
 
 import edu.wpi.first.shuffleboard.api.data.DataType;
+import edu.wpi.first.shuffleboard.api.data.types.MapType;
 import edu.wpi.first.shuffleboard.api.plugin.Plugin;
 import edu.wpi.first.shuffleboard.api.sources.recording.Serialization;
 import edu.wpi.first.shuffleboard.api.sources.recording.serialization.SimpleAdapter;
@@ -12,7 +13,6 @@ import edu.wpi.first.shuffleboard.plugin.base.data.types.AnalogInputType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.BooleanArrayType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.BooleanType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.EncoderType;
-import edu.wpi.first.shuffleboard.api.data.types.MapType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.NumberArrayType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.NumberType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.RawByteType;
@@ -40,7 +40,8 @@ import java.util.List;
 public class BasePlugin extends Plugin {
 
   public BasePlugin() {
-    super("Base");
+    super("edu.wpi.first.shuffleboard", "Base", "1.0.0",
+        "Defines all the WPILib data types and stock widgets");
   }
 
   @Override

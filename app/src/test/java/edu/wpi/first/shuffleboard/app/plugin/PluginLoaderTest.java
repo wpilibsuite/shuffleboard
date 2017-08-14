@@ -13,7 +13,7 @@ public class PluginLoaderTest {
   public static class MockPlugin extends Plugin {
 
     public MockPlugin() {
-      super("Mock Plugin");
+      super("test", "Mock Plugin", "0.0.0", "A plugin for testing");
     }
 
   }

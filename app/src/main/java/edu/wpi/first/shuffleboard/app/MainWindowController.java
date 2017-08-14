@@ -132,6 +132,9 @@ public class MainWindowController {
 
     pluginStage = new Stage();
     pluginStage.setScene(new Scene(pluginPane));
+    pluginStage.sizeToScene();
+    pluginStage.setMinWidth(500);
+    pluginStage.setMinHeight(300);
     pluginStage.setTitle("Loaded Plugins");
     EasyBind.listBind(pluginPane.getStylesheets(), root.getStylesheets());
   }
