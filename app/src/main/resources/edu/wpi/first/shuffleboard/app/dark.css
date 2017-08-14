@@ -109,18 +109,26 @@
 
 /*******************************************************************************
  *                                                                             *
- * Tree table                                                                  *
+ * Tree table, table view                                                      *
  *                                                                             *
  ******************************************************************************/
-.tree-table-view * {
+.tree-table-view *, .table-view * {
     -fx-border-color: transparent;
 }
 
-.tree-table-view {
+.table-row-cell * {
+    -fx-text-fill: white;
+}
+
+.table-row-cell:selected {
     -fx-background-color: -swatch-light-gray;
 }
 
-.tree-table-view .column-header {
+.tree-table-view, .table-view {
+    -fx-background-color: -swatch-dark-gray;
+}
+
+.tree-table-view .column-header, .table-view .column-header {
     -fx-background-color: -swatch-500;
 }
 
@@ -128,20 +136,23 @@
     -fx-background-color: #111111;
 }
 
-.tree-table-row-cell {
+.tree-table-row-cell, .table-row-cell {
     -fx-background-color: -swatch-gray;
     -fx-border-color: transparent;
 }
 
-.tree-table-row-cell:empty, .tree-table-row-cell:empty:hover {
+.tree-table-row-cell:empty, .tree-table-row-cell:empty:hover,
+.table-row-cell:empty, .table-row-cell:empty:hover {
     -fx-background-color: transparent;
 }
 
-.tree-table-row-cell:filled:hover {
+.tree-table-row-cell:filled:hover,
+.table-row-cell:filled:hover {
     -fx-background-color: -swatch-200;
 }
 
-.tree-table-row-cell:filled:focused:selected {
+.tree-table-row-cell:filled:focused:selected,
+.table-row-cell:filled:hover {
     -fx-background-color: -swatch-100;
 }
 

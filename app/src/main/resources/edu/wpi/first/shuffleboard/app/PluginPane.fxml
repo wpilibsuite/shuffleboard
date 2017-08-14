@@ -18,10 +18,13 @@
     <center>
         <SplitPane fx:id="splitPane" minWidth="675" prefWidth="675" prefHeight="300">
             <TableView fx:id="pluginTable" editable="true" minWidth="425" prefWidth="425">
+                <columnResizePolicy>
+                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                </columnResizePolicy>
                 <columns>
-                    <TableColumn text="Plugin" fx:id="nameColumn" editable="false"/>
-                    <TableColumn text="Loaded" fx:id="loadedColumn" editable="true"/>
-                    <TableColumn text="Version" fx:id="versionColumn" editable="false"/>
+                    <TableColumn text="Plugin" fx:id="nameColumn" editable="false" minWidth="250"/>
+                    <TableColumn text="Loaded" fx:id="loadedColumn" editable="true" minWidth="75"/>
+                    <TableColumn text="Version" fx:id="versionColumn" editable="false" minWidth="75"/>
                 </columns>
             </TableView>
             <TextArea fx:id="descriptionArea" editable="false" wrapText="true" minWidth="250" prefWidth="250"/>
