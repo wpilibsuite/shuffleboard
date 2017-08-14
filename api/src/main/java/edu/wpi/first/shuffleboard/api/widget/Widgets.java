@@ -92,6 +92,7 @@ public final class Widgets {
    * Validates a widget description.
    *
    * @param description the description to validate
+   *
    * @throws InvalidWidgetException if the widget is invalid
    */
   private static void validate(Description description) throws InvalidWidgetException {
@@ -100,7 +101,7 @@ public final class Widgets {
     }
     if (widgets.containsKey(description.name())) {
       throw new InvalidWidgetException(
-              "A widget already exists with the same name: " + description.name());
+          "A widget already exists with the same name: " + description.name());
     }
   }
 
@@ -114,8 +115,9 @@ public final class Widgets {
    *
    * @param name   the name of the widget to create
    * @param source the data source for the widget to use
+   *
    * @return an optional containing the created view, or an empty optional if no widget could
-   *         be created
+   * be created
    */
   public static <T> Optional<Widget> createWidget(String name, DataSource<T> source) {
     Optional<Widget> widget = typeFor(name).map(WidgetType::get);
@@ -136,7 +138,9 @@ public final class Widgets {
 
   /**
    * Retrieve the factory for this widget using its unique name.
+   *
    * @param name the globally unique name of the widget in question
+   *
    * @return a WidgetType to create widgets of the same class
    */
   public static Optional<WidgetType> typeFor(String name) {
@@ -145,9 +149,9 @@ public final class Widgets {
 
   private static Set<WidgetType> getWidgetsForType(DataType type) {
     return widgets.values().stream()
-            .filter(d -> d.getDataTypes().contains(DataTypes.All)
-                         || d.getDataTypes().contains(type))
-            .collect(Collectors.toSet());
+        .filter(d -> d.getDataTypes().contains(DataTypes.All)
+            || d.getDataTypes().contains(type))
+        .collect(Collectors.toSet());
   }
 
   /**
@@ -155,8 +159,9 @@ public final class Widgets {
    * created for these with {@link #createWidget(String, DataSource) createWidget}.
    *
    * @param type the type of data to get possible widgets for.
+   *
    * @return an alphabetically sorted list containing the names of all known widgets that can display data of the
-   *         given type
+   * given type
    */
   public static List<String> widgetNamesForType(DataType type) {
     return getWidgetsForType(type)
@@ -174,6 +179,21 @@ public final class Widgets {
    */
   public static void setDefaultWidget(DataType dataType, WidgetType widgetType) {
     defaultWidgets.put(dataType, widgetType);
+  }
+
+  /**
+   * Sets the default widget to use for a given data type.
+   *
+   * @param dataType    the type to set the default widget for
+   * @param widgetClass the class of the widget to set as the default
+   *
+   * @throws IllegalArgumentException if the widget has not been registered
+   */
+  public static void setDefaultWidget(DataType<?> dataType, Class<? extends Widget> widgetClass) {
+    if (!registeredWidgets.containsKey(widgetClass)) {
+      throw new IllegalArgumentException("Widget class " + widgetClass.getName() + " has not been registered");
+    }
+    setDefaultWidget(dataType, registeredWidgets.get(widgetClass));
   }
 
   /**

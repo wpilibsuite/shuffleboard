@@ -1,9 +1,9 @@
 package edu.wpi.first.shuffleboard.plugin.base;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
 import edu.wpi.first.shuffleboard.api.data.DataType;
-import edu.wpi.first.shuffleboard.api.data.types.MapType;
 import edu.wpi.first.shuffleboard.api.plugin.Plugin;
 import edu.wpi.first.shuffleboard.api.sources.recording.Serialization;
 import edu.wpi.first.shuffleboard.api.sources.recording.serialization.SimpleAdapter;
@@ -36,6 +36,7 @@ import edu.wpi.first.shuffleboard.plugin.base.widget.ToggleSwitch;
 import edu.wpi.first.shuffleboard.plugin.base.widget.VoltageViewWidget;
 
 import java.util.List;
+import java.util.Map;
 
 public class BasePlugin extends Plugin {
 
@@ -54,7 +55,6 @@ public class BasePlugin extends Plugin {
         new NumberArrayType(),
         new StringArrayType(),
         new RawByteType(),
-        new MapType(),
         new AnalogInputType(),
         new EncoderType(),
         new SendableChooserType(),
@@ -90,6 +90,19 @@ public class BasePlugin extends Plugin {
         new BooleanArrayAdapter(),
         new StringArrayAdapter()
     );
+  }
+
+  @Override
+  public Map<DataType, Class<? extends Widget>> getDefaultWidgets() {
+    return ImmutableMap.<DataType, Class<? extends Widget>>builder()
+        .put(new BooleanType(), BooleanBox.class)
+        .put(new NumberType(), NumberSlider.class)
+        .put(new StringType(), TextView.class)
+        .put(new AnalogInputType(), VoltageViewWidget.class)
+        .put(new SendableChooserType(), ComboBoxChooser.class)
+        .put(new EncoderType(), EncoderWidget.class)
+        .put(new SpeedControllerType(), SpeedController.class)
+        .build();
   }
 
 }

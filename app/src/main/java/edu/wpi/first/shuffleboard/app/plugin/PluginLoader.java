@@ -115,6 +115,7 @@ public class PluginLoader {
     plugin.getSourceTypes().forEach(SourceTypes::register);
     plugin.getTypeAdapters().forEach(Serializers::add);
     plugin.getWidgets().forEach(Widgets::register);
+    plugin.getDefaultWidgets().forEach(Widgets::setDefaultWidget);
     Widgets.getActiveWidgets().stream()
         .filter(w -> w.getSource() instanceof DestroyedSource)
         .filter(w -> {

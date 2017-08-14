@@ -1,6 +1,7 @@
 package edu.wpi.first.shuffleboard.api.plugin;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
@@ -8,6 +9,7 @@ import edu.wpi.first.shuffleboard.api.sources.recording.serialization.TypeAdapte
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 
 import java.util.List;
+import java.util.Map;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -102,6 +104,13 @@ public class Plugin {
    */
   public List<Class<? extends Widget>> getWidgets() {
     return ImmutableList.of();
+  }
+
+  /**
+   * Gets a map of the default widgets this plugin defines.
+   */
+  public Map<DataType, Class<? extends Widget>> getDefaultWidgets() {
+    return ImmutableMap.of();
   }
 
   public List<TypeAdapter> getTypeAdapters() {

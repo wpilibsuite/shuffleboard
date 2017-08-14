@@ -1,8 +1,11 @@
 package edu.wpi.first.shuffleboard.plugin.networktables;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
+import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
+import edu.wpi.first.shuffleboard.api.data.types.MapType;
 import edu.wpi.first.shuffleboard.api.plugin.Plugin;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
@@ -11,6 +14,7 @@ import edu.wpi.first.shuffleboard.plugin.networktables.sources.NetworkTableSourc
 import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
 
 import java.util.List;
+import java.util.Map;
 
 public class NetworkTablesPlugin extends Plugin {
 
@@ -54,6 +58,13 @@ public class NetworkTablesPlugin extends Plugin {
   public List<SourceType> getSourceTypes() {
     return ImmutableList.of(
         NetworkTableSourceType.INSTANCE
+    );
+  }
+
+  @Override
+  public Map<DataType, Class<? extends Widget>> getDefaultWidgets() {
+    return ImmutableMap.of(
+        new MapType(), NetworkTableTreeWidget.class
     );
   }
 
