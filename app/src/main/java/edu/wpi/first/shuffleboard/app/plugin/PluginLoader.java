@@ -17,6 +17,8 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -31,6 +33,7 @@ public class PluginLoader {
 
   private static final PluginLoader defaultLoader = new PluginLoader();
 
+  private final Set<Plugin> loadedPlugins = new HashSet<>();
   private final ObservableList<Plugin> knownPlugins = FXCollections.observableArrayList();
 
   public static PluginLoader getDefault() {
@@ -104,6 +107,9 @@ public class PluginLoader {
    * @throws IllegalArgumentException if a plugin has already been loaded with the same name
    */
   public void load(Plugin plugin) {
+    if (loadedPlugins.contains(plugin)) {
+      throw new IllegalArgumentException("The plugin " + plugin + " is already loaded");
+    }
     log.info("Loading plugin " + plugin.getName());
     plugin.getDataTypes().forEach(DataTypes::register);
     plugin.getSourceTypes().forEach(SourceTypes::register);
@@ -123,6 +129,7 @@ public class PluginLoader {
     plugin.onLoad();
     plugin.setLoaded(true);
 
+    loadedPlugins.add(plugin);
     if (!knownPlugins.contains(plugin)) {
       knownPlugins.add(plugin);
     }
@@ -159,6 +166,7 @@ public class PluginLoader {
 
     plugin.onUnload();
     plugin.setLoaded(false);
+    loadedPlugins.remove(plugin);
   }
 
   /**
