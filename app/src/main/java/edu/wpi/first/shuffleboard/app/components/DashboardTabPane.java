@@ -4,6 +4,7 @@ import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.data.MapData;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
+import edu.wpi.first.shuffleboard.api.util.Debouncer;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 import edu.wpi.first.shuffleboard.api.widget.Widgets;
@@ -11,6 +12,7 @@ import edu.wpi.first.shuffleboard.api.widget.Widgets;
 import org.fxmisc.easybind.EasyBind;
 
 import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
 import javafx.application.Platform;
@@ -121,6 +123,7 @@ public class DashboardTabPane extends TabPane {
     private final BooleanProperty autoPopulate = new SimpleBooleanProperty(this, "autoPopulate", false);
     private final StringProperty sourcePrefix = new SimpleStringProperty(this, "sourcePrefix", "");
     private static final ObservableList<String> availableSourceIds = SourceTypes.getDefault().allAvailableSourceUris();
+    private final Debouncer populateDebouncer = new Debouncer(50, TimeUnit.MILLISECONDS);
 
     private boolean deferPopulation = true;
 
@@ -136,9 +139,9 @@ public class DashboardTabPane extends TabPane {
 
       this.contentProperty().bind(widgetPane);
 
-      autoPopulate.addListener(__ -> populate());
-      sourcePrefix.addListener(__ -> populate());
-      availableSourceIds.addListener((ListChangeListener<String>) c -> populate());
+      autoPopulate.addListener(__ -> debouncePopulate());
+      sourcePrefix.addListener(__ -> debouncePopulate());
+      availableSourceIds.addListener((ListChangeListener<String>) c -> debouncePopulate());
 
       setContextMenu(new ContextMenu(FxUtils.menuItem("Preferences", e -> {
         // Use a dummy property here to prevent a call to populate() on every keystroke in the editor (!)
@@ -165,6 +168,10 @@ public class DashboardTabPane extends TabPane {
         });
         dialog.showAndWait();
       })));
+    }
+
+    private void debouncePopulate() {
+      populateDebouncer.debounce(() -> FxUtils.runOnFxThread(this::populate));
     }
 
     private void populate() {
