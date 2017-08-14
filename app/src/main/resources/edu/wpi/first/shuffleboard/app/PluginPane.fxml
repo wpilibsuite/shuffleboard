@@ -16,15 +16,15 @@
         <Insets topRightBottomLeft="8"/>
     </padding>
     <center>
-        <SplitPane fx:id="splitPane" minWidth="600" prefWidth="600">
-            <TableView fx:id="pluginTable" editable="true" minWidth="300" prefWidth="300">
+        <SplitPane fx:id="splitPane" minWidth="675" prefWidth="675" prefHeight="300">
+            <TableView fx:id="pluginTable" editable="true" minWidth="425" prefWidth="425">
                 <columns>
                     <TableColumn text="Plugin" fx:id="nameColumn" editable="false"/>
                     <TableColumn text="Loaded" fx:id="loadedColumn" editable="true"/>
                     <TableColumn text="Version" fx:id="versionColumn" editable="false"/>
                 </columns>
             </TableView>
-            <TextArea fx:id="descriptionArea" editable="false" wrapText="true" minWidth="200" prefWidth="200"/>
+            <TextArea fx:id="descriptionArea" editable="false" wrapText="true" minWidth="250" prefWidth="250"/>
         </SplitPane>
     </center>
     <bottom>

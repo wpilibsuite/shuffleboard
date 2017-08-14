@@ -15,7 +15,7 @@ import java.util.logging.Logger;
 
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.collections.ObservableList;
+import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
@@ -49,11 +49,9 @@ public class PluginPaneController {
 
   @FXML
   private void initialize() {
-    pluginTable.maxWidthProperty().bind(splitPane.widthProperty().multiply(0.75));
-    splitPane.setDividerPositions(100);
+    splitPane.setDividerPositions(0.75);
     nameColumn.setCellValueFactory(param -> new ReadOnlyStringWrapper(param.getValue().idString()));
     versionColumn.setCellValueFactory(param -> new ReadOnlyStringWrapper(param.getValue().getVersion()));
-    final ObservableList<Plugin> knownPlugins = PluginLoader.getDefault().getKnownPlugins();
     loadedColumn.setCellValueFactory(param -> {
       Plugin plugin = param.getValue();
       SimpleBooleanProperty prop = new SimpleBooleanProperty(true);
@@ -67,12 +65,16 @@ public class PluginPaneController {
       return prop;
     });
     loadedColumn.setCellFactory(param -> new CheckBoxTableCell<>()); //TODO use toggle switches
-    pluginTable.setItems(knownPlugins);
+    pluginTable.setItems(PluginLoader.getDefault().getKnownPlugins());
+    pluginTable.getItems().addListener((ListChangeListener<Plugin>) c -> {
+      if (pluginTable.getSelectionModel().getSelectedItem() == null) {
+        pluginTable.getSelectionModel().select(0);
+      }
+    });
     MonadicBinding<String> desc = EasyBind.monadic(pluginTable.selectionModelProperty())
         .flatMap(SelectionModel::selectedItemProperty)
         .map(this::createPluginDetailString);
     descriptionArea.textProperty().bind(desc);
-    descriptionArea.minWidthProperty().bind(splitPane.widthProperty().multiply(0.25));
   }
 
   private String createPluginDetailString(Plugin plugin) {
