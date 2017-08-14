@@ -24,6 +24,8 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.cell.CheckBoxTableCell;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
 
@@ -49,6 +51,11 @@ public class PluginPaneController {
   @FXML
   private void initialize() {
     splitPane.setDividerPositions(0.75);
+    pluginTable.addEventHandler(KeyEvent.KEY_PRESSED, e -> {
+      if (e.getCode() == KeyCode.ESCAPE) {
+        root.getScene().getWindow().hide();
+      }
+    });
     nameColumn.setCellValueFactory(param -> new ReadOnlyStringWrapper(param.getValue().idString()));
     versionColumn.setCellValueFactory(param -> new ReadOnlyStringWrapper(param.getValue().getVersion()));
     loadedColumn.setCellValueFactory(param -> {

@@ -129,6 +129,12 @@ public class MainWindowController {
     });
 
     pluginStage = new Stage();
+    pluginStage.initModality(Modality.WINDOW_MODAL);
+    pluginStage.addEventHandler(KeyEvent.KEY_PRESSED, e -> {
+      if (e.getCode() == KeyCode.ESCAPE) {
+        pluginStage.close();
+      }
+    });
     pluginStage.setScene(new Scene(pluginPane));
     pluginStage.sizeToScene();
     pluginStage.setMinWidth(675);
@@ -420,6 +426,9 @@ public class MainWindowController {
 
   @FXML
   private void showPlugins() {
+    if (pluginStage.getOwner() == null) {
+      pluginStage.initOwner(root.getScene().getWindow());
+    }
     pluginStage.show();
   }
 
