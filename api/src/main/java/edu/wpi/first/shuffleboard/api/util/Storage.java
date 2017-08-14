@@ -19,6 +19,11 @@ public final class Storage {
 
   public static final String DEFAULT_RECORDING_FILE = STORAGE_DIR + "/default_dashboard_recording.frc";
 
+  /**
+   * The path to the plugins directory. This directory is scanned once at startup for plugin jars to load.
+   */
+  public static final String PLUGINS_DIR = STORAGE_DIR + "/plugins";
+
   private Storage() {
   }
 

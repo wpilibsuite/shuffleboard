@@ -1,6 +1,7 @@
 package edu.wpi.first.shuffleboard.app;
 
 import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
+import edu.wpi.first.shuffleboard.api.util.Storage;
 import edu.wpi.first.shuffleboard.app.plugin.PluginLoader;
 import edu.wpi.first.shuffleboard.plugin.base.BasePlugin;
 import edu.wpi.first.shuffleboard.plugin.networktables.NetworkTablesPlugin;
@@ -10,6 +11,11 @@ import it.sauronsoftware.junique.AlreadyLockedException;
 import it.sauronsoftware.junique.JUnique;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -21,6 +27,8 @@ import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 public class Shuffleboard extends Application {
+
+  private static final Logger log = Logger.getLogger(Shuffleboard.class.getName());
 
   private Pane mainPane; //NOPMD local variable
   private Runnable onOtherAppStart = () -> {};
@@ -54,6 +62,7 @@ public class Shuffleboard extends Application {
 
     PluginLoader.getDefault().load(new BasePlugin());
     PluginLoader.getDefault().load(new NetworkTablesPlugin());
+    loadPluginsFromDir();
 
     Recorder.getInstance().start();
     primaryStage.setMinWidth(640);
@@ -61,6 +70,35 @@ public class Shuffleboard extends Application {
     primaryStage.setWidth(Screen.getPrimary().getVisualBounds().getWidth());
     primaryStage.setHeight(Screen.getPrimary().getVisualBounds().getHeight());
     primaryStage.show();
+  }
+
+  /**
+   * Attempts to loads plugins from all jars found in in the {@link Storage#PLUGINS_DIR plugin directory}. This will
+   * overwrite pre-existing plugins with the same ID string (eg "edu.wpi.first.shuffleboard.Base") in encounter order,
+   * which is alphabetical by jar name. For example, if a jar file "my_plugins.jar" defines a plugin with ID "foo.bar"
+   * and another jar file "more_plugins.jar" <i>also</i> defines a plugin with that ID, the plugin from "more_plugins"
+   * will be loaded first, then unloaded and replaced with the one from "my_plugins.jar". For this reason, plugin
+   * authors should be careful to use unique group IDs. We recommend Java's reverse-DNS naming scheme.
+   *
+   * @throws IOException if the plugin directory could not be read
+   */
+  private void loadPluginsFromDir() throws IOException {
+    Path pluginPath = Paths.get(Storage.PLUGINS_DIR);
+    if (!Files.exists(pluginPath)) {
+      Files.createDirectories(pluginPath);
+    }
+    Files.list(pluginPath)
+        .filter(p -> p.toString().endsWith(".jar"))
+        .map(Path::toUri)
+        .sorted() // sort alphabetically to make load order deterministic
+        .forEach(jar -> {
+          log.info("Attempting to load plugin jar: " + jar); //NOPMD log not in if
+          try {
+            PluginLoader.getDefault().loadPluginJar(jar);
+          } catch (IOException e) {
+            log.log(Level.WARNING, "Could not load plugin jar: " + jar, e); //NOPMD log not in if
+          }
+        });
   }
 
 }

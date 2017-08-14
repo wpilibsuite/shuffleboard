@@ -65,6 +65,14 @@ public class Plugin {
   }
 
   /**
+   * Gets an ID string unique to this plugin in the format {@code "{groupId}.{name}-v{version}}. For example,
+   * "foo.bar-v1.0.0".
+   */
+  public final String fullIdString() {
+    return groupId + "." + name + "-v" + version;
+  }
+
+  /**
    * Gets a descriptive string describing what this plugin provides.
    */
   public final String getDescription() {

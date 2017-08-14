@@ -12,8 +12,9 @@ import edu.wpi.first.shuffleboard.api.widget.Widgets;
 import edu.wpi.first.shuffleboard.app.sources.DestroyedSource;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Modifier;
-import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.security.AccessController;
@@ -44,20 +45,24 @@ public class PluginLoader {
   /**
    * Loads a plugin jar and loads all plugin classes within.
    *
-   * @param jarFile the jar file to load plugins from
+   * @param jarUri a URI representing  jar file to load plugins from
+   *
+   * @throws IOException if the jar file denoted by the URI could not be found or read
    */
-  public void loadPluginJar(JarFile jarFile) throws MalformedURLException {
-    URL url = new File(jarFile.getName()).toURI().toURL();
-    URLClassLoader classLoader = AccessController.doPrivileged((PrivilegedAction<URLClassLoader>) () -> {
+  public void loadPluginJar(URI jarUri) throws IOException {
+    URL url = jarUri.toURL();
+    PrivilegedAction<URLClassLoader> getClassLoader = () -> {
       return new URLClassLoader(new URL[]{url}, ClassLoader.getSystemClassLoader());
-    });
-
-    jarFile.stream()
-        .filter(e -> e.getName().endsWith(".class"))
-        .map(e -> e.getName().replace('/', '.'))
-        .map(n -> n.substring(0, n.length() - 6)) // ".class".length() == 6
-        .flatMap(className -> tryLoadClass(className, classLoader))
-        .forEach(this::loadPluginClass);
+    };
+    URLClassLoader classLoader = AccessController.doPrivileged(getClassLoader);
+    try (JarFile jarFile = new JarFile(new File(jarUri))) {
+      jarFile.stream()
+          .filter(e -> e.getName().endsWith(".class"))
+          .map(e -> e.getName().replace('/', '.'))
+          .map(n -> n.substring(0, n.length() - 6)) // ".class".length() == 6
+          .flatMap(className -> tryLoadClass(className, classLoader))
+          .forEach(this::loadPluginClass);
+    }
   }
 
   private Stream<Class<?>> tryLoadClass(String name, ClassLoader classLoader) {
@@ -82,8 +87,8 @@ public class PluginLoader {
         if (Modifier.isPublic(clazz.getConstructor().getModifiers())) {
           Plugin plugin = (Plugin) clazz.newInstance();
           // Unload existing plugin, if it exists
-          knownPlugins.stream()
-              .filter(p -> p.getName().equals(plugin.getName()))
+          loadedPlugins.stream()
+              .filter(p -> p.idString().equals(plugin.idString()))
               .findFirst()
               .ifPresent(oldPlugin -> {
                 unload(oldPlugin);
@@ -111,7 +116,7 @@ public class PluginLoader {
     if (loadedPlugins.contains(plugin)) {
       throw new IllegalArgumentException("The plugin " + plugin + " is already loaded");
     }
-    log.info("Loading plugin " + plugin.getName()); //NOPMD log not in if statement
+    log.info("Loading plugin " + plugin.fullIdString()); //NOPMD log not in if statement
     plugin.getDataTypes().forEach(DataTypes::register);
     plugin.getSourceTypes().forEach(SourceTypes::register);
     plugin.getTypeAdapters().forEach(Serializers::add);
@@ -153,7 +158,7 @@ public class PluginLoader {
    * @param plugin the plugin to unload
    */
   public void unload(Plugin plugin) {
-    log.info("Unloading plugin " + plugin.getName()); // NOPMD log not in if statement
+    log.info("Unloading plugin " + plugin.fullIdString()); // NOPMD log not in if statement
     Widgets.getActiveWidgets().stream()
         .filter(w -> !(w.getSource() instanceof DestroyedSource))
         .filter(w -> {

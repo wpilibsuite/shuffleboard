@@ -9,7 +9,6 @@ import org.fxmisc.easybind.monadic.MonadicBinding;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -99,16 +98,16 @@ public class PluginPaneController {
         //TODO
       } else if (f.getName().endsWith(".jar")) {
         try {
-          JarFile jar = new JarFile(f);
-          PluginLoader.getDefault().loadPluginJar(jar);
+          // TODO save this in user preferences
+          PluginLoader.getDefault().loadPluginJar(f.toURI());
         } catch (IOException | IllegalArgumentException e) {
+          log.log(Level.WARNING, "Could not load jar", e);
           // TODO improve the dialog; use something like what GRIP has
           Alert alert = new Alert(Alert.AlertType.ERROR, null, ButtonType.OK);
           alert.setTitle("Could not load plugins");
           alert.setHeaderText("Plugins in " + f.getName() + " could not be loaded");
           alert.setContentText("Error message:\n\n    " + e.getMessage());
           alert.showAndWait();
-          log.log(Level.WARNING, "Could not load jar", e);
         }
       }
     });
