@@ -1,8 +1,8 @@
 package edu.wpi.first.shuffleboard.app.components;
 
 import edu.wpi.first.shuffleboard.api.components.NumberField;
-import edu.wpi.first.shuffleboard.api.theme.DefaultThemes;
 import edu.wpi.first.shuffleboard.api.theme.Theme;
+import edu.wpi.first.shuffleboard.api.theme.Themes;
 
 import org.controlsfx.control.PropertySheet;
 import org.controlsfx.control.ToggleSwitch;
@@ -223,13 +223,13 @@ public class WidgetPropertySheet extends PropertySheet {
 
       @Override
       public Theme fromString(String string) {
-        return DefaultThemes.forName(string, DefaultThemes.LIGHT);
+        return Themes.forName(string);
       }
     }
 
     ThemePropertyEditor(PropertySheet.Item property) {
       super(property, new ComboBox<>());
-      getEditor().setItems(FXCollections.observableArrayList(DefaultThemes.getThemes()));
+      getEditor().setItems(Themes.getThemes());
       getEditor().setConverter(new ThemeStringConverter());
     }
 

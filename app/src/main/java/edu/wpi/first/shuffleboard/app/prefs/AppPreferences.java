@@ -3,8 +3,8 @@ package edu.wpi.first.shuffleboard.app.prefs;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
-import edu.wpi.first.shuffleboard.api.theme.DefaultThemes;
 import edu.wpi.first.shuffleboard.api.theme.Theme;
+import edu.wpi.first.shuffleboard.api.theme.Themes;
 
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.Property;
@@ -18,7 +18,7 @@ import javafx.beans.property.SimpleObjectProperty;
 public final class AppPreferences {
 
   private final Property<Theme> theme
-      = new SimpleObjectProperty<>(this, "Theme", DefaultThemes.LIGHT);
+      = new SimpleObjectProperty<>(this, "Theme", Themes.MODENA);
   private final DoubleProperty defaultTileSize = new SimpleDoubleProperty(this, "defaultTileSize", 128);
 
   @VisibleForTesting

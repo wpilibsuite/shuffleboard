@@ -6,6 +6,7 @@ import edu.wpi.first.shuffleboard.api.plugin.Plugin;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
 import edu.wpi.first.shuffleboard.api.sources.recording.serialization.Serializers;
+import edu.wpi.first.shuffleboard.api.theme.Themes;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 import edu.wpi.first.shuffleboard.api.widget.Widgets;
 import edu.wpi.first.shuffleboard.app.sources.DestroyedSource;
@@ -126,6 +127,7 @@ public class PluginLoader {
         })
         .filter(w -> SourceTypes.isRegistered(w.getSource().getType()))
         .forEach(w -> tryRestoreSource(w, (DestroyedSource) w.getSource()));
+    plugin.getThemes().forEach(Themes::register);
 
     plugin.onLoad();
     plugin.setLoaded(true);
@@ -164,6 +166,7 @@ public class PluginLoader {
     plugin.getSourceTypes().forEach(SourceTypes::unregister);
     plugin.getTypeAdapters().forEach(Serializers::remove);
     plugin.getDataTypes().forEach(DataTypes::unregister);
+    plugin.getThemes().forEach(Themes::unregister);
 
     plugin.onUnload();
     plugin.setLoaded(false);

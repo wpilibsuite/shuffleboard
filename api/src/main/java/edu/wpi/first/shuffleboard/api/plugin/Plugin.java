@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableMap;
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.recording.serialization.TypeAdapter;
+import edu.wpi.first.shuffleboard.api.theme.Theme;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 
 import java.util.List;
@@ -114,6 +115,13 @@ public class Plugin {
   }
 
   public List<TypeAdapter> getTypeAdapters() {
+    return ImmutableList.of();
+  }
+
+  /**
+   * Gets a list of themes that this plugin defines.
+   */
+  public List<Theme> getThemes() {
     return ImmutableList.of();
   }
 
