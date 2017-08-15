@@ -132,7 +132,7 @@ public class PluginLoader {
         })
         .filter(w -> SourceTypes.getDefault().isRegistered(w.getSource().getType()))
         .forEach(w -> tryRestoreSource(w, (DestroyedSource) w.getSource()));
-    plugin.getThemes().forEach(Themes::register);
+    plugin.getThemes().forEach(Themes.getDefault()::register);
 
     plugin.onLoad();
     plugin.setLoaded(true);
@@ -172,7 +172,7 @@ public class PluginLoader {
     plugin.getTypeAdapters().forEach(Serializers::remove);
     plugin.getDataTypes().forEach(DataTypes.getDefault()::unregister);
     // TODO figure out a good way to remember the theme & reapply it when reloading the plugin
-    //plugin.getThemes().forEach(Themes::unregister);
+    plugin.getThemes().forEach(Themes.getDefault()::unregister);
 
     plugin.onUnload();
     plugin.setLoaded(false);

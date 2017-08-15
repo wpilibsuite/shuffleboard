@@ -1,27 +1,43 @@
 package edu.wpi.first.shuffleboard.api.theme;
 
-import javafx.collections.FXCollections;
+import edu.wpi.first.shuffleboard.api.util.Registry;
+
+import java.util.Objects;
+
 import javafx.collections.ObservableList;
 
 /**
  * Keeps track of the themes available to the application.
  */
-public final class Themes {
+public final class Themes extends Registry<Theme> {
 
-  private static final ObservableList<Theme> themes = FXCollections.observableArrayList();
+  // TODO replace with DI eg Guice
+  private static Themes defaultInstance;
 
   public static final Theme MATERIAL_LIGHT = new Theme("Material Light", "/edu/wpi/first/shuffleboard/app/light.css");
   public static final Theme MATERIAL_DARK = new Theme("Material Dark", "/edu/wpi/first/shuffleboard/app/dark.css");
 
   public static final Theme INITIAL_THEME = MATERIAL_LIGHT;
 
-  static {
-    register(MATERIAL_LIGHT);
-    register(MATERIAL_DARK);
+  /**
+   * Gets the default themes instance.
+   */
+  public static Themes getDefault() {
+    synchronized (Themes.class) {
+      if (defaultInstance == null) {
+        defaultInstance = new Themes(MATERIAL_LIGHT, MATERIAL_DARK);
+      }
+    }
+    return defaultInstance;
   }
 
-  private Themes() {
-    throw new UnsupportedOperationException("Themes is a utility class!");
+  /**
+   * Creates a new theme registry.
+   *
+   * @param initial the initial themes
+   */
+  public Themes(Theme... initial) {
+    registerAll(initial);
   }
 
   /**
@@ -30,38 +46,32 @@ public final class Themes {
    *
    * @param name the name of the theme to get
    */
-  public static Theme forName(String name) {
-    return themes.stream()
+  public Theme forName(String name) {
+    return getItems().stream()
         .filter(t -> t.getName().equals(name))
         .findFirst()
         .orElse(INITIAL_THEME);
   }
 
-  /**
-   * Registers a theme.
-   *
-   * @param theme the theme to register
-   */
-  public static void register(Theme theme) {
-    if (!themes.contains(theme)) {
-      themes.add(theme);
+  @Override
+  public void register(Theme theme) {
+    Objects.requireNonNull(theme, "theme");
+    if (isRegistered(theme)) {
+      throw new IllegalArgumentException("Theme " + theme + " is already registered");
     }
+    addItem(theme);
   }
 
-  /**
-   * Unregisters a theme.
-   *
-   * @param theme the theme to unregister
-   */
-  public static void unregister(Theme theme) {
-    themes.remove(theme);
+  @Override
+  public void unregister(Theme theme) {
+    removeItem(theme);
   }
 
   /**
    * Gets an observable list of the registered themes.
    */
-  public static ObservableList<Theme> getThemes() {
-    return themes;
+  public ObservableList<Theme> getThemes() {
+    return getItems();
   }
 
 }

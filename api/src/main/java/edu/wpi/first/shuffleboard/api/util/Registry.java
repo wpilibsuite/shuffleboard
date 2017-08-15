@@ -1,5 +1,7 @@
 package edu.wpi.first.shuffleboard.api.util;
 
+import java.util.Objects;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
@@ -54,6 +56,23 @@ public abstract class Registry<T> {
    */
   public final boolean isRegistered(T item) {
     return items.contains(item);
+  }
+
+  /**
+   * Registers many items at once. This is equivalent to
+   * <pre><code>
+   *   for (T item : items) {
+   *     register(item);
+   *   }
+   * </code></pre>
+   *
+   * @param items the items to register
+   */
+  public final void registerAll(T... items) {
+    Objects.requireNonNull(items, "items");
+    for (T item : items) {
+      register(item);
+    }
   }
 
   /**

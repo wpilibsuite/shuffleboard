@@ -223,13 +223,13 @@ public class WidgetPropertySheet extends PropertySheet {
 
       @Override
       public Theme fromString(String string) {
-        return Themes.forName(string);
+        return Themes.getDefault().forName(string);
       }
     }
 
     ThemePropertyEditor(PropertySheet.Item property) {
       super(property, new ComboBox<>());
-      getEditor().setItems(Themes.getThemes());
+      getEditor().setItems(Themes.getDefault().getThemes());
       getEditor().setConverter(new ThemeStringConverter());
     }
 
