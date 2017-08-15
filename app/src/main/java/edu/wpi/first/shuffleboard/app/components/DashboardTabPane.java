@@ -10,8 +10,8 @@ import edu.wpi.first.shuffleboard.api.widget.Widgets;
 
 import org.fxmisc.easybind.EasyBind;
 
+import java.time.Duration;
 import java.util.Arrays;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
 import javafx.application.Platform;
@@ -122,7 +122,7 @@ public class DashboardTabPane extends TabPane {
     private final BooleanProperty autoPopulate = new SimpleBooleanProperty(this, "autoPopulate", false);
     private final StringProperty sourcePrefix = new SimpleStringProperty(this, "sourcePrefix", "");
     private static final ObservableList<String> availableSourceIds = SourceTypes.getDefault().allAvailableSourceUris();
-    private final Debouncer populateDebouncer = new Debouncer(50, TimeUnit.MILLISECONDS);
+    private final Debouncer populateDebouncer = new Debouncer(Duration.ofMillis(50));
 
     private boolean deferPopulation = true;
 
