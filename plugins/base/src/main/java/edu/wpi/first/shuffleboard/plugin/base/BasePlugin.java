@@ -8,7 +8,6 @@ import edu.wpi.first.shuffleboard.api.plugin.Plugin;
 import edu.wpi.first.shuffleboard.api.sources.recording.Serialization;
 import edu.wpi.first.shuffleboard.api.sources.recording.serialization.SimpleAdapter;
 import edu.wpi.first.shuffleboard.api.sources.recording.serialization.TypeAdapter;
-import edu.wpi.first.shuffleboard.api.theme.Theme;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.AnalogInputType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.BooleanArrayType;
@@ -40,9 +39,6 @@ import java.util.List;
 import java.util.Map;
 
 public class BasePlugin extends Plugin {
-
-  private final Theme lightTheme = new Theme("Material Light", "/edu/wpi/first/shuffleboard/plugin/base/light.css");
-  private final Theme darkTheme = new Theme("Material Dark", "/edu/wpi/first/shuffleboard/plugin/base/dark.css");
 
   public BasePlugin() {
     super("edu.wpi.first.shuffleboard", "Base", "1.0.0",
@@ -107,14 +103,6 @@ public class BasePlugin extends Plugin {
         .put(new EncoderType(), EncoderWidget.class)
         .put(new SpeedControllerType(), SpeedController.class)
         .build();
-  }
-
-  @Override
-  public List<Theme> getThemes() {
-    return ImmutableList.of(
-        lightTheme,
-        darkTheme
-    );
   }
 
 }

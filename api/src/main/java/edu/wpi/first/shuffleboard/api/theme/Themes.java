@@ -10,13 +10,14 @@ public final class Themes {
 
   private static final ObservableList<Theme> themes = FXCollections.observableArrayList();
 
-  /**
-   * The default "Modena" theme bundled with JavaFX. This theme cannot be unregistered.
-   */
-  public static final Theme MODENA = new Theme("Modena");
+  public static final Theme MATERIAL_LIGHT = new Theme("Material Light", "/edu/wpi/first/shuffleboard/app/light.css");
+  public static final Theme MATERIAL_DARK = new Theme("Material Dark", "/edu/wpi/first/shuffleboard/app/dark.css");
+
+  public static final Theme INITIAL_THEME = MATERIAL_LIGHT;
 
   static {
-    register(MODENA);
+    register(MATERIAL_LIGHT);
+    register(MATERIAL_DARK);
   }
 
   private Themes() {
@@ -25,7 +26,7 @@ public final class Themes {
 
   /**
    * Gets the theme with the given name. If there is no theme with that name, returns
-   * {@link #MODENA} instead.
+   * {@link #INITIAL_THEME} instead.
    *
    * @param name the name of the theme to get
    */
@@ -33,7 +34,7 @@ public final class Themes {
     return themes.stream()
         .filter(t -> t.getName().equals(name))
         .findFirst()
-        .orElse(MODENA);
+        .orElse(INITIAL_THEME);
   }
 
   /**
@@ -51,13 +52,8 @@ public final class Themes {
    * Unregisters a theme.
    *
    * @param theme the theme to unregister
-   *
-   * @throws IllegalArgumentException if the theme is {@link #MODENA}
    */
   public static void unregister(Theme theme) {
-    if (theme == MODENA) { //NOPMD - this is _deliberately_ checking reference equality
-      throw new IllegalArgumentException("The modena theme cannot be unregistered");
-    }
     themes.remove(theme);
   }
 

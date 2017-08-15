@@ -18,7 +18,7 @@ import javafx.beans.property.SimpleObjectProperty;
 public final class AppPreferences {
 
   private final Property<Theme> theme
-      = new SimpleObjectProperty<>(this, "Theme", Themes.MODENA);
+      = new SimpleObjectProperty<>(this, "Theme", Themes.INITIAL_THEME);
   private final DoubleProperty defaultTileSize = new SimpleDoubleProperty(this, "defaultTileSize", 128);
 
   @VisibleForTesting
