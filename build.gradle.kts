@@ -30,9 +30,12 @@ allprojects {
     apply {
         plugin("com.diffplug.gradle.spotless")
     }
+    // Spotless is used to lint and reformat source files.
     spotless {
         kotlinGradle {
+            // Configure the formatting of the Gradle Kotlin DSL files (*.gradle.kts)
             ktlint("0.9.1")
+            endWithNewline()
         }
     }
 }
