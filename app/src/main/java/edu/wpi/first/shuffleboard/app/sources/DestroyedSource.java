@@ -15,7 +15,8 @@ import javafx.beans.property.StringProperty;
 
 /**
  * A type of data source that represents the state of another source that has been destroyed or removed as a result
- * of its defining plugin being unloaded. The data source may
+ * of its defining plugin being unloaded. The restored data source may depend on a data type no longer defined, in which
+ * case a {@link DataTypeChangedException} will be thrown when it is attempted to be restored.
  */
 public class DestroyedSource<T> implements DataSource<T> {
 
