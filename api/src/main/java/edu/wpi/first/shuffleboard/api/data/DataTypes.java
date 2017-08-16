@@ -13,7 +13,6 @@ import edu.wpi.first.shuffleboard.api.util.TestUtils;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -122,11 +121,11 @@ public class DataTypes extends Registry<DataType> {
       } else {
         // Check Java class hierarchy
         Comparator<Class<?>> classComparator = closestTo(type);
-        List<DataType> sorted = dataTypes.values().stream()
+        // This stream MUST be sequential to work correctly
+        return dataTypes.values().stream()
             .filter(t -> t != All)
             .sorted((t1, t2) -> classComparator.reversed().compare(t1.getJavaClass(), t2.getJavaClass()))
-            .collect(Collectors.toList());
-        return Optional.of(sorted.get(0));
+            .findFirst();
       }
     });
   }
