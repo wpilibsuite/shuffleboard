@@ -17,6 +17,8 @@ import java.lang.reflect.Modifier;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.HashSet;
@@ -43,13 +45,42 @@ public class PluginLoader {
   }
 
   /**
-   * Loads a plugin jar and loads all plugin classes within.
+   * Loads all jars found in the given directory. This does not load jars in nested directories. Jars will be loaded in
+   * alphabetical order.
+   *
+   * @param directory the directory to load plugins from
+   *
+   * @throws IllegalArgumentException if the path is not a directory
+   * @throws IOException              if the directory could not be read from
+   * @see #loadPluginJar
+   */
+  public void loadAllJarsFromDir(Path directory) throws IOException {
+    if (!Files.isDirectory(directory)) {
+      throw new IllegalArgumentException("The given path is not a directory: " + directory);
+    }
+    Files.list(directory)
+        .filter(p -> p.toString().endsWith(".jar"))
+        .map(Path::toUri)
+        .sorted() // sort alphabetically to make load order deterministic
+        .forEach(jar -> {
+          try {
+            PluginLoader.getDefault().loadPluginJar(jar);
+          } catch (IOException e) {
+            log.log(Level.WARNING, "Could not load plugin jar: " + jar, e); //NOPMD log not in if
+          }
+        });
+  }
+
+  /**
+   * Loads a plugin jar and loads all plugin classes within. Plugins will be loaded alphabetically by class name.
    *
    * @param jarUri a URI representing  jar file to load plugins from
    *
    * @throws IOException if the jar file denoted by the URI could not be found or read
+   * @see #load(Plugin)
    */
   public void loadPluginJar(URI jarUri) throws IOException {
+    log.info("Attempting to load plugin jar: " + jarUri); //NOPMD log not in if
     URL url = jarUri.toURL();
     PrivilegedAction<URLClassLoader> getClassLoader = () -> {
       return new URLClassLoader(new URL[]{url}, ClassLoader.getSystemClassLoader());
@@ -59,6 +90,7 @@ public class PluginLoader {
       jarFile.stream()
           .filter(e -> e.getName().endsWith(".class"))
           .map(e -> e.getName().replace('/', '.'))
+          .sorted() // sort alphabetically to make load order deterministic
           .map(n -> n.substring(0, n.length() - 6)) // ".class".length() == 6
           .flatMap(className -> tryLoadClass(className, classLoader))
           .forEach(this::loadPluginClass);
@@ -75,7 +107,9 @@ public class PluginLoader {
   }
 
   /**
-   * Attempts to load a plugin class. This class may or not be a plugin; only a plugin class will be loaded.
+   * Attempts to load a plugin class. This class may or not be a plugin; only a plugin class will be loaded. A plugin
+   * loaded with this method will be loaded after unloading a plugin that shares the same
+   * {@link Plugin#idString() ID string}, if one exists.
    *
    * @param clazz the class to attempt to load
    *

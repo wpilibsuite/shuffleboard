@@ -14,8 +14,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -27,8 +25,6 @@ import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 public class Shuffleboard extends Application {
-
-  private static final Logger log = Logger.getLogger(Shuffleboard.class.getName());
 
   private Pane mainPane; //NOPMD local variable
   private Runnable onOtherAppStart = () -> {};
@@ -87,18 +83,7 @@ public class Shuffleboard extends Application {
     if (!Files.exists(pluginPath)) {
       Files.createDirectories(pluginPath);
     }
-    Files.list(pluginPath)
-        .filter(p -> p.toString().endsWith(".jar"))
-        .map(Path::toUri)
-        .sorted() // sort alphabetically to make load order deterministic
-        .forEach(jar -> {
-          log.info("Attempting to load plugin jar: " + jar); //NOPMD log not in if
-          try {
-            PluginLoader.getDefault().loadPluginJar(jar);
-          } catch (IOException e) {
-            log.log(Level.WARNING, "Could not load plugin jar: " + jar, e); //NOPMD log not in if
-          }
-        });
+    PluginLoader.getDefault().loadAllJarsFromDir(pluginPath);
   }
 
 }
