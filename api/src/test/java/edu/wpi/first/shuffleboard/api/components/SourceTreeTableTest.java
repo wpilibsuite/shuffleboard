@@ -1,6 +1,7 @@
 package edu.wpi.first.shuffleboard.api.components;
 
 
+import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceEntry;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 
@@ -81,8 +82,8 @@ public class SourceTreeTableTest extends ApplicationTest {
     }
 
     @Override
-    public Object get() {
-      return uri;
+    public DataSource get() {
+      return null;
     }
 
   }

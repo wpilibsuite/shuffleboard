@@ -69,7 +69,7 @@ public class WidgetPaneController {
         pane.tileMatching(tile -> tile.getId().equals(data.getId()))
             .ifPresent(tile -> previewWidget(tile, point.subtract(data.getDragPoint())));
       } else if (isSource) {
-        SourceEntry<?> entry = (SourceEntry<?>) event.getDragboard().getContent(DataFormats.source);
+        SourceEntry entry = (SourceEntry) event.getDragboard().getContent(DataFormats.source);
         DataSource source = entry.get();
         Optional<String> widgetName = Widgets.getDefault().pickWidgetNameFor(source.getDataType());
         Optional<DummySource> dummySource = DummySource.forTypes(source.getDataType());
@@ -98,7 +98,7 @@ public class WidgetPaneController {
       Dragboard dragboard = event.getDragboard();
       GridPoint point = pane.pointAt(event.getX(), event.getY());
       if (dragboard.hasContent(DataFormats.source)) {
-        SourceEntry<?> entry = (SourceEntry<?>) dragboard.getContent(DataFormats.source);
+        SourceEntry entry = (SourceEntry) dragboard.getContent(DataFormats.source);
         dropSource(entry.get(), point);
       }
 
@@ -252,7 +252,7 @@ public class WidgetPaneController {
     tile.setOnDragDropped(event -> {
       Dragboard dragboard = event.getDragboard();
       if (dragboard.hasContent(DataFormats.source)) {
-        SourceEntry<?> entry = (SourceEntry<?>) dragboard.getContent(DataFormats.source);
+        SourceEntry entry = (SourceEntry) dragboard.getContent(DataFormats.source);
         tile.getWidget().setSource(entry.get());
         event.consume();
       }

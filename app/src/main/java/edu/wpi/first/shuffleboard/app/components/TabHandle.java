@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
 public class TabHandle extends StackPane {
 
   private static final int DRAG_FOCUS_DELAY = 500;
-  private final ScheduledExecutorService delayedDragService = ThreadUtils.newDaemonExecutorService();
+  private final ScheduledExecutorService delayedDragService = ThreadUtils.newDaemonScheduledExecutorService();
   private final HandledTab tab;
 
   private final Property<Node> tabHeaderContainer = new SimpleObjectProperty<>(this, "tabHeaderContainer");

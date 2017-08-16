@@ -12,9 +12,9 @@ public final class ThreadUtils {
   }
 
   /**
-   * A singleThreadScheduledExecutor that uses a daemon thread instead of one the doesn't respect shutdown.
+   * A single-threaded ScheduledExecutorService that uses a daemon thread instead of one the doesn't respect shutdown.
    */
-  public static ScheduledExecutorService newDaemonExecutorService() {
+  public static ScheduledExecutorService newDaemonScheduledExecutorService() {
     return Executors.newSingleThreadScheduledExecutor(ThreadUtils::makeDaemonThread);
   }
 

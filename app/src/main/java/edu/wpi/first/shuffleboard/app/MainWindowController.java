@@ -148,9 +148,9 @@ public class MainWindowController {
    */
   private void setup(Plugin plugin) {
     plugin.getSourceTypes().forEach(sourceType -> {
-      SourceTreeTable<SourceEntry<?>, ?> tree = new SourceTreeTable<>();
+      SourceTreeTable<SourceEntry, ?> tree = new SourceTreeTable<>();
       tree.setSourceType(sourceType);
-      tree.setRoot(new TreeItem<SourceEntry<?>>(sourceType.createRootSourceEntry()));
+      tree.setRoot(new TreeItem<>(sourceType.createRootSourceEntry()));
       tree.setShowRoot(false);
       tree.setSortPolicy(__ -> {
         sortTree(tree.getRoot());
@@ -160,12 +160,12 @@ public class MainWindowController {
         selectedEntry = newItem == null ? null : newItem.getValue();
       });
       tree.setRowFactory(__ -> {
-        TreeTableRow<SourceEntry<?>> row = new TreeTableRow<>();
+        TreeTableRow<SourceEntry> row = new TreeTableRow<>();
         makeSourceRowDraggable(row);
         return row;
       });
       tree.setOnContextMenuRequested(e -> {
-        TreeItem<SourceEntry<?>> selectedItem = tree.getSelectionModel().getSelectedItem();
+        TreeItem<SourceEntry> selectedItem = tree.getSelectionModel().getSelectedItem();
         if (selectedItem == null) {
           return;
         }

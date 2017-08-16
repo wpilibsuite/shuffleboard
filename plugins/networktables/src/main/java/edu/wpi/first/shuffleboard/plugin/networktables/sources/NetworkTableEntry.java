@@ -11,7 +11,7 @@ import java.util.Objects;
 /**
  * A simple value class for information about an entry in NetworkTables.
  */
-public final class NetworkTableEntry implements SourceEntry<String> {
+public final class NetworkTableEntry implements SourceEntry {
 
   private final String key;
   private final String simpleKey;

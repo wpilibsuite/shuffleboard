@@ -122,7 +122,14 @@ public class DashboardTabPane extends TabPane {
     private final BooleanProperty autoPopulate = new SimpleBooleanProperty(this, "autoPopulate", false);
     private final StringProperty sourcePrefix = new SimpleStringProperty(this, "sourcePrefix", "");
     private static final ObservableList<String> availableSourceIds = SourceTypes.getDefault().allAvailableSourceUris();
-    private final Debouncer populateDebouncer = new Debouncer(Duration.ofMillis(50));
+
+    /**
+     * Debounces populate() calls so we don't freeze the app while a source type is doing its initial discovery of
+     * available source URIs. Not debouncing makes typical application startup take at least 5 seconds on an i7-6700HQ
+     * where the user sees nothing but a blank screen - no UI elements or anything!
+     */
+    private final Debouncer populateDebouncer =
+        new Debouncer(() -> FxUtils.runOnFxThread(this::populate), Duration.ofMillis(50));
 
     private boolean deferPopulation = true;
 
@@ -138,9 +145,9 @@ public class DashboardTabPane extends TabPane {
 
       this.contentProperty().bind(widgetPane);
 
-      autoPopulate.addListener(__ -> debouncePopulate());
-      sourcePrefix.addListener(__ -> debouncePopulate());
-      availableSourceIds.addListener((ListChangeListener<String>) c -> debouncePopulate());
+      autoPopulate.addListener(__ -> populateDebouncer.run());
+      sourcePrefix.addListener(__ -> populateDebouncer.run());
+      availableSourceIds.addListener((ListChangeListener<String>) c -> populateDebouncer.run());
 
       setContextMenu(new ContextMenu(FxUtils.menuItem("Preferences", e -> {
         // Use a dummy property here to prevent a call to populate() on every keystroke in the editor (!)
@@ -167,15 +174,6 @@ public class DashboardTabPane extends TabPane {
         });
         dialog.showAndWait();
       })));
-    }
-
-    /**
-     * Debounce populate() calls so we don't freeze the app while a source type is doing its initial discovery of
-     * available source URIs. Not debouncing makes typical application startup take at least 5 seconds on an i7-6700HQ
-     * where the user sees nothing but a blank screen - no UI elements or anything!
-     */
-    private void debouncePopulate() {
-      populateDebouncer.debounce(() -> FxUtils.runOnFxThread(this::populate));
     }
 
     /**

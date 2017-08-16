@@ -132,20 +132,42 @@ public class DataTypes extends Registry<DataType> {
   }
 
   /**
+   * Gets a set of registered data types that can handle data of the supplied Java types.
+   *
+   * @see #forJavaType
+   */
+  public Set<DataType> forJavaTypes(Class<?>... types) {
+    return Stream.of(types)
+        .map(this::forJavaType)
+        .filter(Optional::isPresent)
+        .map(Optional::get)
+        .collect(Collectors.toSet());
+  }
+
+  /**
    * Creates a comparator object that compares classes in order of closest to the target class, in terms of class
    * hierarchy. For example, take a class hierarchy of
    * <pre><code>
-   *      Foo
-   *     /   \
-   *   Bar   Baz
-   *    |     |
-   *  Object Buq
-   *          |
-   *        Object
+   *   A extends Object
+   *   B extends A
+   *   C extends B
+   *   D extends B
    * </code></pre>
+   * and a collection of these four classes.
    *
-   * {@code closestTo(Object.class)} would be sorted as {@code [Bar, Buq], Baz, Foo}. The order of Bar, Baz is not
+   * <p><b>Scenario 1</b>
+   * <br>{@code closestTo(Object.class)} would be sorted as {@code A, B, [C, D]}. The order of C, D is not
    * deterministic and depends on the ordering of the source collection, hence the brackets.
+   *
+   * <p><b>Scenario 2</b>
+   * <br>
+   * {@code closestTo(C.class)} would be sorted as {@code C, B, A, D}. {@code D} is at the very end because it is not
+   * part of the class hierarchy of {@code C}; neither one subclasses the other.
+   *
+   * <p><b>Scenario 3</b>
+   * <br>
+   * {@code closestTo(B.class)} would be sorted as {@code B, [A, C], D}. {@code A} and {@code C} are equidistant from
+   * {@code B}, so their ordering would depend on the order of the source collection.
    *
    * <p><b>This method does <i>not</i> support comparison of interfaces</b></p>
    *
@@ -198,21 +220,6 @@ public class DataTypes extends Registry<DataType> {
       // Neither subclasses the other
       return Integer.MAX_VALUE;
     }
-  }
-
-  public void clearCache() {
-    typeCache.clear();
-  }
-
-  /**
-   * A.
-   */
-  public Set<DataType> forJavaTypes(Class<?>... types) {
-    return Stream.of(types)
-        .map(this::forJavaType)
-        .filter(Optional::isPresent)
-        .map(Optional::get)
-        .collect(Collectors.toSet());
   }
 
   /**

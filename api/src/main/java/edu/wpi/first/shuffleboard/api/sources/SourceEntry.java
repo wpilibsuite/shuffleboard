@@ -9,13 +9,17 @@ import java.util.function.Supplier;
  * "Value". The values of the "Name" column are displayed using {@link #getNamePreview()}; the "Value" column uses
  * {@link #getValue}.
  */
-public interface SourceEntry<V> extends Serializable, Supplier<DataSource> {
+public interface SourceEntry extends Serializable, Supplier<DataSource> {
 
   /**
    * The name of a source corresponding to this entry.
    */
   String getName();
 
+  /**
+   * The string to use to display the name of the source. Defaults to {@link #getName()}, but may be overriden for
+   * entries for sources with a nested structure, such as NetworkTables.
+   */
   default String getViewName() {
     return getName();
   }
@@ -25,6 +29,10 @@ public interface SourceEntry<V> extends Serializable, Supplier<DataSource> {
    */
   Object getValue();
 
-  V getValueView();
+  /**
+   * Gets an object used to display the value of the source this entry represents. Implementers are encouraged to
+   * sharpen the return type
+   */
+  Object getValueView();
 
 }
