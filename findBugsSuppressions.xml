@@ -4,4 +4,10 @@
         <Method name="close"/>
         <Bug pattern="DM_EXIT"/>
     </Match>
+    
+    <!-- Reason: http://junit.org/junit5/docs/current/user-guide/#writing-tests-nested -->
+    <Match>
+        <Class name="~.*Test\$.*"/>
+        <Bug pattern="SIC_INNER_SHOULD_BE_STATIC"/>
+    </Match>
 </FindBugsFilter>

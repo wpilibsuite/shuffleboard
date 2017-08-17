@@ -29,7 +29,7 @@ public class FxUtilsTest extends UtilityClassTest<FxUtils> {
 
     @Override
     public void start(Stage stage) throws Exception {
-
+      // Setup FxToolkit
     }
 
     @Test
