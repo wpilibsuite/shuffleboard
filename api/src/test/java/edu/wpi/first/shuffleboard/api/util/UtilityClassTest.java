@@ -13,7 +13,7 @@ public abstract class UtilityClassTest<T> {
 
   private final Class<T> clazz;
 
-  protected UtilityClassTest(Class<T> clazz) {
+  public UtilityClassTest(Class<T> clazz) {
     this.clazz = clazz;
   }
 
