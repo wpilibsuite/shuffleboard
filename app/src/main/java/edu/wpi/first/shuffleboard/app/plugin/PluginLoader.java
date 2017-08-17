@@ -64,7 +64,7 @@ public class PluginLoader {
         .sorted() // sort alphabetically to make load order deterministic
         .forEach(jar -> {
           try {
-            PluginLoader.getDefault().loadPluginJar(jar);
+            loadPluginJar(jar);
           } catch (IOException e) {
             log.log(Level.WARNING, "Could not load plugin jar: " + jar, e); //NOPMD log not in if
           }

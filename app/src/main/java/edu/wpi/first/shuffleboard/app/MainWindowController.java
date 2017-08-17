@@ -1,5 +1,8 @@
 package edu.wpi.first.shuffleboard.app;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.LinkedListMultimap;
+import com.google.common.collect.Multimap;
 import com.google.common.io.Files;
 
 import edu.wpi.first.shuffleboard.api.components.SourceTreeTable;
@@ -30,6 +33,8 @@ import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -90,6 +95,8 @@ public class MainWindowController {
 
   private final ObservableValue<List<String>> stylesheets
       = EasyBind.map(AppPreferences.getInstance().themeProperty(), Theme::getStyleSheets);
+
+  private final Multimap<Plugin, TitledPane> sourcePanes = ArrayListMultimap.create();
 
   @FXML
   private void initialize() throws IOException {
@@ -196,6 +203,7 @@ public class MainWindowController {
           .map(sourceType::createSourceEntryForUri)
           .forEach(tree::updateEntry);
       TitledPane titledPane = new TitledPane(sourceType.getName(), tree);
+      sourcePanes.put(plugin, titledPane);
       sourcesAccordion.getPanes().add(titledPane);
       sourcesAccordion.setExpandedPane(titledPane);
     });
@@ -209,12 +217,8 @@ public class MainWindowController {
    * defined by the plugin will be removed from all dashboard tabs.
    */
   private void tearDown(Plugin plugin) {
-    plugin.getSourceTypes().forEach(sourceType -> {
-      sourcesAccordion.getPanes().stream()
-          .filter(p -> p.getText().equals(sourceType.getName()))
-          .findFirst()
-          .ifPresent(sourcesAccordion.getPanes()::remove);
-    });
+    // Remove the source panes
+    sourcesAccordion.getPanes().removeAll(sourcePanes.removeAll(plugin));
     // Remove widgets
     dashboard.getTabs().stream()
         .filter(tab -> tab instanceof DashboardTabPane.DashboardTab)

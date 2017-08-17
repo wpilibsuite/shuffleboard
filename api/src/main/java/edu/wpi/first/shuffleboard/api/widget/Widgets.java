@@ -1,6 +1,7 @@
 package edu.wpi.first.shuffleboard.api.widget;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
@@ -9,7 +10,6 @@ import edu.wpi.first.shuffleboard.api.util.Registry;
 import edu.wpi.first.shuffleboard.api.util.TestUtils;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -154,11 +154,12 @@ public class Widgets extends Registry<Class<? extends Widget>> {
   /**
    * Gets a list of the active widgets in the application.
    *
-   * <p><strong>Do not keep a reference to this list.</strong> It prevents garbage collection of widget instances.</p>
+   * <p><strong>Do not keep references to elements in this list.</strong> It prevents garbage collection of
+   * widget instances.
    */
   public List<Widget> getActiveWidgets() {
     // Use a copy; don't want elements in the list to be removed by GC while someone's using it
-    return new ArrayList<>(activeWidgets.keySet());
+    return ImmutableList.copyOf(activeWidgets.keySet());
   }
 
   /**

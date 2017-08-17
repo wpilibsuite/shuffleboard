@@ -23,7 +23,7 @@
                 <MenuItem onAction="#load" text="Load layout" accelerator="SHORTCUT+O"/>
                 <MenuItem onAction="#showPrefs" text="Preferences" accelerator="SHORTCUT+,"/>
                 <SeparatorMenuItem/>
-                <MenuItem onAction="#showPlugins" text="Plugins" accelerator="SHORTCUT+P"/>
+                <MenuItem onAction="#showPlugins" text="Plugins" accelerator="SHORTCUT+L"/>
                 <SeparatorMenuItem/>
                 <MenuItem onAction="#close" text="Close"/>
             </Menu>
