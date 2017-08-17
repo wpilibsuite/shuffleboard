@@ -61,6 +61,7 @@ public class Shuffleboard extends Application {
     loadPluginsFromDir();
 
     Recorder.getInstance().start();
+    primaryStage.setTitle("Shuffleboard");
     primaryStage.setMinWidth(640);
     primaryStage.setMinHeight(480);
     primaryStage.setWidth(Screen.getPrimary().getVisualBounds().getWidth());

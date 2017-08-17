@@ -1,7 +1,6 @@
 package edu.wpi.first.shuffleboard.app;
 
 import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.io.Files;
 
@@ -33,8 +32,6 @@ import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
-import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
