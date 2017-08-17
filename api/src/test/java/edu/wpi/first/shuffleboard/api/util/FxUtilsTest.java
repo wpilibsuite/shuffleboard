@@ -13,10 +13,14 @@ import org.testfx.framework.junit5.ApplicationTest;
 
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class FxUtilsTest extends UtilityClassTest<FxUtils> {
 
@@ -33,19 +37,19 @@ public class FxUtilsTest extends UtilityClassTest<FxUtils> {
     }
 
     @Test
-    public void runOnFxThreadTest() {
+    public void runOnFxThreadTest() throws InterruptedException, ExecutionException, TimeoutException {
       CompletableFuture<Boolean> isOnFxThread = new CompletableFuture<>();
       FxUtils.runOnFxThread(() -> isOnFxThread.complete(Platform.isFxApplicationThread()));
 
-      assertTimeoutPreemptively(Duration.ofSeconds(5), isOnFxThread::join);
+      assertTrue(isOnFxThread.get(5, TimeUnit.SECONDS));
     }
 
     @Test
-    public void runOnFxThreadAlreadyOnTest() {
+    public void runOnFxThreadAlreadyOnTest() throws InterruptedException, ExecutionException, TimeoutException {
       CompletableFuture<Boolean> isOnFxThread = new CompletableFuture<>();
       Platform.runLater(() -> FxUtils.runOnFxThread(() -> isOnFxThread.complete(Platform.isFxApplicationThread())));
 
-      assertTimeoutPreemptively(Duration.ofSeconds(5), isOnFxThread::join);
+      assertTrue(isOnFxThread.get(5, TimeUnit.SECONDS));
     }
 
   }
