@@ -9,10 +9,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class PropertyUtilsTest extends UtilityClassTest<PropertyUtils> {
 
-  public PropertyUtilsTest() {
-    super(PropertyUtils.class);
-  }
-
   @Test
   @SuppressWarnings("LocalVariableName")
   public void testCombineLists() {

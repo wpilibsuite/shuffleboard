@@ -13,10 +13,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class EqualityUtilsTest extends UtilityClassTest<EqualityUtils> {
 
-  public EqualityUtilsTest() {
-    super(EqualityUtils.class);
-  }
-
   @Test
   public void isEqualInvalidPrimativeTest() {
     assertThrows(UnsupportedOperationException.class, () -> EqualityUtils.isEqual(new long[0], new long[0]));

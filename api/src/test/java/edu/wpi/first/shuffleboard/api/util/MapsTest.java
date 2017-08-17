@@ -10,10 +10,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class MapsTest extends UtilityClassTest<Maps> {
 
-  public MapsTest() {
-    super(Maps.class);
-  }
-
   @Test
   public void builderEmptyTest() {
     Map<Object, Object> map = Maps.builder().build();

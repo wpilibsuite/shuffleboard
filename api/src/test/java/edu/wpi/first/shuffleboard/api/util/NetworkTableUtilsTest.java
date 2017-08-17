@@ -13,10 +13,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class NetworkTableUtilsTest extends UtilityClassTest<NetworkTableUtils> {
 
-  public NetworkTableUtilsTest() {
-    super(NetworkTableUtils.class);
-  }
-
   @ParameterizedTest
   @CsvSource({"simple, simple",
                  "simple, one/two/many/simple",

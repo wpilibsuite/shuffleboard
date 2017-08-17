@@ -57,12 +57,12 @@ subprojects {
     }
 
     dependencies {
-        fun junitJupiter(name: String, version: String = "5.0.0-M5") =
+        fun junitJupiter(name: String, version: String = "5.0.0-RC2") =
                 create(group = "org.junit.jupiter", name = name, version = version)
         "testCompile"(junitJupiter(name = "junit-jupiter-api"))
         "testCompile"(junitJupiter(name = "junit-jupiter-engine"))
         "testCompile"(junitJupiter(name = "junit-jupiter-params"))
-        "testRuntime"(create(group = "org.junit.platform", name = "junit-platform-launcher", version = "1.0.0-M5"))
+        "testRuntime"(create(group = "org.junit.platform", name = "junit-platform-launcher", version = "1.0.0-RC2"))
         fun testFx(name: String, version: String = "4.0.+") =
                 create(group = "org.testfx", name = name, version = version)
         "testCompile"(testFx(name = "testfx-core"))

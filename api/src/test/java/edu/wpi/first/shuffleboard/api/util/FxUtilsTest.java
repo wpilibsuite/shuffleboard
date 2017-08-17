@@ -24,10 +24,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class FxUtilsTest extends UtilityClassTest<FxUtils> {
 
-  public FxUtilsTest() {
-    super(FxUtils.class);
-  }
-
   @Nested
   public class FxTests extends ApplicationTest {
 
