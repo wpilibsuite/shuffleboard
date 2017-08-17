@@ -16,14 +16,6 @@ dependencies {
     implementation(group = "edu.wpi.first.ntcore", name = "ntcore-jni", version = "3.1.7-20170808143930-12-gccfeab5", classifier = "all")
 }
 
-if (project.hasProperty("testClasses")) {
-    junitPlatform {
-        filters {
-            includeClassNamePattern(project.property("testClasses").toString())
-        }
-    }
-}
-
 /*
  * Allows you to run the UI tests in headless mode by calling gradle with the -Pheadless argument
  */
