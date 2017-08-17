@@ -97,6 +97,18 @@ subprojects {
             html.isEnabled = true
         }
     }
+    afterEvaluate {
+        val junitPlatformTest by tasks
+        jacoco {
+            applyToHelper(junitPlatformTest)
+        }
+        task<JacocoReport>("jacocoJunit5TestReport") {
+            executionData(junitPlatformTest)
+            sourceSets(java.sourceSets["main"])
+            sourceDirectories = files(java.sourceSets["main"].allSource.srcDirs)
+            classDirectories = files(java.sourceSets["main"].output)
+        }
+    }
 }
 
 configure(setOf(project(":app"))) {
@@ -138,6 +150,16 @@ fun getWPILibVersion(): String? = if (WPILibVersion.version != "") WPILibVersion
 
 task<Wrapper>("wrapper") {
     gradleVersion = "4.1"
+}
+
+/**
+ * Workaround fix for calling [org.gradle.testing.jacoco.plugins.JacocoPluginExtension.applyTo]
+ *
+ * [Issue details here](https://github.com/gradle/kotlin-dsl/issues/458)
+ */
+fun org.gradle.testing.jacoco.plugins.JacocoPluginExtension.applyToHelper(task : Task) {
+    val method = this::class.java.getMethod("applyTo", Task::class.java)
+    method.invoke(this, task)
 }
 
 /**
