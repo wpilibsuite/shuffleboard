@@ -9,6 +9,7 @@ import org.gradle.api.tasks.wrapper.Wrapper
 import org.gradle.jvm.tasks.Jar
 import org.gradle.testing.jacoco.tasks.JacocoReport
 import java.io.File
+import java.math.BigDecimal
 
 buildscript {
     repositories {
@@ -25,6 +26,17 @@ plugins {
     id("com.github.johnrengelman.shadow") version "2.0.1"
 }
 
+val apiProject = project(":api")
+val appProject = project(":app")
+
+/**
+ * Code coverage expectations per project.
+ */
+val coverageExpectation = mapOf(
+    apiProject to 0.0,
+    appProject to 0.545
+).withDefault { 0.8 }
+
 subprojects {
     apply {
         plugin("java")
@@ -36,6 +48,7 @@ subprojects {
         plugin("org.junit.platform.gradle.plugin")
         plugin("edu.wpi.first.wpilib.versioning.WPILibVersioningPlugin")
     }
+    val thisProject = this
     repositories {
         mavenCentral()
     }
@@ -102,16 +115,30 @@ subprojects {
         jacoco {
             applyToHelper(junitPlatformTest)
         }
-        task<JacocoReport>("jacocoJunit5TestReport") {
+        val jacocoJunit5TestReport = task<JacocoReport>("jacocoJunit5TestReport") {
             executionData(junitPlatformTest)
             sourceSets(java.sourceSets["main"])
             sourceDirectories = files(java.sourceSets["main"].allSource.srcDirs)
             classDirectories = files(java.sourceSets["main"].output)
         }
+        val coverageVerificationTasks = tasks.withType<JacocoCoverageVerification>{
+            dependsOn(jacocoJunit5TestReport)
+            executionData = jacocoJunit5TestReport.executionData
+            coverageExpectation[thisProject]?.let {
+                violationRules {
+                    rule {
+                        limit {
+                            minimum = BigDecimal(it)
+                        }
+                    }
+                }
+            }
+        }
+        tasks.getByName("check").dependsOn(coverageVerificationTasks)
     }
 }
 
-configure(setOf(project(":app"))) {
+configure(setOf(appProject)) {
     apply {
         plugin("com.github.johnrengelman.shadow")
     }
