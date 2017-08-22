@@ -17,9 +17,9 @@ import java.util.Optional;
  * A source for data in network tables. Data can be a single value or a map of keys to values.
  *
  * @implNote Subclasses must call {@link #setTableListener(TableListener) setTableListener()} after
- * the super constructor call. If a subclass needs to implement {@link #close()}, its
- * implementation <i>must</i> call {@code super.close()} to properly remove the listener
- * from network tables.
+ *           the super constructor call. If a subclass needs to implement {@link #close()}, its
+ *           implementation <i>must</i> call {@code super.close()} to properly remove the listener
+ *           from network tables.
  */
 public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
 
