@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.layout.HBox?>
+<HBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="edu.wpi.first.shuffleboard.plugin.base.widget.CommandWidget"
+      fx:id="root"
+      spacing="8"
+      alignment="CENTER">
+    <padding>
+        <Insets topRightBottomLeft="8"/>
+    </padding>
+    <CheckBox fx:id="checkBox" text="Enabled"/>
+</HBox>

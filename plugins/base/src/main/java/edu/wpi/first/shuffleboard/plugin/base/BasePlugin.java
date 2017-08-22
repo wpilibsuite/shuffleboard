@@ -12,6 +12,7 @@ import edu.wpi.first.shuffleboard.api.widget.Widget;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.AnalogInputType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.BooleanArrayType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.BooleanType;
+import edu.wpi.first.shuffleboard.plugin.base.data.types.CommandType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.EncoderType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.NumberArrayType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.NumberType;
@@ -26,6 +27,7 @@ import edu.wpi.first.shuffleboard.plugin.base.recording.serialization.StringAdap
 import edu.wpi.first.shuffleboard.plugin.base.recording.serialization.StringArrayAdapter;
 import edu.wpi.first.shuffleboard.plugin.base.widget.BooleanBox;
 import edu.wpi.first.shuffleboard.plugin.base.widget.ComboBoxChooser;
+import edu.wpi.first.shuffleboard.plugin.base.widget.CommandWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.EncoderWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.NumberSlider;
 import edu.wpi.first.shuffleboard.plugin.base.widget.ProgressBar;
@@ -58,7 +60,8 @@ public class BasePlugin extends Plugin {
         new AnalogInputType(),
         new EncoderType(),
         new SendableChooserType(),
-        new SpeedControllerType()
+        new SpeedControllerType(),
+        new CommandType()
     );
   }
 
@@ -67,6 +70,7 @@ public class BasePlugin extends Plugin {
     return ImmutableList.of(
         BooleanBox.class,
         ComboBoxChooser.class,
+        CommandWidget.class,
         EncoderWidget.class,
         NumberSlider.class,
         ProgressBar.class,
