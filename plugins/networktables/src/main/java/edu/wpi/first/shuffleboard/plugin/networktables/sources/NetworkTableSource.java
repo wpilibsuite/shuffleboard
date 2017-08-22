@@ -5,20 +5,25 @@ import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.sources.AbstractDataSource;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
-import edu.wpi.first.shuffleboard.api.sources.Sources;
 import edu.wpi.first.shuffleboard.api.util.AsyncUtils;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * A source for data in network tables. Data can be a single value or a map of keys to values.
  *
  * @implNote Subclasses must call {@link #setTableListener(TableListener) setTableListener()} after
- *           the super constructor call. If a subclass needs to implement {@link #close()}, its
- *           implementation <i>must</i> call {@code super.close()} to properly remove the listener
- *           from network tables.
+ * the super constructor call. If a subclass needs to implement {@link #close()}, its
+ * implementation <i>must</i> call {@code super.close()} to properly remove the listener
+ * from network tables.
  */
 public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
+
+  private static final Map<String, NetworkTableSource> sources = new HashMap<>();
 
   protected final String fullTableKey;
   private int listenerUid = -1;
@@ -111,16 +116,24 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
     final String uri = NetworkTableSourceType.INSTANCE.toUri(key);
     if (NetworkTableUtils.rootTable.containsKey(key)) {
       // Key-value pair
-      return Sources.getDefault().computeIfAbsent(uri, () ->
+      return sources.computeIfAbsent(uri, __ ->
           new SingleKeyNetworkTableSource<>(NetworkTableUtils.rootTable, key,
               NetworkTableUtils.dataTypeForEntry(key)));
     }
     if (NetworkTableUtils.rootTable.containsSubTable(key) || key.isEmpty()) {
       // Composite
-      return Sources.getDefault().computeIfAbsent(uri, () ->
+      return sources.computeIfAbsent(uri, __ ->
           new CompositeNetworkTableSource(key, (ComplexDataType) NetworkTableUtils.dataTypeForEntry(key)));
     }
     return DataSource.none();
+  }
+
+  /**
+   * Gets the existing data source for the given key, or {@link Optional#empty()} is no source has been created for that
+   * key.
+   */
+  public static Optional<NetworkTableSource> getExisting(String key) {
+    return Optional.ofNullable(sources.get(key));
   }
 
 

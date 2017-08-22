@@ -3,7 +3,6 @@ package edu.wpi.first.shuffleboard.plugin.networktables.sources;
 import edu.wpi.first.shuffleboard.api.data.ComplexData;
 import edu.wpi.first.shuffleboard.api.sources.SourceEntry;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
-import edu.wpi.first.shuffleboard.api.sources.Sources;
 import edu.wpi.first.shuffleboard.api.sources.recording.TimestampedData;
 import edu.wpi.first.shuffleboard.api.util.AsyncUtils;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
@@ -52,7 +51,7 @@ public final class NetworkTableSourceType extends SourceType {
     List<String> hierarchy = NetworkTableUtils.getHierarchy(fullKey);
     hierarchy.stream()
         .map(NetworkTableSourceType.INSTANCE::toUri)
-        .map(Sources.getDefault()::get)
+        .map(NetworkTableSource::getExisting)
         .filter(Optional::isPresent)
         .map(Optional::get)
         .forEach(source -> {

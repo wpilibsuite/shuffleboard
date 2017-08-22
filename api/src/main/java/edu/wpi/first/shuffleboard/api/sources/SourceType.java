@@ -72,7 +72,7 @@ public class SourceType {
     if (!uri.startsWith(protocol)) {
       throw new IllegalArgumentException("URI does not start with the correct protocol: " + uri);
     }
-    return sourceSupplier.apply(removeProtocol(uri));
+    return Sources.getDefault().computeIfAbsent(uri, () -> sourceSupplier.apply(removeProtocol(uri)));
   }
 
   /**
