@@ -66,7 +66,7 @@ public class PluginLoader {
           try {
             loadPluginJar(jar);
           } catch (IOException e) {
-            log.log(Level.WARNING, "Could not load plugin jar: " + jar, e); //NOPMD log not in if
+            log.log(Level.WARNING, "Could not load plugin jar: " + jar, e);
           }
         });
   }
@@ -80,7 +80,7 @@ public class PluginLoader {
    * @see #load(Plugin)
    */
   public void loadPluginJar(URI jarUri) throws IOException {
-    log.info("Attempting to load plugin jar: " + jarUri); //NOPMD log not in if
+    log.info("Attempting to load plugin jar: " + jarUri);
     URL url = jarUri.toURL();
     PrivilegedAction<URLClassLoader> getClassLoader = () -> {
       return new URLClassLoader(new URL[]{url}, ClassLoader.getSystemClassLoader());
@@ -101,7 +101,7 @@ public class PluginLoader {
     try {
       return Stream.of(Class.forName(name, false, classLoader));
     } catch (ClassNotFoundException e) {
-      // TODO log
+      log.log(Level.WARNING, "Could not load class for name '" + name + "' with classloader " + classLoader, e);
       return Stream.empty();
     }
   }
@@ -150,7 +150,7 @@ public class PluginLoader {
     if (loadedPlugins.contains(plugin)) {
       throw new IllegalArgumentException("The plugin " + plugin + " is already loaded");
     }
-    log.info("Loading plugin " + plugin.fullIdString()); //NOPMD log not in if statement
+    log.info("Loading plugin " + plugin.fullIdString());
     plugin.getDataTypes().forEach(DataTypes.getDefault()::register);
     plugin.getSourceTypes().forEach(SourceTypes.getDefault()::register);
     plugin.getTypeAdapters().forEach(Serializers::add);

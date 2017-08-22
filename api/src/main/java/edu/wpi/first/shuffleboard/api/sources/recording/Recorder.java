@@ -56,7 +56,7 @@ public final class Recorder {
     try {
       String file = String.format(Storage.RECORDING_FILE_FORMAT, createTimestamp());
       Serialization.saveRecording(recording, file);
-      log.fine("Saved recording to " + file); //NOPMD log not in 'if' statement
+      log.fine("Saved recording to " + file);
     } catch (IOException e) {
       throw new RuntimeException("Could not save the recording", e);
     }

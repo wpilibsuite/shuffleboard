@@ -132,6 +132,10 @@ public class MainWindowController {
       }
     });
 
+    setUpPluginsStage();
+  }
+
+  private void setUpPluginsStage() {
     pluginStage = new Stage();
     pluginStage.initModality(Modality.WINDOW_MODAL);
     pluginStage.addEventHandler(KeyEvent.KEY_PRESSED, e -> {

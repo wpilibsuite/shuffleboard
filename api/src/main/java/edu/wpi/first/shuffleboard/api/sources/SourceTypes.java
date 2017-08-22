@@ -31,7 +31,7 @@ public final class SourceTypes extends Registry<SourceType> {
           false,
           "example://",
           uri -> {
-            return DummySource.forTypes(DataTypes.getDefault().getDefault().forName(uri).get()).get();
+            return DummySource.forTypes(DataTypes.getDefault().forName(uri).get()).get();
           });
 
   /**
