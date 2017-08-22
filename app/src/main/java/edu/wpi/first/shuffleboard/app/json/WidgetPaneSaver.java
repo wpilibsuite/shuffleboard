@@ -24,16 +24,13 @@ public class WidgetPaneSaver implements ElementTypeAdapter<WidgetPane> {
     JsonObject object = new JsonObject();
 
     for (Tile<?> tile : src.getTiles()) {
-      if (!(tile.getContent() instanceof Widget)) {
-        continue; //FIXME
-      }
       String x = GridPane.getColumnIndex(tile).toString();
       String y = GridPane.getRowIndex(tile).toString();
       String coordinate = String.join(",", x, y);
 
       JsonObject tileObject = new JsonObject();
       tileObject.add("size", context.serialize(tile.getSize(), TileSize.class));
-      tileObject.add("widget", context.serialize(tile.getContent(), Widget.class));
+      tileObject.add("content", context.serialize(tile.getContent(), tile.getContent().getClass()));
 
       object.add(coordinate, tileObject);
     }
@@ -52,7 +49,7 @@ public class WidgetPaneSaver implements ElementTypeAdapter<WidgetPane> {
 
       JsonObject tile = tileLocation.getValue().getAsJsonObject();
       TileSize size = context.deserialize(tile.get("size"), TileSize.class);
-      Widget widget = context.deserialize(tile.get("widget"), Widget.class);
+      Widget widget = context.deserialize(tile.get("content"), Widget.class);
 
       pane.addWidget(widget, coords, size);
     }

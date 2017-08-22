@@ -68,6 +68,11 @@ public class ListLayout implements Layout {
   }
 
   @Override
+  public String getName() {
+    return "List Layout";
+  }
+
+  @Override
   public void addChild(Component widget) {
     widgets.add(widget);
   }

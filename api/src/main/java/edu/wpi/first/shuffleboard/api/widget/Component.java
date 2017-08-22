@@ -18,4 +18,8 @@ public interface Component {
    */
   Stream<Widget> allWidgets();
 
+  /**
+   * The unique name of this component.
+   */
+  String getName();
 }
