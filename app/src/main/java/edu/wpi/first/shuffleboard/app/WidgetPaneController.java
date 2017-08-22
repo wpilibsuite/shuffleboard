@@ -1,18 +1,19 @@
 package edu.wpi.first.shuffleboard.app;
 
-import edu.wpi.first.shuffleboard.api.sources.DataSource;
-import edu.wpi.first.shuffleboard.api.sources.DummySource;
-import edu.wpi.first.shuffleboard.api.util.FxUtils;
-import edu.wpi.first.shuffleboard.api.widget.Widget;
 import edu.wpi.first.shuffleboard.app.components.TileLayout;
 import edu.wpi.first.shuffleboard.app.components.WidgetPane;
 import edu.wpi.first.shuffleboard.app.components.WidgetTile;
-import edu.wpi.first.shuffleboard.app.dnd.DataFormats;
+import edu.wpi.first.shuffleboard.api.dnd.DataFormats;
+import edu.wpi.first.shuffleboard.api.sources.DataSource;
+import edu.wpi.first.shuffleboard.api.sources.DummySource;
+import edu.wpi.first.shuffleboard.api.sources.SourceEntry;
+import edu.wpi.first.shuffleboard.api.util.FxUtils;
+import edu.wpi.first.shuffleboard.api.util.GridPoint;
+import edu.wpi.first.shuffleboard.api.util.RoundingMode;
+import edu.wpi.first.shuffleboard.api.widget.TileSize;
+import edu.wpi.first.shuffleboard.api.widget.Widget;
+import edu.wpi.first.shuffleboard.api.widget.Widgets;
 import edu.wpi.first.shuffleboard.app.dnd.TileDragResizer;
-import edu.wpi.first.shuffleboard.app.util.GridPoint;
-import edu.wpi.first.shuffleboard.app.util.RoundingMode;
-import edu.wpi.first.shuffleboard.app.widget.TileSize;
-import edu.wpi.first.shuffleboard.app.widget.Widgets;
 
 import org.fxmisc.easybind.EasyBind;
 
@@ -70,10 +71,10 @@ public class WidgetPaneController {
       } else if (isSource) {
         SourceEntry entry = (SourceEntry) event.getDragboard().getContent(DataFormats.source);
         DataSource source = entry.get();
-        Optional<String> widgetName = Widgets.pickWidgetNameFor(source.getDataType());
+        Optional<String> widgetName = Widgets.getDefault().pickWidgetNameFor(source.getDataType());
         Optional<DummySource> dummySource = DummySource.forTypes(source.getDataType());
         if (widgetName.isPresent() && dummySource.isPresent()) {
-          Widgets.createWidget(widgetName.get(), (DataSource<?>) dummySource.get()).ifPresent(w -> {
+          Widgets.getDefault().createWidget(widgetName.get(), (DataSource<?>) dummySource.get()).ifPresent(w -> {
             pane.setHighlight(true);
             pane.setHighlightPoint(point);
             pane.setHighlightSize(pane.sizeOfWidget(w));
@@ -109,7 +110,7 @@ public class WidgetPaneController {
 
       if (dragboard.hasContent(DataFormats.widgetType)) {
         String widgetType = (String) dragboard.getContent(DataFormats.widgetType);
-        Widgets.typeFor(widgetType).ifPresent(type -> {
+        Widgets.getDefault().typeFor(widgetType).ifPresent(type -> {
           Widget widget = type.get();
           TileSize size = pane.sizeOfWidget(widget);
           if (pane.isOpen(point, size, _t -> false)) {
@@ -219,8 +220,8 @@ public class WidgetPaneController {
    * @param point  the point to place the widget for the source
    */
   private void dropSource(DataSource<?> source, GridPoint point) {
-    Widgets.pickWidgetNameFor(source.getDataType())
-           .flatMap(name -> Widgets.createWidget(name, source))
+    Widgets.getDefault().pickWidgetNameFor(source.getDataType())
+           .flatMap(name -> Widgets.getDefault().createWidget(name, source))
            .filter(widget -> pane.isOpen(point, pane.sizeOfWidget(widget), n -> widget == n))
            .map(pane::addWidget)
            .ifPresent(tile -> pane.moveNode(tile, point));
@@ -294,7 +295,7 @@ public class WidgetPaneController {
   private Menu createChangeMenus(WidgetTile tile) {
     Widget widget = tile.getWidget();
     Menu changeView = new Menu("Show as...");
-    Widgets.widgetNamesForType(widget.getSource().getDataType())
+    Widgets.getDefault().widgetNamesForType(widget.getSource().getDataType())
            .stream()
            .sorted()
            .forEach(name -> {
@@ -304,7 +305,7 @@ public class WidgetPaneController {
              } else {
                // only need to change if it's to another type
                changeItem.setOnAction(__ -> {
-                 Widgets.createWidget(name, widget.getSource())
+                 Widgets.getDefault().createWidget(name, widget.getSource())
                         .ifPresent(tile::setWidget);
                });
              }

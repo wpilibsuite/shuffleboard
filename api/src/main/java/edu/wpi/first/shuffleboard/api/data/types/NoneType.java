@@ -2,11 +2,10 @@ package edu.wpi.first.shuffleboard.api.data.types;
 
 import edu.wpi.first.shuffleboard.api.data.SimpleDataType;
 
-public class NoneType implements SimpleDataType {
+public class NoneType extends SimpleDataType {
 
-  @Override
-  public String getName() {
-    return "None";
+  public NoneType() {
+    super("None", null);
   }
 
   @Override

@@ -135,8 +135,7 @@ public final class NetworkTableUtils {
    *
    * @param key the network table key to get the data type for
    *
-   * @return the data type most closely associated with the given key, or {@link DataTypes#Unknown}
-   *         if there is no network table value for the given key
+   * @return the data type most closely associated with the given key
    */
   public static DataType dataTypeForEntry(String key) {
     String normalKey = normalizeKey(key, false);
@@ -144,7 +143,7 @@ public final class NetworkTableUtils {
       return DataTypes.Map;
     }
     if (rootTable.containsKey(normalKey)) {
-      return DataType.forJavaType(rootTable.getValue(normalKey, null).getClass());
+      return DataTypes.getDefault().forJavaType(rootTable.getValue(normalKey, null).getClass()).get();
     }
     if (rootTable.containsSubTable(normalKey)) {
       ITable table = rootTable.getSubTable(normalKey);
@@ -152,15 +151,11 @@ public final class NetworkTableUtils {
       if (type == null) {
         return DataTypes.Map;
       } else {
-        DataType<?> forName = DataType.forName(type);
-        if (forName == DataTypes.Unknown) {
-          return DataTypes.Map;
-        } else {
-          return forName;
-        }
+        return DataTypes.getDefault().forName(type)
+            .orElse(DataTypes.Map);
       }
     }
-    return DataTypes.Unknown;
+    return null;
   }
 
   /**

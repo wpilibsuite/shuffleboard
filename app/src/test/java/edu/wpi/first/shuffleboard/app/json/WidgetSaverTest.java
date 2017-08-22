@@ -1,43 +1,59 @@
 package edu.wpi.first.shuffleboard.app.json;
 
-import edu.wpi.first.shuffleboard.api.util.AsyncUtils;
-import edu.wpi.first.shuffleboard.api.util.FxUtils;
-import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
+import edu.wpi.first.shuffleboard.api.data.DataTypes;
+import edu.wpi.first.shuffleboard.api.data.types.AllType;
+import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
+import edu.wpi.first.shuffleboard.api.widget.AnnotatedWidget;
+import edu.wpi.first.shuffleboard.api.widget.Description;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
-import edu.wpi.first.shuffleboard.app.sources.NetworkTableSourceType;
-import edu.wpi.first.shuffleboard.app.widget.Widgets;
-import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
+import edu.wpi.first.shuffleboard.api.widget.Widgets;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.testfx.framework.junit5.ApplicationTest;
 
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class WidgetSaverTest extends ApplicationTest {
 
+  @Description(name = "Simple Widget", dataTypes = AllType.class)
+  public static class SimpleWidget extends AnnotatedWidget {
+
+    public SimpleWidget() {
+      exportProperties(
+          new SimpleDoubleProperty(this, "min", 0),
+          new SimpleDoubleProperty(this, "max", 0),
+          new SimpleDoubleProperty(this, "blockIncrement", 0)
+      );
+    }
+
+    @Override
+    public Pane getView() {
+      return null;
+    }
+
+  }
+
   @Override
   public void start(Stage stage) throws Exception {
-    Widgets.discover();
+    // Just here so can run on the FX thread
   }
 
   @BeforeEach
   public void setUp() {
-    NetworkTableUtils.shutdown();
-    NetworkTablesJNI.setUpdateRate(0.01);
-    AsyncUtils.setAsyncRunner(Runnable::run);
-    NetworkTablesJNI.putDouble("/value", 0.5);
-    NetworkTableUtils.waitForNtcoreEvents();
+    Widgets.setDefault(new Widgets());
+    DataTypes.setDefault(new DataTypes());
   }
 
   @AfterEach
   public void tearDown() {
-    AsyncUtils.setAsyncRunner(FxUtils::runOnFxThread);
-    NetworkTableUtils.shutdown();
+    Widgets.setDefault(new Widgets());
+    DataTypes.setDefault(new DataTypes());
   }
 
   private static Object getPropertyValue(Widget widget, String name) {
@@ -48,12 +64,12 @@ public class WidgetSaverTest extends ApplicationTest {
         .getValue();
   }
 
-  @Disabled
   @Test
   public void loadSimpleWidget() throws Exception {
+    Widgets.getDefault().register(SimpleWidget.class);
     String widgetJson = "{\n"
-        + "\"_type\": \"Number Slider\",\n"
-        + "\"_source\": \"network_table:///value\",\n"
+        + "\"_type\": \"Simple Widget\",\n"
+        + "\"_source\": \"example://All\",\n"
         + "\"min\": -1.0,\n"
         + "\"max\": 1.0,\n"
         + "\"blockIncrement\": 0.0625\n"
@@ -61,9 +77,8 @@ public class WidgetSaverTest extends ApplicationTest {
 
     Widget widget = JsonBuilder.forSaveFile().fromJson(widgetJson, Widget.class);
 
-    assertEquals("Number Slider", widget.getName());
-    assertEquals(NetworkTableSourceType.INSTANCE, widget.getSource().getType());
-    assertEquals(0.5, widget.getSource().getData());
+    assertEquals("Simple Widget", widget.getName());
+    assertEquals(SourceTypes.Static, widget.getSource().getType());
 
     assertEquals(-1.0, getPropertyValue(widget, "min"));
     assertEquals(1.0, getPropertyValue(widget, "max"));

@@ -3,15 +3,14 @@ package edu.wpi.first.shuffleboard.app.components;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
+import edu.wpi.first.shuffleboard.api.util.Debouncer;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
-import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
-import edu.wpi.first.shuffleboard.app.sources.NetworkTableSourceType;
-import edu.wpi.first.shuffleboard.app.widget.WidgetPropertySheet;
-import edu.wpi.first.shuffleboard.app.widget.Widgets;
+import edu.wpi.first.shuffleboard.api.widget.Widgets;
 
 import org.fxmisc.easybind.EasyBind;
 
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.function.Predicate;
 
@@ -30,7 +29,7 @@ import javafx.scene.control.Dialog;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 
-import static edu.wpi.first.shuffleboard.app.util.TypeUtils.optionalCast;
+import static edu.wpi.first.shuffleboard.api.util.TypeUtils.optionalCast;
 
 /**
  * Represents a dashboard composed of multiple tabs.
@@ -122,7 +121,15 @@ public class DashboardTabPane extends TabPane {
     private final StringProperty title = new SimpleStringProperty(this, "title", "");
     private final BooleanProperty autoPopulate = new SimpleBooleanProperty(this, "autoPopulate", false);
     private final StringProperty sourcePrefix = new SimpleStringProperty(this, "sourcePrefix", "");
-    private static final ObservableList<String> availableSourceIds = SourceTypes.allAvailableSourceUris();
+    private static final ObservableList<String> availableSourceIds = SourceTypes.getDefault().allAvailableSourceUris();
+
+    /**
+     * Debounces populate() calls so we don't freeze the app while a source type is doing its initial discovery of
+     * available source URIs. Not debouncing makes typical application startup take at least 5 seconds on an i7-6700HQ
+     * where the user sees nothing but a blank screen - no UI elements or anything!
+     */
+    private final Debouncer populateDebouncer =
+        new Debouncer(() -> FxUtils.runOnFxThread(this::populate), Duration.ofMillis(50));
 
     private boolean deferPopulation = true;
 
@@ -138,9 +145,9 @@ public class DashboardTabPane extends TabPane {
 
       this.contentProperty().bind(widgetPane);
 
-      autoPopulate.addListener(__ -> populate());
-      sourcePrefix.addListener(__ -> populate());
-      availableSourceIds.addListener((ListChangeListener<String>) c -> populate());
+      autoPopulate.addListener(__ -> populateDebouncer.run());
+      sourcePrefix.addListener(__ -> populateDebouncer.run());
+      availableSourceIds.addListener((ListChangeListener<String>) c -> populateDebouncer.run());
 
       setContextMenu(new ContextMenu(FxUtils.menuItem("Preferences", e -> {
         // Use a dummy property here to prevent a call to populate() on every keystroke in the editor (!)
@@ -169,6 +176,10 @@ public class DashboardTabPane extends TabPane {
       })));
     }
 
+    /**
+     * Populates this tab with all available sources that begin with the set source prefix and don't already have a
+     * widget to display it or any higher-level source.
+     */
     private void populate() {
       if (getWidgetPane().getScene() == null || getWidgetPane().getParent() == null) {
         // Defer until the pane is visible and is laid out in the scene
@@ -187,15 +198,14 @@ public class DashboardTabPane extends TabPane {
       }
       for (String id : availableSourceIds) {
         if (shouldAutopopulate(id)
-            && isNotMetadata(id)
             && noExistingWidgetsForSource(id)) {
-          DataSource<?> source = SourceTypes.forUri(id);
+          DataSource<?> source = SourceTypes.getDefault().forUri(id);
 
           // Don't create widgets for the catchall types
           if (source.getDataType() != DataTypes.Unknown
               && source.getDataType() != DataTypes.Map
-              && !Widgets.widgetNamesForSource(source).isEmpty()) {
-            Widgets.createWidget(Widgets.widgetNamesForSource(source).get(0), source)
+              && !Widgets.getDefault().widgetNamesForSource(source).isEmpty()) {
+            Widgets.getDefault().createWidget(Widgets.getDefault().widgetNamesForSource(source).get(0), source)
                 .ifPresent(w -> getWidgetPane().addWidget(w));
           }
         }
@@ -204,12 +214,7 @@ public class DashboardTabPane extends TabPane {
 
     private boolean shouldAutopopulate(String sourceId) {
       return sourceId.startsWith(getSourcePrefix())
-          || SourceTypes.stripProtocol(sourceId).startsWith(getSourcePrefix());
-    }
-
-    private boolean isNotMetadata(String sourceId) {
-      return SourceTypes.typeForUri(sourceId) != NetworkTableSourceType.INSTANCE
-          || !NetworkTableUtils.isMetadata(NetworkTableSourceType.INSTANCE.removeProtocol(sourceId));
+          || SourceTypes.getDefault().stripProtocol(sourceId).startsWith(getSourcePrefix());
     }
 
     /**

@@ -7,8 +7,8 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonSerializationContext;
 import edu.wpi.first.shuffleboard.app.components.WidgetPane;
 import edu.wpi.first.shuffleboard.app.components.WidgetTile;
-import edu.wpi.first.shuffleboard.app.util.GridPoint;
-import edu.wpi.first.shuffleboard.app.widget.TileSize;
+import edu.wpi.first.shuffleboard.api.util.GridPoint;
+import edu.wpi.first.shuffleboard.api.widget.TileSize;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 import javafx.scene.layout.GridPane;
 

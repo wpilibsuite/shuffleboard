@@ -5,7 +5,7 @@ import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonSerializationContext;
-import edu.wpi.first.shuffleboard.app.widget.TileSize;
+import edu.wpi.first.shuffleboard.api.widget.TileSize;
 
 @AnnotatedTypeAdapter(forType = TileSize.class)
 public class TileSizeSaver implements ElementTypeAdapter<TileSize> {

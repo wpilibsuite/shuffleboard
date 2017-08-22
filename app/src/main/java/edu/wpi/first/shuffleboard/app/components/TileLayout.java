@@ -1,7 +1,8 @@
 package edu.wpi.first.shuffleboard.app.components;
 
-import edu.wpi.first.shuffleboard.app.util.GridPoint;
-import edu.wpi.first.shuffleboard.app.widget.TileSize;
+
+import edu.wpi.first.shuffleboard.api.util.GridPoint;
+import edu.wpi.first.shuffleboard.api.widget.TileSize;
 
 import java.util.Objects;
 

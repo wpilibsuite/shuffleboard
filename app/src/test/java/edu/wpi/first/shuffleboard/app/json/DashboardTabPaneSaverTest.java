@@ -1,14 +1,14 @@
 package edu.wpi.first.shuffleboard.app.json;
 
+import edu.wpi.first.shuffleboard.app.components.DashboardTabPane;
 import edu.wpi.first.shuffleboard.api.util.AsyncUtils;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
-import edu.wpi.first.shuffleboard.app.components.DashboardTabPane;
-import edu.wpi.first.shuffleboard.app.widget.Widgets;
 import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.testfx.framework.junit5.ApplicationTest;
 
@@ -19,11 +19,12 @@ import javafx.stage.Stage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@Disabled("Depends on network tables")
 public class DashboardTabPaneSaverTest extends ApplicationTest {
 
   @Override
   public void start(Stage stage) throws Exception {
-    Widgets.discover();
+    // Just here so we can run on the FX thread
   }
 
   @BeforeEach

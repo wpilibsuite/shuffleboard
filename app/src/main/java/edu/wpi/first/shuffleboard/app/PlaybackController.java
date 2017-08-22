@@ -2,8 +2,8 @@ package edu.wpi.first.shuffleboard.app;
 
 import edu.wpi.first.shuffleboard.app.components.Scrubber;
 import edu.wpi.first.shuffleboard.app.sources.recording.Playback;
-import edu.wpi.first.shuffleboard.app.sources.recording.Recorder;
-import edu.wpi.first.shuffleboard.app.sources.recording.TimestampedData;
+import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
+import edu.wpi.first.shuffleboard.api.sources.recording.TimestampedData;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
 
 import org.controlsfx.control.ToggleSwitch;

@@ -1,5 +1,7 @@
 include ":api"
 include ":app"
+include ":plugins:base"
+include ":plugins:networktables"
 
 rootProject.children.each { project ->
     /*

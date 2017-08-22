@@ -1,23 +1,26 @@
 package edu.wpi.first.shuffleboard.app;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import com.google.common.io.Files;
 
+import edu.wpi.first.shuffleboard.api.components.SourceTreeTable;
+import edu.wpi.first.shuffleboard.api.dnd.DataFormats;
+import edu.wpi.first.shuffleboard.api.plugin.Plugin;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
+import edu.wpi.first.shuffleboard.api.sources.SourceEntry;
+import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
+import edu.wpi.first.shuffleboard.api.theme.Theme;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
-import edu.wpi.first.shuffleboard.api.widget.Widget;
+import edu.wpi.first.shuffleboard.api.util.Storage;
+import edu.wpi.first.shuffleboard.api.widget.Widgets;
 import edu.wpi.first.shuffleboard.app.components.DashboardTabPane;
 import edu.wpi.first.shuffleboard.app.components.WidgetGallery;
-import edu.wpi.first.shuffleboard.app.dnd.DataFormats;
+import edu.wpi.first.shuffleboard.app.components.WidgetPropertySheet;
 import edu.wpi.first.shuffleboard.app.json.JsonBuilder;
+import edu.wpi.first.shuffleboard.app.plugin.PluginLoader;
 import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
-import edu.wpi.first.shuffleboard.app.sources.NetworkTableSource;
 import edu.wpi.first.shuffleboard.app.sources.recording.Playback;
-import edu.wpi.first.shuffleboard.app.sources.recording.Recorder;
-import edu.wpi.first.shuffleboard.app.theme.Theme;
-import edu.wpi.first.shuffleboard.app.util.Storage;
-import edu.wpi.first.shuffleboard.app.widget.NetworkTableTreeWidget;
-import edu.wpi.first.shuffleboard.app.widget.WidgetPropertySheet;
-import edu.wpi.first.shuffleboard.app.widget.Widgets;
 
 import org.controlsfx.control.PropertySheet;
 import org.fxmisc.easybind.EasyBind;
@@ -27,17 +30,23 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import java.nio.charset.Charset;
+import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
+import javafx.collections.MapChangeListener;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
+import javafx.scene.control.Accordion;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
-import javafx.scene.control.Tab;
+import javafx.scene.control.TitledPane;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableRow;
 import javafx.scene.input.ClipboardContent;
@@ -46,12 +55,14 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
-import static edu.wpi.first.shuffleboard.app.util.TypeUtils.optionalCast;
+import static edu.wpi.first.shuffleboard.api.components.SourceTreeTable.alphabetical;
+import static edu.wpi.first.shuffleboard.api.components.SourceTreeTable.branchesFirst;
 
 
 /**
@@ -70,13 +81,19 @@ public class MainWindowController {
   @FXML
   private DashboardTabPane dashboard;
   @FXML
-  private Tab sourcesTab;
+  private Accordion sourcesAccordion;
+  @FXML
+  private Pane pluginPane;
+  private Stage pluginStage;
+
+  private SourceEntry selectedEntry;
 
   File currentFile = null;
 
   private final ObservableValue<List<String>> stylesheets
       = EasyBind.map(AppPreferences.getInstance().themeProperty(), Theme::getStyleSheets);
-  private NetworkTableEntry selectedEntry = null;
+
+  private final Multimap<Plugin, TitledPane> sourcePanes = ArrayListMultimap.create();
 
   @FXML
   private void initialize() throws IOException {
@@ -85,48 +102,24 @@ public class MainWindowController {
             Recorder.getInstance().runningProperty(),
             running -> running ? "Stop recording" : "Start recording"));
     FxUtils.bind(root.getStylesheets(), stylesheets);
-    NetworkTableTreeWidget networkTables = new NetworkTableTreeWidget();
-    networkTables.getTree().getSelectionModel().selectedItemProperty().addListener((__, prev, cur) -> {
-      if (cur == null) {
-        selectedEntry = null;
-      } else {
-        selectedEntry = cur.getValue();
-      }
-    });
-    networkTables.getTree().setRowFactory(view -> {
-      TreeTableRow<NetworkTableEntry> row = new TreeTableRow<>();
-      row.hoverProperty().addListener((__, wasHover, isHover) -> {
-        if (!row.isEmpty()) {
-          setHighlightedWithChildren(row.getTreeItem(), isHover);
+
+    PluginLoader.getDefault().getKnownPlugins().addListener((ListChangeListener<Plugin>) c -> {
+      while (c.next()) {
+        if (c.wasAdded()) {
+          c.getAddedSubList().forEach(plugin -> {
+            plugin.loadedProperty().addListener((__, was, is) -> {
+              if (is) {
+                setup(plugin);
+              } else {
+                tearDown(plugin);
+              }
+            });
+            setup(plugin);
+          });
         }
-      });
-      makeSourceRowDraggable(row);
-      return row;
-    });
-    networkTables.getTree().setOnContextMenuRequested(e -> {
-      TreeItem<NetworkTableEntry> selectedItem = networkTables.getTree().getSelectionModel().getSelectedItem();
-      if (selectedItem == null) {
-        return;
+        sourcesAccordion.getPanes().sort(Comparator.comparing(TitledPane::getText));
       }
-
-      DataSource<?> source = selectedItem.getValue().get();
-      List<String> widgetNames = Widgets.widgetNamesForSource(source);
-      if (widgetNames.isEmpty()) {
-        // No known widgets that can show this data
-        return;
-      }
-
-      ContextMenu menu = new ContextMenu();
-      widgetNames.stream()
-          .map(name -> createShowAsMenuItem(name, source))
-          .forEach(menu.getItems()::add);
-
-      menu.show(root.getScene().getWindow(), e.getScreenX(), e.getScreenY());
     });
-    networkTables.setSource(NetworkTableSource.forKey(""));
-    sourcesTab.setContent(networkTables.getView());
-
-    widgetGallery.loadWidgets(Widgets.allWidgets());
 
     root.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
       if (e.isShortcutDown() && e.getCode().isDigitKey()) {
@@ -138,6 +131,122 @@ public class MainWindowController {
         dashboard.selectTab(digitPressed - 1);
       }
     });
+
+    setUpPluginsStage();
+  }
+
+  private void setUpPluginsStage() {
+    pluginStage = new Stage();
+    pluginStage.initModality(Modality.WINDOW_MODAL);
+    pluginStage.addEventHandler(KeyEvent.KEY_PRESSED, e -> {
+      if (e.getCode() == KeyCode.ESCAPE) {
+        pluginStage.close();
+      }
+    });
+    pluginStage.setScene(new Scene(pluginPane));
+    pluginStage.sizeToScene();
+    pluginStage.setMinWidth(675);
+    pluginStage.setMinHeight(325);
+    pluginStage.setTitle("Loaded Plugins");
+    EasyBind.listBind(pluginPane.getStylesheets(), root.getStylesheets());
+  }
+
+  /**
+   * Sets up UI components to represent the sources that a plugin defines.
+   */
+  private void setup(Plugin plugin) {
+    plugin.getSourceTypes().forEach(sourceType -> {
+      SourceTreeTable<SourceEntry, ?> tree = new SourceTreeTable<>();
+      tree.setSourceType(sourceType);
+      tree.setRoot(new TreeItem<>(sourceType.createRootSourceEntry()));
+      tree.setShowRoot(false);
+      tree.setSortPolicy(__ -> {
+        sortTree(tree.getRoot());
+        return true;
+      });
+      tree.getSelectionModel().selectedItemProperty().addListener((__, oldItem, newItem) -> {
+        selectedEntry = newItem == null ? null : newItem.getValue();
+      });
+      tree.setRowFactory(__ -> {
+        TreeTableRow<SourceEntry> row = new TreeTableRow<>();
+        makeSourceRowDraggable(row);
+        return row;
+      });
+      tree.setOnContextMenuRequested(e -> {
+        TreeItem<SourceEntry> selectedItem = tree.getSelectionModel().getSelectedItem();
+        if (selectedItem == null) {
+          return;
+        }
+
+        DataSource<?> source = selectedItem.getValue().get();
+        List<String> widgetNames = Widgets.getDefault().widgetNamesForSource(source);
+        if (widgetNames.isEmpty()) {
+          // No known widgets that can show this data
+          return;
+        }
+
+        ContextMenu menu = new ContextMenu();
+        widgetNames.stream()
+            .map(name -> createShowAsMenuItem(name, source))
+            .forEach(menu.getItems()::add);
+
+        menu.show(tree.getScene().getWindow(), e.getScreenX(), e.getScreenY());
+      });
+      sourceType.getAvailableSources().addListener((MapChangeListener<String, Object>) change -> {
+        SourceEntry entry = sourceType.createSourceEntryForUri(change.getKey());
+        if (change.wasAdded()) {
+          tree.updateEntry(entry);
+        } else if (change.wasRemoved()) {
+          tree.removeEntry(entry);
+        }
+      });
+      sourceType.getAvailableSourceUris().stream()
+          .map(sourceType::createSourceEntryForUri)
+          .forEach(tree::updateEntry);
+      TitledPane titledPane = new TitledPane(sourceType.getName(), tree);
+      sourcePanes.put(plugin, titledPane);
+      sourcesAccordion.getPanes().add(titledPane);
+      sourcesAccordion.setExpandedPane(titledPane);
+    });
+
+    // Add widgets to the gallery as well
+    widgetGallery.setWidgets(Widgets.getDefault().allWidgets());
+  }
+
+  /**
+   * Removes all traces from a plugin from the application window. Source trees will be removed and all widgets
+   * defined by the plugin will be removed from all dashboard tabs.
+   */
+  private void tearDown(Plugin plugin) {
+    // Remove the source panes
+    sourcesAccordion.getPanes().removeAll(sourcePanes.removeAll(plugin));
+    // Remove widgets
+    dashboard.getTabs().stream()
+        .filter(tab -> tab instanceof DashboardTabPane.DashboardTab)
+        .map(tab -> (DashboardTabPane.DashboardTab) tab)
+        .map(DashboardTabPane.DashboardTab::getWidgetPane)
+        .forEach(pane -> {
+          pane.getTiles().stream()
+              .filter(tile -> plugin.getWidgets()
+                  .contains(tile.getWidget().getClass()))
+              .collect(Collectors.toList()) // collect into temporary list to prevent comodification
+              .forEach(tile -> pane.getChildren().remove(tile));
+        });
+    // ... and from the gallery
+    widgetGallery.setWidgets(Widgets.getDefault().allWidgets());
+  }
+
+  /**
+   * Sorts tree nodes recursively in order of branches before leaves, then alphabetically.
+   *
+   * @param root the root node to sort
+   */
+  private void sortTree(TreeItem<? extends SourceEntry> root) {
+    if (!root.isLeaf()) {
+      FXCollections.sort(root.getChildren(),
+          branchesFirst.thenComparing(alphabetical));
+      root.getChildren().forEach(this::sortTree);
+    }
   }
 
   private void makeSourceRowDraggable(TreeTableRow<? extends SourceEntry> row) {
@@ -154,28 +263,12 @@ public class MainWindowController {
   }
 
   private MenuItem createShowAsMenuItem(String widgetName, DataSource<?> source) {
-    return FxUtils.menuItem("Show as: " + widgetName,
-        e -> Widgets.createWidget(widgetName, source).ifPresent(dashboard::addWidgetToActivePane));
-  }
-
-  /**
-   * Highlight or de-highlight any widgets with sources that are descendants of this NT key.
-   */
-  private void setHighlightedWithChildren(TreeItem<NetworkTableEntry> node,
-                                          boolean highlightValue) {
-    String key = node.getValue().getKey();
-
-    if (highlightValue) {
-      dashboard.selectWidgets((Widget widget) ->
-          optionalCast(widget.getSource(), NetworkTableSource.class)
-              .map(s ->
-                  s.getKey().equals(key) || (!node.isLeaf() && s.getKey().startsWith(key))
-              )
-              .orElse(false)
-      );
-    } else {
-      dashboard.selectWidgets(widget -> false);
-    }
+    MenuItem menuItem = new MenuItem("Show as: " + widgetName);
+    menuItem.setOnAction(action -> {
+      Widgets.getDefault().createWidget(widgetName, source)
+          .ifPresent(dashboard::addWidgetToActivePane);
+    });
+    return menuItem;
   }
 
   /**
@@ -213,7 +306,7 @@ public class MainWindowController {
   private void saveAs() {
     FileChooser chooser = new FileChooser();
     chooser.getExtensionFilters().setAll(
-            new FileChooser.ExtensionFilter("SmartDashboard Save File (.json)", "*.json"));
+        new FileChooser.ExtensionFilter("SmartDashboard Save File (.json)", "*.json"));
     if (currentFile == null) {
       chooser.setInitialDirectory(new File(Storage.STORAGE_DIR));
       chooser.setInitialFileName("smartdashboard.json");
@@ -251,7 +344,7 @@ public class MainWindowController {
     FileChooser chooser = new FileChooser();
     chooser.setInitialDirectory(new File(Storage.STORAGE_DIR));
     chooser.getExtensionFilters().setAll(
-            new FileChooser.ExtensionFilter("SmartDashboard Save File (.json)", "*.json"));
+        new FileChooser.ExtensionFilter("SmartDashboard Save File (.json)", "*.json"));
 
     final File selected = chooser.showOpenDialog(root.getScene().getWindow());
 
@@ -334,6 +427,14 @@ public class MainWindowController {
   private void newTab() {
     DashboardTabPane.DashboardTab newTab = dashboard.addNewTab();
     dashboard.getSelectionModel().select(newTab);
+  }
+
+  @FXML
+  private void showPlugins() {
+    if (pluginStage.getOwner() == null) {
+      pluginStage.initOwner(root.getScene().getWindow());
+    }
+    pluginStage.show();
   }
 
 }

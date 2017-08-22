@@ -1,72 +1,74 @@
 package edu.wpi.first.shuffleboard.api.data;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.primitives.Primitives;
+
 import edu.wpi.first.shuffleboard.api.data.types.AllType;
-import edu.wpi.first.shuffleboard.api.data.types.AnalogInputType;
-import edu.wpi.first.shuffleboard.api.data.types.BooleanArrayType;
-import edu.wpi.first.shuffleboard.api.data.types.BooleanType;
-import edu.wpi.first.shuffleboard.api.data.types.EncoderType;
 import edu.wpi.first.shuffleboard.api.data.types.MapType;
 import edu.wpi.first.shuffleboard.api.data.types.NoneType;
-import edu.wpi.first.shuffleboard.api.data.types.NumberArrayType;
-import edu.wpi.first.shuffleboard.api.data.types.NumberType;
-import edu.wpi.first.shuffleboard.api.data.types.RawByteType;
-import edu.wpi.first.shuffleboard.api.data.types.SendableChooserType;
-import edu.wpi.first.shuffleboard.api.data.types.SpeedControllerType;
-import edu.wpi.first.shuffleboard.api.data.types.StringArrayType;
-import edu.wpi.first.shuffleboard.api.data.types.StringType;
 import edu.wpi.first.shuffleboard.api.data.types.UnknownType;
+import edu.wpi.first.shuffleboard.api.util.Registry;
+import edu.wpi.first.shuffleboard.api.util.TestUtils;
 
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-public final class DataTypes {
+import static java.util.Objects.requireNonNull;
+
+public class DataTypes extends Registry<DataType> {
+
+  // TODO replace with DI eg Guice
+  private static DataTypes defaultInstance = null;
 
   // Catchall or wildcard types
-  public static final DataType<?> None = new NoneType();
-  public static final DataType<?> All = new AllType();
-  public static final DataType<?> Unknown = new UnknownType();
-
-  // Simple types
-  public static final DataType<Number> Number = new NumberType();
-  public static final DataType<String> String = new StringType();
-  public static final DataType<Boolean> Boolean = new BooleanType();
-  public static final DataType<double[]> NumberArray = new NumberArrayType();
-  public static final DataType<String[]> StringArray = new StringArrayType();
-  public static final DataType<boolean[]> BooleanArray = new BooleanArrayType();
-  public static final DataType<byte[]> RawBytes = new RawByteType();
-
-  // Complex types
+  public static final DataType None = new NoneType();
+  public static final DataType All = new AllType();
+  public static final DataType Unknown = new UnknownType();
   public static final ComplexDataType<MapData> Map = new MapType();
-  public static final ComplexDataType<SendableChooserData> SendableChooser = new SendableChooserType();
-  public static final ComplexDataType<AnalogInputData> AnalogInput = new AnalogInputType();
-  public static final ComplexDataType<SpeedControllerData> SpeedController = new SpeedControllerType();
-  public static final ComplexDataType<EncoderData> Encoder = new EncoderType();
 
-  private static final Map<String, DataType> dataTypes = new TreeMap<>();
+  private final Map<String, DataType> dataTypes = new TreeMap<>();
 
-  // Register all builtin types
-  static {
-    register(All);
-    register(None);
-    register(Unknown);
-    register(Number);
-    register(String);
-    register(Boolean);
-    register(NumberArray);
-    register(StringArray);
-    register(BooleanArray);
-    register(Map);
-    register(SendableChooser);
-    register(AnalogInput);
-    register(SpeedController);
-    register(Encoder);
+  private final Map<Class, Optional<DataType>> typeCache = new HashMap<>();
+
+  /**
+   * Gets the default data type registry.
+   */
+  public static DataTypes getDefault() {
+    synchronized (DataTypes.class) {
+      if (defaultInstance == null) {
+        defaultInstance = new DataTypes();
+      }
+    }
+    return defaultInstance;
   }
 
-  private DataTypes() {
+  /**
+   * Creates a new data type registry. The registry will initially contain {@link #None}, {@link #All},
+   * {@link #Unknown}, and {@link #Map}, none of why may be unregistered.
+   */
+  public DataTypes() {
+    register(None);
+    register(All);
+    register(Unknown);
+    register(Map);
+  }
+
+  /**
+   * Sets the default instance to use. <strong>This may only be called from tests</strong>.
+   *
+   * @throws IllegalStateException if not called from a test
+   */
+  @VisibleForTesting
+  public static void setDefault(DataTypes instance) {
+    TestUtils.assertRunningFromTest();
+    defaultInstance = instance;
   }
 
   /**
@@ -74,22 +76,156 @@ public final class DataTypes {
    *
    * @param dataType the data type to register
    */
-  public static void register(DataType<?> dataType) {
+  @Override
+  public void register(DataType dataType) {
+    requireNonNull(dataType, "dataType");
+    if (isRegistered(dataType)) {
+      throw new IllegalArgumentException("Data type " + dataType + " has already been registered");
+    }
     dataTypes.put(dataType.getName(), dataType);
+    typeCache.put(dataType.getJavaClass(), Optional.of(dataType));
+    addItem(dataType);
+  }
+
+  @Override
+  public void unregister(DataType dataType) {
+    dataTypes.remove(dataType.getName());
+    typeCache.remove(dataType.getJavaClass());
+    removeItem(dataType);
   }
 
   /**
    * Gets the data type with the given name.
    */
-  public static Optional<DataType<?>> forName(String name) {
+  public Optional<DataType> forName(String name) {
     return Optional.ofNullable(dataTypes.get(name));
+  }
+
+  /**
+   * Gets the data type most relevant to a Java class.
+   */
+  @SuppressWarnings("unchecked")
+  public <T> Optional<DataType<T>> forJavaType(Class<T> type) {
+    if (type.isPrimitive()) {
+      return forJavaType((Class) Primitives.wrap(type));
+    }
+    return (Optional) typeCache.computeIfAbsent(type, __ -> {
+      if (DataType.class.isAssignableFrom(type)) {
+        return forType((Class<DataType>) type);
+      }
+      Optional<DataType> naive = dataTypes.values().stream()
+          .filter(t -> type.equals(t.getJavaClass()))
+          .findAny();
+      if (naive.isPresent()) {
+        return naive;
+      } else {
+        // Check Java class hierarchy
+        Comparator<Class<?>> classComparator = closestTo(type);
+        // This stream MUST be sequential to work correctly
+        return dataTypes.values().stream()
+            .filter(t -> t != All)
+            .sorted((t1, t2) -> classComparator.reversed().compare(t1.getJavaClass(), t2.getJavaClass()))
+            .findFirst();
+      }
+    });
+  }
+
+  /**
+   * Gets a set of registered data types that can handle data of the supplied Java types.
+   *
+   * @see #forJavaType
+   */
+  public Set<DataType> forJavaTypes(Class<?>... types) {
+    return Stream.of(types)
+        .map(this::forJavaType)
+        .filter(Optional::isPresent)
+        .map(Optional::get)
+        .collect(Collectors.toSet());
+  }
+
+  /**
+   * Creates a comparator object that compares classes in order of closest to the target class, in terms of class
+   * hierarchy. For example, take a class hierarchy of
+   * <pre><code>
+   *   A extends Object
+   *   B extends A
+   *   C extends B
+   *   D extends B
+   * </code></pre>
+   * and a collection of these four classes.
+   *
+   * <p><b>Scenario 1</b>
+   * <br>{@code closestTo(Object.class)} would be sorted as {@code A, B, [C, D]}. The order of C, D is not
+   * deterministic and depends on the ordering of the source collection, hence the brackets.
+   *
+   * <p><b>Scenario 2</b>
+   * <br>
+   * {@code closestTo(C.class)} would be sorted as {@code C, B, A, D}. {@code D} is at the very end because it is not
+   * part of the class hierarchy of {@code C}; neither one subclasses the other.
+   *
+   * <p><b>Scenario 3</b>
+   * <br>
+   * {@code closestTo(B.class)} would be sorted as {@code B, [A, C], D}. {@code A} and {@code C} are equidistant from
+   * {@code B}, so their ordering would depend on the order of the source collection.
+   *
+   * <p><b>This method does <i>not</i> support comparison of interfaces</b></p>
+   *
+   * @param target the class that should be compared to to determine ordering
+   */
+  @VisibleForTesting
+  static Comparator<Class<?>> closestTo(Class<?> target) {
+    return (o1, o2) -> {
+      if (o1 == o2) {
+        return 0;
+      }
+      if (o1 == null) {
+        return -1;
+      } else if (o2 == null) {
+        return 1;
+      }
+      if (o1 == target) {
+        return 1;
+      } else if (o2 == target) {
+        return -1;
+      }
+      // Negate the integer comparison, otherwise the order is backwards
+      return -Integer.compare(distance(o1, target), distance(o2, target));
+    };
+  }
+
+  /**
+   * Calculates the distance between two classes in the class hierarchy. This does <i>not</i> support interfaces. If
+   * neither class subclasses the other, or either class object represents an interface, this method will return
+   * {@link Integer#MAX_VALUE}.
+   *
+   * @param first the first class to compare
+   * @param other the other class to compare
+   */
+  private static int distance(Class<?> first, Class<?> other) {
+    if (other == first) { // NOPMD use equals() to compare references -- not null safe
+      return 0;
+    }
+    if (first.isInterface() || other.isInterface()) {
+      // Doesn't support interfaces
+      return Integer.MAX_VALUE;
+    }
+    if (first.isAssignableFrom(other)) {
+      // other superclasses first
+      return distance(other.getSuperclass(), first) + 1;
+    } else if (other.isAssignableFrom(first)) {
+      // other subclasses first
+      return distance(first.getSuperclass(), other) + 1;
+    } else {
+      // Neither subclasses the other
+      return Integer.MAX_VALUE;
+    }
   }
 
   /**
    * Gets the registered data type of the given class.
    */
   @SuppressWarnings("unchecked")
-  public static <D extends DataType> Optional<D> forType(Class<D> clazz) {
+  public <D extends DataType> Optional<D> forType(Class<D> clazz) {
     return (Optional<D>) dataTypes.values()
         .stream()
         .filter(d -> d.getClass() == clazz)
@@ -99,12 +235,11 @@ public final class DataTypes {
   /**
    * Gets the registered data types of the given types.
    */
-  public static Set<DataType> forTypes(Class<? extends DataType>... types) {
+  public Set<DataType> forTypes(Class<? extends DataType>... types) {
     return Arrays.stream(types)
-        .map(DataTypes::forType)
+        .map(this::forType)
         .filter(Optional::isPresent)
         .map(Optional::get)
         .collect(Collectors.toSet());
   }
-
 }

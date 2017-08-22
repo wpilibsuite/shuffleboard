@@ -33,4 +33,9 @@ public class MapData extends ComplexData<MapData> {
     return map.containsValue(value);
   }
 
+  @Override
+  public String toString() {
+    return map.toString();
+  }
+
 }

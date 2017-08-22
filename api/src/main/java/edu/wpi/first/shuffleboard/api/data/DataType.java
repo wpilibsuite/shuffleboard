@@ -1,5 +1,7 @@
 package edu.wpi.first.shuffleboard.api.data;
 
+import java.util.Objects;
+
 /**
  * Represents types of data that sources can provide and widgets can display. Generally, each subclass
  * should be a singleton or only have a single instance defined. This acts as a pseudo-enum that can
@@ -9,52 +11,70 @@ package edu.wpi.first.shuffleboard.api.data;
  *
  * @see DataTypes
  */
-public interface DataType<T> {
+public abstract class DataType<T> {
+
+  private final String name;
+  private final Class<T> javaClass;
+
+  /**
+   * Creates a new data type instance.
+   *
+   * @param name      the name of the data type. <i>This must be unique among all data types</i>
+   * @param javaClass the Java class of the data objects this data type represents
+   */
+  protected DataType(String name, Class<T> javaClass) {
+    this.name = name;
+    this.javaClass = javaClass;
+  }
 
   /**
    * Gets the name of this data type.
    */
-  String getName();
+  public final String getName() {
+    return name;
+  }
+
+  /**
+   * Gets the Java class of the data objects this data type represents.
+   */
+  public final Class<T> getJavaClass() {
+    return javaClass;
+  }
 
   /**
    * Gets the default value of this data type, eg 0 for numbers or an empty String for text.
    */
-  T getDefaultValue();
+  public abstract T getDefaultValue();
 
   /**
    * Checks if this data type is complex or not. This is class-intrinsic.
    */
-  boolean isComplex();
+  public abstract boolean isComplex();
 
-  /**
-   * Gets the data type most closely associated with the given Java type.
-   */
-  static DataType<?> forJavaType(Class<?> type) {
-    if (type == String.class) {
-      return DataTypes.String;
-    } else if (Number.class.isAssignableFrom(type)
-        || type == double.class || type == int.class || type == long.class) {
-      return DataTypes.Number;
-    } else if (type == Boolean.class || type == boolean.class) {
-      return DataTypes.Boolean;
-    } else if (type == String[].class) {
-      return DataTypes.StringArray;
-    } else if (type == double[].class || type == Double[].class) {
-      return DataTypes.NumberArray;
-    } else if (type == boolean[].class || type == Boolean[].class) {
-      return DataTypes.BooleanArray;
-    } else if (type == byte[].class || type == Byte[].class) {
-      return DataTypes.RawBytes;
-    } else {
-      return DataTypes.Unknown;
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
     }
+    if (obj == null) {
+      return false;
+    }
+    if (obj.getClass() != this.getClass()) {
+      return false;
+    }
+    DataType that = (DataType) obj;
+    return this.getName().equals(that.getName())
+        && Objects.equals(this.getJavaClass(), that.getJavaClass());
   }
 
-  /**
-   * Gets the data type with the given name.
-   */
-  static DataType<?> forName(String name) {
-    return DataTypes.forName(name).orElse(DataTypes.Unknown);
+  @Override
+  public int hashCode() {
+    return Objects.hash(name, javaClass);
+  }
+
+  @Override
+  public String toString() {
+    return getName();
   }
 
 }

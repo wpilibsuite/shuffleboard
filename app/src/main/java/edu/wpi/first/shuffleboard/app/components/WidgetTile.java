@@ -1,8 +1,8 @@
 package edu.wpi.first.shuffleboard.app.components;
 
 import edu.wpi.first.shuffleboard.api.util.PropertyUtils;
-import edu.wpi.first.shuffleboard.app.util.PseudoClassProperty;
-import edu.wpi.first.shuffleboard.app.widget.TileSize;
+import edu.wpi.first.shuffleboard.api.util.PseudoClassProperty;
+import edu.wpi.first.shuffleboard.api.widget.TileSize;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 
 import java.io.IOException;

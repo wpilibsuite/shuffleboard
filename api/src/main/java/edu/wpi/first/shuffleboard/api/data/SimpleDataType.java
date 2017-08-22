@@ -1,9 +1,13 @@
 package edu.wpi.first.shuffleboard.api.data;
 
-public interface SimpleDataType<T> extends DataType<T> {
+public abstract class SimpleDataType<T> extends DataType<T> {
+
+  protected SimpleDataType(String name, Class<T> javaClass) {
+    super(name, javaClass);
+  }
 
   @Override
-  default boolean isComplex() {
+  public final boolean isComplex() {
     return false;
   }
 

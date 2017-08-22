@@ -1,6 +1,6 @@
 package edu.wpi.first.shuffleboard.app.components;
 
-import edu.wpi.first.shuffleboard.app.dnd.DataFormats;
+import edu.wpi.first.shuffleboard.api.dnd.DataFormats;
 import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
 import javafx.scene.Node;

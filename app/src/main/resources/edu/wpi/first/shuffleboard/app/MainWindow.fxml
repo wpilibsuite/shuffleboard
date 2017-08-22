@@ -10,6 +10,7 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.control.SeparatorMenuItem?>
 <?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Accordion?>
 <BorderPane fx:id="root" maxHeight="Infinity" maxWidth="Infinity"
             xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="edu.wpi.first.shuffleboard.app.MainWindowController">
@@ -21,6 +22,8 @@
                 <MenuItem onAction="#saveAs" text="Save as..." accelerator="SHORTCUT+SHIFT+S"/>
                 <MenuItem onAction="#load" text="Load layout" accelerator="SHORTCUT+O"/>
                 <MenuItem onAction="#showPrefs" text="Preferences" accelerator="SHORTCUT+,"/>
+                <SeparatorMenuItem/>
+                <MenuItem onAction="#showPlugins" text="Plugins" accelerator="SHORTCUT+L"/>
                 <SeparatorMenuItem/>
                 <MenuItem onAction="#close" text="Close"/>
             </Menu>
@@ -41,7 +44,10 @@
 
     <left>
         <TabPane tabClosingPolicy="UNAVAILABLE" prefWidth="400">
-            <Tab text="Sources" fx:id="sourcesTab">
+            <Tab text="Sources">
+                <ScrollPane fitToWidth="true" fitToHeight="true">
+                    <Accordion fx:id="sourcesAccordion"/>
+                </ScrollPane>
             </Tab>
             <Tab text="Widgets">
                 <ScrollPane fitToWidth="true">
@@ -53,4 +59,7 @@
     <bottom>
         <fx:include source="PlaybackControls.fxml"/>
     </bottom>
+    <fx:define>
+        <fx:include source="PluginPane.fxml" fx:id="pluginPane"/>
+    </fx:define>
 </BorderPane>

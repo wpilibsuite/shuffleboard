@@ -1,11 +1,10 @@
 package edu.wpi.first.shuffleboard.app.components;
 
-
-import edu.wpi.first.shuffleboard.api.sources.DataSource;
-import edu.wpi.first.shuffleboard.api.widget.Widget;
 import edu.wpi.first.shuffleboard.app.dnd.DragUtils;
-import edu.wpi.first.shuffleboard.app.util.GridPoint;
-import edu.wpi.first.shuffleboard.app.widget.TileSize;
+import edu.wpi.first.shuffleboard.api.sources.DataSource;
+import edu.wpi.first.shuffleboard.api.util.GridPoint;
+import edu.wpi.first.shuffleboard.api.widget.TileSize;
+import edu.wpi.first.shuffleboard.api.widget.Widget;
 
 import org.fxmisc.easybind.EasyBind;
 

@@ -38,6 +38,7 @@ public final class FxUtils {
    *
    * @param task the task to run. If null, the method will return immediately and no action
    *             will be taken.
+   *
    * @return a completable future that will have a result of {@code true} once the task has run
    */
   public static CompletableFuture<Boolean> runOnFxThread(Runnable task) {
@@ -114,6 +115,7 @@ public final class FxUtils {
    * that can accept general boolean properties as conditions.
    *
    * @param condition the condition to bind to
+   *
    * @see Bindings#when(ObservableBooleanValue)
    */
   public static When when(Property<Boolean> condition) {

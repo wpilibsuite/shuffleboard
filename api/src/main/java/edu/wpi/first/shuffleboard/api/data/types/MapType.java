@@ -8,11 +8,10 @@ import edu.wpi.first.shuffleboard.api.data.MapData;
 import java.util.Map;
 import java.util.function.Function;
 
-public class MapType implements ComplexDataType<MapData> {
+public class MapType extends ComplexDataType<MapData> {
 
-  @Override
-  public String getName() {
-    return "Map";
+  public MapType() {
+    super("Map", MapData.class);
   }
 
   @Override

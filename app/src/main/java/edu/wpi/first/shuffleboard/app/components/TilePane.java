@@ -1,9 +1,9 @@
 package edu.wpi.first.shuffleboard.app.components;
 
 import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
-import edu.wpi.first.shuffleboard.app.util.GridPoint;
-import edu.wpi.first.shuffleboard.app.util.RoundingMode;
-import edu.wpi.first.shuffleboard.app.widget.TileSize;
+import edu.wpi.first.shuffleboard.api.util.GridPoint;
+import edu.wpi.first.shuffleboard.api.util.RoundingMode;
+import edu.wpi.first.shuffleboard.api.widget.TileSize;
 
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
@@ -59,8 +59,8 @@ public class TilePane extends GridPane {
     this.numColumns.addListener((obs, oldCount, newCount) -> {
       if (newCount > oldCount) {
         IntStream.range(oldCount, newCount)
-                 .mapToObj(__ -> createColumnConstraint())
-                 .forEach(getColumnConstraints()::add);
+            .mapToObj(__ -> createColumnConstraint())
+            .forEach(getColumnConstraints()::add);
       } else {
         getColumnConstraints().remove(newCount, oldCount);
       }
@@ -69,8 +69,8 @@ public class TilePane extends GridPane {
     this.numRows.addListener((obs, oldCount, newCount) -> {
       if (newCount > oldCount) {
         IntStream.range(oldCount, newCount)
-                 .mapToObj(__ -> createRowConstraint())
-                 .forEach(getRowConstraints()::add);
+            .mapToObj(__ -> createRowConstraint())
+            .forEach(getRowConstraints()::add);
       } else {
         getRowConstraints().remove(newCount, oldCount);
       }
@@ -152,7 +152,7 @@ public class TilePane extends GridPane {
    */
   public final void setTileSize(double tileSize) {
     checkArgument(tileSize >= MIN_TILE_SIZE,
-                  "Tile size must be at least " + MIN_TILE_SIZE + ", but was " + tileSize);
+        "Tile size must be at least " + MIN_TILE_SIZE + ", but was " + tileSize);
     this.tileSize.set(tileSize);
   }
 
@@ -171,6 +171,7 @@ public class TilePane extends GridPane {
    *
    * @param node  the node to set the location of
    * @param point the new location of the node
+   *
    * @throws IllegalArgumentException if the node is not a child of this pane
    */
   public void moveNode(Node node, GridPoint point) {
@@ -233,7 +234,7 @@ public class TilePane extends GridPane {
    */
   public double tileSizeToWidth(int tileWidth) {
     checkArgument(tileWidth >= 1,
-                  "The tile size must be a positive integer (was " + tileWidth + ")");
+        "The tile size must be a positive integer (was " + tileWidth + ")");
     return tileWidth * getTileSize() + (tileWidth - 1) * getHgap();
   }
 
@@ -242,7 +243,7 @@ public class TilePane extends GridPane {
    */
   public double tileSizeToHeight(int tileHeight) {
     checkArgument(tileHeight >= 1,
-                  "The tile size must be a positive integer (was " + tileHeight + ")");
+        "The tile size must be a positive integer (was " + tileHeight + ")");
     return tileHeight * getTileSize() + (tileHeight - 1) * getVgap();
   }
 
@@ -272,6 +273,7 @@ public class TilePane extends GridPane {
    *
    * @param node the node to add
    * @param size the size of the node to add
+   *
    * @return the node added to the view
    */
   public Node addTile(Node node, TileSize size) {
@@ -293,9 +295,10 @@ public class TilePane extends GridPane {
    * <li>there is no available space for a tile with the given dimensions</li>
    * </ul>
    *
-   * @param node   the node to add
+   * @param node     the node to add
    * @param location the location to add the node
-   * @param size the size of the node to add
+   * @param size     the size of the node to add
+   *
    * @return the node added to the view
    */
   public Node addTile(Node node, GridPoint location, TileSize size) {
@@ -340,8 +343,8 @@ public class TilePane extends GridPane {
    */
   public boolean isOpen(GridPoint point, TileSize tileSize, Predicate<Node> ignore) {
     return isOpen(point.getCol(), point.getRow(),
-                  tileSize.getWidth(), tileSize.getHeight(),
-                  ignore);
+        tileSize.getWidth(), tileSize.getHeight(),
+        ignore);
   }
 
   /**

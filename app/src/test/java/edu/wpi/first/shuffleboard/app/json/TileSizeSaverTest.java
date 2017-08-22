@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParseException;
 
-import edu.wpi.first.shuffleboard.app.widget.TileSize;
+import edu.wpi.first.shuffleboard.api.widget.TileSize;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

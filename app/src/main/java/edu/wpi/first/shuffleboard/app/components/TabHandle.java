@@ -1,7 +1,8 @@
 package edu.wpi.first.shuffleboard.app.components;
 
+import edu.wpi.first.shuffleboard.api.components.EditableLabel;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
-import edu.wpi.first.shuffleboard.app.util.ThreadUtils;
+import edu.wpi.first.shuffleboard.api.util.ThreadUtils;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.event.Event;
@@ -24,7 +25,7 @@ import java.util.concurrent.TimeUnit;
 public class TabHandle extends StackPane {
 
   private static final int DRAG_FOCUS_DELAY = 500;
-  private final ScheduledExecutorService delayedDragService = ThreadUtils.newDaemonExecutorService();
+  private final ScheduledExecutorService delayedDragService = ThreadUtils.newDaemonScheduledExecutorService();
   private final HandledTab tab;
 
   private final Property<Node> tabHeaderContainer = new SimpleObjectProperty<>(this, "tabHeaderContainer");
