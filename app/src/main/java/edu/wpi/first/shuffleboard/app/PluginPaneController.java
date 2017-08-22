@@ -95,27 +95,23 @@ public class PluginPaneController {
   private void loadPlugin() {
     FileChooser chooser = new FileChooser();
     chooser.setTitle("Choose a plugin");
-    chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Plugin", "*.class", "*.jar"));
+    chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Plugin", "*.jar"));
     List<File> files = chooser.showOpenMultipleDialog(root.getScene().getWindow());
     if (files == null) {
       return;
     }
     files.forEach(f -> {
-      if (f.getName().endsWith(".class")) { //NOPMD empty if statement
-        //TODO
-      } else if (f.getName().endsWith(".jar")) {
-        try {
-          // TODO save this in user preferences
-          PluginLoader.getDefault().loadPluginJar(f.toURI());
-        } catch (IOException | IllegalArgumentException e) {
-          log.log(Level.WARNING, "Could not load jar", e);
-          // TODO improve the dialog; use something like what GRIP has
-          Alert alert = new Alert(Alert.AlertType.ERROR, null, ButtonType.OK);
-          alert.setTitle("Could not load plugins");
-          alert.setHeaderText("Plugins in " + f.getName() + " could not be loaded");
-          alert.setContentText("Error message:\n\n    " + e.getMessage());
-          alert.showAndWait();
-        }
+      try {
+        // TODO save this in user preferences
+        PluginLoader.getDefault().loadPluginJar(f.toURI());
+      } catch (IOException | IllegalArgumentException e) {
+        log.log(Level.WARNING, "Could not load jar", e);
+        // TODO improve the dialog; use something like what GRIP has
+        Alert alert = new Alert(Alert.AlertType.ERROR, null, ButtonType.OK);
+        alert.setTitle("Could not load plugins");
+        alert.setHeaderText("Plugins in " + f.getName() + " could not be loaded");
+        alert.setContentText("Error message:\n\n    " + e.getMessage());
+        alert.showAndWait();
       }
     });
   }
