@@ -181,7 +181,7 @@ public class PluginLoader {
     try {
       widget.setSource(destroyedSource.restore());
     } catch (IncompatibleSourceException e) {
-      log.fine("Could not set the restored source of " + widget // NOPMD log not in if statement
+      log.fine("Could not set the restored source of " + widget
           + ". The plugin defining its data type was probably unloaded.");
     }
   }
@@ -192,7 +192,7 @@ public class PluginLoader {
    * @param plugin the plugin to unload
    */
   public void unload(Plugin plugin) {
-    log.info("Unloading plugin " + plugin.fullIdString()); // NOPMD log not in if statement
+    log.info("Unloading plugin " + plugin.fullIdString());
     Widgets.getDefault().getActiveWidgets().stream()
         .filter(w -> !(w.getSource() instanceof DestroyedSource))
         .filter(w -> {
