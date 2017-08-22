@@ -117,8 +117,7 @@ public class WidgetPaneController {
 
       if (dragboard.hasContent(DataFormats.widgetType)) {
         String widgetType = (String) dragboard.getContent(DataFormats.widgetType);
-        Widgets.getDefault().typeFor(widgetType).ifPresent(type -> {
-          Widget widget = type.get();
+        Widgets.getDefault().createWidget(widgetType).ifPresent(widget -> {
           TileSize size = pane.sizeOfWidget(widget);
           if (pane.isOpen(point, size, _t -> false)) {
             WidgetTile tile = pane.addWidget(widget);
@@ -295,8 +294,7 @@ public class WidgetPaneController {
       if (dragboard.hasContent(DataFormats.widgetType) && tile instanceof LayoutTile) {
         String widgetType = (String) dragboard.getContent(DataFormats.widgetType);
 
-        Widgets.getDefault().typeFor(widgetType).ifPresent(type -> {
-          Widget widget = type.get();
+        Widgets.getDefault().createWidget(widgetType).ifPresent(widget -> {
           ((LayoutTile) tile).getContent().addChild(widget);
         });
         event.consume();
@@ -377,7 +375,7 @@ public class WidgetPaneController {
            .sorted()
            .forEach(name -> {
              MenuItem changeItem = new MenuItem(name);
-             if (name.equals(widget.getType())) {
+             if (name.equals(widget.getName())) {
                changeItem.setGraphic(new Label("✓"));
              } else {
                // only need to change if it's to another type

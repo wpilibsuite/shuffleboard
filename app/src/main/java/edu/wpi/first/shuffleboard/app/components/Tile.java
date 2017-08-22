@@ -39,7 +39,7 @@ public abstract class Tile<T extends Component> extends BorderPane {
     getStyleClass().addAll("tile", "card");
     PropertyUtils.bindWithConverter(idProperty(), contentProperty(), w -> "tile[" + w + "]");
     ((EditableLabel) lookup("#titleLabel")).textProperty().bindBidirectional(
-        EasyBind.monadic(contentProperty()).selectProperty(Component::nameProperty)
+        EasyBind.monadic(contentProperty()).selectProperty(Component::titleProperty)
     );
     centerProperty().bind(EasyBind.monadic(contentProperty()).map(Component::getView));
   }

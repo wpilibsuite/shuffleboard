@@ -55,11 +55,6 @@ import javafx.collections.ObservableMap;
 public interface Widget extends Component {
 
   /**
-   * Gets the name of this widget type.
-   */
-  String getType();
-
-  /**
    * Gets an unmodifiable copy of this widgets supported data types.
    */
   Set<DataType> getDataTypes();
@@ -86,7 +81,7 @@ public interface Widget extends Component {
   List<Property<?>> getProperties();
 
   @Override
-  default Property<String> nameProperty() {
+  default Property<String> titleProperty() {
     return EasyBind.monadic(sourceProperty()).selectProperty(DataSource::nameProperty);
   }
 

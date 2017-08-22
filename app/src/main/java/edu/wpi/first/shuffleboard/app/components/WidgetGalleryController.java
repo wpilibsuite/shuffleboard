@@ -27,7 +27,7 @@ public class WidgetGalleryController {
 
               // TODO type safety
               ClipboardContent clipboard = new ClipboardContent();
-              clipboard.put(DataFormats.widgetType, galleryItem.getWidget().getType());
+              clipboard.put(DataFormats.widgetType, galleryItem.getWidget().getName());
               dragboard.setContent(clipboard);
               event.consume();
             });

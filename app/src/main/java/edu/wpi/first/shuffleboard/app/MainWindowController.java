@@ -210,7 +210,7 @@ public class MainWindowController {
     });
 
     // Add widgets to the gallery as well
-    widgetGallery.setWidgets(Widgets.getDefault().allWidgets());
+    widgetGallery.setWidgets(Widgets.getDefault().allWidgets().collect(Collectors.toList()));
   }
 
   /**
@@ -225,15 +225,13 @@ public class MainWindowController {
         .filter(tab -> tab instanceof DashboardTabPane.DashboardTab)
         .map(tab -> (DashboardTabPane.DashboardTab) tab)
         .map(DashboardTabPane.DashboardTab::getWidgetPane)
-        .forEach(pane -> {
+        .forEach(pane ->
           pane.getTiles().stream()
-              .filter(tile -> plugin.getWidgets()
-                  .contains(tile.getWidget().getClass()))
+              .filter(tile -> plugin.getWidgets().contains(tile.getContent().getClass()))
               .collect(Collectors.toList()) // collect into temporary list to prevent comodification
-              .forEach(tile -> pane.getChildren().remove(tile));
-        });
+              .forEach(tile -> pane.getChildren().remove(tile)));
     // ... and from the gallery
-    widgetGallery.setWidgets(Widgets.getDefault().allWidgets());
+    widgetGallery.setWidgets(Widgets.getDefault().allWidgets().collect(Collectors.toList()));
   }
 
   /**

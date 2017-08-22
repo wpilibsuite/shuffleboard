@@ -8,9 +8,9 @@ import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.util.Registry;
 import edu.wpi.first.shuffleboard.api.util.TestUtils;
+import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +21,7 @@ import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javafx.fxml.FXMLLoader;
 
@@ -29,13 +30,13 @@ import static java.util.Objects.requireNonNull;
 /**
  * Utility class for keeping track of known widgets.
  */
-public class Widgets extends Registry<Class<? extends Widget>> {
+public class Widgets extends Registry<ComponentType> {
 
   // TODO replace with DI eg Guice
   private static Widgets defaultInstance = new Widgets();
 
-  private final Map<Class<? extends Widget>, WidgetType> registeredWidgets = new HashMap<>();
-  private final Map<String, WidgetType> widgets = new TreeMap<>();
+  private final Map<String, ComponentType> widgets = new TreeMap<>();
+
   private final Map<DataType, WidgetType> defaultWidgets = new HashMap<>();
   private final WeakHashMap<Widget, Widget> activeWidgets = new WeakHashMap<>();
 
@@ -58,21 +59,20 @@ public class Widgets extends Registry<Class<? extends Widget>> {
   }
 
   @Override
-  public void register(Class<? extends Widget> widgetClass) {
-    registerHelper(widgetClass);
+  public void register(ComponentType type) {
+    if (widgets.containsKey(type.getName())) {
+      throw new IllegalArgumentException("Component class " + type.getClass().getName() + " is already registered");
+    }
+    widgets.put(type.getName(), type);
+    addItem(type);
   }
 
-  private <T extends Widget> void registerHelper(Class<T> widgetClass) {
-    requireNonNull(widgetClass, "widgetClass");
-    if (isRegistered(widgetClass)) {
-      throw new IllegalArgumentException("Widget class " + widgetClass.getName() + " is already registered");
-    }
-    if (!widgetClass.isAnnotationPresent(Description.class)) {
-      throw new InvalidWidgetException(
-          "No description present on widget class " + widgetClass.getName());
-    }
+  /**
+   * Convenience overload for registering annotated widgets.
+   */
+  public <T extends Widget> void register(Class<T> widgetClass) {
+    validateComponentClass(widgetClass);
     Description description = widgetClass.getAnnotation(Description.class);
-    validate(description);
 
     WidgetType widgetType = new AbstractWidgetType(description) {
       @Override
@@ -88,26 +88,47 @@ public class Widgets extends Registry<Class<? extends Widget>> {
       }
     };
 
-    registeredWidgets.put(widgetClass, widgetType);
-    widgets.put(widgetType.getName(), widgetType);
-    addItem(widgetClass);
+    register(widgetType);
+  }
+
+  private <T extends Widget> void validateComponentClass(Class<T> componentClass) {
+    requireNonNull(componentClass, "componentClass");
+
+    if (!componentClass.isAnnotationPresent(Description.class)) {
+      throw new InvalidWidgetException(
+          "No description present on widget class " + componentClass.getName());
+    }
+    Description description = componentClass.getAnnotation(Description.class);
+
+    if (description.name().isEmpty()) {
+      throw new InvalidWidgetException("No name specified for the widget");
+    }
   }
 
   @Override
+  public void unregister(ComponentType type) {
+    widgets.remove(type.getName());
+    List<DataType> defaultWidgetsToRemove = defaultWidgets.entrySet().stream()
+        .filter(e -> e.getValue().getName().equals(type.getName()))
+        .map(Map.Entry::getKey)
+        .collect(Collectors.toList());
+    defaultWidgetsToRemove.forEach(defaultWidgets::remove);
+    removeItem(type);
+  }
+
+  /**
+   * Convenience method for unregistering an annotated class.
+   */
   public void unregister(Class<? extends Widget> widgetClass) {
-    WidgetType widgetType = registeredWidgets.get(widgetClass);
-    widgets.entrySet().stream()
-        .filter(e -> e.getValue() == widgetType)
-        .map(Map.Entry::getKey)
-        .findFirst()
-        .ifPresent(widgets::remove);
-    defaultWidgets.entrySet().stream()
-        .filter(e -> e.getValue() == widgetType)
-        .map(Map.Entry::getKey)
-        .findFirst()
-        .ifPresent(defaultWidgets::remove);
-    registeredWidgets.remove(widgetClass);
-    removeItem(widgetClass);
+    validateComponentClass(widgetClass);
+    Description description = widgetClass.getAnnotation(Description.class);
+
+    unregister(new AbstractWidgetType(description) {
+      @Override
+      public Component get() {
+        return null;
+      }
+    });
   }
 
   public static <T> Optional<T> viewFor(Class<T> annotatedClass) {
@@ -126,25 +147,8 @@ public class Widgets extends Registry<Class<? extends Widget>> {
     return Optional.empty();
   }
 
-  /**
-   * Validates a widget description.
-   *
-   * @param description the description to validate
-   *
-   * @throws InvalidWidgetException if the widget is invalid
-   */
-  private void validate(Description description) throws InvalidWidgetException {
-    if (description.name().isEmpty()) {
-      throw new InvalidWidgetException("No name specified for the widget");
-    }
-    if (widgets.containsKey(description.name())) {
-      throw new InvalidWidgetException(
-          "A widget already exists with the same name: " + description.name());
-    }
-  }
-
-  public Collection<WidgetType> allWidgets() {
-    return widgets.values();
+  public Stream<WidgetType> allWidgets() {
+    return widgets.values().stream().flatMap(TypeUtils.castStream(WidgetType.class));
   }
 
   /**
@@ -158,9 +162,14 @@ public class Widgets extends Registry<Class<? extends Widget>> {
    *         be created
    */
   public <T> Optional<Widget> createWidget(String name, DataSource<T> source) {
-    Optional<Widget> widget = typeFor(name).map(WidgetType::get);
-    widget.ifPresent(w -> activeWidgets.put(w, w));
+    Optional<Widget> widget = createWidget(name);
     widget.ifPresent(w -> w.setSource(source));
+    return widget;
+  }
+
+  public <T> Optional<Widget> createWidget(String name) {
+    Optional<Widget> widget = typeFor(name).map(ComponentType::get).flatMap(TypeUtils.optionalCast(Widget.class));
+    widget.ifPresent(w -> activeWidgets.put(w, w));
     return widget;
   }
 
@@ -180,14 +189,14 @@ public class Widgets extends Registry<Class<? extends Widget>> {
    *
    * @param name the globally unique name of the widget in question
    *
-   * @return a WidgetType to create widgets of the same class
+   * @return a ComponentType to create widgets of the same class
    */
-  public Optional<WidgetType> typeFor(String name) {
+  private Optional<ComponentType> typeFor(String name) {
     return Optional.ofNullable(widgets.get(name));
   }
 
   private Set<WidgetType> getWidgetsForType(DataType type) {
-    return widgets.values().stream()
+    return allWidgets()
         .filter(d -> d.getDataTypes().contains(DataTypes.All)
             || d.getDataTypes().contains(type))
         .collect(Collectors.toSet());
@@ -229,23 +238,10 @@ public class Widgets extends Registry<Class<? extends Widget>> {
    * @throws IllegalArgumentException if the widget has not been registered
    */
   public void setDefaultWidget(DataType<?> dataType, Class<? extends Widget> widgetClass) {
-    if (!registeredWidgets.containsKey(widgetClass)) {
-      throw new IllegalArgumentException("Widget class " + widgetClass.getName() + " has not been registered");
-    }
-    setDefaultWidget(dataType, registeredWidgets.get(widgetClass));
-  }
-
-  /**
-   * Sets the default widget to use for a given data type. Note that a widget must have already been registered
-   * with the given name for this method to have an affect.
-   *
-   * @param dataType   the type to set the default widget for
-   * @param widgetName the name of the widget to use as the default
-   */
-  public void setDefaultWidget(DataType dataType, String widgetName) {
-    WidgetType widgetType = widgets.get(widgetName);
-    if (widgetName != null) {
-      setDefaultWidget(dataType, widgetType);
+    validateComponentClass(widgetClass);
+    ComponentType type = widgets.get(widgetClass.getAnnotation(Description.class).name());
+    if (type != null && type instanceof WidgetType) {
+      setDefaultWidget(dataType, (WidgetType) type);
     }
   }
 

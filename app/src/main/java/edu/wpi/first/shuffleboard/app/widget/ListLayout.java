@@ -2,7 +2,7 @@ package edu.wpi.first.shuffleboard.app.widget;
 
 import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 import edu.wpi.first.shuffleboard.api.widget.Component;
-import edu.wpi.first.shuffleboard.app.components.EditableLabel;
+import edu.wpi.first.shuffleboard.api.components.EditableLabel;
 
 import org.fxmisc.easybind.EasyBind;
 import org.fxmisc.easybind.Subscription;
@@ -45,7 +45,7 @@ public class ListLayout implements Layout {
   private Pane paneFor(Component widget) {
     BorderPane pane = new BorderPane(widget.getView());
     pane.getStyleClass().add("layout--stack");
-    EditableLabel label = new EditableLabel(widget.nameProperty());
+    EditableLabel label = new EditableLabel(widget.titleProperty());
     label.getStyleClass().add("layout--label");
     BorderPane.setAlignment(label, Pos.TOP_LEFT);
     pane.setBottom(label);
@@ -63,7 +63,7 @@ public class ListLayout implements Layout {
   }
 
   @Override
-  public Property<String> nameProperty() {
+  public Property<String> titleProperty() {
     return title;
   }
 

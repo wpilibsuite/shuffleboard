@@ -77,7 +77,7 @@ public class WidgetSaverTest extends ApplicationTest {
 
     Widget widget = JsonBuilder.forSaveFile().fromJson(widgetJson, Widget.class);
 
-    assertEquals("Simple Widget", widget.getType());
+    assertEquals("Simple Widget", widget.getName());
     assertEquals(SourceTypes.Static, widget.getSource().getType());
 
     assertEquals(-1.0, getPropertyValue(widget, "min"));

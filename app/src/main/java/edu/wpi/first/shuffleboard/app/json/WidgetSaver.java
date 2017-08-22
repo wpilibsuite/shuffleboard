@@ -15,7 +15,7 @@ public class WidgetSaver implements ElementTypeAdapter<Widget> {
   @Override
   public JsonElement serialize(Widget src, JsonSerializationContext context) {
     JsonObject object = new JsonObject();
-    object.addProperty("_type", src.getType());
+    object.addProperty("_type", src.getName());
     object.addProperty("_source", src.getSource().getId());
     for (Property p : src.getProperties()) {
       object.add(p.getName(), context.serialize(p.getValue()));
@@ -27,8 +27,8 @@ public class WidgetSaver implements ElementTypeAdapter<Widget> {
   public Widget deserialize(JsonElement json, JsonDeserializationContext context) throws JsonParseException {
     JsonObject obj = json.getAsJsonObject();
     String type = obj.get("_type").getAsString();
-    Widget widget = Widgets.getDefault().typeFor(type)
-            .orElseThrow(() -> new JsonParseException("No widget found for " + type)).get();
+    Widget widget = Widgets.getDefault().createWidget(type)
+            .orElseThrow(() -> new JsonParseException("No widget found for " + type));
 
     String source = obj.get("_source").getAsString();
     widget.setSource(Sources.getDefault().forUri(source));

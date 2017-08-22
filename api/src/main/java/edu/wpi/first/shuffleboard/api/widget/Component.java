@@ -9,9 +9,9 @@ public interface Component {
   Pane getView();
 
   /**
-   * Gets the name to label this item with
+   * Gets the label for this component
    */
-  Property<String> nameProperty();
+  Property<String> titleProperty();
 
   /**
    * All of the widgets contained by or represented by this one, if any.
@@ -19,7 +19,7 @@ public interface Component {
   Stream<Widget> allWidgets();
 
   /**
-   * The unique name of this component.
+   * Gets the name of this widget type.
    */
   String getName();
 }
