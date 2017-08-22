@@ -7,8 +7,8 @@ import edu.wpi.first.shuffleboard.api.sources.SourceEntry;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.GridPoint;
 import edu.wpi.first.shuffleboard.api.util.RoundingMode;
+import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.TileSize;
-import edu.wpi.first.shuffleboard.api.widget.Viewable;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 import edu.wpi.first.shuffleboard.api.widget.Widgets;
 import edu.wpi.first.shuffleboard.app.components.LayoutTile;
@@ -284,7 +284,7 @@ public class WidgetPaneController {
         }
         pane.tileMatching(t -> t.getId().equals(data.getId()))
                 .ifPresent(t -> {
-                  Viewable content = pane.removeTile(t);
+                  Component content = pane.removeTile(t);
                   ((LayoutTile) tile).getContent().addChild(content);
                 });
         event.consume();
@@ -347,7 +347,7 @@ public class WidgetPaneController {
     MenuItem wrapInVBox = new MenuItem("Wrap in VBox");
     wrapInVBox.setOnAction(__ -> {
       TileLayout was = pane.getTileLayout(tile);
-      Viewable content = pane.removeTile(tile);
+      Component content = pane.removeTile(tile);
       Layout layout = Widgets.viewFor(ListLayout.class).get();
       layout.addChild(content);
       pane.addLayout(layout, was.origin, was.size);

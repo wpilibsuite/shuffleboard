@@ -3,8 +3,8 @@ package edu.wpi.first.shuffleboard.app.components;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.util.GridPoint;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
+import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.TileSize;
-import edu.wpi.first.shuffleboard.api.widget.Viewable;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 import edu.wpi.first.shuffleboard.app.dnd.DragUtils;
 import edu.wpi.first.shuffleboard.app.widget.Layout;
@@ -207,7 +207,7 @@ public class WidgetPane extends TilePane {
             (int) (height / getTileSize()));
   }
 
-  public <T extends Viewable> T removeTile(Tile<T> tile) {
+  public <T extends Component> T removeTile(Tile<T> tile) {
     T content = tile.getContent();
     getChildren().remove(tile);
     tile.setContent(null);

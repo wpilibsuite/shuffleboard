@@ -52,7 +52,7 @@ import javafx.collections.ObservableMap;
  * @param <T> the type of data the widget supports. For composite widgets, this is always
  *            {@link ObservableMap ObservableMap&lt;String, Object&gt;}.
  */
-public interface Widget extends Viewable {
+public interface Widget extends Component {
 
   /**
    * Gets the name of this widget type.

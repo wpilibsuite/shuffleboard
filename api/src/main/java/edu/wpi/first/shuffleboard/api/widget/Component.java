@@ -5,7 +5,7 @@ import java.util.stream.Stream;
 import javafx.beans.property.Property;
 import javafx.scene.layout.Pane;
 
-public interface Viewable {
+public interface Component {
   Pane getView();
 
   /**
@@ -17,4 +17,5 @@ public interface Viewable {
    * All of the widgets contained by or represented by this one, if any.
    */
   Stream<Widget> allWidgets();
+
 }

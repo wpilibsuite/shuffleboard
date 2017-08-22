@@ -1,7 +1,7 @@
 package edu.wpi.first.shuffleboard.app.widget;
 
 import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
-import edu.wpi.first.shuffleboard.api.widget.Viewable;
+import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.app.components.EditableLabel;
 
 import org.fxmisc.easybind.EasyBind;
@@ -30,7 +30,7 @@ public class ListLayout implements Layout {
   @FXML
   private VBox container;
 
-  private ObservableList<Viewable> widgets = FXCollections.observableArrayList();
+  private ObservableList<Component> widgets = FXCollections.observableArrayList();
 
   private StringProperty title = new SimpleStringProperty(this, "title", "List");
 
@@ -42,7 +42,7 @@ public class ListLayout implements Layout {
     retained = EasyBind.listBind(container.getChildren(), EasyBind.map(widgets, this::paneFor));
   }
 
-  private Pane paneFor(Viewable widget) {
+  private Pane paneFor(Component widget) {
     BorderPane pane = new BorderPane(widget.getView());
     pane.getStyleClass().add("layout--stack");
     EditableLabel label = new EditableLabel(widget.nameProperty());
@@ -53,7 +53,7 @@ public class ListLayout implements Layout {
   }
 
   @Override
-  public Collection<Viewable> getChildren() {
+  public Collection<Component> getChildren() {
     return widgets;
   }
 
@@ -68,7 +68,7 @@ public class ListLayout implements Layout {
   }
 
   @Override
-  public void addChild(Viewable widget) {
+  public void addChild(Component widget) {
     widgets.add(widget);
   }
 }

@@ -3,8 +3,8 @@ package edu.wpi.first.shuffleboard.app.components;
 import edu.wpi.first.shuffleboard.api.components.EditableLabel;
 import edu.wpi.first.shuffleboard.api.util.PropertyUtils;
 import edu.wpi.first.shuffleboard.api.util.PseudoClassProperty;
+import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.TileSize;
-import edu.wpi.first.shuffleboard.api.widget.Viewable;
 
 import org.fxmisc.easybind.EasyBind;
 
@@ -16,7 +16,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.layout.BorderPane;
 
-public abstract class Tile<T extends Viewable> extends BorderPane {
+public abstract class Tile<T extends Component> extends BorderPane {
 
   private final Property<T> content = new SimpleObjectProperty<>(this, "content", null);
 
@@ -39,9 +39,9 @@ public abstract class Tile<T extends Viewable> extends BorderPane {
     getStyleClass().addAll("tile", "card");
     PropertyUtils.bindWithConverter(idProperty(), contentProperty(), w -> "tile[" + w + "]");
     ((EditableLabel) lookup("#titleLabel")).textProperty().bindBidirectional(
-        EasyBind.monadic(contentProperty()).selectProperty(Viewable::nameProperty)
+        EasyBind.monadic(contentProperty()).selectProperty(Component::nameProperty)
     );
-    centerProperty().bind(EasyBind.monadic(contentProperty()).map(Viewable::getView));
+    centerProperty().bind(EasyBind.monadic(contentProperty()).map(Component::getView));
   }
 
   public final T getContent() {
