@@ -14,7 +14,6 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.Region;
 
 @Description(name = "PDP", dataTypes = PowerDistributionData.class)
 @ParametrizedController("PowerDistributionPanel.fxml")
@@ -108,9 +107,6 @@ public class PowerDistributionPanelWidget extends SimpleAnnotatedWidget<PowerDis
       totalCurrent.setValue(newData.getTotalCurrent());
       totalCurrentText.setText(ampConverter.toString(newData.getTotalCurrent()));
     });
-
-    voltage.setLabelFormatter(voltConverter);
-    totalCurrent.setLabelFormatter(ampConverter);
 
     exportProperties(showIndicatorText);
   }
