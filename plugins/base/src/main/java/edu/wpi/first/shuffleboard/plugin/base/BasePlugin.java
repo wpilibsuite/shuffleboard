@@ -15,6 +15,7 @@ import edu.wpi.first.shuffleboard.plugin.base.data.types.BooleanType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.EncoderType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.NumberArrayType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.NumberType;
+import edu.wpi.first.shuffleboard.plugin.base.data.types.PowerDistributionType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.RawByteType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.SendableChooserType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.SpeedControllerType;
@@ -28,6 +29,7 @@ import edu.wpi.first.shuffleboard.plugin.base.widget.BooleanBox;
 import edu.wpi.first.shuffleboard.plugin.base.widget.ComboBoxChooser;
 import edu.wpi.first.shuffleboard.plugin.base.widget.EncoderWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.NumberSlider;
+import edu.wpi.first.shuffleboard.plugin.base.widget.PowerDistributionPanelWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.ProgressBar;
 import edu.wpi.first.shuffleboard.plugin.base.widget.SpeedController;
 import edu.wpi.first.shuffleboard.plugin.base.widget.TextView;
@@ -56,6 +58,7 @@ public class BasePlugin extends Plugin {
         new StringArrayType(),
         new RawByteType(),
         new AnalogInputType(),
+        new PowerDistributionType(),
         new EncoderType(),
         new SendableChooserType(),
         new SpeedControllerType()
@@ -69,6 +72,7 @@ public class BasePlugin extends Plugin {
         ComboBoxChooser.class,
         EncoderWidget.class,
         NumberSlider.class,
+        PowerDistributionPanelWidget.class,
         ProgressBar.class,
         SpeedController.class,
         TextView.class,
@@ -99,6 +103,7 @@ public class BasePlugin extends Plugin {
         .put(new NumberType(), NumberSlider.class)
         .put(new StringType(), TextView.class)
         .put(new AnalogInputType(), VoltageViewWidget.class)
+        .put(new PowerDistributionType(), PowerDistributionPanelWidget.class)
         .put(new SendableChooserType(), ComboBoxChooser.class)
         .put(new EncoderType(), EncoderWidget.class)
         .put(new SpeedControllerType(), SpeedController.class)
