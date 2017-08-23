@@ -27,6 +27,7 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+
 package edu.wpi.first.shuffleboard.api.util;
 
 import java.util.Comparator;
@@ -48,31 +49,32 @@ public final class AlphanumComparator implements Comparator<String> {
   public static final AlphanumComparator INSTANCE = new AlphanumComparator();
 
   private boolean isDigit(char ch) {
-    return ((ch >= 48) && (ch <= 57));
+    return (ch >= 48) && (ch <= 57);
   }
 
-  private String getChunk(String string, int marker) {
+  private String getChunk(String string, int startMarker) {
     final int numChars = string.length();
+    int marker = startMarker;
     StringBuilder chunk = new StringBuilder();
-    char c = string.charAt(marker);
-    chunk.append(c);
+    char curChar = string.charAt(marker);
+    chunk.append(curChar);
     marker++;
-    if (isDigit(c)) {
+    if (isDigit(curChar)) {
       while (marker < numChars) {
-        c = string.charAt(marker);
-        if (!isDigit(c)) {
+        curChar = string.charAt(marker);
+        if (!isDigit(curChar)) {
           break;
         }
-        chunk.append(c);
+        chunk.append(curChar);
         marker++;
       }
     } else {
       while (marker < numChars) {
-        c = string.charAt(marker);
-        if (isDigit(c)) {
+        curChar = string.charAt(marker);
+        if (isDigit(curChar)) {
           break;
         }
-        chunk.append(c);
+        chunk.append(curChar);
         marker++;
       }
     }
