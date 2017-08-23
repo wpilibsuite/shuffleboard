@@ -3,6 +3,7 @@ package edu.wpi.first.shuffleboard.plugin.base.data;
 import com.google.common.collect.ImmutableMap;
 
 import edu.wpi.first.shuffleboard.api.data.ComplexData;
+import edu.wpi.first.shuffleboard.api.util.AlphanumComparator;
 
 import java.util.Comparator;
 import java.util.Map;
@@ -50,7 +51,7 @@ public class PowerDistributionData extends ComplexData<PowerDistributionData> {
     return map.entrySet().stream()
         .filter(e -> e.getKey().matches("^Chan[0-9]+$"))
         .filter(e -> e.getValue() instanceof Number)
-        .sorted(Comparator.comparing(Map.Entry::getKey))
+        .sorted(Comparator.comparing(Map.Entry::getKey, AlphanumComparator.INSTANCE))
         .mapToDouble(e -> ((Number) e.getValue()).doubleValue())
         .toArray();
   }

@@ -2,12 +2,12 @@ package edu.wpi.first.shuffleboard.api.components;
 
 import edu.wpi.first.shuffleboard.api.sources.SourceEntry;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
+import edu.wpi.first.shuffleboard.api.util.AlphanumComparator;
 import edu.wpi.first.shuffleboard.api.util.EqualityUtils;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.Locale;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
@@ -35,7 +35,7 @@ public class SourceTreeTable<S extends SourceEntry, V> extends TreeTableView<S> 
    * Compares tree items alphabetically.
    */
   public static final Comparator<TreeItem<? extends SourceEntry>> alphabetical
-      = Comparator.comparing(item -> item.getValue().getViewName().toLowerCase(Locale.getDefault()));
+      = Comparator.comparing(item -> item.getValue().getViewName(), AlphanumComparator.INSTANCE);
 
   private final ObjectProperty<SourceType> sourceType = new SimpleObjectProperty<>(this, "sourceType", null);
 

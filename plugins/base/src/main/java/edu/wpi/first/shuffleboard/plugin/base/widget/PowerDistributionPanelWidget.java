@@ -1,20 +1,34 @@
 package edu.wpi.first.shuffleboard.plugin.base.widget;
 
 import edu.wpi.first.shuffleboard.api.components.LinearIndicator;
+import edu.wpi.first.shuffleboard.api.util.FxUtils;
+import edu.wpi.first.shuffleboard.api.util.UnitStringConverter;
 import edu.wpi.first.shuffleboard.api.widget.Description;
 import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 import edu.wpi.first.shuffleboard.api.widget.SimpleAnnotatedWidget;
 import edu.wpi.first.shuffleboard.plugin.base.data.PowerDistributionData;
 
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.fxml.FXML;
+import javafx.scene.control.Label;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.Region;
 
 @Description(name = "PDP", dataTypes = PowerDistributionData.class)
 @ParametrizedController("PowerDistributionPanel.fxml")
 public class PowerDistributionPanelWidget extends SimpleAnnotatedWidget<PowerDistributionData> {
 
+  private static final UnitStringConverter voltConverter = new UnitStringConverter("V");
+  private static final UnitStringConverter ampConverter = new UnitStringConverter("A");
+
+  private final BooleanProperty showIndicatorText = new SimpleBooleanProperty(this, "showIndicatorText", true);
+
   @FXML
   private Pane root;
+  @FXML
+  private ImageView imageView;
   @FXML
   private LinearIndicator channel0;
   @FXML
@@ -51,6 +65,10 @@ public class PowerDistributionPanelWidget extends SimpleAnnotatedWidget<PowerDis
   private LinearIndicator voltage;
   @FXML
   private LinearIndicator totalCurrent;
+  @FXML
+  private Label voltageText;
+  @FXML
+  private Label totalCurrentText;
 
   // Arrange the channel indicators in an array for ease of use
   private LinearIndicator[] channels;
@@ -76,19 +94,42 @@ public class PowerDistributionPanelWidget extends SimpleAnnotatedWidget<PowerDis
         channel15
     };
 
+    imageView.fitHeightProperty().bind(root.heightProperty().multiply(0.6));
+
     dataProperty().addListener((__, oldData, newData) -> {
       double[] currents = newData.getCurrents();
       for (int i = 0; i < currents.length; i++) {
-        channels[i].setValue(currents[i]);
+        double current = currents[i];
+        FxUtils.getLabel(channels[i]).ifPresent(label -> label.setText(ampConverter.toString(current)));
+        channels[i].setValue(current);
       }
       voltage.setValue(newData.getVoltage());
+      voltageText.setText(voltConverter.toString(newData.getVoltage()));
       totalCurrent.setValue(newData.getTotalCurrent());
+      totalCurrentText.setText(ampConverter.toString(newData.getTotalCurrent()));
     });
+
+    voltage.setLabelFormatter(voltConverter);
+    totalCurrent.setLabelFormatter(ampConverter);
+
+    exportProperties(showIndicatorText);
   }
 
   @Override
   public Pane getView() {
     return root;
+  }
+
+  public boolean isShowIndicatorText() {
+    return showIndicatorText.get();
+  }
+
+  public BooleanProperty showIndicatorTextProperty() {
+    return showIndicatorText;
+  }
+
+  public void setShowIndicatorText(boolean showIndicatorText) {
+    this.showIndicatorText.set(showIndicatorText);
   }
 
 }

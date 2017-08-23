@@ -1,0 +1,7 @@
+.voltage-view:critical .range-bar {
+    -fx-background-color: linear-gradient(to bottom, red, darkred);
+}
+
+.linear-indicator-text {
+    -fx-font-size: 0.75em;
+}
