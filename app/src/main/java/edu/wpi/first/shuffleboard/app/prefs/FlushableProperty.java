@@ -19,7 +19,7 @@ public class FlushableProperty<T> extends SimpleObjectProperty<T> {
    * @param property The property to flush to
    */
   public FlushableProperty(Property<T> property) {
-    super(null, property.getName(), property.getValue());
+    super(property.getBean(), property.getName(), property.getValue());
     this.property = property;
   }
 

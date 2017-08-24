@@ -58,7 +58,7 @@ public class Shuffleboard extends Application {
         NetworkTable.setPort(NetworkTable.DEFAULT_PORT);
       }
 
-      if (value[0].matches("[1-9](\\d{1,3})?")) {
+      if (value[0].matches("\\d{1,4}")) {
         NetworkTable.setTeam(Integer.parseInt(value[0]));
       } else if (value[0].isEmpty()) {
         NetworkTable.setIPAddress("localhost");
@@ -68,10 +68,9 @@ public class Shuffleboard extends Application {
 
       NetworkTable.initialize();
     };
-    AppPreferences.getInstance().serverProperty().addListener(serverChangeListener);
-
     NetworkTable.setClientMode();
     serverChangeListener.changed(null, null, AppPreferences.getInstance().getServer());
+    AppPreferences.getInstance().serverProperty().addListener(serverChangeListener);
 
     // Load the Roboto font
     Font.loadFont(getClass().getResource("font/roboto/Roboto-Regular.ttf").openStream(), -1);

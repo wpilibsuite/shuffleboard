@@ -23,7 +23,7 @@ public final class AppPreferences {
   private final DoubleProperty defaultTileSize
       = new SimpleDoubleProperty(this, "defaultTileSize", 128);
   private final Property<String> server
-      = new SimpleStringProperty(this, "Server", "localhost");
+      = new SimpleStringProperty(this, "Team Number", "localhost");
 
   @VisibleForTesting
   static AppPreferences instance = new AppPreferences();
