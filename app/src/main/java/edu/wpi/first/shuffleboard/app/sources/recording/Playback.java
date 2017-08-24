@@ -6,6 +6,7 @@ import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
 import edu.wpi.first.shuffleboard.api.sources.recording.Recording;
 import edu.wpi.first.shuffleboard.api.sources.recording.Serialization;
 import edu.wpi.first.shuffleboard.api.sources.recording.TimestampedData;
+import edu.wpi.first.shuffleboard.api.util.Time;
 import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
 
 import java.io.IOException;
@@ -145,6 +146,7 @@ public final class Playback {
     Recorder.getInstance().stop();
     unpause();
     Sources.getDefault().disconnectAll();
+    Time.setStartTime(Time.now());
     autoRunner = new Thread(() -> {
       TimestampedData previous;
       TimestampedData current = null;
