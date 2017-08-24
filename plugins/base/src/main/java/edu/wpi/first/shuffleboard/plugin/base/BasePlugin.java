@@ -27,6 +27,7 @@ import edu.wpi.first.shuffleboard.plugin.base.recording.serialization.StringArra
 import edu.wpi.first.shuffleboard.plugin.base.widget.BooleanBox;
 import edu.wpi.first.shuffleboard.plugin.base.widget.ComboBoxChooser;
 import edu.wpi.first.shuffleboard.plugin.base.widget.EncoderWidget;
+import edu.wpi.first.shuffleboard.plugin.base.widget.LinearIndicatorWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.NumberSlider;
 import edu.wpi.first.shuffleboard.plugin.base.widget.ProgressBar;
 import edu.wpi.first.shuffleboard.plugin.base.widget.SpeedController;
@@ -68,6 +69,7 @@ public class BasePlugin extends Plugin {
         BooleanBox.class,
         ComboBoxChooser.class,
         EncoderWidget.class,
+        LinearIndicatorWidget.class,
         NumberSlider.class,
         ProgressBar.class,
         SpeedController.class,
@@ -96,7 +98,7 @@ public class BasePlugin extends Plugin {
   public Map<DataType, Class<? extends Widget>> getDefaultWidgets() {
     return ImmutableMap.<DataType, Class<? extends Widget>>builder()
         .put(new BooleanType(), BooleanBox.class)
-        .put(new NumberType(), NumberSlider.class)
+        .put(new NumberType(), LinearIndicatorWidget.class)
         .put(new StringType(), TextView.class)
         .put(new AnalogInputType(), VoltageViewWidget.class)
         .put(new SendableChooserType(), ComboBoxChooser.class)
