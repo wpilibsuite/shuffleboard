@@ -87,6 +87,7 @@ public class SourceTreeTable<S extends SourceEntry, V> extends TreeTableView<S> 
     List<String> hierarchy = NetworkTableUtils.getHierarchy(name);
     TreeItem<S> current = getRoot();
     TreeItem<S> parent = current;
+    boolean structureChanged = false;
 
     // Get the appropriate node for the value, creating branches as needed
     // Skip the first path in the hierarchy; it's always the root
@@ -110,6 +111,7 @@ public class SourceTreeTable<S extends SourceEntry, V> extends TreeTableView<S> 
         current = new TreeItem<>(newEntry);
         current.setExpanded(true);
         parent.getChildren().add(current);
+        structureChanged = true;
       }
     }
 
@@ -117,6 +119,7 @@ public class SourceTreeTable<S extends SourceEntry, V> extends TreeTableView<S> 
     if (deleted) {
       if (current != null) {
         parent.getChildren().remove(current);
+        structureChanged = true;
       }
     } else {
       if (current == null) {
@@ -124,12 +127,15 @@ public class SourceTreeTable<S extends SourceEntry, V> extends TreeTableView<S> 
         current = new TreeItem<>(entry);
         current.setExpanded(true);
         parent.getChildren().add(current);
+        structureChanged = true;
       } else if (EqualityUtils.isDifferent(current.getValue().getValue(), entry.getValue())) {
         // The value updated, so just update the existing node
         current.setValue(entry);
       }
     }
-    sort();
+    if (structureChanged) {
+      sort();
+    }
   }
 
   protected static <T> T getEntryForCellData(
