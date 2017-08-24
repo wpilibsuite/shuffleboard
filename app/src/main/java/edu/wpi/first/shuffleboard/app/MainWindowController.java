@@ -407,7 +407,7 @@ public class MainWindowController {
   @FXML
   private void loadPlayback() throws IOException {
     FileChooser chooser = new FileChooser();
-    chooser.setInitialDirectory(new File(Storage.STORAGE_DIR));
+    chooser.setInitialDirectory(new File(Storage.RECORDING_DIR));
     chooser.getExtensionFilters().setAll(
         new FileChooser.ExtensionFilter("FRC Data Recording", "*.frc"));
     final File selected = chooser.showOpenDialog(root.getScene().getWindow());
