@@ -347,16 +347,18 @@ public class WidgetPaneController {
                                       Function<TileLayout, TileLayout> targetLayoutFunction,
                                       Function<TileSize, TileSize> shrink,
                                       boolean left) {
+    TileSize minSize = pane.round(tile.getWidget().getView().getMinWidth(), tile.getWidget().getView().getMinHeight());
     TileLayout layout = pane.getTileLayout(tile);
     TileLayout targetLayout = targetLayoutFunction.apply(layout);
     int importantDim = left ? layout.size.getWidth() : layout.size.getHeight();
+    int minDim = left ? minSize.getWidth() : minSize.getHeight();
     if (!pane.isOverlapping(targetLayout, n -> n == tile) && !targetLayout.origin.equals(layout.origin)) { // NOPMD
       // Great, we can move it
       return Optional.of(() -> {
         GridPane.setColumnIndex(tile, targetLayout.origin.col);
         GridPane.setRowIndex(tile, targetLayout.origin.row);
       });
-    } else if (importantDim > 1) {
+    } else if (importantDim > minDim) {
       // Shrink the tile
       return Optional.of(() -> tile.setSize(shrink.apply(tile.getSize())));
     } else if (!targetLayout.origin.equals(layout.origin)) { // NOPMD
