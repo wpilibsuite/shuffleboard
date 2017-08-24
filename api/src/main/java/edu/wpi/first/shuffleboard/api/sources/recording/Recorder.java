@@ -7,10 +7,6 @@ import edu.wpi.first.shuffleboard.api.util.ThreadUtils;
 
 import java.io.IOException;
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.Locale;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
@@ -25,9 +21,6 @@ import javafx.beans.property.SimpleBooleanProperty;
 public final class Recorder {
 
   private static final Logger log = Logger.getLogger(Recorder.class.getName());
-
-  private static final DateTimeFormatter dateFormatter = DateTimeFormatter.ISO_DATE;
-  private static final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH.mm.ss", Locale.getDefault());
 
   private static final Recorder instance = new Recorder();
 
@@ -55,18 +48,12 @@ public final class Recorder {
       return;
     }
     try {
-      String date = dateFormatter.format(LocalDateTime.ofInstant(startTime, ZoneId.systemDefault()));
-      String time = timeFormatter.format(LocalDateTime.ofInstant(startTime, ZoneId.systemDefault()));
-      String file = Storage.RECORDING_FILE_FORMAT.replace("${date}", date).replace("${time}", time);
+      String file = Storage.createRecordingFilePath(startTime);
       Serialization.saveRecording(recording, file);
       log.fine("Saved recording to " + file);
     } catch (IOException e) {
       throw new RuntimeException("Could not save the recording", e);
     }
-  }
-
-  private String createTimestamp() {
-    return timeFormatter.format(LocalDateTime.ofInstant(startTime, ZoneId.systemDefault()));
   }
 
   /**
