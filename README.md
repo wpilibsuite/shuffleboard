@@ -4,16 +4,23 @@
 
 # shuffleboard
 
+
+## Structure
+
+Shuffleboard is organized into three base projects: `api`, `app`, and `plugins`. `plugins` has additional
+subprojects that the main app depends on to provide data types, widgets, and data sources for basic FRC use.
+
 ## Running
 
-To run shuffleboard use the command `./gradlew run`.
+To run shuffleboard use the command `./gradlew :app:run`.
 
 ### Requirements
 - [JDK 8](http://www.oracle.com/technetwork/java/javase/downloads/index.html)
 
 ## Building
 
-To build shuffleboard use the command `./gradlew shadowJar`.
+To build the API project use the command `./gradlew :api:shadowJar`  
+To build the app project use the command `./gradlew :app:shadowJar`
 
 ### Requirements
 - [JDK 8](http://www.oracle.com/technetwork/java/javase/downloads/index.html)
