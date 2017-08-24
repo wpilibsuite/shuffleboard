@@ -10,6 +10,7 @@ import edu.wpi.first.shuffleboard.api.sources.recording.serialization.Serializer
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -83,7 +84,10 @@ public final class Serialization {
       i += next.length;
       j++;
     }
-    Files.createDirectories(Paths.get(file).getParent());
+    Path saveDir = Paths.get(file).getParent();
+    if (saveDir != null) {
+      Files.createDirectories(saveDir);
+    }
     Files.write(Paths.get(file), all);
   }
 
