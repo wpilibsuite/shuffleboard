@@ -6,7 +6,6 @@ import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.sources.recording.serialization.TypeAdapter;
 import edu.wpi.first.shuffleboard.api.sources.recording.serialization.Serializers;
-import edu.wpi.first.shuffleboard.api.util.Storage;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -37,10 +36,6 @@ public final class Serialization {
   public static final int SIZE_OF_DOUBLE = 8;
 
   private Serialization() {
-  }
-
-  public static void saveToDefaultLocation(Recording recording) throws IOException {
-    saveRecording(recording, Storage.DEFAULT_RECORDING_FILE);
   }
 
   /**
@@ -88,6 +83,7 @@ public final class Serialization {
       i += next.length;
       j++;
     }
+    Files.createDirectories(Paths.get(file).getParent());
     Files.write(Paths.get(file), all);
   }
 
@@ -113,15 +109,6 @@ public final class Serialization {
    */
   public static <T> T decode(byte[] buffer, int bufferPosition, DataType<T> type) {
     return Serializers.get(type).deserialize(buffer, bufferPosition);
-  }
-
-  /**
-   * Loads the default recording file at {@link Storage#DEFAULT_RECORDING_FILE}.
-   *
-   * @throws IOException if the file could not be read
-   */
-  public static Recording loadDefaultRecording() throws IOException {
-    return loadRecording(Storage.DEFAULT_RECORDING_FILE);
   }
 
   /**

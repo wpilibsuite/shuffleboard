@@ -26,8 +26,9 @@ public final class Recorder {
 
   private static final Logger log = Logger.getLogger(Recorder.class.getName());
 
-  private static final DateTimeFormatter timeFormatter =
-      DateTimeFormatter.ofPattern("uuuu-MM-dd_HH:mm:ss", Locale.getDefault());
+  private static final DateTimeFormatter dateFormatter = DateTimeFormatter.ISO_DATE;
+  private static final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH.mm.ss", Locale.getDefault());
+
   private static final Recorder instance = new Recorder();
 
   private final BooleanProperty running = new SimpleBooleanProperty(this, "running", false);
@@ -54,7 +55,9 @@ public final class Recorder {
       return;
     }
     try {
-      String file = String.format(Storage.RECORDING_FILE_FORMAT, createTimestamp());
+      String date = dateFormatter.format(LocalDateTime.ofInstant(startTime, ZoneId.systemDefault()));
+      String time = timeFormatter.format(LocalDateTime.ofInstant(startTime, ZoneId.systemDefault()));
+      String file = Storage.RECORDING_FILE_FORMAT.replace("${date}", date).replace("${time}", time);
       Serialization.saveRecording(recording, file);
       log.fine("Saved recording to " + file);
     } catch (IOException e) {
