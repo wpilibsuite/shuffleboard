@@ -33,7 +33,6 @@ import javafx.util.StringConverter;
 
 @Description(name = "Graph", dataTypes = {Number.class, double[].class})
 @ParametrizedController("GraphWidget.fxml")
-@SuppressWarnings("PMD.GodClass") // uh oh
 public class GraphWidget implements AnnotatedWidget {
 
   @FXML
