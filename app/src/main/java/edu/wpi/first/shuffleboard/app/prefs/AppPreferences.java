@@ -25,8 +25,6 @@ public final class AppPreferences {
       = new SimpleDoubleProperty(this, "defaultTileSize", 128);
   private final Property<String> server
       = new SimpleStringProperty(this, "Server", "localhost");
-  private final Property<Integer> port
-      = new SimpleObjectProperty<>(this, "Port", NetworkTable.DEFAULT_PORT);
 
   @VisibleForTesting
   static AppPreferences instance = new AppPreferences();
@@ -42,8 +40,7 @@ public final class AppPreferences {
     return ImmutableList.of(
         theme,
         defaultTileSize,
-        new FlushableProperty<>(server),
-        new FlushableProperty<>(port)
+        new FlushableProperty<>(server)
     );
   }
 
@@ -83,15 +80,4 @@ public final class AppPreferences {
     this.server.setValue(server);
   }
 
-  public Property<Integer> portProperty() {
-    return port;
-  }
-
-  public int getPort() {
-    return port.getValue();
-  }
-
-  public void setPort(int port) {
-    this.port.setValue(port);
-  }
 }

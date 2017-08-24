@@ -8,10 +8,11 @@ import edu.wpi.first.shuffleboard.plugin.base.BasePlugin;
 import edu.wpi.first.shuffleboard.plugin.networktables.NetworkTablesPlugin;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
 
+import java.io.IOException;
+
 import it.sauronsoftware.junique.AlreadyLockedException;
 import it.sauronsoftware.junique.JUnique;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -43,28 +44,34 @@ public class Shuffleboard extends Application {
       throw alreadyLockedException;
     }
 
-    NetworkTable.setClientMode();
-
     ChangeListener<String> serverChangeListener = (observable, oldValue, newValue) -> {
-      if (newValue.matches("[1-9](\\d{1,3})?")) {
-        NetworkTable.setTeam(Integer.parseInt(newValue));
-      } else if (newValue.isEmpty()) {
+      NetworkTable.shutdown();
+
+      String[] value = newValue.split(":");
+
+      /*
+       * You MUST set the port number before setting the team number.
+       */
+      if (value.length > 1) {
+        NetworkTable.setPort(Integer.parseInt(value[1]));
+      } else {
+        NetworkTable.setPort(NetworkTable.DEFAULT_PORT);
+      }
+
+      if (value[0].matches("[1-9](\\d{1,3})?")) {
+        NetworkTable.setTeam(Integer.parseInt(value[0]));
+      } else if (value[0].isEmpty()) {
         NetworkTable.setIPAddress("localhost");
       } else {
-        NetworkTable.setIPAddress(newValue);
+        NetworkTable.setIPAddress(value[0]);
       }
+
+      NetworkTable.initialize();
     };
     AppPreferences.getInstance().serverProperty().addListener(serverChangeListener);
 
-    ChangeListener<Integer> portChangeListener = (observable, oldValue, newValue) -> {
-      NetworkTable.shutdown();
-      NetworkTable.setPort(newValue);
-      NetworkTable.initialize();
-    };
-    AppPreferences.getInstance().portProperty().addListener(portChangeListener);
-
+    NetworkTable.setClientMode();
     serverChangeListener.changed(null, null, AppPreferences.getInstance().getServer());
-    portChangeListener.changed(null, null, AppPreferences.getInstance().getPort());
 
     // Load the Roboto font
     Font.loadFont(getClass().getResource("font/roboto/Roboto-Regular.ttf").openStream(), -1);
