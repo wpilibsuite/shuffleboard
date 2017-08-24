@@ -6,7 +6,6 @@ import com.google.common.collect.ImmutableList;
 import edu.wpi.first.shuffleboard.api.theme.Theme;
 import edu.wpi.first.shuffleboard.api.theme.Themes;
 
-import edu.wpi.first.wpilibj.networktables.NetworkTable;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleDoubleProperty;
