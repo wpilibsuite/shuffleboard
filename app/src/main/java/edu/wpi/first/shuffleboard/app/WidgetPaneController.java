@@ -1,8 +1,5 @@
 package edu.wpi.first.shuffleboard.app;
 
-import edu.wpi.first.shuffleboard.app.components.TileLayout;
-import edu.wpi.first.shuffleboard.app.components.WidgetPane;
-import edu.wpi.first.shuffleboard.app.components.WidgetTile;
 import edu.wpi.first.shuffleboard.api.dnd.DataFormats;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.DummySource;
@@ -13,6 +10,9 @@ import edu.wpi.first.shuffleboard.api.util.RoundingMode;
 import edu.wpi.first.shuffleboard.api.widget.TileSize;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 import edu.wpi.first.shuffleboard.api.widget.Widgets;
+import edu.wpi.first.shuffleboard.app.components.TileLayout;
+import edu.wpi.first.shuffleboard.app.components.WidgetPane;
+import edu.wpi.first.shuffleboard.app.components.WidgetTile;
 import edu.wpi.first.shuffleboard.app.dnd.TileDragResizer;
 
 import org.fxmisc.easybind.EasyBind;
@@ -253,7 +253,7 @@ public class WidgetPaneController {
       Dragboard dragboard = event.getDragboard();
       if (dragboard.hasContent(DataFormats.source)) {
         SourceEntry entry = (SourceEntry) dragboard.getContent(DataFormats.source);
-        tile.getWidget().setSource(entry.get());
+        tile.getWidget().addSource(entry.get());
         event.consume();
       }
     });
@@ -295,22 +295,23 @@ public class WidgetPaneController {
   private Menu createChangeMenus(WidgetTile tile) {
     Widget widget = tile.getWidget();
     Menu changeView = new Menu("Show as...");
-    Widgets.getDefault().widgetNamesForType(widget.getSource().getDataType())
-           .stream()
-           .sorted()
-           .forEach(name -> {
-             MenuItem changeItem = new MenuItem(name);
-             if (name.equals(widget.getName())) {
-               changeItem.setGraphic(new Label("✓"));
-             } else {
-               // only need to change if it's to another type
-               changeItem.setOnAction(__ -> {
-                 Widgets.getDefault().createWidget(name, widget.getSource())
-                        .ifPresent(tile::setWidget);
-               });
-             }
-             changeView.getItems().add(changeItem);
-           });
+    widget.getSources().stream()
+        .map(s -> Widgets.getDefault().widgetNamesForType(s.getDataType()))
+        .flatMap(List::stream)
+        .sorted()
+        .forEach(name -> {
+          MenuItem changeItem = new MenuItem(name);
+          if (name.equals(widget.getName())) {
+            changeItem.setGraphic(new Label("✓"));
+          } else {
+            // only need to change if it's to another type
+            changeItem.setOnAction(__ -> {
+              Widgets.getDefault().createWidget(name, widget.getSources())
+                  .ifPresent(tile::setWidget);
+            });
+          }
+          changeView.getItems().add(changeItem);
+        });
     return changeView;
   }
 

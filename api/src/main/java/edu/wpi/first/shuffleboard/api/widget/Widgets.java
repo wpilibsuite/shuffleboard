@@ -136,6 +136,22 @@ public class Widgets extends Registry<Class<? extends Widget>> {
 
   /**
    * Tries to create a widget from a known widget with the given name. If successful, the widgets
+   * data sources will be set to the given one.
+   *
+   * @param name    the name of the widget to create
+   * @param sources the data sources for the widget to use
+   * @return an optional containing the created view, or an empty optional if no widget could
+   *         be created
+   */
+  public <T> Optional<Widget> createWidget(String name, List<DataSource> sources) {
+    Optional<Widget> widget = typeFor(name).map(WidgetType::get);
+    widget.ifPresent(w -> activeWidgets.put(w, w));
+    widget.ifPresent(w -> sources.forEach(w::addSource));
+    return widget;
+  }
+
+  /**
+   * Tries to create a widget from a known widget with the given name. If successful, the widgets
    * data source will be set to the given one.
    *
    * @param name   the name of the widget to create
@@ -145,10 +161,7 @@ public class Widgets extends Registry<Class<? extends Widget>> {
    *         be created
    */
   public <T> Optional<Widget> createWidget(String name, DataSource<T> source) {
-    Optional<Widget> widget = typeFor(name).map(WidgetType::get);
-    widget.ifPresent(w -> activeWidgets.put(w, w));
-    widget.ifPresent(w -> w.setSource(source));
-    return widget;
+    return createWidget(name, ImmutableList.of(source));
   }
 
   /**

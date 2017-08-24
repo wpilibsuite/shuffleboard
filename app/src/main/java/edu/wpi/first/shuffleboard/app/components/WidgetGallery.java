@@ -40,7 +40,7 @@ public class WidgetGallery extends TilePane {
     widgets.stream().map(WidgetType::get)
             .peek(widget ->
               DummySource.forTypes(widget.getDataTypes())
-                         .ifPresent(widget::setSource)
+                         .ifPresent(widget::addSource)
             )
             .forEach(this::addWidget);
   }

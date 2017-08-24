@@ -1,8 +1,9 @@
 package edu.wpi.first.shuffleboard.app;
 
-import edu.wpi.first.shuffleboard.app.components.WidgetTile;
+import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
+import edu.wpi.first.shuffleboard.app.components.WidgetTile;
 import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
 
 import org.junit.jupiter.api.AfterEach;
@@ -74,9 +75,10 @@ public class MainWindowControllerTest extends ApplicationTest {
     WidgetTile tile = lookup(".tile").query();
     assertNotNull(tile);
     Widget widget = tile.getWidget();
-    assertTrue(widget.getSource().isActive());
-    assertEquals("testSourceContextMenu", widget.getSource().getName());
-    assertEquals("value", widget.getSource().getData());
+    DataSource source = widget.getSources().get(0);
+    assertTrue(source.isActive());
+    assertEquals("testSourceContextMenu", source.getName());
+    assertEquals("value", source.getData());
   }
 
 }

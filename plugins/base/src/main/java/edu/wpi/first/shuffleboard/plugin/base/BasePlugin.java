@@ -27,6 +27,7 @@ import edu.wpi.first.shuffleboard.plugin.base.recording.serialization.StringArra
 import edu.wpi.first.shuffleboard.plugin.base.widget.BooleanBox;
 import edu.wpi.first.shuffleboard.plugin.base.widget.ComboBoxChooser;
 import edu.wpi.first.shuffleboard.plugin.base.widget.EncoderWidget;
+import edu.wpi.first.shuffleboard.plugin.base.widget.GraphWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.NumberSlider;
 import edu.wpi.first.shuffleboard.plugin.base.widget.ProgressBar;
 import edu.wpi.first.shuffleboard.plugin.base.widget.SpeedController;
@@ -68,6 +69,7 @@ public class BasePlugin extends Plugin {
         BooleanBox.class,
         ComboBoxChooser.class,
         EncoderWidget.class,
+        GraphWidget.class,
         NumberSlider.class,
         ProgressBar.class,
         SpeedController.class,

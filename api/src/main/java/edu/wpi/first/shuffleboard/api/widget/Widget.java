@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Set;
 
 import javafx.beans.property.Property;
+import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 import javafx.scene.layout.Pane;
 
@@ -64,21 +65,9 @@ public interface Widget {
    */
   Set<DataType> getDataTypes();
 
-  /**
-   * Sets the source for this widget.
-   *
-   * @param source the new source
-   *
-   * @throws IncompatibleSourceException if the source is for a data type this widget does not support
-   */
-  void setSource(DataSource source) throws IncompatibleSourceException;
+  void addSource(DataSource source) throws IncompatibleSourceException;
 
-  /**
-   * Gets the source for this widget.
-   */
-  DataSource<?> getSource();
-
-  Property<DataSource> sourceProperty();
+  ObservableList<DataSource> getSources();
 
   /**
    * Gets the user-configurable properties for this widget.

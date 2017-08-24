@@ -125,7 +125,7 @@ public class WidgetPane extends TilePane {
    * Gets the tile for the widget containing the given source.
    */
   public Optional<WidgetTile> widgetForSource(DataSource<?> source) {
-    return tileMatching(tile -> tile.getWidget().getSource() == source);
+    return tileMatching(tile -> tile.getWidget().getSources().contains(source));
   }
 
   /**

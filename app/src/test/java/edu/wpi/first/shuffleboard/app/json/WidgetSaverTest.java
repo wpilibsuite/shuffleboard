@@ -3,8 +3,8 @@ package edu.wpi.first.shuffleboard.app.json;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.data.types.AllType;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
-import edu.wpi.first.shuffleboard.api.widget.AnnotatedWidget;
 import edu.wpi.first.shuffleboard.api.widget.Description;
+import edu.wpi.first.shuffleboard.api.widget.SimpleAnnotatedWidget;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 import edu.wpi.first.shuffleboard.api.widget.Widgets;
 
@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class WidgetSaverTest extends ApplicationTest {
 
   @Description(name = "Simple Widget", dataTypes = AllType.class)
-  public static class SimpleWidget extends AnnotatedWidget {
+  public static class SimpleWidget extends SimpleAnnotatedWidget {
 
     public SimpleWidget() {
       exportProperties(
@@ -78,7 +78,7 @@ public class WidgetSaverTest extends ApplicationTest {
     Widget widget = JsonBuilder.forSaveFile().fromJson(widgetJson, Widget.class);
 
     assertEquals("Simple Widget", widget.getName());
-    assertEquals(SourceTypes.Static, widget.getSource().getType());
+    assertEquals(SourceTypes.Static, widget.getSources().get(0).getType());
 
     assertEquals(-1.0, getPropertyValue(widget, "min"));
     assertEquals(1.0, getPropertyValue(widget, "max"));

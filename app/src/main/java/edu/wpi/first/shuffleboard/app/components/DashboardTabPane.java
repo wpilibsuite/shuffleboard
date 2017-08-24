@@ -205,8 +205,8 @@ public class DashboardTabPane extends TabPane {
           if (source.getDataType() != DataTypes.Unknown
               && source.getDataType() != DataTypes.Map
               && !Widgets.getDefault().widgetNamesForSource(source).isEmpty()) {
-            Widgets.getDefault().createWidget(Widgets.getDefault().widgetNamesForSource(source).get(0), source)
-                .ifPresent(w -> getWidgetPane().addWidget(w));
+            Widgets.getDefault().pickWidgetNameFor(source.getDataType())
+                .ifPresent(w -> getWidgetPane().addWidget(Widgets.getDefault().createWidget(w, source).get()));
           }
         }
       }
@@ -224,8 +224,8 @@ public class DashboardTabPane extends TabPane {
      */
     private boolean noExistingWidgetsForSource(String id) {
       for (WidgetTile tile : getWidgetPane().getTiles()) {
-        DataSource<?> source = tile.getWidget().getSource();
-        if (id.startsWith(source.getId())) {
+        boolean match = tile.getWidget().getSources().stream().anyMatch(s -> id.startsWith(s.getId()));
+        if (match) {
           return false;
         }
       }
