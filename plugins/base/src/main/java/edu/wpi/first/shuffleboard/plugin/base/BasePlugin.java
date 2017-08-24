@@ -106,6 +106,7 @@ public class BasePlugin extends Plugin {
         .put(new SendableChooserType(), ComboBoxChooser.class)
         .put(new EncoderType(), EncoderWidget.class)
         .put(new SpeedControllerType(), SpeedController.class)
+        .put(new CommandType(), CommandWidget.class)
         .build();
   }
 
