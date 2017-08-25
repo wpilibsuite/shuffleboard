@@ -13,6 +13,8 @@ import java.io.IOException;
 import it.sauronsoftware.junique.AlreadyLockedException;
 import it.sauronsoftware.junique.JUnique;
 
+import de.codecentric.centerdevice.javafxsvg.SvgImageLoaderFactory;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -77,6 +79,9 @@ public class Shuffleboard extends Application {
     Font.loadFont(getClass().getResource("font/roboto/Roboto-Bold.ttf").openStream(), -1);
     Font.loadFont(getClass().getResource("font/roboto/Roboto-Italic.ttf").openStream(), -1);
     Font.loadFont(getClass().getResource("font/roboto/Roboto-BoldItalic.ttf").openStream(), -1);
+
+    // Install SVG image loaders so SVGs can be used like any other image
+    SvgImageLoaderFactory.install();
   }
 
   @Override
