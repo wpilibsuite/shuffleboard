@@ -10,6 +10,7 @@ import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
 
 /**
  * Contains the user preferences for the app. These preferences are user-specific and are saved
@@ -19,7 +20,10 @@ public final class AppPreferences {
 
   private final Property<Theme> theme
       = new SimpleObjectProperty<>(this, "Theme", Themes.INITIAL_THEME);
-  private final DoubleProperty defaultTileSize = new SimpleDoubleProperty(this, "defaultTileSize", 128);
+  private final DoubleProperty defaultTileSize
+      = new SimpleDoubleProperty(this, "defaultTileSize", 128);
+  private final Property<String> server
+      = new SimpleStringProperty(this, "Team Number", "localhost");
 
   @VisibleForTesting
   static AppPreferences instance = new AppPreferences();
@@ -34,7 +38,8 @@ public final class AppPreferences {
   public ImmutableList<Property<?>> getProperties() {
     return ImmutableList.of(
         theme,
-        defaultTileSize
+        defaultTileSize,
+        new FlushableProperty<>(server)
     );
   }
 
@@ -61,4 +66,17 @@ public final class AppPreferences {
   public void setDefaultTileSize(double defaultTileSize) {
     this.defaultTileSize.set(defaultTileSize);
   }
+
+  public Property<String> serverProperty() {
+    return server;
+  }
+
+  public String getServer() {
+    return server.getValue();
+  }
+
+  public void setServer(String server) {
+    this.server.setValue(server);
+  }
+
 }
