@@ -131,6 +131,36 @@ subprojects {
             classDirectories = files(java.sourceSets["main"].output)
         }
     }
+
+    /*
+     * Allows you to run the UI tests in headless mode by calling gradle with the -Pheadless argument
+     */
+    if (project.hasProperty("jenkinsBuild") || project.hasProperty("headless")) {
+        println("Running UI Tests Headless")
+        junitPlatform {
+            filters {
+                tags {
+                    /*
+                     * A category for UI tests that cannot run in headless mode, ie work properly with real windows
+                     * but not with the virtualized ones in headless mode.
+                     */
+                    exclude("NonHeadlessTests")
+                }
+            }
+        }
+        tasks {
+            "junitPlatformTest"(JavaExec::class) {
+                jvmArgs = listOf(
+                        "-Djava.awt.headless=true",
+                        "-Dtestfx.robot=glass",
+                        "-Dtestfx.headless=true",
+                        "-Dprism.order=sw",
+                        "-Dprism.text=t2k"
+                )
+            }
+        }
+    }
+
 }
 
 configure(setOf(project(":app"))) {
@@ -225,3 +255,15 @@ val Project.`findbugs`: org.gradle.api.plugins.quality.FindBugsExtension get() =
  */
 fun Project.`findbugs`(configure: org.gradle.api.plugins.quality.FindBugsExtension.() -> Unit) =
     extensions.configure("findbugs", configure)
+
+/**
+ * Retrieves the [junitPlatform][org.junit.platform.gradle.plugin.JUnitPlatformExtension] project extension.
+ */
+val Project.`junitPlatform`: org.junit.platform.gradle.plugin.JUnitPlatformExtension get() =
+    extensions.getByName("junitPlatform") as org.junit.platform.gradle.plugin.JUnitPlatformExtension
+
+/**
+ * Configures the [junitPlatform][org.junit.platform.gradle.plugin.JUnitPlatformExtension] project extension.
+ */
+fun Project.`junitPlatform`(configure: org.junit.platform.gradle.plugin.JUnitPlatformExtension.() -> Unit) =
+    extensions.configure("junitPlatform", configure)
