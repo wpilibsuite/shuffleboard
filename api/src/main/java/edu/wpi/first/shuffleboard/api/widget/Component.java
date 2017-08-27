@@ -9,7 +9,7 @@ public interface Component {
   Pane getView();
 
   /**
-   * Gets the label for this component
+   * Gets the label for this component.
    */
   Property<String> titleProperty();
 

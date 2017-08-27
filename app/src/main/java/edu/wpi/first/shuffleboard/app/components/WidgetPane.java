@@ -7,7 +7,6 @@ import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.TileSize;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 import edu.wpi.first.shuffleboard.app.dnd.DragUtils;
-import edu.wpi.first.shuffleboard.api.widget.Layout;
 
 import org.fxmisc.easybind.EasyBind;
 
@@ -134,13 +133,6 @@ public class WidgetPane extends TilePane {
             .flatMap(TypeUtils.optionalCast(WidgetTile.class));
   }
 
-  public Tile addLayout(Layout widget, GridPoint location, TileSize size) {
-    LayoutTile tile = new LayoutTile(widget, size);
-    tile.sizeProperty().addListener(__ -> setSize(tile, tile.getSize()));
-    addTile(tile, location, size);
-    return tile;
-  }
-
   /**
    * Adds a widget to the tile view in the first available location.
    *
@@ -162,20 +154,6 @@ public class WidgetPane extends TilePane {
     WidgetTile tile = new WidgetTile(widget, size);
     tile.sizeProperty().addListener(__ -> setSize(tile, tile.getSize()));
     addTile(tile, size);
-    return tile;
-  }
-
-  /**
-   * Adds a widget to the tile view in the specified location. The tile will be the specified
-   * size.
-   *
-   * @param widget the widget to add
-   * @param size   the size of the tile used to display the widget
-   */
-  public WidgetTile addWidget(Widget widget, GridPoint location, TileSize size) {
-    WidgetTile tile = new WidgetTile(widget, size);
-    tile.sizeProperty().addListener(__ -> setSize(tile, tile.getSize()));
-    addTile(tile, location, size);
     return tile;
   }
 
@@ -216,6 +194,9 @@ public class WidgetPane extends TilePane {
             (int) (height / getTileSize()));
   }
 
+  /**
+   * Remove a given tile from the widget pane.
+   */
   public <T extends Component> T removeTile(Tile<T> tile) {
     T content = tile.getContent();
     getChildren().remove(tile);

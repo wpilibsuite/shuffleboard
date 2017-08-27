@@ -117,7 +117,7 @@ public class Plugin {
   }
 
   /**
-   * Gets a list of the non-annotated components defined by this plugin
+   * Gets a list of the non-annotated components defined by this plugin.
    */
   public List<ComponentType> getComponents() {
     return ImmutableList.of();

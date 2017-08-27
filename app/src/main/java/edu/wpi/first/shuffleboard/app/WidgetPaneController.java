@@ -7,6 +7,7 @@ import edu.wpi.first.shuffleboard.api.sources.SourceEntry;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.GridPoint;
 import edu.wpi.first.shuffleboard.api.util.RoundingMode;
+import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.TileSize;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
@@ -18,7 +19,6 @@ import edu.wpi.first.shuffleboard.app.components.WidgetPane;
 import edu.wpi.first.shuffleboard.app.components.WidgetTile;
 import edu.wpi.first.shuffleboard.app.dnd.TileDragResizer;
 import edu.wpi.first.shuffleboard.api.widget.Layout;
-import edu.wpi.first.shuffleboard.plugin.base.layout.ListLayout;
 
 import org.fxmisc.easybind.EasyBind;
 
@@ -46,10 +46,14 @@ import javafx.scene.input.TransferMode;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
 
+// needs refactoring to split out per-widget interaction
+@SuppressWarnings("PMD.GodClass")
 public class WidgetPaneController {
 
   @FXML
   private WidgetPane pane;
+
+  private final Map<Node, Boolean> tilesAlreadySetup = new WeakHashMap<>();
 
   @FXML
   private void initialize() {
@@ -233,17 +237,14 @@ public class WidgetPaneController {
            .ifPresent(tile -> pane.moveNode(tile, point));
   }
 
-
-  private Map<Node, Boolean> alreadySetup = new WeakHashMap<>();
-
   /**
    * Sets up a tile with a context menu and lets it be dragged around.
    */
   private void setupTile(Tile tile) {
-    if (alreadySetup.get(tile) != null) {
+    if (tilesAlreadySetup.get(tile) != null) {
       return;
     }
-    alreadySetup.put(tile, true);
+    tilesAlreadySetup.put(tile, true);
 
     tile.setOnContextMenuRequested(event -> {
       ContextMenu contextMenu = createContextMenu(tile);
@@ -346,9 +347,11 @@ public class WidgetPaneController {
     wrapInVBox.setOnAction(__ -> {
       TileLayout was = pane.getTileLayout(tile);
       Component content = pane.removeTile(tile);
-      Layout layout = Widgets.viewFor(ListLayout.class).get();
+      Layout layout = Widgets.getDefault()
+          .createComponent("List Layout")
+          .flatMap(TypeUtils.optionalCast(Layout.class)).get();
       layout.addChild(content);
-      pane.addLayout(layout, was.origin, was.size);
+      pane.addComponent(layout, was.origin, was.size);
     });
     menu.getItems().add(wrapInVBox);
 

@@ -152,12 +152,19 @@ public class Widgets extends Registry<ComponentType> {
     return widget;
   }
 
-  public <T> Optional<Widget> createWidget(String name) {
+  /**
+   * Tries to create a widget from a known widget name, without an initial source.
+   */
+  public Optional<Widget> createWidget(String name) {
     Optional<Widget> widget = typeFor(name).map(ComponentType::get).flatMap(TypeUtils.optionalCast(Widget.class));
     widget.ifPresent(w -> activeWidgets.put(w, w));
     return widget;
   }
 
+  /**
+   * Tries to create an arbitrary component. Will delegate to createWidget if the given component
+   * name is registered as a widget.
+   */
   public Optional<? extends Component> createComponent(String name) {
     // Widgets need to be created using the createWidget function due to state
     Optional<Widget> widget = typeFor(name).filter(WidgetType.class::isInstance).flatMap(_w -> createWidget(name));
@@ -239,7 +246,7 @@ public class Widgets extends Registry<ComponentType> {
   public void setDefaultWidget(DataType<?> dataType, Class<? extends Widget> widgetClass) {
     validateComponentClass(widgetClass);
     ComponentType type = widgets.get(widgetClass.getAnnotation(Description.class).name());
-    if (type != null && type instanceof WidgetType) {
+    if (type instanceof WidgetType) {
       setDefaultWidget(dataType, (WidgetType) type);
     }
   }
