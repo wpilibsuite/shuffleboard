@@ -4,7 +4,9 @@ import edu.wpi.first.shuffleboard.api.components.EditableLabel;
 import edu.wpi.first.shuffleboard.api.util.PropertyUtils;
 import edu.wpi.first.shuffleboard.api.util.PseudoClassProperty;
 import edu.wpi.first.shuffleboard.api.widget.Component;
+import edu.wpi.first.shuffleboard.api.widget.Layout;
 import edu.wpi.first.shuffleboard.api.widget.TileSize;
+import edu.wpi.first.shuffleboard.api.widget.Widget;
 
 import org.fxmisc.easybind.EasyBind;
 
@@ -16,7 +18,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.layout.BorderPane;
 
-public abstract class Tile<T extends Component> extends BorderPane {
+public class Tile<T extends Component> extends BorderPane {
 
   private final Property<T> content = new SimpleObjectProperty<>(this, "content", null);
 
@@ -87,5 +89,21 @@ public abstract class Tile<T extends Component> extends BorderPane {
 
   public BooleanProperty selectedProperty() {
     return selected;
+  }
+
+  /**
+   * Create a tile for an arbitrary component.
+   */
+  public static Tile<?> tileFor(Component component, TileSize size) {
+    if (component instanceof Widget) {
+      return new WidgetTile((Widget) component, size);
+    } else if (component instanceof Layout) {
+      return new LayoutTile((Layout) component, size);
+    } else {
+      Tile<Component> tile = new Tile<>();
+      tile.setContent(component);
+      tile.setSize(size);
+      return tile;
+    }
   }
 }

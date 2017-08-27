@@ -155,6 +155,7 @@ public class PluginLoader {
     plugin.getSourceTypes().forEach(SourceTypes.getDefault()::register);
     plugin.getTypeAdapters().forEach(Serializers::add);
     plugin.getWidgets().forEach(Widgets.getDefault()::register);
+    plugin.getComponents().forEach(Widgets.getDefault()::register);
     plugin.getDefaultWidgets().forEach(Widgets.getDefault()::setDefaultWidget);
     Widgets.getDefault().getActiveWidgets().stream()
         .filter(w -> w.getSource() instanceof DestroyedSource)
@@ -202,6 +203,7 @@ public class PluginLoader {
         })
         .forEach(w -> w.setSource(new DestroyedSource<>(w.getSource())));
     plugin.getWidgets().forEach(Widgets.getDefault()::unregister);
+    plugin.getComponents().forEach(Widgets.getDefault()::unregister);
     plugin.getSourceTypes().forEach(SourceTypes.getDefault()::unregister);
     plugin.getTypeAdapters().forEach(Serializers::remove);
     plugin.getDataTypes().forEach(DataTypes.getDefault()::unregister);

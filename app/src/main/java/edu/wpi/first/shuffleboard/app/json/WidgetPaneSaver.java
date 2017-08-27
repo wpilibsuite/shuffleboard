@@ -7,11 +7,13 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonSerializationContext;
 
 import edu.wpi.first.shuffleboard.api.util.GridPoint;
+import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.TileSize;
-import edu.wpi.first.shuffleboard.api.widget.Widget;
+import edu.wpi.first.shuffleboard.api.widget.Widgets;
 import edu.wpi.first.shuffleboard.app.components.Tile;
 import edu.wpi.first.shuffleboard.app.components.WidgetPane;
 
+import java.lang.reflect.Type;
 import java.util.Map;
 
 import javafx.scene.layout.GridPane;
@@ -49,9 +51,13 @@ public class WidgetPaneSaver implements ElementTypeAdapter<WidgetPane> {
 
       JsonObject tile = tileLocation.getValue().getAsJsonObject();
       TileSize size = context.deserialize(tile.get("size"), TileSize.class);
-      Widget widget = context.deserialize(tile.get("content"), Widget.class);
 
-      pane.addWidget(widget, coords, size);
+      String childName = tile.get("content").getAsJsonObject().get("_type").getAsString();
+      Type childType = Widgets.getDefault().javaTypeFor(childName)
+          .orElseThrow(() -> new JsonParseException("Can't find component name " + childName));
+
+      Component component = context.deserialize(tile.get("content"), childType);
+      pane.addComponent(component, coords, size);
     }
 
     return pane;

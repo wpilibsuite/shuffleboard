@@ -11,6 +11,7 @@ import edu.wpi.first.shuffleboard.api.util.TestUtils;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -155,6 +156,20 @@ public class Widgets extends Registry<ComponentType> {
     Optional<Widget> widget = typeFor(name).map(ComponentType::get).flatMap(TypeUtils.optionalCast(Widget.class));
     widget.ifPresent(w -> activeWidgets.put(w, w));
     return widget;
+  }
+
+  public Optional<? extends Component> createComponent(String name) {
+    // Widgets need to be created using the createWidget function due to state
+    Optional<Widget> widget = typeFor(name).filter(WidgetType.class::isInstance).flatMap(_w -> createWidget(name));
+    if (widget.isPresent()) {
+      return widget;
+    } else {
+      return typeFor(name).map(ComponentType::get);
+    }
+  }
+
+  public Optional<Type> javaTypeFor(String name) {
+    return typeFor(name).map(ComponentType::get).map(Object::getClass);
   }
 
   /**

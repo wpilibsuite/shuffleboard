@@ -7,7 +7,7 @@ import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.TileSize;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 import edu.wpi.first.shuffleboard.app.dnd.DragUtils;
-import edu.wpi.first.shuffleboard.api.components.Layout;
+import edu.wpi.first.shuffleboard.api.widget.Layout;
 
 import org.fxmisc.easybind.EasyBind;
 
@@ -135,10 +135,9 @@ public class WidgetPane extends TilePane {
   }
 
   public Tile addLayout(Layout widget, GridPoint location, TileSize size) {
-    LayoutTile tile = new LayoutTile(widget);
+    LayoutTile tile = new LayoutTile(widget, size);
     tile.sizeProperty().addListener(__ -> setSize(tile, tile.getSize()));
     addTile(tile, location, size);
-    tile.setSize(size);
     return tile;
   }
 
@@ -175,6 +174,16 @@ public class WidgetPane extends TilePane {
    */
   public WidgetTile addWidget(Widget widget, GridPoint location, TileSize size) {
     WidgetTile tile = new WidgetTile(widget, size);
+    tile.sizeProperty().addListener(__ -> setSize(tile, tile.getSize()));
+    addTile(tile, location, size);
+    return tile;
+  }
+
+  /**
+   * Add an arbitrary component to the WidgetPane.
+   */
+  public Tile<?> addComponent(Component component, GridPoint location, TileSize size) {
+    Tile<?> tile = Tile.tileFor(component, size);
     tile.sizeProperty().addListener(__ -> setSize(tile, tile.getSize()));
     addTile(tile, location, size);
     return tile;

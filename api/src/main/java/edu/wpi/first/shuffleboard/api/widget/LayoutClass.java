@@ -1,7 +1,5 @@
 package edu.wpi.first.shuffleboard.api.widget;
 
-import edu.wpi.first.shuffleboard.api.components.Layout;
-
 import java.util.logging.Level;
 import java.util.logging.Logger;
 

@@ -7,10 +7,14 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonSerializationContext;
 
+import edu.wpi.first.shuffleboard.api.widget.Layout;
+import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 import edu.wpi.first.shuffleboard.api.widget.Component;
-import edu.wpi.first.shuffleboard.api.components.Layout;
+import edu.wpi.first.shuffleboard.api.widget.Widgets;
 
+import java.lang.reflect.Type;
 import java.util.Collection;
+import java.util.Optional;
 
 @AnnotatedTypeAdapter(forType = Layout.class)
 public class LayoutSaver implements ElementTypeAdapter<Layout> {
@@ -29,6 +33,20 @@ public class LayoutSaver implements ElementTypeAdapter<Layout> {
 
   @Override
   public Layout deserialize(JsonElement json, JsonDeserializationContext context) throws JsonParseException {
-    return null;
+    String name = json.getAsJsonObject().get("_type").getAsString();
+    JsonArray children = json.getAsJsonObject().get("_children").getAsJsonArray();
+
+    Layout layout = Widgets.getDefault().createComponent(name).flatMap(TypeUtils.optionalCast(Layout.class))
+        .orElseThrow(() -> new JsonParseException("Can't find layout name " + name));
+
+    children.forEach(o -> {
+      String childName = o.getAsJsonObject().get("_type").getAsString();
+      Optional<Type> childType = Widgets.getDefault().javaTypeFor(childName);
+      childType.map(t -> context.deserialize(o, t))
+          .flatMap(TypeUtils.optionalCast(Component.class))
+          .ifPresent(layout::addChild);
+    });
+
+    return layout;
   }
 }
