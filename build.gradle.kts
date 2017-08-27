@@ -23,6 +23,21 @@ plugins {
     jacoco
     id("edu.wpi.first.wpilib.versioning.WPILibVersioningPlugin") version "1.6"
     id("com.github.johnrengelman.shadow") version "2.0.1"
+    id("com.diffplug.gradle.spotless") version "3.5.1"
+}
+
+allprojects {
+    apply {
+        plugin("com.diffplug.gradle.spotless")
+    }
+    // Spotless is used to lint and reformat source files.
+    spotless {
+        kotlinGradle {
+            // Configure the formatting of the Gradle Kotlin DSL files (*.gradle.kts)
+            ktlint("0.9.1")
+            endWithNewline()
+        }
+    }
 }
 
 subprojects {
@@ -183,7 +198,7 @@ val Project.`checkstyle`: org.gradle.api.plugins.quality.CheckstyleExtension get
  * Configures the [checkstyle][org.gradle.api.plugins.quality.CheckstyleExtension] project extension.
  */
 fun Project.`checkstyle`(configure: org.gradle.api.plugins.quality.CheckstyleExtension.() -> Unit) =
-        extensions.configure("checkstyle", configure)
+    extensions.configure("checkstyle", configure)
 
 /**
  * Retrieves the [pmd][org.gradle.api.plugins.quality.PmdExtension] project extension.
@@ -195,7 +210,7 @@ val Project.`pmd`: org.gradle.api.plugins.quality.PmdExtension get() =
  * Configures the [pmd][org.gradle.api.plugins.quality.PmdExtension] project extension.
  */
 fun Project.`pmd`(configure: org.gradle.api.plugins.quality.PmdExtension.() -> Unit) =
-        extensions.configure("pmd", configure)
+    extensions.configure("pmd", configure)
 
 /**
  * Retrieves the [findbugs][org.gradle.api.plugins.quality.FindBugsExtension] project extension.
@@ -207,4 +222,4 @@ val Project.`findbugs`: org.gradle.api.plugins.quality.FindBugsExtension get() =
  * Configures the [findbugs][org.gradle.api.plugins.quality.FindBugsExtension] project extension.
  */
 fun Project.`findbugs`(configure: org.gradle.api.plugins.quality.FindBugsExtension.() -> Unit) =
-        extensions.configure("findbugs", configure)
+    extensions.configure("findbugs", configure)

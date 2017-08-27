@@ -107,14 +107,14 @@ public final class TileDragResizer {
     resizeLocation = ResizeLocation.NONE;
 
     // round size to nearest tile size
-    final int tileWidth = tilePane.roundWidthToNearestTile(tile.getMinWidth());
-    final int tileHeight = tilePane.roundHeightToNearestTile(tile.getMinHeight());
+    final int tileWidth = tilePane.roundWidthToNearestTile(tile.getWidth());
+    final int tileHeight = tilePane.roundHeightToNearestTile(tile.getHeight());
 
     // limit size to prevent exceeding the bounds of the grid
     final int boundedWidth = Math.min(tilePane.getNumColumns() - GridPane.getColumnIndex(tile),
-                                      tileWidth);
+        tileWidth);
     final int boundedHeight = Math.min(tilePane.getNumRows() - GridPane.getRowIndex(tile),
-                                       tileHeight);
+        tileHeight);
 
     tile.setSize(new TileSize(boundedWidth, boundedHeight));
     GridPane.setColumnSpan(tile, boundedWidth);
@@ -191,11 +191,15 @@ public final class TileDragResizer {
     final double newHeight = tile.getMinHeight() + (mouseY - lastY);
 
     if (resizeLocation.isHorizontal && newWidth >= tilePane.getTileSize()) {
-      tile.setMinWidth(newWidth);
+      if (tile.getContent().getView().getMinWidth() < newWidth) {
+        tile.setMinWidth(newWidth);
+      }
       tile.setMaxWidth(newWidth);
     }
     if (resizeLocation.isVertical && newHeight >= tilePane.getTileSize()) {
-      tile.setMinHeight(newHeight);
+      if (tile.getContent().getView().getMinHeight() < newHeight) {
+        tile.setMinHeight(newHeight);
+      }
       tile.setMaxHeight(newHeight);
     }
 

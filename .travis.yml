@@ -24,7 +24,7 @@ before_install:
     fi
 
 script:
-  - ./gradlew check jacocoJunit5TestReport --stacktrace -PlogTests -Pheadless
+  - ./gradlew spotlessCheck check jacocoJunit5TestReport --stacktrace -PlogTests -Pheadless
 
 after_success:
   - if [[ $TRAVIS_OS_NAME != 'osx' ]]; then bash <(curl -s https://codecov.io/bash); fi
