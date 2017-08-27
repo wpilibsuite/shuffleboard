@@ -131,22 +131,6 @@ public class Widgets extends Registry<ComponentType> {
     });
   }
 
-  public static <T> Optional<T> viewFor(Class<T> annotatedClass) {
-    ParametrizedController controller = annotatedClass.getAnnotation(ParametrizedController.class);
-
-    if (controller != null) {
-      try {
-        FXMLLoader loader = new FXMLLoader(annotatedClass.getResource(controller.value()));
-        loader.load();
-        return Optional.of(loader.getController());
-      } catch (IOException e) {
-        Logger.getLogger("Widgets").log(Level.WARNING, "error creating widget", e);
-      }
-    }
-
-    return Optional.empty();
-  }
-
   public Stream<WidgetType> allWidgets() {
     return widgets.values().stream().flatMap(TypeUtils.castStream(WidgetType.class));
   }
@@ -277,5 +261,24 @@ public class Widgets extends Registry<ComponentType> {
    */
   public List<String> widgetNamesForSource(DataSource<?> source) {
     return widgetNamesForType(source.getDataType());
+  }
+
+  /**
+   * Create an instance for an PrametrizedController annotated class.
+   */
+  public static <T> Optional<T> viewFor(Class<T> annotatedClass) {
+    ParametrizedController controller = annotatedClass.getAnnotation(ParametrizedController.class);
+
+    if (controller != null) {
+      try {
+        FXMLLoader loader = new FXMLLoader(annotatedClass.getResource(controller.value()));
+        loader.load();
+        return Optional.of(loader.getController());
+      } catch (IOException e) {
+        Logger.getLogger("Widgets").log(Level.WARNING, "error creating parametrized controller", e);
+      }
+    }
+
+    return Optional.empty();
   }
 }

@@ -7,7 +7,7 @@ import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.TileSize;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 import edu.wpi.first.shuffleboard.app.dnd.DragUtils;
-import edu.wpi.first.shuffleboard.app.widget.Layout;
+import edu.wpi.first.shuffleboard.api.components.Layout;
 
 import org.fxmisc.easybind.EasyBind;
 

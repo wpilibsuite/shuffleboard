@@ -7,6 +7,7 @@ import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.recording.serialization.TypeAdapter;
 import edu.wpi.first.shuffleboard.api.theme.Theme;
+import edu.wpi.first.shuffleboard.api.widget.ComponentType;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 
 import java.util.List;
@@ -109,9 +110,16 @@ public class Plugin {
   }
 
   /**
-   * Gets a list of the widget types that this plugin defines.
+   * Gets a list of the annotated widget classes that this plugin defines.
    */
   public List<Class<? extends Widget>> getWidgets() {
+    return ImmutableList.of();
+  }
+
+  /**
+   * Gets a list of the non-annotated components defined by this plugin
+   */
+  public List<ComponentType> getComponents() {
     return ImmutableList.of();
   }
 

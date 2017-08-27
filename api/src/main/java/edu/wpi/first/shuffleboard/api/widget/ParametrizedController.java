@@ -17,5 +17,4 @@ public @interface ParametrizedController {
    * The path to the FXML file for the widget with this annotation.
    */
   String value();
-
 }

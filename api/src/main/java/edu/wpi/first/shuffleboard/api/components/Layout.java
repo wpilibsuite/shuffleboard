@@ -1,4 +1,4 @@
-package edu.wpi.first.shuffleboard.app.widget;
+package edu.wpi.first.shuffleboard.api.components;
 
 import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.Widget;

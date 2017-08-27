@@ -8,7 +8,7 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonSerializationContext;
 
 import edu.wpi.first.shuffleboard.api.widget.Component;
-import edu.wpi.first.shuffleboard.app.widget.Layout;
+import edu.wpi.first.shuffleboard.api.components.Layout;
 
 import java.util.Collection;
 
