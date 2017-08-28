@@ -32,7 +32,7 @@ import static java.util.Objects.requireNonNull;
 public final class FxUtils {
 
   private FxUtils() {
-    // no FXUtils instance for you
+    throw new UnsupportedOperationException("This is a utility class!");
   }
 
   /**
