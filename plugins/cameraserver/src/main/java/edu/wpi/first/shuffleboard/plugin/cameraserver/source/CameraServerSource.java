@@ -50,7 +50,7 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
     super(CameraServerDataType.INSTANCE);
     setName(name);
     ITable table = rootTable.getSubTable(name);
-    camera = new HttpCamera(name, sanitizeUrls(table.getStringArray("streams", emptyStringArray)));
+    camera = new HttpCamera(name, removeCameraProtocols(table.getStringArray("streams", emptyStringArray)));
     videoSink = new CvSink(name + "-videosink");
     videoSink.setSource(camera);
 
@@ -71,7 +71,7 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
       if (NetworkTableUtils.isDelete(flags) || !(value instanceof String[]) || ((String[]) value).length == 0) {
         setActive(false);
       } else {
-        String[] urls = sanitizeUrls((String[]) value);
+        String[] urls = removeCameraProtocols((String[]) value);
         if (EqualityUtils.isDifferent(camera.getUrls(), urls)) {
           camera.setUrls(urls);
         }
@@ -80,9 +80,19 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
     }), 0xFF);
   }
 
-  private static String[] sanitizeUrls(String... streams) {
+  /**
+   * Removes leading camera protocols from an array of stream URLs. These URLs are usually in the format
+   * {@code mjpg:http://...}, {@code ip:http://...}. This method will remove the leading {@code mjpg}.
+   *
+   * <p>This does not modify the existing array and returns a new array.
+   *
+   * @param streams an array of camera stream URLs to remove the
+   *
+   * @return the stream URLs without the leading camera protocols
+   */
+  private static String[] removeCameraProtocols(String... streams) {
     return Stream.of(streams)
-        .map(url -> url.replaceFirst("(mjpe?g|ip|usb):", ""))
+        .map(url -> url.replaceFirst("^(mjpe?g|ip|usb):", ""))
         .toArray(String[]::new);
   }
 
