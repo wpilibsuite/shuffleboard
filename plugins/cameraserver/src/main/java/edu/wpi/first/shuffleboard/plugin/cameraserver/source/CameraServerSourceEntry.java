@@ -13,6 +13,11 @@ public class CameraServerSourceEntry implements SourceEntry {
 
   @Override
   public String getName() {
+    return "/" + data.getName();
+  }
+
+  @Override
+  public String getViewName() {
     return data.getName();
   }
 
@@ -28,7 +33,7 @@ public class CameraServerSourceEntry implements SourceEntry {
 
   @Override
   public CameraServerSource get() {
-    return new CameraServerSource(getName());
+    return CameraServerSource.forName(data.getName());
   }
 
 }

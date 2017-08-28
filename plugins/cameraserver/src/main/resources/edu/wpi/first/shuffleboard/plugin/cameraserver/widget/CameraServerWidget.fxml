@@ -10,6 +10,6 @@
             prefHeight="256" prefWidth="256">
     <ImageView fx:id="imageView"/>
     <fx:define>
-        <Image fx:id="emptyImage" url=""/>
+        <Image fx:id="emptyImage" url="http://www.fmwconcepts.com/misc_tests/mandril_panm90zc.jpg"/>
     </fx:define>
 </AnchorPane>

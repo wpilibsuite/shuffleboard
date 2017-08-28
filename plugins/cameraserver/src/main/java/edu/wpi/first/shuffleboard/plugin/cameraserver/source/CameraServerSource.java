@@ -3,7 +3,6 @@ package edu.wpi.first.shuffleboard.plugin.cameraserver.source;
 import edu.wpi.cscore.CvSink;
 import edu.wpi.cscore.HttpCamera;
 import edu.wpi.first.shuffleboard.api.sources.AbstractDataSource;
-import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.util.EqualityUtils;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
@@ -20,58 +19,70 @@ import org.opencv.imgcodecs.Imgcodecs;
 import java.io.ByteArrayInputStream;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.WeakHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 import javafx.application.Platform;
+import javafx.beans.binding.BooleanBinding;
 import javafx.scene.image.Image;
 
-public class CameraServerSource extends AbstractDataSource<CameraServerData> {
+public final class CameraServerSource extends AbstractDataSource<CameraServerData> {
 
   private static final Logger log = Logger.getLogger(CameraServerSource.class.getName());
 
   private static final Map<String, CameraServerSource> sources = new HashMap<>();
 
-  private static final ITable rootTable = NetworkTable.getTable("/CameraServer");
+  public static final ITable rootTable = NetworkTable.getTable("/CameraPublisher");
   private static final String[] emptyStringArray = new String[0];
   private final HttpCamera camera;
   private final CvSink videoSink;
   private final Mat imageStorage = new Mat();
 
   private final ExecutorService frameGrabberService = Executors.newSingleThreadExecutor(ThreadUtils::makeDaemonThread);
+  private final BooleanBinding enabled = active.and(connected);
   private Future<?> frameFuture = null;
 
-  public CameraServerSource(String name) {
+  private CameraServerSource(String name) {
     super(CameraServerDataType.INSTANCE);
     setName(name);
     ITable table = rootTable.getSubTable(name);
-    camera = new HttpCamera(name, table.getStringArray("urls", emptyStringArray));
+    camera = new HttpCamera(name, sanitizeUrls(table.getStringArray("streams", emptyStringArray)));
     videoSink = new CvSink(name + "-videosink");
     videoSink.setSource(camera);
-    table.addTableListenerEx("urls", NetworkTableUtils.createListenerEx((source, key, value, flags) -> {
-      if (NetworkTableUtils.isDelete(flags) || !(value instanceof String[]) || ((String[]) value).length == 0) {
-        setActive(false);
-      } else {
-        String[] urls = (String[]) value;
-        if (EqualityUtils.isDifferent(camera.getUrls(), urls)) {
-          camera.setUrls(urls);
-        }
-        setActive(true);
-      }
-    }), 0xFF);
 
-    // Disable the stream when not active or not connected to save on bandwidth
-    active.and(connected).addListener((__, was, is) -> videoSink.setEnabled(is));
-    active.and(connected).addListener((__, was, is) -> {
+    enabled.addListener((__, was, is) -> {
+      // Disable the stream when not active or not connected to save on bandwidth
+      videoSink.setEnabled(is);
       if (is) {
         frameFuture = frameGrabberService.submit(this::grabForever);
       } else if (frameFuture != null) {
         frameFuture.cancel(true);
       }
     });
+
+    setActive(camera.getUrls().length > 0);
+    setConnected(true);
+
+    table.addTableListenerEx("streams", NetworkTableUtils.createListenerEx((source, key, value, flags) -> {
+      if (NetworkTableUtils.isDelete(flags) || !(value instanceof String[]) || ((String[]) value).length == 0) {
+        setActive(false);
+      } else {
+        String[] urls = sanitizeUrls((String[]) value);
+        if (EqualityUtils.isDifferent(camera.getUrls(), urls)) {
+          camera.setUrls(urls);
+        }
+        setActive(true);
+      }
+    }), 0xFF);
+  }
+
+  private static String[] sanitizeUrls(String... streams) {
+    return Stream.of(streams)
+        .map(url -> url.replaceFirst("(mjpe?g|ip|usb):", ""))
+        .toArray(String[]::new);
   }
 
   public static CameraServerSource forName(String name) {
@@ -94,7 +105,6 @@ public class CameraServerSource extends AbstractDataSource<CameraServerData> {
     }
     final Thread thread = Thread.currentThread();
     while (!thread.isInterrupted()) {
-      // Note:
       boolean success = grabOnceBlocking();
       if (!success) {
         // Couldn't grab the frame, wait a bit to try again
@@ -134,15 +144,9 @@ public class CameraServerSource extends AbstractDataSource<CameraServerData> {
    * @param mat the OpenCV image that should be converted
    */
   private Image toJavaFxImage(Mat mat) {
-    try {
-      MatOfByte mob = new MatOfByte();
-      Imgcodecs.imencode(".bmp", mat, mob); // bmp for lossless conversion; the stream is already compressed enough!
-      return new Image(new ByteArrayInputStream(mob.toArray()));
-    } finally {
-      // Prod the garbage collector; there are at least two temporary byte buffers created to fit the image
-      // For a 640*480 color image, this would take 921,600 bytes per buffer for a total of ~1.8MB per frame
-      System.gc();
-    }
+    MatOfByte mob = new MatOfByte();
+    Imgcodecs.imencode(".bmp", mat, mob); // bmp for lossless conversion; the stream is already compressed enough!
+    return new Image(new ByteArrayInputStream(mob.toArray()));
   }
 
 }

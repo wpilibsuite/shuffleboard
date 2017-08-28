@@ -2,16 +2,20 @@ package edu.wpi.first.shuffleboard.plugin.cameraserver.data;
 
 import com.google.common.collect.ImmutableMap;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import edu.wpi.first.shuffleboard.api.data.ComplexData;
 
+import java.io.Serializable;
 import java.util.Map;
 
 import javafx.scene.image.Image;
 
-public final class CameraServerData extends ComplexData<CameraServerData> {
+// serialversion UID doesn't matter since this is only used in one JVM at a time
+@SuppressFBWarnings("SE_NO_SERIALVERSIONID")
+public final class CameraServerData extends ComplexData<CameraServerData> implements Serializable {
 
   private final String name;
-  private final Image image;
+  private final transient Image image;
 
   public CameraServerData(String name, Image image) {
     this.name = name;
