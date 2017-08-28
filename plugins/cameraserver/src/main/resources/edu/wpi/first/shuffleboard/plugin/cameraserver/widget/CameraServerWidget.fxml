@@ -1,15 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.image.ImageView?>
-<?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.image.Image?>
-<AnchorPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="edu.wpi.first.shuffleboard.plugin.cameraserver.widget.CameraServerWidget"
-            fx:id="root"
-            prefHeight="256" prefWidth="256">
-    <ImageView fx:id="imageView"/>
+<?import javafx.scene.layout.StackPane?>
+<?import edu.wpi.first.shuffleboard.api.components.ResizableImageView?>
+<?import javafx.geometry.Insets?>
+<StackPane xmlns="http://javafx.com/javafx"
+           xmlns:fx="http://javafx.com/fxml"
+           fx:controller="edu.wpi.first.shuffleboard.plugin.cameraserver.widget.CameraServerWidget"
+           fx:id="root"
+           prefHeight="256" prefWidth="256">
+    <padding>
+        <Insets topRightBottomLeft="8"/>
+    </padding>
+    <ResizableImageView fx:id="imageView" preserveRatio="true"/>
     <fx:define>
         <Image fx:id="emptyImage" url="http://www.fmwconcepts.com/misc_tests/mandril_panm90zc.jpg"/>
     </fx:define>
-</AnchorPane>
+</StackPane>

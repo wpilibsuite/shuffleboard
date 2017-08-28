@@ -40,6 +40,7 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
   private final HttpCamera camera;
   private final CvSink videoSink;
   private final Mat imageStorage = new Mat();
+  private final MatOfByte conversionBuffer = new MatOfByte();
 
   private final ExecutorService frameGrabberService = Executors.newSingleThreadExecutor(ThreadUtils::makeDaemonThread);
   private final BooleanBinding enabled = active.and(connected);
@@ -144,9 +145,9 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
    * @param mat the OpenCV image that should be converted
    */
   private Image toJavaFxImage(Mat mat) {
-    MatOfByte mob = new MatOfByte();
-    Imgcodecs.imencode(".bmp", mat, mob); // bmp for lossless conversion; the stream is already compressed enough!
-    return new Image(new ByteArrayInputStream(mob.toArray()));
+    // bmp for lossless conversion; the stream is already compressed enough!
+    Imgcodecs.imencode(".bmp", mat, conversionBuffer);
+    return new Image(new ByteArrayInputStream(conversionBuffer.toArray()));
   }
 
 }
