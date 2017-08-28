@@ -81,7 +81,7 @@ public final class NetworkTableUtils {
 
   /**
    * Gets a list of the names of all the super tables of a given key. For example, the key "/foo/bar/baz"
-   * has a hierarchy of "/foo", "/foo/bar", and "/foo/bar/baz".
+   * has a hierarchy of "/", "/foo", "/foo/bar", and "/foo/bar/baz".
    */
   public static List<String> getHierarchy(String key) {
     final String normal = normalizeKey(key, true);
