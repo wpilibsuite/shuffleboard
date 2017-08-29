@@ -14,6 +14,10 @@ public final class Serializers {
 
   private static final Map<DataType, TypeAdapter> serializers = new HashMap<>();
 
+  static {
+    Runtime.getRuntime().addShutdownHook(new Thread(Serializers::cleanUpAll));
+  }
+
   private Serializers() {
   }
 
@@ -58,6 +62,10 @@ public final class Serializers {
    */
   public static <T> Optional<TypeAdapter<T>> getOptional(DataType<T> type) {
     return Optional.ofNullable(get(type));
+  }
+
+  public static void cleanUpAll() {
+    serializers.forEach((__, adapter) -> adapter.cleanUp());
   }
 
 }

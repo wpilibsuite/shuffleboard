@@ -2,6 +2,7 @@ package edu.wpi.first.shuffleboard.api.util;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * Utility class for maps.
@@ -21,6 +22,40 @@ public final class Maps {
    */
   public static <K, V> MapBuilder<K, V> builder() {
     return new MapBuilder<>();
+  }
+
+  /**
+   * An unsafe version of {@link Map#computeIfAbsent(Object, Function) Map.computeIfAbsent} that may throw a checked
+   * exception.
+   *
+   * @param map      the map to modify
+   * @param key      the key to get
+   * @param function the compute function
+   * @param <K>      the type of keys in the map
+   * @param <V>      the type of values in the map
+   * @param <X>      the type of exception that the compute function may throw
+   *
+   * @return
+   *
+   * @throws X if the compute function threw an exception
+   */
+  public static <K, V, X extends Throwable> V computeIfAbsent(
+      Map<K, V> map, K key, ThrowingFunction<? super K, ? extends V, ? extends X> function) throws X {
+    Throwable[] exception = {null};
+    final Object none = new Object();
+    V value = map.computeIfAbsent(key, k -> {
+      try {
+        return function.apply(k);
+      } catch (Throwable e) {
+        exception[0] = e;
+        return (V) none;
+      }
+    });
+    if (value == none) { // NOPMD reference equality check
+      throw (X) exception[0];
+    } else {
+      return value;
+    }
   }
 
 

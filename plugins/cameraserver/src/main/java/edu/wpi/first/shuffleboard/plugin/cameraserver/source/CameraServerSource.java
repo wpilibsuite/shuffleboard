@@ -4,19 +4,18 @@ import edu.wpi.cscore.CvSink;
 import edu.wpi.cscore.HttpCamera;
 import edu.wpi.first.shuffleboard.api.sources.AbstractDataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
+import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
 import edu.wpi.first.shuffleboard.api.util.EqualityUtils;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.api.util.ThreadUtils;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.data.CameraServerData;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.data.type.CameraServerDataType;
+import edu.wpi.first.shuffleboard.plugin.cameraserver.recording.serialization.ImageConverter;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
 import edu.wpi.first.wpilibj.tables.ITable;
 
 import org.opencv.core.Mat;
-import org.opencv.core.MatOfByte;
-import org.opencv.imgcodecs.Imgcodecs;
 
-import java.io.ByteArrayInputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -27,6 +26,7 @@ import java.util.stream.Stream;
 
 import javafx.application.Platform;
 import javafx.beans.binding.BooleanBinding;
+import javafx.beans.value.ChangeListener;
 import javafx.scene.image.Image;
 
 public final class CameraServerSource extends AbstractDataSource<CameraServerData> {
@@ -40,11 +40,14 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
   private final HttpCamera camera;
   private final CvSink videoSink;
   private final Mat imageStorage = new Mat();
-  private final MatOfByte conversionBuffer = new MatOfByte();
+  private final ImageConverter imageConverter = new ImageConverter();
 
   private final ExecutorService frameGrabberService = Executors.newSingleThreadExecutor(ThreadUtils::makeDaemonThread);
   private final BooleanBinding enabled = active.and(connected);
   private Future<?> frameFuture = null;
+  private final ChangeListener<CameraServerData> recordingListener = (__, prev, cur) -> {
+    Recorder.getInstance().recordCurrentValue(this);
+  };
 
   private CameraServerSource(String name) {
     super(CameraServerDataType.INSTANCE);
@@ -58,8 +61,10 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
       // Disable the stream when not active or not connected to save on bandwidth
       videoSink.setEnabled(is);
       if (is) {
+        data.addListener(recordingListener);
         frameFuture = frameGrabberService.submit(this::grabForever);
       } else if (frameFuture != null) {
+        data.removeListener(recordingListener);
         frameFuture.cancel(true);
       }
     });
@@ -140,24 +145,14 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
       log.warning("Error when grabbing frame from camera '" + getName() + "': " + videoSink.getError());
       return false;
     } else {
+      Image image = imageConverter.convert(imageStorage);
       if (getData() == null) {
-        setData(new CameraServerData(getName(), toJavaFxImage(imageStorage)));
+        setData(new CameraServerData(getName(), image));
       } else {
-        setData(getData().withImage(toJavaFxImage(imageStorage)));
+        setData(getData().withImage(image));
       }
     }
     return true;
-  }
-
-  /**
-   * Creates a new JavaFX image that contains the same information as an OpenCV image.
-   *
-   * @param mat the OpenCV image that should be converted
-   */
-  private Image toJavaFxImage(Mat mat) {
-    // bmp for lossless conversion; the stream is already compressed enough!
-    Imgcodecs.imencode(".bmp", mat, conversionBuffer);
-    return new Image(new ByteArrayInputStream(conversionBuffer.toArray()));
   }
 
 }

@@ -15,4 +15,11 @@ public abstract class TypeAdapter<T> implements Serializer<T>, Deserializer<T> {
     return dataType;
   }
 
+  /**
+   * Resets the state of this type adapter (if it has state) before a new recording starts.
+   */
+  public void cleanUp() { //NOPMD empty abstract method body
+    // Default to NOP
+  }
+
 }

@@ -91,10 +91,7 @@ public class SourceType {
 
   /**
    * Reads a data point and passes it to all appropriate sources of this type.The default
-   * behavior is to do {
-   * nothing;
-   * }
-   * recordable subclasses <i > must </i > override this method.
+   * behavior is to do nothing; recordable subclasses <i> must </i> override this method.
    */
   public void read(TimestampedData recordedData) {
     if (isRecordable) {
