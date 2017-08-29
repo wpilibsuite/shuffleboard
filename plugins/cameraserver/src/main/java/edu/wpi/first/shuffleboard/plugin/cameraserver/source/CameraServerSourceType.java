@@ -20,7 +20,7 @@ public final class CameraServerSourceType extends SourceType {
   private static final ObservableMap<String, Object> availableSources = FXCollections.observableHashMap();
 
   private CameraServerSourceType() {
-    super("CameraServer", false, "camera_server://", name -> null);
+    super("CameraServer", false, "camera_server://", CameraServerSource::forName);
     NetworkTablesJNI.addEntryListener("/CameraPublisher", (uid, key, value, flags) -> {
       List<String> hierarchy = NetworkTableUtils.getHierarchy(key);
       // 0 is "/", 1 is "/CameraPublisher", 2 is "/CameraPublisher/<name>"
