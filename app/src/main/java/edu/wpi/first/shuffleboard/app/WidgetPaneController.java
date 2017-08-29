@@ -1,8 +1,5 @@
 package edu.wpi.first.shuffleboard.app;
 
-import edu.wpi.first.shuffleboard.app.components.TileLayout;
-import edu.wpi.first.shuffleboard.app.components.WidgetPane;
-import edu.wpi.first.shuffleboard.app.components.WidgetTile;
 import edu.wpi.first.shuffleboard.api.dnd.DataFormats;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.DummySource;
@@ -13,6 +10,9 @@ import edu.wpi.first.shuffleboard.api.util.RoundingMode;
 import edu.wpi.first.shuffleboard.api.widget.TileSize;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 import edu.wpi.first.shuffleboard.api.widget.Widgets;
+import edu.wpi.first.shuffleboard.app.components.TileLayout;
+import edu.wpi.first.shuffleboard.app.components.WidgetPane;
+import edu.wpi.first.shuffleboard.app.components.WidgetTile;
 import edu.wpi.first.shuffleboard.app.dnd.TileDragResizer;
 
 import org.fxmisc.easybind.EasyBind;
@@ -122,6 +122,23 @@ public class WidgetPaneController {
 
       cleanupWidgetDrag();
       event.consume();
+    });
+
+    // Drag tiles outside the pane to remove them
+    pane.setOnDragExited(e -> {
+      if (pane.localToScreen(pane.getBoundsInLocal()).contains(e.getScreenX(), e.getScreenY())) {
+        return;
+      }
+      Dragboard dragboard = e.getDragboard();
+      if (dragboard.hasContent(DataFormats.widgetTile)) {
+        DataFormats.WidgetData data = (DataFormats.WidgetData) dragboard.getContent(DataFormats.widgetTile);
+        pane.tileMatching(tile -> tile.getId().equals(data.getId()))
+            .ifPresent(tile -> {
+              pane.removeWidget(tile);
+              cleanupWidgetDrag();
+            });
+      }
+      e.consume();
     });
 
     pane.parentProperty().addListener((__, old, parent) -> {
