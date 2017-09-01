@@ -295,7 +295,7 @@ public class Components extends Registry<ComponentType> {
   public static <T> Optional<T> viewFor(Class<T> annotatedClass) {
     ParametrizedController controller = annotatedClass.getAnnotation(ParametrizedController.class);
 
-    if (controller != null) {
+    if (controller != null) { //NOPMD readability
       try {
         FXMLLoader loader = new FXMLLoader(annotatedClass.getResource(controller.value()));
         loader.load();

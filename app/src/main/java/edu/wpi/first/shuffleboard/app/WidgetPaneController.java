@@ -441,7 +441,8 @@ public class WidgetPaneController {
                                       Function<TileLayout, TileLayout> targetLayoutFunction,
                                       Function<TileSize, TileSize> shrink,
                                       boolean left) {
-    TileSize minSize = pane.round(tile.getContent().getView().getMinWidth(), tile.getContent().getView().getMinHeight());
+    TileSize minSize = pane.round(tile.getContent().getView().getMinWidth(),
+        tile.getContent().getView().getMinHeight());
     TileLayout layout = pane.getTileLayout(tile);
     TileLayout targetLayout = targetLayoutFunction.apply(layout);
     int importantDim = left ? layout.size.getWidth() : layout.size.getHeight();

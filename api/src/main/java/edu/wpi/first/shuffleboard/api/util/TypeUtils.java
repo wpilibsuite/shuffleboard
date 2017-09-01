@@ -27,7 +27,7 @@ public final class TypeUtils {
   }
 
   /**
-   * Allows you to filter out members of a subtype from a stream of some base type
+   * Allows you to filter out members of a subtype from a stream of some base type.
    * For example, this code:
    *
    * <code>
@@ -37,7 +37,7 @@ public final class TypeUtils {
    *     .forEach(w -> w.setSource(...))
    * </code>
    *
-   * can be turned into:
+   * <p>can be turned into:</p>
    *
    * <code>
    *   getComponents()
@@ -49,5 +49,13 @@ public final class TypeUtils {
     return value -> cls.isAssignableFrom(value.getClass())
             ? Stream.of(cls.cast(value))
             : Stream.empty();
+  }
+
+  /**
+   * Turns a Stream of Optional&lt;T&gt;s into a Stream of the type T wrapped by the optional,
+   * dropping non-present values.
+   */
+  public static <T> Function<Optional<T>, Stream<T>> optionalStream() {
+    return value -> value.map(Stream::of).orElseGet(Stream::empty);
   }
 }

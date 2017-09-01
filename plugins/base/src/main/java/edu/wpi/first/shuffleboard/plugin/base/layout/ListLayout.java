@@ -31,12 +31,11 @@ public class ListLayout implements Layout {
   @FXML
   private VBox container;
 
-  private ObservableList<Component> widgets = FXCollections.observableArrayList();
+  private final ObservableList<Component> widgets = FXCollections.observableArrayList();
 
-  private StringProperty title = new SimpleStringProperty(this, "title", "List");
+  private final StringProperty title = new SimpleStringProperty(this, "title", "List");
 
-  @SuppressWarnings("FieldCanBeLocal")
-  private Subscription retained;
+  private Subscription retained; //NOPMD field due to GC
 
   @FXML
   private void initialize() {

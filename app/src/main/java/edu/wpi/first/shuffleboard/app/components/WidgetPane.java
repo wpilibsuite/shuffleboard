@@ -1,6 +1,5 @@
 package edu.wpi.first.shuffleboard.app.components;
 
-import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.util.GridPoint;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 import edu.wpi.first.shuffleboard.api.widget.Component;
@@ -149,13 +148,13 @@ public class WidgetPane extends TilePane {
     return tile;
   }
 
-   /**
-    * Add an arbitrary component to the WidgetPane in the specified location.
-    * The tile will be the specified size.
-    *
-    * @param component the component to add
-    * @param size   the size of the tile used to display the component
-    */
+  /**
+  * Add an arbitrary component to the WidgetPane in the specified location.
+  * The tile will be the specified size.
+  *
+  * @param component the component to add
+  * @param size   the size of the tile used to display the component
+  */
   public Tile<?> addComponent(Component component, GridPoint location, TileSize size) {
     Tile<?> tile = Tile.tileFor(component, size);
     tile.sizeProperty().addListener(__ -> setSize(tile, tile.getSize()));
