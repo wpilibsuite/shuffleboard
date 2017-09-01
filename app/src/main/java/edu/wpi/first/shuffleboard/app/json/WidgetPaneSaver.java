@@ -9,7 +9,7 @@ import com.google.gson.JsonSerializationContext;
 import edu.wpi.first.shuffleboard.api.util.GridPoint;
 import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.TileSize;
-import edu.wpi.first.shuffleboard.api.widget.Widgets;
+import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.app.components.Tile;
 import edu.wpi.first.shuffleboard.app.components.WidgetPane;
 
@@ -53,7 +53,7 @@ public class WidgetPaneSaver implements ElementTypeAdapter<WidgetPane> {
       TileSize size = context.deserialize(tile.get("size"), TileSize.class);
 
       String childName = tile.get("content").getAsJsonObject().get("_type").getAsString();
-      Type childType = Widgets.getDefault().javaTypeFor(childName)
+      Type childType = Components.getDefault().javaTypeFor(childName)
           .orElseThrow(() -> new JsonParseException("Can't find component name " + childName));
 
       Component component = context.deserialize(tile.get("content"), childType);

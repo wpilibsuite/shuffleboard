@@ -10,7 +10,7 @@ import com.google.gson.JsonSerializationContext;
 import edu.wpi.first.shuffleboard.api.widget.Layout;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 import edu.wpi.first.shuffleboard.api.widget.Component;
-import edu.wpi.first.shuffleboard.api.widget.Widgets;
+import edu.wpi.first.shuffleboard.api.widget.Components;
 
 import java.lang.reflect.Type;
 import java.util.Collection;
@@ -36,12 +36,12 @@ public class LayoutSaver implements ElementTypeAdapter<Layout> {
     String name = json.getAsJsonObject().get("_type").getAsString();
     JsonArray children = json.getAsJsonObject().get("_children").getAsJsonArray();
 
-    Layout layout = Widgets.getDefault().createComponent(name).flatMap(TypeUtils.optionalCast(Layout.class))
+    Layout layout = Components.getDefault().createComponent(name).flatMap(TypeUtils.optionalCast(Layout.class))
         .orElseThrow(() -> new JsonParseException("Can't find layout name " + name));
 
     children.forEach(child -> {
       String childName = child.getAsJsonObject().get("_type").getAsString();
-      Optional<Type> childType = Widgets.getDefault().javaTypeFor(childName);
+      Optional<Type> childType = Components.getDefault().javaTypeFor(childName);
       childType.map(t -> context.deserialize(child, t))
           .flatMap(TypeUtils.optionalCast(Component.class))
           .ifPresent(layout::addChild);

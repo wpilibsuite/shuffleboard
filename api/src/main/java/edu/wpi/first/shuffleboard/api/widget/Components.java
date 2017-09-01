@@ -31,10 +31,10 @@ import static java.util.Objects.requireNonNull;
 /**
  * Utility class for keeping track of known widgets.
  */
-public class Widgets extends Registry<ComponentType> {
+public class Components extends Registry<ComponentType> {
 
   // TODO replace with DI eg Guice
-  private static Widgets defaultInstance = new Widgets();
+  private static Components defaultInstance = new Components();
 
   private final Map<String, ComponentType> widgets = new TreeMap<>();
 
@@ -44,7 +44,7 @@ public class Widgets extends Registry<ComponentType> {
   /**
    * Gets the default widget registry.
    */
-  public static Widgets getDefault() {
+  public static Components getDefault() {
     return defaultInstance;
   }
 
@@ -54,7 +54,7 @@ public class Widgets extends Registry<ComponentType> {
    * @throws IllegalStateException if not called from a test
    */
   @VisibleForTesting
-  public static void setDefault(Widgets instance) {
+  public static void setDefault(Components instance) {
     TestUtils.assertRunningFromTest();
     defaultInstance = instance;
   }
@@ -82,7 +82,7 @@ public class Widgets extends Registry<ComponentType> {
           try {
             return widgetClass.newInstance();
           } catch (InstantiationException | IllegalAccessException e) {
-            Logger.getLogger("Widgets").log(Level.WARNING, "error creating widget", e);
+            Logger.getLogger("Components").log(Level.WARNING, "error creating widget", e);
             return null;
           }
         });
@@ -132,8 +132,12 @@ public class Widgets extends Registry<ComponentType> {
     });
   }
 
+  public Stream<ComponentType> allComponents() {
+    return widgets.values().stream();
+  }
+
   public Stream<WidgetType> allWidgets() {
-    return widgets.values().stream().flatMap(TypeUtils.castStream(WidgetType.class));
+    return allComponents().flatMap(TypeUtils.castStream(WidgetType.class));
   }
 
   /**
@@ -297,8 +301,11 @@ public class Widgets extends Registry<ComponentType> {
         loader.load();
         return Optional.of(loader.getController());
       } catch (IOException e) {
-        Logger.getLogger("Widgets").log(Level.WARNING, "error creating parametrized controller", e);
+        Logger.getLogger("Components").log(Level.WARNING, "error creating parametrized controller", e);
       }
+    } else {
+      Logger.getLogger("Components").log(Level.WARNING,
+          "No @ParametrizedController annotation on class " + annotatedClass);
     }
 
     return Optional.empty();

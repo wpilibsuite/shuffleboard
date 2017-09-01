@@ -6,7 +6,7 @@ import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
 import edu.wpi.first.shuffleboard.api.util.Debouncer;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
-import edu.wpi.first.shuffleboard.api.widget.Widgets;
+import edu.wpi.first.shuffleboard.api.widget.Components;
 
 import org.fxmisc.easybind.EasyBind;
 
@@ -204,8 +204,8 @@ public class DashboardTabPane extends TabPane {
           // Don't create widgets for the catchall types
           if (source.getDataType() != DataTypes.Unknown
               && source.getDataType() != DataTypes.Map
-              && !Widgets.getDefault().widgetNamesForSource(source).isEmpty()) {
-            Widgets.getDefault().createWidget(Widgets.getDefault().widgetNamesForSource(source).get(0), source)
+              && !Components.getDefault().widgetNamesForSource(source).isEmpty()) {
+            Components.getDefault().createWidget(Components.getDefault().widgetNamesForSource(source).get(0), source)
                 .ifPresent(w -> getWidgetPane().addWidget(w));
           }
         }

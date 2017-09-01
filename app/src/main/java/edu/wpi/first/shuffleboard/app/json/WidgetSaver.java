@@ -7,7 +7,7 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonSerializationContext;
 import edu.wpi.first.shuffleboard.api.sources.Sources;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
-import edu.wpi.first.shuffleboard.api.widget.Widgets;
+import edu.wpi.first.shuffleboard.api.widget.Components;
 import javafx.beans.property.Property;
 
 @AnnotatedTypeAdapter(forType = Widget.class)
@@ -27,7 +27,7 @@ public class WidgetSaver implements ElementTypeAdapter<Widget> {
   public Widget deserialize(JsonElement json, JsonDeserializationContext context) throws JsonParseException {
     JsonObject obj = json.getAsJsonObject();
     String type = obj.get("_type").getAsString();
-    Widget widget = Widgets.getDefault().createWidget(type)
+    Widget widget = Components.getDefault().createWidget(type)
             .orElseThrow(() -> new JsonParseException("No widget found for " + type));
 
     String source = obj.get("_source").getAsString();

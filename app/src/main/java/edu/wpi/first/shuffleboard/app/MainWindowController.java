@@ -13,7 +13,7 @@ import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
 import edu.wpi.first.shuffleboard.api.theme.Theme;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.Storage;
-import edu.wpi.first.shuffleboard.api.widget.Widgets;
+import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.app.components.DashboardTabPane;
 import edu.wpi.first.shuffleboard.app.components.WidgetGallery;
 import edu.wpi.first.shuffleboard.app.components.WidgetPropertySheet;
@@ -23,10 +23,6 @@ import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
 import edu.wpi.first.shuffleboard.app.prefs.FlushableProperty;
 import edu.wpi.first.shuffleboard.app.sources.recording.Playback;
 
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Dialog;
-import javafx.scene.input.KeyCode;
-import javafx.stage.Stage;
 import org.controlsfx.control.PropertySheet;
 import org.fxmisc.easybind.EasyBind;
 
@@ -49,19 +45,23 @@ import javafx.collections.MapChangeListener;
 import javafx.fxml.FXML;
 import javafx.scene.Scene;
 import javafx.scene.control.Accordion;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableRow;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
+import javafx.stage.Stage;
 
 import static edu.wpi.first.shuffleboard.api.components.SourceTreeTable.alphabetical;
 import static edu.wpi.first.shuffleboard.api.components.SourceTreeTable.branchesFirst;
@@ -182,7 +182,7 @@ public class MainWindowController {
         }
 
         DataSource<?> source = selectedItem.getValue().get();
-        List<String> widgetNames = Widgets.getDefault().widgetNamesForSource(source);
+        List<String> widgetNames = Components.getDefault().widgetNamesForSource(source);
         if (widgetNames.isEmpty()) {
           // No known widgets that can show this data
           return;
@@ -213,7 +213,7 @@ public class MainWindowController {
     });
 
     // Add widgets to the gallery as well
-    widgetGallery.setWidgets(Widgets.getDefault().allWidgets().collect(Collectors.toList()));
+    widgetGallery.setWidgets(Components.getDefault().allWidgets().collect(Collectors.toList()));
   }
 
   /**
@@ -234,7 +234,7 @@ public class MainWindowController {
               .collect(Collectors.toList()) // collect into temporary list to prevent comodification
               .forEach(tile -> pane.getChildren().remove(tile)));
     // ... and from the gallery
-    widgetGallery.setWidgets(Widgets.getDefault().allWidgets().collect(Collectors.toList()));
+    widgetGallery.setWidgets(Components.getDefault().allWidgets().collect(Collectors.toList()));
   }
 
   /**
@@ -266,7 +266,7 @@ public class MainWindowController {
   private MenuItem createShowAsMenuItem(String widgetName, DataSource<?> source) {
     MenuItem menuItem = new MenuItem("Show as: " + widgetName);
     menuItem.setOnAction(action -> {
-      Widgets.getDefault().createWidget(widgetName, source)
+      Components.getDefault().createWidget(widgetName, source)
           .ifPresent(dashboard::addWidgetToActivePane);
     });
     return menuItem;

@@ -6,7 +6,7 @@ import java.util.logging.Logger;
 /**
  * A helper class for creating ComponentTypes from Layout classes and a name.
  */
-public class LayoutClass<T extends Layout> implements ComponentType {
+public class LayoutClass<T extends Layout> implements LayoutType {
 
   private final String name;
   private final Class<T> layoutClass;
@@ -23,11 +23,11 @@ public class LayoutClass<T extends Layout> implements ComponentType {
 
   @Override
   public Component get() {
-    return Widgets.viewFor(layoutClass).orElseGet(() -> {
+    return Components.viewFor(layoutClass).orElseGet(() -> {
       try {
         return layoutClass.newInstance();
       } catch (InstantiationException | IllegalAccessException e) {
-        Logger.getLogger("Widgets").log(Level.WARNING, "error creating widget", e);
+        Logger.getLogger("LayoutClass").log(Level.WARNING, "error creating widget", e);
         return null;
       }
     });

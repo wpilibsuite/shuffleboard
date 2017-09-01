@@ -9,16 +9,17 @@ import edu.wpi.first.shuffleboard.api.util.GridPoint;
 import edu.wpi.first.shuffleboard.api.util.RoundingMode;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 import edu.wpi.first.shuffleboard.api.widget.Component;
+import edu.wpi.first.shuffleboard.api.widget.Components;
+import edu.wpi.first.shuffleboard.api.widget.Layout;
+import edu.wpi.first.shuffleboard.api.widget.LayoutType;
 import edu.wpi.first.shuffleboard.api.widget.TileSize;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
-import edu.wpi.first.shuffleboard.api.widget.Widgets;
 import edu.wpi.first.shuffleboard.app.components.LayoutTile;
 import edu.wpi.first.shuffleboard.app.components.Tile;
 import edu.wpi.first.shuffleboard.app.components.TileLayout;
 import edu.wpi.first.shuffleboard.app.components.WidgetPane;
 import edu.wpi.first.shuffleboard.app.components.WidgetTile;
 import edu.wpi.first.shuffleboard.app.dnd.TileDragResizer;
-import edu.wpi.first.shuffleboard.api.widget.Layout;
 
 import org.fxmisc.easybind.EasyBind;
 
@@ -82,10 +83,10 @@ public class WidgetPaneController {
       } else if (isSource) {
         SourceEntry entry = (SourceEntry) event.getDragboard().getContent(DataFormats.source);
         DataSource source = entry.get();
-        Optional<String> widgetName = Widgets.getDefault().pickWidgetNameFor(source.getDataType());
+        Optional<String> widgetName = Components.getDefault().pickWidgetNameFor(source.getDataType());
         Optional<DummySource> dummySource = DummySource.forTypes(source.getDataType());
         if (widgetName.isPresent() && dummySource.isPresent()) {
-          Widgets.getDefault().createWidget(widgetName.get(), (DataSource<?>) dummySource.get()).ifPresent(w -> {
+          Components.getDefault().createWidget(widgetName.get(), (DataSource<?>) dummySource.get()).ifPresent(w -> {
             pane.setHighlight(true);
             pane.setHighlightPoint(point);
             pane.setHighlightSize(pane.sizeOfWidget(w));
@@ -121,7 +122,7 @@ public class WidgetPaneController {
 
       if (dragboard.hasContent(DataFormats.widgetType)) {
         String widgetType = (String) dragboard.getContent(DataFormats.widgetType);
-        Widgets.getDefault().createWidget(widgetType).ifPresent(widget -> {
+        Components.getDefault().createWidget(widgetType).ifPresent(widget -> {
           TileSize size = pane.sizeOfWidget(widget);
           if (pane.isOpen(point, size, _t -> false)) {
             WidgetTile tile = pane.addWidget(widget);
@@ -230,8 +231,8 @@ public class WidgetPaneController {
    * @param point  the point to place the widget for the source
    */
   private void dropSource(DataSource<?> source, GridPoint point) {
-    Widgets.getDefault().pickWidgetNameFor(source.getDataType())
-           .flatMap(name -> Widgets.getDefault().createWidget(name, source))
+    Components.getDefault().pickWidgetNameFor(source.getDataType())
+           .flatMap(name -> Components.getDefault().createWidget(name, source))
            .filter(widget -> pane.isOpen(point, pane.sizeOfWidget(widget), n -> widget == n))
            .map(pane::addWidget)
            .ifPresent(tile -> pane.moveNode(tile, point));
@@ -295,7 +296,7 @@ public class WidgetPaneController {
       if (dragboard.hasContent(DataFormats.widgetType) && tile instanceof LayoutTile) {
         String widgetType = (String) dragboard.getContent(DataFormats.widgetType);
 
-        Widgets.getDefault().createWidget(widgetType).ifPresent(widget -> {
+        Components.getDefault().createWidget(widgetType).ifPresent(widget -> {
           ((LayoutTile) tile).getContent().addChild(widget);
         });
         event.consume();
@@ -308,10 +309,10 @@ public class WidgetPaneController {
 
         Layout container = ((LayoutTile) tile).getContent();
         DataSource<?> source = entry.get();
-        Widgets.getDefault().widgetNamesForSource(entry.get())
+        Components.getDefault().widgetNamesForSource(entry.get())
                 .stream()
                 .findAny()
-                .flatMap(name -> Widgets.getDefault().createWidget(name, source))
+                .flatMap(name -> Components.getDefault().createWidget(name, source))
                 .ifPresent(container::addChild);
         event.consume();
 
@@ -337,23 +338,12 @@ public class WidgetPaneController {
    *
    * @param tile the tile for the widget to create a context menu for
    */
-  private ContextMenu createContextMenu(Tile tile) {
+  private ContextMenu createContextMenu(Tile<?> tile) {
     ContextMenu menu = new ContextMenu();
 
     MenuItem remove = FxUtils.menuItem("Remove", __ -> pane.removeTile(tile));
     menu.getItems().add(remove);
-
-    MenuItem wrapInVBox = new MenuItem("Wrap in VBox");
-    wrapInVBox.setOnAction(__ -> {
-      TileLayout was = pane.getTileLayout(tile);
-      Component content = pane.removeTile(tile);
-      Layout layout = Widgets.getDefault()
-          .createComponent("List Layout")
-          .flatMap(TypeUtils.optionalCast(Layout.class)).get();
-      layout.addChild(content);
-      pane.addComponent(layout, was.origin, was.size);
-    });
-    menu.getItems().add(wrapInVBox);
+    menu.getItems().add(createLayoutMenus(tile));
 
     if (tile instanceof WidgetTile) {
       Menu changeMenus = createChangeMenusForWidget((WidgetTile) tile);
@@ -366,6 +356,32 @@ public class WidgetPaneController {
   }
 
   /**
+   * Creates all the menus needed for wrapping a component in a layout.
+   *
+   * @param tile the tile for the component to create the menus for
+   */
+  private Menu createLayoutMenus(Tile<?> tile) {
+    Menu menu = new Menu("Add to new layout...");
+
+    Components.getDefault()
+        .allComponents()
+        .flatMap(TypeUtils.castStream(LayoutType.class))
+        .forEach(layoutType -> {
+          MenuItem wrapItem = new MenuItem(layoutType.getName());
+          wrapItem.setOnAction(__ -> {
+            TileLayout was = pane.getTileLayout(tile);
+            Component content = pane.removeTile(tile);
+            Layout layout = (Layout) layoutType.get();
+            layout.addChild(content);
+            pane.addComponent(layout, was.origin, was.size);
+          });
+          menu.getItems().add(wrapItem);
+        });
+
+    return menu;
+  }
+
+  /**
    * Creates all the menus needed for changing a widget to a different type.
    *
    * @param tile the tile for the widget to create the change menus for
@@ -373,7 +389,7 @@ public class WidgetPaneController {
   private Menu createChangeMenusForWidget(WidgetTile tile) {
     Widget widget = tile.getContent();
     Menu changeView = new Menu("Show as...");
-    Widgets.getDefault().widgetNamesForType(widget.getSource().getDataType())
+    Components.getDefault().widgetNamesForType(widget.getSource().getDataType())
            .stream()
            .sorted()
            .forEach(name -> {
@@ -383,7 +399,7 @@ public class WidgetPaneController {
              } else {
                // only need to change if it's to another type
                changeItem.setOnAction(__ -> {
-                 Widgets.getDefault().createWidget(name, widget.getSource())
+                 Components.getDefault().createWidget(name, widget.getSource())
                         .ifPresent(tile::setContent);
                });
              }

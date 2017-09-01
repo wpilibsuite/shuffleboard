@@ -126,14 +126,6 @@ public class WidgetPane extends TilePane {
   }
 
   /**
-   * Gets the tile for the widget containing the given source.
-   */
-  public Optional<WidgetTile> widgetForSource(DataSource<?> source) {
-    return tileMatching(tile -> tile instanceof WidgetTile && ((WidgetTile) tile).getContent().getSource() == source)
-            .flatMap(TypeUtils.optionalCast(WidgetTile.class));
-  }
-
-  /**
    * Adds a widget to the tile view in the first available location.
    *
    * @param widget the widget to add

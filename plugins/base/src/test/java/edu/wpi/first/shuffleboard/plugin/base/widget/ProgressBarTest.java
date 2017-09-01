@@ -2,7 +2,7 @@ package edu.wpi.first.shuffleboard.plugin.base.widget;
 
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.DummySource;
-import edu.wpi.first.shuffleboard.api.widget.Widgets;
+import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.NumberType;
 
 import org.junit.jupiter.api.BeforeAll;
@@ -26,7 +26,7 @@ public class ProgressBarTest extends AbstractWidgetTest {
 
   @Override
   public void start(Stage stage) throws Exception {
-    widget = (ProgressBar) Widgets.getDefault().createWidget(
+    widget = (ProgressBar) Components.getDefault().createWidget(
         "Progress Bar", DummySource.forTypes(new NumberType()).get()).get();
     source = widget.getSource();
     stage.setScene(new Scene(widget.getView()));
