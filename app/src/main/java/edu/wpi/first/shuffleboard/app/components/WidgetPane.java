@@ -109,7 +109,7 @@ public class WidgetPane extends TilePane {
   public Optional<Tile> tileMatching(Predicate<Tile> predicate) {
     return tiles.stream()
                 .map(TypeUtils.optionalCast(Tile.class))
-                .filter(Optional::isPresent).map(Optional::get)
+                .flatMap(TypeUtils.optionalStream())
                 .filter(predicate)
                 .findFirst();
   }

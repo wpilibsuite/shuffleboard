@@ -462,8 +462,7 @@ public class WidgetPaneController {
       int upper = lower + importantDim;
       List<Optional<Runnable>> runs = IntStream.range(lower, upper)
           .mapToObj(i -> left ? pane.tileAt(targetLayout.origin.col, i) : pane.tileAt(i, targetLayout.origin.row))
-          .filter(Optional::isPresent) // guaranteed to be at least one tile
-          .map(Optional::get)
+          .flatMap(TypeUtils.optionalStream()) // guaranteed to be at least one tile
           .distinct() // need to make sure we have no repeats, or n-row tiles will get moved n times
           .filter(t -> tile != t)
           .map(t -> collapseTile(t, targetLayoutFunction, shrink, left)) // recursion here

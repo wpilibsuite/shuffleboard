@@ -13,6 +13,7 @@ import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
 import edu.wpi.first.shuffleboard.api.theme.Theme;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.Storage;
+import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.app.components.DashboardTabPane;
 import edu.wpi.first.shuffleboard.app.components.WidgetGallery;
@@ -65,7 +66,6 @@ import javafx.stage.Stage;
 
 import static edu.wpi.first.shuffleboard.api.components.SourceTreeTable.alphabetical;
 import static edu.wpi.first.shuffleboard.api.components.SourceTreeTable.branchesFirst;
-import static edu.wpi.first.shuffleboard.api.util.TypeUtils.optionalCast;
 
 
 /**
@@ -391,9 +391,7 @@ public class MainWindowController {
           .map(WidgetPropertySheet.PropertyItem::getObservableValue)
           .filter(Optional::isPresent)
           .map(Optional::get)
-          .map(o -> optionalCast(o, FlushableProperty.class))
-          .filter(Optional::isPresent)
-          .map(Optional::get)
+          .flatMap(TypeUtils.castStream(FlushableProperty.class))
           .filter(FlushableProperty::isChanged)
           .forEach(FlushableProperty::flush);
     }
