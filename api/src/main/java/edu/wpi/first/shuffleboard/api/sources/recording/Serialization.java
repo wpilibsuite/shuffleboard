@@ -22,7 +22,7 @@ import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-@SuppressWarnings("PMD.GodClass")
+@SuppressWarnings({"unchecked", "PMD.GodClass"})
 public final class Serialization {
 
   private static final Logger log = Logger.getLogger(Serialization.class.getName());
@@ -47,6 +47,7 @@ public final class Serialization {
    *
    * @throws IOException if the recording could not be saved to the given file
    */
+  @SuppressWarnings("unchecked")
   public static void saveRecording(Recording recording, String file) throws IOException {
     // work on a copy of the data so changes to the recording don't mess this up
     final List<TimestampedData> dataCopy = new ArrayList<>(recording.getData());

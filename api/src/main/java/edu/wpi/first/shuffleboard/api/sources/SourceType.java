@@ -13,7 +13,7 @@ public class SourceType {
   private final String name;
   private final boolean isRecordable;
   private final String protocol;
-  private final Function<String, DataSource> sourceSupplier;
+  private final Function<String, DataSource<?>> sourceSupplier;
 
   /**
    * Creates a new source type.
@@ -26,7 +26,7 @@ public class SourceType {
   public SourceType(String name,
                     boolean isRecordable,
                     String protocol,
-                    Function<String, DataSource> sourceSupplier) {
+                    Function<String, DataSource<?>> sourceSupplier) {
     this.name = name;
     this.isRecordable = isRecordable;
     this.protocol = protocol;

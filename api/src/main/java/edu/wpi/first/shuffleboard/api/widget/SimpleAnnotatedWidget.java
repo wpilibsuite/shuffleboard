@@ -24,7 +24,7 @@ public abstract class SimpleAnnotatedWidget<T> extends AnnotatedWidget implement
   // Getters and setters
 
   public Property<DataSource> sourceProperty() {
-    return (Property) source;
+    return source;
   }
 
   public final Property<T> dataProperty() {
