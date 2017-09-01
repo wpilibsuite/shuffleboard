@@ -39,10 +39,10 @@ public class LayoutSaver implements ElementTypeAdapter<Layout> {
     Layout layout = Widgets.getDefault().createComponent(name).flatMap(TypeUtils.optionalCast(Layout.class))
         .orElseThrow(() -> new JsonParseException("Can't find layout name " + name));
 
-    children.forEach(o -> {
-      String childName = o.getAsJsonObject().get("_type").getAsString();
+    children.forEach(child -> {
+      String childName = child.getAsJsonObject().get("_type").getAsString();
       Optional<Type> childType = Widgets.getDefault().javaTypeFor(childName);
-      childType.map(t -> context.deserialize(o, t))
+      childType.map(t -> context.deserialize(child, t))
           .flatMap(TypeUtils.optionalCast(Component.class))
           .ifPresent(layout::addChild);
     });

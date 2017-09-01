@@ -3,6 +3,9 @@ package edu.wpi.first.shuffleboard.api.widget;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * A helper class for creating ComponentTypes from Layout classes and a name.
+ */
 public class LayoutClass<T extends Layout> implements ComponentType {
 
   private final String name;

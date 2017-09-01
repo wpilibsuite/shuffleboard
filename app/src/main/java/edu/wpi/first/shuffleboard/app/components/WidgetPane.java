@@ -157,9 +157,13 @@ public class WidgetPane extends TilePane {
     return tile;
   }
 
-  /**
-   * Add an arbitrary component to the WidgetPane.
-   */
+   /**
+    * Add an arbitrary component to the WidgetPane in the specified location.
+    * The tile will be the specified size.
+    *
+    * @param component the component to add
+    * @param size   the size of the tile used to display the component
+    */
   public Tile<?> addComponent(Component component, GridPoint location, TileSize size) {
     Tile<?> tile = Tile.tileFor(component, size);
     tile.sizeProperty().addListener(__ -> setSize(tile, tile.getSize()));
@@ -196,6 +200,8 @@ public class WidgetPane extends TilePane {
 
   /**
    * Remove a given tile from the widget pane.
+   *
+   * @return the content of the removed tile.
    */
   public <T extends Component> T removeTile(Tile<T> tile) {
     T content = tile.getContent();

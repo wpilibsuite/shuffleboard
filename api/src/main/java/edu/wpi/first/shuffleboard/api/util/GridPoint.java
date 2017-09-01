@@ -63,5 +63,4 @@ public class GridPoint implements Serializable {
   public int hashCode() {
     return Objects.hash(col, row);
   }
-
 }

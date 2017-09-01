@@ -96,13 +96,13 @@
 
 /********/
 
-.layout--label {
+.layout-label {
     -fx-padding: 0 12px 5px 12px;
     -fx-font-size: 12px;
 }
 
 
-.layout--label * {
+.layout-label * {
     -fx-text-fill: #aaa;
 }
 

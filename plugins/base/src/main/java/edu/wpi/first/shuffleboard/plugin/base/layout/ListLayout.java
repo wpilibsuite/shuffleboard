@@ -45,9 +45,9 @@ public class ListLayout implements Layout {
 
   private Pane paneFor(Component widget) {
     BorderPane pane = new BorderPane(widget.getView());
-    pane.getStyleClass().add("layout--stack");
+    pane.getStyleClass().add("layout-stack");
     EditableLabel label = new EditableLabel(widget.titleProperty());
-    label.getStyleClass().add("layout--label");
+    label.getStyleClass().add("layout-label");
     BorderPane.setAlignment(label, Pos.TOP_LEFT);
     pane.setBottom(label);
     return pane;

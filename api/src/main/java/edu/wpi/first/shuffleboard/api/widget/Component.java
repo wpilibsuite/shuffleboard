@@ -5,6 +5,12 @@ import java.util.stream.Stream;
 import javafx.beans.property.Property;
 import javafx.scene.layout.Pane;
 
+/**
+ * A Component is base interface for any part of the dashboard that can be instantiated by the user.
+ *
+ * For example, a static image, a camera widget, and a layout that has children in lists could all be components
+ * of different types.
+ */
 public interface Component {
   Pane getView();
 
