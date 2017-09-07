@@ -25,6 +25,7 @@ import edu.wpi.first.shuffleboard.app.sources.recording.Playback;
 
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
+import javafx.scene.control.Tab;
 import javafx.scene.input.KeyCode;
 import javafx.stage.Stage;
 import org.controlsfx.control.PropertySheet;
@@ -428,6 +429,14 @@ public class MainWindowController {
   @FXML
   private void closeCurrentTab() {
     dashboard.closeCurrentTab();
+  }
+
+  @FXML
+  private void showCurrentTabPrefs() {
+    Tab currentTab = dashboard.getSelectionModel().getSelectedItem();
+    if (currentTab instanceof DashboardTabPane.DashboardTab) {
+      ((DashboardTabPane.DashboardTab) currentTab).showPrefsDialog();
+    }
   }
 
   @FXML
