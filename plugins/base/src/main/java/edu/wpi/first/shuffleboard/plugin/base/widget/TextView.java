@@ -6,7 +6,6 @@ import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 import edu.wpi.first.shuffleboard.api.widget.SimpleAnnotatedWidget;
 
 import org.fxmisc.easybind.EasyBind;
-import org.fxmisc.easybind.monadic.MonadicBinding;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -38,8 +37,7 @@ public class TextView extends SimpleAnnotatedWidget<Object> {
   @FXML
   private void initialize() {
     text.bind(EasyBind.map(dataProperty(), this::simpleToString));
-    MonadicBinding<Boolean> isNumber = EasyBind.map(dataProperty(), d -> d instanceof Number).orElse(false);
-    numberField.visibleProperty().bind(isNumber);
+    numberField.visibleProperty().bind(EasyBind.map(dataProperty(), d -> d instanceof Number).orElse(false));
     textField.visibleProperty().bind(numberField.visibleProperty().not());
 
     text.addListener((__, oldText, newText) -> {
