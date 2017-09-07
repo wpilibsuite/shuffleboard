@@ -1,16 +1,17 @@
 package edu.wpi.first.shuffleboard.plugin.base.widget;
 
-import edu.wpi.first.shuffleboard.api.sources.DataSource;
+import edu.wpi.first.shuffleboard.api.components.NumberField;
 import edu.wpi.first.shuffleboard.api.widget.Description;
 import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 import edu.wpi.first.shuffleboard.api.widget.SimpleAnnotatedWidget;
 
 import org.fxmisc.easybind.EasyBind;
+import org.fxmisc.easybind.monadic.MonadicBinding;
 
-import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.fxml.FXML;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.Pane;
 
 /**
@@ -26,23 +27,36 @@ import javafx.scene.layout.Pane;
 public class TextView extends SimpleAnnotatedWidget<Object> {
 
   private final StringProperty text = new SimpleStringProperty(this, "text", "");
-  private final StringProperty label = new SimpleStringProperty(this, "label", "");
 
   @FXML
   private Pane root;
+  @FXML
+  private TextField textField;
+  @FXML
+  private NumberField numberField;
 
-  /**
-   * Creates a TextView widget.
-   */
-  public TextView() {
-    text.bind(
-        EasyBind.select(sourceProperty())
-                .selectObject(DataSource::dataProperty)
-                .map(this::simpleToString)
-    );
-    label.bind(
-            EasyBind.map(sourceNameProperty(), name -> name.isEmpty() ? "- No Source -" : name)
-    );
+  @FXML
+  private void initialize() {
+    text.bind(EasyBind.map(dataProperty(), this::simpleToString));
+    MonadicBinding<Boolean> isNumber = EasyBind.map(dataProperty(), d -> d instanceof Number).orElse(false);
+    numberField.visibleProperty().bind(isNumber);
+    textField.visibleProperty().bind(numberField.visibleProperty().not());
+
+    text.addListener((__, oldText, newText) -> {
+      textField.setText(newText);
+      numberField.setText(newText);
+    });
+
+    textField.textProperty().addListener((__, oldText, newText) -> {
+      if (getData() instanceof Boolean) {
+        // TODO maybe disable boolean text entry entirely? No point in typing "true" or "false" every time
+        // Especially since checkboxes and toggle buttons exist
+        setData(Boolean.valueOf(newText));
+      } else {
+        setData(newText);
+      }
+    });
+    numberField.numberProperty().addListener((__, oldNumber, newNumber) -> setData(newNumber));
   }
 
   @Override
@@ -57,23 +71,4 @@ public class TextView extends SimpleAnnotatedWidget<Object> {
     return obj.toString();
   }
 
-  public String getText() {
-    return text.get();
-  }
-
-  public ReadOnlyStringProperty textProperty() {
-    return text;
-  }
-
-  public void setText(String text) {
-    this.text.set(text);
-  }
-
-  public String getLabel() {
-    return label.get();
-  }
-
-  public ReadOnlyStringProperty labelProperty() {
-    return label;
-  }
 }
