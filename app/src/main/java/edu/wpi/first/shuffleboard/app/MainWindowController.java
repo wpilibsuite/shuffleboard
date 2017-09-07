@@ -416,7 +416,7 @@ public class MainWindowController {
     FileChooser chooser = new FileChooser();
     chooser.setInitialDirectory(new File(Storage.RECORDING_DIR));
     chooser.getExtensionFilters().setAll(
-        new FileChooser.ExtensionFilter("FRC Data Recording", "*.frc"));
+        new FileChooser.ExtensionFilter("Shuffleboard Data Recording", "*.sbr"));
     final File selected = chooser.showOpenDialog(root.getScene().getWindow());
     if (selected == null) {
       return;
