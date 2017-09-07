@@ -109,7 +109,7 @@ public class CameraServerDataSerializer extends TypeAdapter<CameraServerData> {
   }
 
   private Image readFrame(String cameraName, int frameNum) throws IOException, JCodecException {
-    File videoFile = videoFileFor(Recorder.getInstance().getRecordingFile(), cameraName);
+    File videoFile = videoFileFor(getCurrentFile(), cameraName);
     BufferedImage frame = AWTFrameGrab.getFrame(videoFile, frameNum);
     return SwingFXUtils.toFXImage(frame, null);
   }

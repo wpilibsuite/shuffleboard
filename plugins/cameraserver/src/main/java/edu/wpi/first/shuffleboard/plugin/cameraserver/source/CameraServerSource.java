@@ -2,6 +2,7 @@ package edu.wpi.first.shuffleboard.plugin.cameraserver.source;
 
 import edu.wpi.cscore.CvSink;
 import edu.wpi.cscore.HttpCamera;
+import edu.wpi.cscore.VideoException;
 import edu.wpi.first.shuffleboard.api.sources.AbstractDataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
@@ -13,14 +14,17 @@ import edu.wpi.first.shuffleboard.plugin.cameraserver.data.type.CameraServerData
 import edu.wpi.first.shuffleboard.plugin.cameraserver.recording.serialization.ImageConverter;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
 import edu.wpi.first.wpilibj.tables.ITable;
+import edu.wpi.first.wpilibj.tables.ITableListener;
 
 import org.opencv.core.Mat;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
@@ -37,52 +41,70 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
 
   public static final ITable rootTable = NetworkTable.getTable("/CameraPublisher");
   private static final String[] emptyStringArray = new String[0];
-  private final HttpCamera camera;
+  private HttpCamera camera;
   private final CvSink videoSink;
   private final Mat imageStorage = new Mat();
   private final ImageConverter imageConverter = new ImageConverter();
 
   private final ExecutorService frameGrabberService = Executors.newSingleThreadExecutor(ThreadUtils::makeDaemonThread);
   private final BooleanBinding enabled = active.and(connected);
+  private final ITableListener streamsListener;
+  private final ChangeListener<Boolean> enabledListener;
   private Future<?> frameFuture = null;
   private final ChangeListener<CameraServerData> recordingListener = (__, prev, cur) -> {
     Recorder.getInstance().recordCurrentValue(this);
   };
+  private final ITable table;
 
   private CameraServerSource(String name) {
     super(CameraServerDataType.INSTANCE);
     setName(name);
-    ITable table = rootTable.getSubTable(name);
-    camera = new HttpCamera(name, removeCameraProtocols(table.getStringArray("streams", emptyStringArray)));
+    table = rootTable.getSubTable(name);
     videoSink = new CvSink(name + "-videosink");
-    videoSink.setSource(camera);
+    try {
+      camera = new HttpCamera(name, removeCameraProtocols(table.getStringArray("streams", emptyStringArray)));
+      videoSink.setSource(camera);
+    } catch (VideoException e) {
+      //
+    }
 
-    enabled.addListener((__, was, is) -> {
+    streamsListener = NetworkTableUtils.createListenerEx((source, key, value, flags) -> {
+      if (NetworkTableUtils.isDelete(flags) || !(value instanceof String[]) || ((String[]) value).length == 0) {
+        setActive(false);
+      } else {
+        String[] urls = removeCameraProtocols((String[]) value);
+        if (camera == null) {
+          camera = new HttpCamera(name, urls);
+        } else if (EqualityUtils.isDifferent(camera.getUrls(), urls)) {
+          camera.setUrls(urls);
+        }
+        setActive(true);
+      }
+    });
+
+    enabledListener = (__, was, is) -> {
       // Disable the stream when not active or not connected to save on bandwidth
       videoSink.setEnabled(is);
       if (is) {
         data.addListener(recordingListener);
         frameFuture = frameGrabberService.submit(this::grabForever);
-      } else if (frameFuture != null) {
-        data.removeListener(recordingListener);
-        frameFuture.cancel(true);
-      }
-    });
-
-    setActive(camera.getUrls().length > 0);
-    setConnected(true);
-
-    table.addTableListenerEx("streams", NetworkTableUtils.createListenerEx((source, key, value, flags) -> {
-      if (NetworkTableUtils.isDelete(flags) || !(value instanceof String[]) || ((String[]) value).length == 0) {
-        setActive(false);
+        table.addTableListenerEx("streams", streamsListener, 0xFF);
       } else {
-        String[] urls = removeCameraProtocols((String[]) value);
-        if (EqualityUtils.isDifferent(camera.getUrls(), urls)) {
-          camera.setUrls(urls);
-        }
-        setActive(true);
+        data.removeListener(recordingListener);
+        cancelFrameGrabber();
+        table.removeTableListener(streamsListener);
       }
-    }), 0xFF);
+    };
+    enabled.addListener(enabledListener);
+
+    setActive(camera != null && camera.getUrls().length > 0);
+    setConnected(true);
+  }
+
+  private void cancelFrameGrabber() {
+    if (frameFuture != null) {
+      frameFuture.cancel(true);
+    }
   }
 
   /**
@@ -153,6 +175,14 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
       }
     }
     return true;
+  }
+
+  @Override
+  public void close() {
+    table.removeTableListener(streamsListener);
+    enabled.removeListener(enabledListener);
+    cancelFrameGrabber();
+    sources.remove(getName());
   }
 
 }

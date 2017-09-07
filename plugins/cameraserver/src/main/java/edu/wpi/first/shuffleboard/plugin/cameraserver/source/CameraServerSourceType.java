@@ -46,6 +46,7 @@ public final class CameraServerSourceType extends SourceType {
 
   @Override
   public void read(TimestampedData recordedData) {
+    super.read(recordedData);
     CameraServerSource source = (CameraServerSource) forUri(recordedData.getSourceId());
     source.setData((CameraServerData) recordedData.getData());
   }
