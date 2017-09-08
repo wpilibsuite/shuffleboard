@@ -30,6 +30,11 @@ allprojects {
     apply {
         plugin("com.diffplug.gradle.spotless")
     }
+
+    repositories {
+        mavenCentral()
+    }
+
     // Spotless is used to lint and reformat source files.
     spotless {
         kotlinGradle {
@@ -50,9 +55,6 @@ subprojects {
         plugin("maven-publish")
         plugin("org.junit.platform.gradle.plugin")
         plugin("edu.wpi.first.wpilib.versioning.WPILibVersioningPlugin")
-    }
-    repositories {
-        mavenCentral()
     }
 
     dependencies {
@@ -159,7 +161,23 @@ subprojects {
             }
         }
     }
+}
 
+/*
+ * Add a JacocoCoverage task that merges the coverage of all of all subprojects into one report.
+ * This improves code coverage as it will also capture coverage for tests that cross project barriers.
+ * http://csiebler.github.io/blog/2014/02/09/multi-project-code-coverage-using-gradle-and-jacoco/
+ */
+task<JacocoReport>("codeCoverageReport") {
+    executionData(fileTree(rootDir.absolutePath).include("**/build/jacoco/*.exec"))
+    subprojects {
+        this@task.sourceSets(java.sourceSets["main"])
+        this@task.dependsOn(tasks.getByName("test"))
+    }
+    reports {
+        xml.isEnabled = true
+        html.isEnabled = true
+    }
 }
 
 configure(setOf(project(":app"))) {
