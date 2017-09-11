@@ -6,6 +6,7 @@ import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.BooleanType;
 
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.testfx.util.WaitForAsyncUtils;
 
@@ -48,6 +49,7 @@ public class BooleanBoxTest extends AbstractWidgetTest {
   }
 
   @Test
+  @Disabled
   public void testChangeTrueColor() {
     final Color color = Color.WHITE;
     widget.getSource().setData(true);

@@ -26,6 +26,7 @@ public final class NetworkTableUtils {
   private static final Pattern newMetadataPattern = Pattern.compile("/\\.");
 
   private NetworkTableUtils() {
+    throw new UnsupportedOperationException("This is a utility class!");
   }
 
   @FunctionalInterface
@@ -81,7 +82,7 @@ public final class NetworkTableUtils {
 
   /**
    * Gets a list of the names of all the super tables of a given key. For example, the key "/foo/bar/baz"
-   * has a hierarchy of "/foo", "/foo/bar", and "/foo/bar/baz".
+   * has a hierarchy of "/", "/foo", "/foo/bar", and "/foo/bar/baz".
    */
   public static List<String> getHierarchy(String key) {
     final String normal = normalizeKey(key, true);

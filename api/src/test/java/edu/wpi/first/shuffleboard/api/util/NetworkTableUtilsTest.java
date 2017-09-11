@@ -1,123 +1,92 @@
 package edu.wpi.first.shuffleboard.api.util;
 
-import edu.wpi.first.wpilibj.tables.ITable;
+import com.google.common.collect.Lists;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.function.Executable;
+import java.util.List;
+import java.util.stream.Stream;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
+public class NetworkTableUtilsTest extends UtilityClassTest<NetworkTableUtils> {
 
-public class NetworkTableUtilsTest {
-
-  @BeforeEach
-  public void setUp() {
-    NetworkTableUtils.shutdown();
+  @ParameterizedTest
+  @CsvSource({"simple, simple",
+                 "simple, one/two/many/simple",
+                 "simple, //////an/////awful/key////simple"})
+  public void simpleKeyTest(String expectedResult, String key) {
+    assertEquals(expectedResult, NetworkTableUtils.simpleKey(key));
   }
 
-  @AfterEach
-  public void tearDown() {
-    NetworkTableUtils.shutdown();
+  @ParameterizedTest
+  @CsvSource({"/, //////////////////////////",
+                 "/this/doesn't/need/to/be/normalized, /this/doesn't/need/to/be/normalized",
+                 "/no/leading/slash, no/leading/slash",
+                 "/what/an/awful/key/, //////what////an/awful/////key///"})
+  public void normalizeKeyTest(String expectedResult, String key) {
+    assertEquals(expectedResult, NetworkTableUtils.normalizeKey(key));
   }
 
-  @Test
-  public void testSimpleKey() {
-    String simple = "a simple key";
-    assertEquals(simple, NetworkTableUtils.simpleKey(simple));
+  @ParameterizedTest
+  @CsvSource({"a, a",
+                 "a, //////////////////////////a",
+                 "this/doesn't/need/to/be/normalized, /this/doesn't/need/to/be/normalized",
+                 "no/leading/slash, no/leading/slash",
+                 "what/an/awful/key/, //////what////an/awful/////key///"})
+  public void normalizeKeyNoLeadingTest(String expectedResult, String key) {
+    assertEquals(expectedResult, NetworkTableUtils.normalizeKey(key, false));
   }
 
-  @Test
-  public void testSimplifyNestedKey() {
-    String key = "/a/complex/key";
-    assertEquals("key", NetworkTableUtils.simpleKey(key));
+  @ParameterizedTest
+  @CsvSource({"false, /key",
+                 "false, /metadata",
+                 "false, /~metadata",
+                 "false, /metadata~",
+                 "true, /~metadata~",
+                 "false, /METADATA",
+                 "false, /~METADATA",
+                 "false, /METADATA~",
+                 "true, /~METADATA~",
+                 "true, /.metadata",
+                 "true, /~METADATA~/someOtherValue",
+                 "true, /.metadata/someOtherValue",
+                 "false, /my.key.with.dots",
+                 "false, /my~key~with~tildes~",
+                 "false, /~my~keywithtildes",
+                 "false, /~metadata~with~tildes~"})
+  public void isMetaDataTest(boolean expectedResult, String key) {
+    assertEquals(expectedResult, NetworkTableUtils.isMetadata(key));
   }
 
-  @Test
-  public void testNormalizeSimple() {
-    String key = "a key";
-    assertEquals(key, NetworkTableUtils.normalizeKey(key, false));
+  private static Stream<Arguments> getHierarchyArguments() {
+    return Stream.of(
+        Arguments.of(Lists.newArrayList("/"), ""),
+        Arguments.of(Lists.newArrayList("/"), "/"),
+        Arguments.of(Lists.newArrayList("/", "/foo", "/foo/bar", "/foo/bar/baz"), "/foo/bar/baz")
+    );
   }
 
-  @Test
-  public void testNormalizeComplex() {
-    String key = "//lots////of///slashes";
-    assertEquals("/lots/of/slashes", NetworkTableUtils.normalizeKey(key));
+  @ParameterizedTest
+  @MethodSource(value = "getHierarchyArguments")
+  public void getHierarchyTest(List<String> expectedResult, String key) {
+    assertEquals(expectedResult, NetworkTableUtils.getHierarchy(key));
   }
 
-  @Test
-  public void testIsDelete() {
-    assertTrue(NetworkTableUtils.isDelete(ITable.NOTIFY_DELETE));
-    assertTrue(NetworkTableUtils.isDelete(ITable.NOTIFY_IMMEDIATE | ITable.NOTIFY_DELETE));
-    assertTrue(NetworkTableUtils.isDelete(0xFF));
-    assertFalse(NetworkTableUtils.isDelete(0x00));
+  private static Stream<Arguments> concatArguments() {
+    return Stream.of(
+        Arguments.of("/foo/bar", "foo", "bar", new String[0]),
+        Arguments.of("/one/two/three/four", "one", "two", new String[]{"three", "four"}),
+        Arguments.of("/one/two", "/////one////", "///two", new String[0])
+    );
   }
 
-  @Test
-  public void testFlags() {
-    final int[] flags = {
-        ITable.NOTIFY_IMMEDIATE,
-        ITable.NOTIFY_LOCAL,
-        ITable.NOTIFY_NEW,
-        ITable.NOTIFY_DELETE,
-        ITable.NOTIFY_UPDATE,
-        ITable.NOTIFY_FLAGS
-    };
-
-    final Set<Executable> assertions = new HashSet<>();
-    for (int flag : flags) {
-      // Make sure that n == n
-      assertions.add(() -> assertTrue(NetworkTableUtils.flagMatches(flag, flag)));
-
-      for (int f2 : flags) {
-        // and that (n | m) == n
-        assertions.add(() -> assertTrue(NetworkTableUtils.flagMatches(flag | f2, flag)));
-      }
-    }
-    assertAll(assertions.stream());
-  }
-
-  @Test
-  public void testOldMetadata() {
-    String key = "/~metadata~";
-    assertTrue(NetworkTableUtils.isMetadata(key));
-  }
-
-  @Test
-  public void testOldMetadataSubkey() {
-    String key = "/table/~metadata~";
-    assertTrue(NetworkTableUtils.isMetadata(key));
-  }
-
-  @Test
-  public void testOldMetadataSubtable() {
-    String key = "/root/~metadata~/subkey";
-    assertTrue(NetworkTableUtils.isMetadata(key));
-  }
-
-  @Test
-  public void testNewMetadata() {
-    String key = "/.metadata";
-    assertTrue(NetworkTableUtils.isMetadata(key));
-  }
-
-  @Test
-  public void testNewMetadataSubkey() {
-    String key = "/table/.metadata";
-    assertTrue(NetworkTableUtils.isMetadata(key));
-  }
-
-  @Test
-  public void testNewMetadataSubtable() {
-    String key = "/root/.metadata/key";
-    assertTrue(NetworkTableUtils.isMetadata(key));
+  @ParameterizedTest
+  @MethodSource(value = "concatArguments")
+  public void concatTest(String expectedResult, String value1, String value2, String... more) {
+    assertEquals(expectedResult, NetworkTableUtils.concat(value1, value2, more));
   }
 
 }

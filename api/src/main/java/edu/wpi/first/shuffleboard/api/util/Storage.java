@@ -23,7 +23,7 @@ public final class Storage {
 
   public static final String RECORDING_DIR = STORAGE_DIR + "/recordings";
 
-  public static final String RECORDING_FILE_FORMAT = RECORDING_DIR + "/${date}/recording-${time}.frc";
+  public static final String RECORDING_FILE_FORMAT = RECORDING_DIR + "/${date}/recording-${time}.sbr";
 
   private static final DateTimeFormatter dateFormatter = DateTimeFormatter.ISO_DATE;
   private static final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH.mm.ss", Locale.getDefault());
@@ -38,7 +38,7 @@ public final class Storage {
 
   /**
    * Generates the path to a recording file based on when a recording started. The generated path is in the format
-   * {@code /SmartDashboard/recordings/<date>/recording-<time>.frc}, where {@code date} is the date formatted by the
+   * {@code /SmartDashboard/recordings/<date>/recording-<time>.sbr}, where {@code date} is the date formatted by the
    * ISO-8601 format, and {@code time} is a modified version that uses periods ({@code "."}) instead of colons because
    * Windows does not allow colon characters in file names.
    *

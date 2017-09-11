@@ -379,6 +379,7 @@ public class MainWindowController {
     propertySheet.setMode(PropertySheet.Mode.NAME);
 
     Dialog<Boolean> dialog = new Dialog<>();
+    EasyBind.listBind(dialog.getDialogPane().getStylesheets(), root.getStylesheets());
     dialog.getDialogPane().setContent(propertySheet);
     dialog.initModality(Modality.APPLICATION_MODAL);
     dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CANCEL, ButtonType.OK);
@@ -411,7 +412,7 @@ public class MainWindowController {
     FileChooser chooser = new FileChooser();
     chooser.setInitialDirectory(new File(Storage.RECORDING_DIR));
     chooser.getExtensionFilters().setAll(
-        new FileChooser.ExtensionFilter("FRC Data Recording", "*.frc"));
+        new FileChooser.ExtensionFilter("Shuffleboard Data Recording", "*.sbr"));
     final File selected = chooser.showOpenDialog(root.getScene().getWindow());
     if (selected == null) {
       return;

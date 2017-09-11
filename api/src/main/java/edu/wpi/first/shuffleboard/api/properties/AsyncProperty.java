@@ -13,8 +13,7 @@ import java.util.WeakHashMap;
  */
 public class AsyncProperty<T> extends SimpleObjectProperty<T> {
 
-  private final Map<ChangeListener<? super T>, ChangeListener<? super T>> wrappers
-      = new WeakHashMap<>();
+  private final Map<ChangeListener<? super T>, ChangeListener<? super T>> wrappers = new WeakHashMap<>();
 
   public AsyncProperty() {
     super();
@@ -37,9 +36,7 @@ public class AsyncProperty<T> extends SimpleObjectProperty<T> {
     if (wrappers.containsKey(listener)) {
       return;
     }
-    wrappers.put(listener, (obs, prev, cur) -> {
-      AsyncUtils.runAsync(() -> listener.changed(obs, prev, cur));
-    });
+    wrappers.put(listener, (obs, prev, cur) -> AsyncUtils.runAsync(() -> listener.changed(obs, prev, cur)));
     super.addListener(wrappers.get(listener));
   }
 

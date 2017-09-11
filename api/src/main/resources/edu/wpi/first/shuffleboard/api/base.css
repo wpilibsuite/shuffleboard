@@ -78,6 +78,10 @@
     -fx-font-size: 11pt;
 }
 
+.tile .toggle-switch {
+    -fx-font-size: 12pt;
+}
+
 .tile:selected {
     -fx-effect: dropshadow(gaussian, -swatch-500, 6, 0.1, 0, 4);
 }
