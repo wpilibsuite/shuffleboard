@@ -1,14 +1,10 @@
 import edu.wpi.first.wpilib.versioning.ReleaseType
-import groovy.util.Node
-import groovy.util.XmlParser
-import groovy.xml.XmlUtil
 import org.gradle.api.Project
 import org.gradle.api.plugins.quality.FindBugs
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.tasks.wrapper.Wrapper
 import org.gradle.jvm.tasks.Jar
 import org.gradle.testing.jacoco.tasks.JacocoReport
-import java.io.File
 
 buildscript {
     repositories {
@@ -88,29 +84,25 @@ subprojects {
         effort = "max"
     }
 
-    fun printReportSafe(xmlReport: File) {
-        if (xmlReport.exists()) {
-            val bugs = (XmlParser().parse(xmlReport)["BugInstance"]) as Collection<*>
-            bugs.forEach {
-                println(XmlUtil.serialize(it as Node))
+    tasks.withType<FindBugs> {
+        reports {
+            xml.isEnabled = false
+            emacs.isEnabled = true
+        }
+        finalizedBy(task("${name}Report") {
+            mustRunAfter(this@withType)
+            doLast {
+                this@withType
+                    .reports
+                    .emacs
+                    .destination
+                    .takeIf { it.exists() }
+                    ?.readText()
+                    .takeIf { !it.isNullOrBlank() }
+                    ?.also { logger.warn(it) }
             }
-        }
+        })
     }
-
-    val findbugsMain: FindBugs by tasks
-    val findbugsMainReport = task("findbugsMainReport") {
-        doLast {
-            printReportSafe(findbugsMain.reports.xml.destination)
-        }
-    }
-    val findbugsTest: FindBugs by tasks
-    val findbugsTestReport = task("findBugsTestReport") {
-        doLast {
-            printReportSafe(findbugsTest.reports.xml.destination)
-        }
-    }
-    findbugsMain.finalizedBy(findbugsMainReport)
-    findbugsTest.finalizedBy(findbugsTestReport)
 
     tasks.withType<JacocoReport> {
         reports {
