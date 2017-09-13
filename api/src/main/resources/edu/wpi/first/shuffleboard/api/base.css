@@ -42,7 +42,7 @@
 }
 
 .tab-header-area {
-    -fx-padding: 5px;
+    -fx-padding: 2px;
 }
 
 .tab:hover {
@@ -51,6 +51,11 @@
 
 .dashboard-tabs .tab .label {
     -fx-text-fill: white;
+}
+
+.dashboard-tabs .tab .text-field {
+    -fx-text-fill: #DDDDDD;
+    -fx-highlight-fill: -swatch-200;
 }
 
 .tab {
