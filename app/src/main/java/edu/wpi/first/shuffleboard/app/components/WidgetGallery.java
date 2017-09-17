@@ -4,7 +4,6 @@ import edu.wpi.first.shuffleboard.api.sources.DummySource;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 import edu.wpi.first.shuffleboard.api.widget.WidgetType;
 
-
 import java.io.IOException;
 import java.util.Collection;
 
