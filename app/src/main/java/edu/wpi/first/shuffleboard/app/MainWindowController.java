@@ -23,10 +23,6 @@ import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
 import edu.wpi.first.shuffleboard.app.prefs.FlushableProperty;
 import edu.wpi.first.shuffleboard.app.sources.recording.Playback;
 
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Dialog;
-import javafx.scene.input.KeyCode;
-import javafx.stage.Stage;
 import org.controlsfx.control.PropertySheet;
 import org.fxmisc.easybind.EasyBind;
 
@@ -49,19 +45,23 @@ import javafx.collections.MapChangeListener;
 import javafx.fxml.FXML;
 import javafx.scene.Scene;
 import javafx.scene.control.Accordion;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableRow;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
+import javafx.stage.Stage;
 
 import static edu.wpi.first.shuffleboard.api.components.SourceTreeTable.alphabetical;
 import static edu.wpi.first.shuffleboard.api.components.SourceTreeTable.branchesFirst;
@@ -382,7 +382,7 @@ public class MainWindowController {
 
     Dialog<Boolean> dialog = new Dialog<>();
     EasyBind.listBind(dialog.getDialogPane().getStylesheets(), root.getStylesheets());
-    dialog.getDialogPane().setContent(propertySheet);
+    dialog.getDialogPane().setContent(new BorderPane(propertySheet));
     dialog.initModality(Modality.APPLICATION_MODAL);
     dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CANCEL, ButtonType.OK);
     dialog.setTitle("Shuffleboard Preferences");
