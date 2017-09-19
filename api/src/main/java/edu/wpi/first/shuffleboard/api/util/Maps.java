@@ -9,6 +9,7 @@ import java.util.Map;
 public final class Maps {
 
   private Maps() {
+    throw new UnsupportedOperationException("This is a utility class!");
   }
 
   /**

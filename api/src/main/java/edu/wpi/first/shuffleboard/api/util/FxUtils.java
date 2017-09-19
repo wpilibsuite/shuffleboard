@@ -3,6 +3,7 @@ package edu.wpi.first.shuffleboard.api.util;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
@@ -17,6 +18,9 @@ import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.scene.AccessibleAttribute;
+import javafx.scene.Node;
+import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.paint.Color;
 
@@ -28,7 +32,7 @@ import static java.util.Objects.requireNonNull;
 public final class FxUtils {
 
   private FxUtils() {
-    // no FXUtils instance for you
+    throw new UnsupportedOperationException("This is a utility class!");
   }
 
   /**
@@ -151,6 +155,15 @@ public final class FxUtils {
     MenuItem menuItem = new MenuItem(text);
     menuItem.setOnAction(eventHandler);
     return menuItem;
+  }
+
+  /**
+   * Gets the label associated with a node. If the node does not have a label, an empty optional is returned.
+   *
+   * @param node the node to get the label for
+   */
+  public static Optional<Label> getLabel(Node node) {
+    return Optional.ofNullable((Label) node.queryAccessibleAttribute(AccessibleAttribute.LABELED_BY));
   }
 
 }

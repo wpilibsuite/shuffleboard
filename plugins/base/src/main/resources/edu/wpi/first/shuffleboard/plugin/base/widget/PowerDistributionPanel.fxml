@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import edu.wpi.first.shuffleboard.api.components.LinearIndicator?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<VBox fx:id="root"
+      minHeight="256" minWidth="300"
+      prefHeight="256" prefWidth="384"
+      spacing="16"
+      stylesheets="@pdp.css"
+      xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="edu.wpi.first.shuffleboard.plugin.base.widget.PowerDistributionPanelWidget">
+    <padding>
+        <Insets topRightBottomLeft="8"/>
+    </padding>
+    <!-- Current indicators -->
+    <HBox>
+        <!-- Left side, channels 0-7 -->
+        <!-- These are reversed (max on left, min on right) to make the indicator bars appear to originate from the PDP -->
+        <GridPane nodeOrientation="RIGHT_TO_LEFT" HBox.hgrow="ALWAYS" hgap="4">
+            <rowConstraints>
+                <RowConstraints vgrow="ALWAYS" maxHeight="Infinity"/>
+                <RowConstraints vgrow="ALWAYS" maxHeight="Infinity"/>
+                <RowConstraints vgrow="ALWAYS" maxHeight="Infinity"/>
+                <RowConstraints vgrow="ALWAYS" maxHeight="Infinity"/>
+                <RowConstraints vgrow="ALWAYS" maxHeight="Infinity"/>
+                <RowConstraints vgrow="ALWAYS" maxHeight="Infinity"/>
+                <RowConstraints vgrow="ALWAYS" maxHeight="Infinity"/>
+                <RowConstraints vgrow="ALWAYS" maxHeight="Infinity"/>
+            </rowConstraints>
+            <columnConstraints>
+                <ColumnConstraints hgrow="ALWAYS" minWidth="32" maxWidth="32"/>
+                <ColumnConstraints hgrow="ALWAYS" maxWidth="Infinity"/>
+            </columnConstraints>
+            <Label GridPane.columnIndex="0" GridPane.rowIndex="0" text="Ch.0" styleClass="linear-indicator-text"/>
+            <StackPane maxHeight="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                <LinearIndicator fx:id="channel0" max="40"/>
+                <Label labelFor="${channel0}" styleClass="linear-indicator-text" visible="${controller.showIndicatorText}"/>
+            </StackPane>
+            <Label GridPane.columnIndex="0" GridPane.rowIndex="1" text="Ch.1" styleClass="linear-indicator-text"/>
+            <StackPane maxHeight="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                <LinearIndicator fx:id="channel1" max="40"/>
+                <Label labelFor="${channel1}" styleClass="linear-indicator-text" visible="${controller.showIndicatorText}"/>
+            </StackPane>
+            <Label GridPane.columnIndex="0" GridPane.rowIndex="2" text="Ch.2" styleClass="linear-indicator-text"/>
+            <StackPane maxHeight="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                <LinearIndicator fx:id="channel2" max="40"/>
+                <Label labelFor="${channel2}" styleClass="linear-indicator-text" visible="${controller.showIndicatorText}"/>
+            </StackPane>
+            <Label GridPane.columnIndex="0" GridPane.rowIndex="3" text="Ch.3" styleClass="linear-indicator-text"/>
+            <StackPane maxHeight="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                <LinearIndicator fx:id="channel3" max="40"/>
+                <Label labelFor="${channel3}" styleClass="linear-indicator-text" visible="${controller.showIndicatorText}"/>
+            </StackPane>
+            <Label GridPane.columnIndex="0" GridPane.rowIndex="4" text="Ch.4" styleClass="linear-indicator-text"/>
+            <StackPane maxHeight="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="4">
+                <LinearIndicator fx:id="channel4" max="40"/>
+                <Label labelFor="${channel4}" styleClass="linear-indicator-text" visible="${controller.showIndicatorText}"/>
+            </StackPane>
+            <Label GridPane.columnIndex="0" GridPane.rowIndex="5" text="Ch.5" styleClass="linear-indicator-text"/>
+            <StackPane maxHeight="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="5">
+                <LinearIndicator fx:id="channel5" max="40"/>
+                <Label labelFor="${channel5}" styleClass="linear-indicator-text" visible="${controller.showIndicatorText}"/>
+            </StackPane>
+            <Label GridPane.columnIndex="0" GridPane.rowIndex="6" text="Ch.6" styleClass="linear-indicator-text"/>
+            <StackPane maxHeight="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="6">
+                <LinearIndicator fx:id="channel6" max="40"/>
+                <Label labelFor="${channel6}" styleClass="linear-indicator-text" visible="${controller.showIndicatorText}"/>
+            </StackPane>
+            <Label GridPane.columnIndex="0" GridPane.rowIndex="7" text="Ch.7" styleClass="linear-indicator-text"/>
+            <StackPane maxHeight="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="7">
+                <LinearIndicator fx:id="channel7" max="40"/>
+                <Label labelFor="${channel7}" styleClass="linear-indicator-text" visible="${controller.showIndicatorText}"/>
+            </StackPane>
+        </GridPane>
+
+        <!-- PDP image -->
+        <ImageView fx:id="imageView" cache="true" preserveRatio="true" styleClass="pdp-image">
+            <Image url="@pdp-icon-plain.svg"/>
+        </ImageView>
+
+        <!-- Right side, channels 8-15 -->
+        <GridPane HBox.hgrow="ALWAYS" hgap="4">
+            <rowConstraints>
+                <RowConstraints vgrow="ALWAYS" maxHeight="Infinity"/>
+                <RowConstraints vgrow="ALWAYS" maxHeight="Infinity"/>
+                <RowConstraints vgrow="ALWAYS" maxHeight="Infinity"/>
+                <RowConstraints vgrow="ALWAYS" maxHeight="Infinity"/>
+                <RowConstraints vgrow="ALWAYS" maxHeight="Infinity"/>
+                <RowConstraints vgrow="ALWAYS" maxHeight="Infinity"/>
+                <RowConstraints vgrow="ALWAYS" maxHeight="Infinity"/>
+                <RowConstraints vgrow="ALWAYS" maxHeight="Infinity"/>
+            </rowConstraints>
+            <columnConstraints>
+                <ColumnConstraints hgrow="ALWAYS" minWidth="32" maxWidth="32"/>
+                <ColumnConstraints hgrow="ALWAYS" maxWidth="Infinity"/>
+            </columnConstraints>
+            <Label GridPane.columnIndex="0" GridPane.rowIndex="0" text="Ch.15" styleClass="linear-indicator-text"/>
+            <StackPane maxHeight="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                <LinearIndicator fx:id="channel15" max="40"/>
+                <Label labelFor="${channel15}" styleClass="linear-indicator-text" visible="${controller.showIndicatorText}"/>
+            </StackPane>
+            <Label GridPane.columnIndex="0" GridPane.rowIndex="1" text="Ch.14" styleClass="linear-indicator-text"/>
+            <StackPane maxHeight="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                <LinearIndicator fx:id="channel14" max="40"/>
+                <Label labelFor="${channel14}" styleClass="linear-indicator-text" visible="${controller.showIndicatorText}"/>
+            </StackPane>
+            <Label GridPane.columnIndex="0" GridPane.rowIndex="2" text="Ch.13" styleClass="linear-indicator-text"/>
+            <StackPane maxHeight="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                <LinearIndicator fx:id="channel13" max="40"/>
+                <Label labelFor="${channel13}" styleClass="linear-indicator-text" visible="${controller.showIndicatorText}"/>
+            </StackPane>
+            <Label GridPane.columnIndex="0" GridPane.rowIndex="3" text="Ch.12" styleClass="linear-indicator-text"/>
+            <StackPane maxHeight="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                <LinearIndicator fx:id="channel12" max="40"/>
+                <Label labelFor="${channel12}" styleClass="linear-indicator-text" visible="${controller.showIndicatorText}"/>
+            </StackPane>
+            <Label GridPane.columnIndex="0" GridPane.rowIndex="4" text="Ch.11" styleClass="linear-indicator-text"/>
+            <StackPane maxHeight="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="4">
+                <LinearIndicator fx:id="channel11" max="40"/>
+                <Label labelFor="${channel11}" styleClass="linear-indicator-text" visible="${controller.showIndicatorText}"/>
+            </StackPane>
+            <Label GridPane.columnIndex="0" GridPane.rowIndex="5" text="Ch.10" styleClass="linear-indicator-text"/>
+            <StackPane maxHeight="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="5">
+                <LinearIndicator fx:id="channel10" max="40"/>
+                <Label labelFor="${channel10}" styleClass="linear-indicator-text" visible="${controller.showIndicatorText}"/>
+            </StackPane>
+            <Label GridPane.columnIndex="0" GridPane.rowIndex="6" text="Ch.9" styleClass="linear-indicator-text"/>
+            <StackPane maxHeight="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="6">
+                <LinearIndicator fx:id="channel9" max="40"/>
+                <Label labelFor="${channel9}" styleClass="linear-indicator-text" visible="${controller.showIndicatorText}"/>
+            </StackPane>
+            <Label GridPane.columnIndex="0" GridPane.rowIndex="7" text="Ch.8" styleClass="linear-indicator-text"/>
+            <StackPane maxHeight="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="7">
+                <LinearIndicator fx:id="channel8" max="40"/>
+                <Label labelFor="${channel8}" styleClass="linear-indicator-text" visible="${controller.showIndicatorText}"/>
+            </StackPane>
+        </GridPane>
+    </HBox>
+
+    <!-- Voltage and total current -->
+    <GridPane hgap="16" vgap="4" maxWidth="Infinity">
+        <Label text="Voltage" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+        <Label text="Total current" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+
+        <StackPane GridPane.hgrow="ALWAYS" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="0">
+            <LinearIndicator fx:id="voltage" max="15" styleClass="voltage-view"/>
+            <Label fx:id="voltageText" labelFor="${voltage}" styleClass="linear-indicator-text" visible="${controller.showIndicatorText}"/>
+        </StackPane>
+
+        <StackPane GridPane.hgrow="ALWAYS" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="1">
+            <LinearIndicator fx:id="totalCurrent" max="500"/>
+            <Label fx:id="totalCurrentText" labelFor="${totalCurrent}" styleClass="linear-indicator-text" visible="${controller.showIndicatorText}"/>
+        </StackPane>
+    </GridPane>
+</VBox>

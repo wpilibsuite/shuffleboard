@@ -7,6 +7,7 @@ import edu.wpi.first.shuffleboard.api.util.Debouncer;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 import edu.wpi.first.shuffleboard.api.widget.Widgets;
+import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
 
 import org.fxmisc.easybind.EasyBind;
 
@@ -28,6 +29,7 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
+import javafx.scene.layout.BorderPane;
 
 import static edu.wpi.first.shuffleboard.api.util.TypeUtils.optionalCast;
 
@@ -165,9 +167,12 @@ public class DashboardTabPane extends TabPane {
             new WidgetPropertySheet.PropertyItem<>(getWidgetPane().vgapProperty(), "Vertical spacing")
         );
         Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.getDialogPane().getStylesheets().setAll(AppPreferences.getInstance().getTheme().getStyleSheets());
         dialog.setResizable(true);
         dialog.titleProperty().bind(EasyBind.map(this.title, t -> t + " Preferences"));
-        dialog.getDialogPane().setContent(propertySheet);
+
+        // property sheet can't be used directly in dialogs because it doesn't respect padding
+        dialog.getDialogPane().setContent(new BorderPane(propertySheet));
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CLOSE);
         dialog.setOnCloseRequest(__ -> {
           this.sourcePrefix.setValue(dummySourcePrefix.getValue());

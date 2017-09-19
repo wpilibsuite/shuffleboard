@@ -143,6 +143,7 @@ public class WidgetPropertySheet extends PropertySheet {
 
   }
 
+
   private abstract static class AbstractEditor<T, C extends Control> extends AbstractPropertyEditor<T, C> {
 
     protected final BooleanProperty wait = new SimpleBooleanProperty(this, "wait", false);
@@ -152,7 +153,6 @@ public class WidgetPropertySheet extends PropertySheet {
     }
 
   }
-
 
   /**
    * A property editor for numbers. We use this instead of the one bundled with ControlsFX because

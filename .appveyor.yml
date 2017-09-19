@@ -2,7 +2,7 @@ build_script:
   - gradlew.bat shadowJar --no-daemon --stacktrace
 
 test_script:
-  - gradlew.bat check --stacktrace -PlogTests -Pheadless
+  - gradlew.bat spotlessCheck check --no-daemon --stacktrace -PlogTests -Pheadless
 
 shallow_clone: true
 

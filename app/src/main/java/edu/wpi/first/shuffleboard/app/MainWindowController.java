@@ -20,6 +20,7 @@ import edu.wpi.first.shuffleboard.app.components.WidgetPropertySheet;
 import edu.wpi.first.shuffleboard.app.json.JsonBuilder;
 import edu.wpi.first.shuffleboard.app.plugin.PluginLoader;
 import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
+import edu.wpi.first.shuffleboard.app.prefs.FlushableProperty;
 import edu.wpi.first.shuffleboard.app.sources.recording.Playback;
 
 import org.controlsfx.control.PropertySheet;
@@ -32,6 +33,7 @@ import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -41,10 +43,11 @@ import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.MapChangeListener;
 import javafx.fxml.FXML;
-import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Accordion;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.TreeItem;
@@ -56,13 +59,13 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import static edu.wpi.first.shuffleboard.api.components.SourceTreeTable.alphabetical;
 import static edu.wpi.first.shuffleboard.api.components.SourceTreeTable.branchesFirst;
+import static edu.wpi.first.shuffleboard.api.util.TypeUtils.optionalCast;
 
 
 /**
@@ -370,29 +373,33 @@ public class MainWindowController {
   @SuppressWarnings("unchecked")
   @FXML
   public void showPrefs() {
-    // Create the property sheet
-    PropertySheet propertySheet = new WidgetPropertySheet(AppPreferences.getInstance().getProperties());
+    PropertySheet propertySheet
+        = new WidgetPropertySheet(AppPreferences.getInstance().getProperties());
+
     propertySheet.setModeSwitcherVisible(false);
     propertySheet.setSearchBoxVisible(false);
     propertySheet.setMode(PropertySheet.Mode.NAME);
-    StackPane pane = new StackPane(propertySheet);
-    pane.setPadding(new Insets(8));
-    Scene scene = new Scene(pane);
-    EasyBind.listBind(scene.getRoot().getStylesheets(), root.getStylesheets());
 
-    Stage stage = new Stage();
-    stage.setScene(scene);
-    stage.initModality(Modality.APPLICATION_MODAL);
-    stage.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
-      if (event.getCode() == KeyCode.ESCAPE) {
-        stage.close();
-      }
-    });
-    stage.setTitle("Shuffleboard Preferences");
-    stage.sizeToScene();
-    stage.setResizable(false);
-    stage.requestFocus();
-    stage.showAndWait();
+    Dialog<Boolean> dialog = new Dialog<>();
+    EasyBind.listBind(dialog.getDialogPane().getStylesheets(), root.getStylesheets());
+    dialog.getDialogPane().setContent(new BorderPane(propertySheet));
+    dialog.initModality(Modality.APPLICATION_MODAL);
+    dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CANCEL, ButtonType.OK);
+    dialog.setTitle("Shuffleboard Preferences");
+    dialog.setResizable(true);
+    dialog.setResultConverter(button -> !button.getButtonData().isCancelButton());
+    if (dialog.showAndWait().orElse(false)) {
+      propertySheet.getItems().stream()
+          .map(item -> (WidgetPropertySheet.PropertyItem) item)
+          .map(WidgetPropertySheet.PropertyItem::getObservableValue)
+          .filter(Optional::isPresent)
+          .map(Optional::get)
+          .map(o -> optionalCast(o, FlushableProperty.class))
+          .filter(Optional::isPresent)
+          .map(Optional::get)
+          .filter(FlushableProperty::isChanged)
+          .forEach(FlushableProperty::flush);
+    }
   }
 
   @FXML
@@ -407,9 +414,9 @@ public class MainWindowController {
   @FXML
   private void loadPlayback() throws IOException {
     FileChooser chooser = new FileChooser();
-    chooser.setInitialDirectory(new File(Storage.STORAGE_DIR));
+    chooser.setInitialDirectory(new File(Storage.RECORDING_DIR));
     chooser.getExtensionFilters().setAll(
-        new FileChooser.ExtensionFilter("FRC Data Recording", "*.frc"));
+        new FileChooser.ExtensionFilter("Shuffleboard Data Recording", "*.sbr"));
     final File selected = chooser.showOpenDialog(root.getScene().getWindow());
     if (selected == null) {
       return;

@@ -23,6 +23,7 @@ public final class PropertyUtils {
   private static final Map<Property, Binding> bindings = new WeakHashMap<>();
 
   private PropertyUtils() {
+    throw new UnsupportedOperationException("This is a utility class!");
   }
 
   /**
