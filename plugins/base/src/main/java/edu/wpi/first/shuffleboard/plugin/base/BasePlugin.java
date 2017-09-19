@@ -33,7 +33,6 @@ import edu.wpi.first.shuffleboard.plugin.base.widget.EncoderWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.NumberBarWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.NumberSlider;
 import edu.wpi.first.shuffleboard.plugin.base.widget.PowerDistributionPanelWidget;
-import edu.wpi.first.shuffleboard.plugin.base.widget.ProgressBar;
 import edu.wpi.first.shuffleboard.plugin.base.widget.SpeedController;
 import edu.wpi.first.shuffleboard.plugin.base.widget.TextView;
 import edu.wpi.first.shuffleboard.plugin.base.widget.ToggleButton;
@@ -79,7 +78,6 @@ public class BasePlugin extends Plugin {
         NumberBarWidget.class,
         NumberSlider.class,
         PowerDistributionPanelWidget.class,
-        ProgressBar.class,
         SpeedController.class,
         TextView.class,
         ToggleButton.class,
