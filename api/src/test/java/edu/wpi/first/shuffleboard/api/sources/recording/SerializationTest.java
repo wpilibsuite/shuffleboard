@@ -5,9 +5,9 @@ import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -61,12 +61,12 @@ public class SerializationTest {
   @Test
   @Disabled("Adapters will be moved")
   public void testEncodeRecode() throws IOException {
-    final File file = Files.createTempFile("testEncodeRecode", "frc").toFile();
+    final Path path = Files.createTempFile("testEncodeRecode", "frc");
     final Recording recording = new Recording();
     recording.append(new TimestampedData("foo", DataTypes.All, 0.0, 0));
     recording.append(new TimestampedData("foo", DataTypes.All, 100.0, 1));
-    Serialization.saveRecording(recording, file.getAbsolutePath());
-    final Recording loaded = Serialization.loadRecording(file.getAbsolutePath());
+    Serialization.saveRecording(recording, path);
+    final Recording loaded = Serialization.loadRecording(path.toFile().getAbsolutePath());
     assertEquals(recording, loaded, "The loaded recording differs from the encoded one");
   }
 
