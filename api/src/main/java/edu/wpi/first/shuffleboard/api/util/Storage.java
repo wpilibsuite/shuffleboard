@@ -51,7 +51,7 @@ public final class Storage {
   }
 
   /**
-   * @return The main storage directory that all Shuffleboard files should exist in.
+   * The main storage directory that all Shuffleboard files should exist in.
    * @throws IOException if creating the directory fails
    */
   public static File getStorageDir() throws IOException {
@@ -59,7 +59,7 @@ public final class Storage {
   }
 
   /**
-   * @return The directory that contains the nested recording files and sub-directories.
+   * The directory that contains the nested recording files and sub-directories.
    * @throws IOException if creating the directory fails
    */
   public static File getRecordingDir() throws IOException {
@@ -67,7 +67,7 @@ public final class Storage {
   }
 
   /**
-   * @return The directory that plugins are loaded from.
+   * The directory that plugins are loaded from.
    * @throws IOException if creating the directory fails
    */
   public static Path getPluginPath() throws IOException {
