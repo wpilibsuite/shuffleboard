@@ -47,7 +47,11 @@ public class DummySource<T> extends AbstractDataSource<T> {
     return forTypes(ImmutableSet.copyOf(types));
   }
 
-  public static DataSource forName(String name) {
+  /**
+   * Return a dummy source for the name of the given DataType.
+   * Intended to be used by {@link SourceTypes#forUri}
+   */
+  public static DataSource forTypeName(String name) {
     return DummySource.forTypes(DataTypes.getDefault().forName(name)
         .orElseThrow(() -> new RuntimeException("No DataType " + name)));
   }

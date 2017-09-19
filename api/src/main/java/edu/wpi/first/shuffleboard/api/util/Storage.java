@@ -50,14 +50,26 @@ public final class Storage {
     return path;
   }
 
+  /**
+   * @return The main storage directory that all Shuffleboard files should exist in.
+   * @throws IOException if creating the directory fails
+   */
   public static File getStorageDir() throws IOException {
     return findOrCreate(STORAGE_DIR).toFile();
   }
 
+  /**
+   * @return The directory that contains the nested recording files and sub-directories.
+   * @throws IOException if creating the directory fails
+   */
   public static File getRecordingDir() throws IOException {
     return findOrCreate(RECORDING_DIR).toFile();
   }
 
+  /**
+   * @return The directory that plugins are loaded from.
+   * @throws IOException if creating the directory fails
+   */
   public static Path getPluginPath() throws IOException {
     return findOrCreate(PLUGINS_DIR);
   }
@@ -70,12 +82,18 @@ public final class Storage {
    *
    * @param startTime the time the recording started
    */
-  public static String createRecordingFilePath(Instant startTime) {
+  public static Path createRecordingFilePath(Instant startTime) throws IOException {
     String date = dateFormatter.format(LocalDateTime.ofInstant(startTime, ZoneId.systemDefault()));
     String time = timeFormatter.format(LocalDateTime.ofInstant(startTime, ZoneId.systemDefault()));
-    return RECORDING_FILE_FORMAT
+    Path path = Paths.get(RECORDING_FILE_FORMAT
         .replace("${date}", date)
-        .replace("${time}", time);
+        .replace("${time}", time));
+
+    if (path.getParent() != null) {
+      Files.createDirectories(path.getParent());
+    }
+
+    return path;
   }
 
 }

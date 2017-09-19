@@ -5,17 +5,15 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonSerializationContext;
+
 import edu.wpi.first.shuffleboard.api.sources.Sources;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 import edu.wpi.first.shuffleboard.api.widget.Widgets;
-import javafx.beans.property.Property;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import javafx.beans.property.Property;
 
 @AnnotatedTypeAdapter(forType = Widget.class)
 public class WidgetSaver implements ElementTypeAdapter<Widget> {
-  private static final Logger log = Logger.getLogger(WidgetSaver.class.getName());
 
   @Override
   public JsonElement serialize(Widget src, JsonSerializationContext context) {
@@ -36,11 +34,7 @@ public class WidgetSaver implements ElementTypeAdapter<Widget> {
             .orElseThrow(() -> new JsonParseException("No widget found for " + type)).get();
 
     String source = obj.get("_source").getAsString();
-    try {
-      widget.setSource(Sources.getDefault().forUri(source));
-    } catch (RuntimeException e) {
-      log.log(Level.WARNING, "Skipping source " + source, e);
-    }
+    widget.setSource(Sources.getDefault().forUri(source));
 
     for (Property p : widget.getProperties()) {
       p.setValue(context.deserialize(obj.get(p.getName()), p.getValue().getClass()));

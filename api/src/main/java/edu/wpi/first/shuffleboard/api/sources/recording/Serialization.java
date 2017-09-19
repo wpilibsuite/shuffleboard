@@ -47,7 +47,7 @@ public final class Serialization {
    *
    * @throws IOException if the recording could not be saved to the given file
    */
-  public static void saveRecording(Recording recording, String file) throws IOException {
+  public static void saveRecording(Recording recording, Path file) throws IOException {
     // work on a copy of the data so changes to the recording don't mess this up
     final List<TimestampedData> dataCopy = new ArrayList<>(recording.getData());
     dataCopy.sort(TimestampedData::compareTo); // make sure the data is sorted properly
@@ -84,11 +84,11 @@ public final class Serialization {
       i += next.length;
       j++;
     }
-    Path saveDir = Paths.get(file).getParent();
+    Path saveDir = file.getParent();
     if (saveDir != null) {
       Files.createDirectories(saveDir);
     }
-    Files.write(Paths.get(file), all);
+    Files.write(file, all);
   }
 
   public static <T> byte[] encode(T value) {

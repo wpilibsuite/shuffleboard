@@ -2,7 +2,6 @@ package edu.wpi.first.shuffleboard.app;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
-
 import com.google.common.io.Files;
 
 import edu.wpi.first.shuffleboard.api.components.SourceTreeTable;
@@ -24,10 +23,6 @@ import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
 import edu.wpi.first.shuffleboard.app.prefs.FlushableProperty;
 import edu.wpi.first.shuffleboard.app.sources.recording.Playback;
 
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Dialog;
-import javafx.scene.input.KeyCode;
-import javafx.stage.Stage;
 import org.controlsfx.control.PropertySheet;
 import org.fxmisc.easybind.EasyBind;
 
@@ -50,19 +45,23 @@ import javafx.collections.MapChangeListener;
 import javafx.fxml.FXML;
 import javafx.scene.Scene;
 import javafx.scene.control.Accordion;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableRow;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
+import javafx.stage.Stage;
 
 import static edu.wpi.first.shuffleboard.api.components.SourceTreeTable.alphabetical;
 import static edu.wpi.first.shuffleboard.api.components.SourceTreeTable.branchesFirst;
@@ -415,7 +414,7 @@ public class MainWindowController {
   @FXML
   private void loadPlayback() throws IOException {
     FileChooser chooser = new FileChooser();
-    chooser.setInitialDirectory(Storage.getStorageDir());
+    chooser.setInitialDirectory(Storage.getRecordingDir());
     chooser.getExtensionFilters().setAll(
         new FileChooser.ExtensionFilter("Shuffleboard Data Recording", "*.sbr"));
     final File selected = chooser.showOpenDialog(root.getScene().getWindow());
