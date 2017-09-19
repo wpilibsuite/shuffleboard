@@ -30,6 +30,7 @@ import edu.wpi.first.shuffleboard.plugin.base.widget.BooleanBox;
 import edu.wpi.first.shuffleboard.plugin.base.widget.ComboBoxChooser;
 import edu.wpi.first.shuffleboard.plugin.base.widget.CommandWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.EncoderWidget;
+import edu.wpi.first.shuffleboard.plugin.base.widget.NumberBarWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.NumberSlider;
 import edu.wpi.first.shuffleboard.plugin.base.widget.PowerDistributionPanelWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.ProgressBar;
@@ -75,6 +76,7 @@ public class BasePlugin extends Plugin {
         ComboBoxChooser.class,
         CommandWidget.class,
         EncoderWidget.class,
+        NumberBarWidget.class,
         NumberSlider.class,
         PowerDistributionPanelWidget.class,
         ProgressBar.class,
