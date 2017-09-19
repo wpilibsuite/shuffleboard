@@ -104,7 +104,7 @@ public class BasePlugin extends Plugin {
   public Map<DataType, Class<? extends Widget>> getDefaultWidgets() {
     return ImmutableMap.<DataType, Class<? extends Widget>>builder()
         .put(new BooleanType(), BooleanBox.class)
-        .put(new NumberType(), NumberSlider.class)
+        .put(new NumberType(), TextView.class)
         .put(new StringType(), TextView.class)
         .put(new AnalogInputType(), VoltageViewWidget.class)
         .put(new PowerDistributionType(), PowerDistributionPanelWidget.class)
