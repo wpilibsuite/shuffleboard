@@ -1,4 +1,4 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
 import org.gradle.jvm.tasks.Jar
 
 plugins {
@@ -36,12 +36,6 @@ tasks.withType<Jar> {
             "Implementation-Version" to getWPILibVersion(),
             "Main-Class" to theMainClassName
         ).filterValues { it != null })
-    }
-}
-
-tasks {
-    "shadowJar"(ShadowJar::class) {
-        classifier = null
     }
 }
 

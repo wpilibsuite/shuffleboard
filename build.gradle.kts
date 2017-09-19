@@ -1,3 +1,4 @@
+
 import edu.wpi.first.wpilib.versioning.ReleaseType
 import org.gradle.api.Project
 import org.gradle.api.plugins.quality.FindBugs
@@ -154,7 +155,7 @@ subprojects {
 
 }
 
-configure(setOf(project(":app"))) {
+project(":app") {
     apply {
         plugin("com.github.johnrengelman.shadow")
     }
@@ -165,7 +166,7 @@ configure(setOf(project(":app"))) {
     }
     publishing {
         publications {
-            create<MavenPublication>("shadow") {
+            create<MavenPublication>("app") {
                 groupId = "edu.wpi.first.shuffleboard"
                 artifactId = "Shuffleboard"
                 getWPILibVersion()?.let { version = it }
