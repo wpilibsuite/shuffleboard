@@ -71,7 +71,7 @@
     -fx-focus-color: -swatch-400;
     -fx-faint-focus-color: -swatch-200;
     /* A bright blue for highlighting/accenting objects.  For example: selected
-     * text; selected items in menus, lists, trees, and tables */
+     * text; selected items in menus, lists, trees, and tables; progress bars */
     -fx-accent: -swatch-400;
 }
 
@@ -381,6 +381,57 @@
 .list-view:hover .list-cell:hover {
     -fx-background-color: -swatch-light-gray;
     -fx-text-fill: -fx-text-base-color;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * ProgressBar                                                                 *
+ *                                                                             *
+ ******************************************************************************/
+.progress-bar > .track {
+    -fx-background-color: derive(-swatch-gray, 50.0%);
+    -fx-background-radius: 2.0;
+    -fx-padding: 0.0;
+}
+
+.progress-bar > .bar {
+    -fx-background-color: -swatch-500;
+    -fx-background-radius: 2.0;
+    -fx-background-insets: 0.0;
+    -fx-border-width: 0.0;
+    -fx-effect: null;
+}
+
+.progress-bar:indeterminate > .bar {
+    -fx-background-color: derive(-swatch-500, 50.0%);
+    -fx-background-radius: 2.0;
+    -fx-background-insets: 0.0;
+    -fx-border-width: 0.0;
+    -fx-effect: null;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * ProgressIndicator                                                           *
+ *                                                                             *
+ ******************************************************************************/
+.progress-indicator > .spinner {
+    -fx-border-width: 0;
+}
+
+.progress-indicator > .determinate-indicator > .indicator {
+    -fx-background-color: rgba(255.0, 255.0, 255.0, 0.5);
+    -fx-padding: 0.0;
+}
+
+.progress-indicator > .determinate-indicator > .progress {
+    -fx-background-color: -swatch-500;
+}
+
+.progress-indicator > .determinate-indicator > .percentage {
+    -fx-fill: -fx-text-base-color;
+    -fx-translate-y: 0em;
+    -fx-padding: 0.0;
 }
 
 /*******************************************************************************
