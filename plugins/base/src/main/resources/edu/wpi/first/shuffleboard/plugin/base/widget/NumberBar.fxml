@@ -7,7 +7,7 @@
 <?import javafx.scene.layout.VBox?>
 <StackPane xmlns="http://javafx.com/javafx"
            xmlns:fx="http://javafx.com/fxml"
-           fx:controller="edu.wpi.first.shuffleboard.plugin.base.widget.LinearIndicatorWidget"
+           fx:controller="edu.wpi.first.shuffleboard.plugin.base.widget.NumberBarWidget"
            fx:id="root"
            prefWidth="128" prefHeight="128">
     <padding>

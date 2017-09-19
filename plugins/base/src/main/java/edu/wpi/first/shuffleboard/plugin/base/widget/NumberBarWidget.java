@@ -16,9 +16,9 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
 
-@Description(name = "Linear Indicator", dataTypes = {Number.class})
-@ParametrizedController("LinearIndicator.fxml")
-public class LinearIndicatorWidget extends SimpleAnnotatedWidget<Number> {
+@Description(name = "Number Bar", dataTypes = {Number.class})
+@ParametrizedController("NumberBar.fxml")
+public class NumberBarWidget extends SimpleAnnotatedWidget<Number> {
 
   @FXML
   private Pane root;
