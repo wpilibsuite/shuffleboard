@@ -382,7 +382,7 @@ public class MainWindowController {
 
     Dialog<Boolean> dialog = new Dialog<>();
     EasyBind.listBind(dialog.getDialogPane().getStylesheets(), root.getStylesheets());
-    dialog.getDialogPane().setContent(propertySheet);
+    dialog.getDialogPane().setContent(new BorderPane(propertySheet));
     dialog.initModality(Modality.APPLICATION_MODAL);
     dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CANCEL, ButtonType.OK);
     dialog.setTitle("Shuffleboard Preferences");

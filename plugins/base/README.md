@@ -9,6 +9,6 @@ This includes, but is not limited to:
 | Analog Input | Voltage View |
 | Boolean | Boolean Box, Toggle Button, Toggle Switch, Text View | Boolean Box
 | Command | Command |
-| Number | Number Slider, Linear Indicator, Progress Bar, Slider, Text View, Graph | Linear Indicator 
+| Number | Number Slider, Linear Indicator, Slider, Text View, Graph | Linear Indicator
 | SpeedController | Speed Controller | 
 | Text | Text View |
