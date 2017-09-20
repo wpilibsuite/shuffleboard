@@ -27,23 +27,23 @@ public final class TypeUtils {
   }
 
   /**
-   * Allows you to filter out members of a subtype from a stream of some base type.
-   * For example, this code:
+   * <p>Filter out members of a subtype from a stream of some base type.
+   * For example, this code:</p>
    *
-   * <code>
+   * <pre>{@code
    *   getComponents().stream()
    *     .filter(c -> c instanceof Widget)
    *     .map(c -> (Widget) c)
    *     .forEach(w -> w.setSource(...))
-   * </code>
+   * }</pre>
    *
    * <p>can be turned into:</p>
    *
-   * <code>
+   * <pre>{@code
    *   getComponents()
    *     .flatMap(TypeUtils.castStream(Widget.class))
    *     .forEach(w -> w.setSource(...))
-   * </code>
+   * }</pre>
    */
   public static <T, U extends T> Function<T, Stream<U>> castStream(Class<U> cls) {
     return value -> cls.isAssignableFrom(value.getClass())
@@ -52,7 +52,7 @@ public final class TypeUtils {
   }
 
   /**
-   * Turns a Stream of Optional&lt;T&gt;s into a Stream of the type T wrapped by the optional,
+   * Turns a Stream of {@code Optional<T>}s into a Stream of the type T wrapped by the optional,
    * dropping non-present values.
    */
   public static <T> Function<Optional<T>, Stream<T>> optionalStream() {

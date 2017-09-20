@@ -32,6 +32,7 @@ import static java.util.Objects.requireNonNull;
  * Utility class for keeping track of known widgets.
  */
 public class Components extends Registry<ComponentType> {
+  private static final Logger logger = Logger.getLogger(Components.class.getName());
 
   // TODO replace with DI eg Guice
   private static Components defaultInstance = new Components();
@@ -82,7 +83,7 @@ public class Components extends Registry<ComponentType> {
           try {
             return widgetClass.newInstance();
           } catch (InstantiationException | IllegalAccessException e) {
-            Logger.getLogger("Components").log(Level.WARNING, "error creating widget", e);
+            logger.log(Level.WARNING, "error creating widget", e);
             return null;
           }
         });
@@ -301,10 +302,10 @@ public class Components extends Registry<ComponentType> {
         loader.load();
         return Optional.of(loader.getController());
       } catch (IOException e) {
-        Logger.getLogger("Components").log(Level.WARNING, "error creating parametrized controller", e);
+        logger.log(Level.WARNING, "error creating parametrized controller", e);
       }
     } else {
-      Logger.getLogger("Components").log(Level.WARNING,
+      logger.log(Level.WARNING,
           "No @ParametrizedController annotation on class " + annotatedClass);
     }
 

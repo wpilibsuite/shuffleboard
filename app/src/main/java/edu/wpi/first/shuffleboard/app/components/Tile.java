@@ -18,6 +18,9 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.layout.BorderPane;
 
+/**
+ * Contains any component directly embedded in a WidgetPane. Has a size, content, and title.
+ */
 public class Tile<T extends Component> extends BorderPane {
 
   private final Property<T> content = new SimpleObjectProperty<>(this, "content", null);

@@ -14,8 +14,6 @@ public class EditableLabel extends StackPane {
   private final PseudoClassProperty editing = new PseudoClassProperty(this, "editing");
   private final StringProperty text = new SimpleStringProperty(this, "text");
 
-
-
   /**
    * A text label that you can double click to edit.
    */
