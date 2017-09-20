@@ -172,27 +172,6 @@
 
 /*******************************************************************************
  *                                                                             *
- * Tab pane                                                                    *
- *                                                                             *
- ******************************************************************************/
-.tab-header-background {
-    -fx-background-color: -swatch-gray;
-}
-
-.tab-header-area .tab {
-    -fx-background-color: transparent, -swatch-300, -swatch-gray;
-}
-
-.tab-header-area .tab:selected {
-    -fx-background-color: transparent, -swatch-300, -swatch-100;
-}
-
-.tab:selected .label {
-    -fx-text-fill: #333333;
-}
-
-/*******************************************************************************
- *                                                                             *
  * Tiles                                                                       *
  *                                                                             *
  ******************************************************************************/

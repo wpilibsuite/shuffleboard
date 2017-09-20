@@ -50,6 +50,7 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.Tab;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableRow;
@@ -424,6 +425,14 @@ public class MainWindowController {
   @FXML
   private void closeCurrentTab() {
     dashboard.closeCurrentTab();
+  }
+
+  @FXML
+  private void showCurrentTabPrefs() {
+    Tab currentTab = dashboard.getSelectionModel().getSelectedItem();
+    if (currentTab instanceof DashboardTabPane.DashboardTab) {
+      ((DashboardTabPane.DashboardTab) currentTab).showPrefsDialog();
+    }
   }
 
   @FXML

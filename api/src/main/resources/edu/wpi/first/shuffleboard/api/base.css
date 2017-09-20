@@ -37,37 +37,37 @@
  * Dashboard Tabs                                                              *
  *                                                                             *
  ******************************************************************************/
-.dashboard-tabs .tab-label {
+.tab-label {
     -fx-font-size: 15px;
 }
 
-.dashboard-tabs .tab-header-area {
-    -fx-padding: 5px;
+.tab-header-area {
+    -fx-padding: 2px;
 }
 
-.dashboard-tabs .tab {
-    -fx-background-color: transparent;
-    -fx-border-color: white, -swatch-light-gray;
-    -fx-border-width: 1px 5px, 0px 4px;
-    -fx-padding: 4px 10px;
-    -fx-align: center;
-}
-
-.dashboard-tabs .tab .tab-close-button {
-    -fx-padding: 0 0 0 10px;
-}
-
-.dashboard-tabs .tab:hover {
+.tab:hover {
     -fx-cursor: hand;
 }
 
-.dashboard-tabs .tab:selected .focus-indicator {
-    -fx-border-color: TRANSPARENT;
+.dashboard-tabs .tab .label {
+    -fx-text-fill: white;
 }
 
-.dashboard-tabs .tab:selected {
-    -fx-background-color: base;
+.dashboard-tabs .tab .text-field {
+    -fx-text-fill: #DDDDDD;
+    -fx-highlight-fill: -swatch-200;
 }
+
+.tab {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-align: center;
+}
+
+.tab .tab-close-button {
+    -fx-padding: 0 0 0 10px;
+}
+
 
 /*******************************************************************************
  *                                                                             *
