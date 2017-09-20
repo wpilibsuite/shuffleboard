@@ -11,7 +11,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath("org.junit.platform:junit-platform-gradle-plugin:1.0.0-RC2")
+        classpath("org.junit.platform:junit-platform-gradle-plugin:1.0.0")
     }
 }
 plugins {
@@ -52,12 +52,12 @@ subprojects {
     }
 
     dependencies {
-        fun junitJupiter(name: String, version: String = "5.0.0-RC2") =
+        fun junitJupiter(name: String, version: String = "5.0.0") =
                 create(group = "org.junit.jupiter", name = name, version = version)
         "testCompile"(junitJupiter(name = "junit-jupiter-api"))
         "testCompile"(junitJupiter(name = "junit-jupiter-engine"))
         "testCompile"(junitJupiter(name = "junit-jupiter-params"))
-        "testRuntime"(create(group = "org.junit.platform", name = "junit-platform-launcher", version = "1.0.0-RC2"))
+        "testRuntime"(create(group = "org.junit.platform", name = "junit-platform-launcher", version = "1.0.0"))
         fun testFx(name: String, version: String = "4.0.+") =
                 create(group = "org.testfx", name = name, version = version)
         "testCompile"(testFx(name = "testfx-core"))
@@ -111,9 +111,9 @@ subprojects {
         }
     }
     afterEvaluate {
-        val junitPlatformTest by tasks
+        val junitPlatformTest : JavaExec by tasks
         jacoco {
-            applyToHelper(junitPlatformTest)
+            applyTo(junitPlatformTest)
         }
         task<JacocoReport>("jacocoJunit5TestReport") {
             executionData(junitPlatformTest)
@@ -193,16 +193,6 @@ fun getWPILibVersion(): String? = if (WPILibVersion.version != "") WPILibVersion
 
 task<Wrapper>("wrapper") {
     gradleVersion = "4.1"
-}
-
-/**
- * Workaround fix for calling [org.gradle.testing.jacoco.plugins.JacocoPluginExtension.applyTo]
- *
- * [Issue details here](https://github.com/gradle/kotlin-dsl/issues/458)
- */
-fun org.gradle.testing.jacoco.plugins.JacocoPluginExtension.applyToHelper(task : Task) {
-    val method = this::class.java.getMethod("applyTo", Task::class.java)
-    method.invoke(this, task)
 }
 
 /**
