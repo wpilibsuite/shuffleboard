@@ -32,7 +32,7 @@ import static java.util.Objects.requireNonNull;
  * Utility class for keeping track of known widgets.
  */
 public class Components extends Registry<ComponentType> {
-  private static final Logger logger = Logger.getLogger(Components.class.getName());
+  protected static final Logger logger = Logger.getLogger(Components.class.getName());
 
   // TODO replace with DI eg Guice
   private static Components defaultInstance = new Components();
