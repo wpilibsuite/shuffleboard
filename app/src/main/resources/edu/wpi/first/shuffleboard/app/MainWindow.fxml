@@ -18,7 +18,7 @@
     <top>
         <MenuBar>
             <Menu mnemonicParsing="false" text="File">
-                <MenuItem onAction="#save" text="Save layout" accelerator="SHORTCUT+S"/>
+                <MenuItem onAction="#save" text="Save" accelerator="SHORTCUT+S"/>
                 <MenuItem onAction="#saveAs" text="Save as..." accelerator="SHORTCUT+SHIFT+S"/>
                 <MenuItem onAction="#load" text="Load layout" accelerator="SHORTCUT+O"/>
                 <MenuItem onAction="#showPrefs" text="Preferences" accelerator="SHORTCUT+,"/>

@@ -409,7 +409,7 @@ public class TilePane extends GridPane {
     return false;
   }
 
-  public TileLayout getTileLayout(WidgetTile tile) {
+  public TileLayout getTileLayout(Tile<?> tile) {
     return new TileLayout(new GridPoint(getColumnIndex(tile), getRowIndex(tile)), tile.getSize());
   }
 

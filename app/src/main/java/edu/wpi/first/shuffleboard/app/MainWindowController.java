@@ -13,7 +13,8 @@ import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
 import edu.wpi.first.shuffleboard.api.theme.Theme;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.Storage;
-import edu.wpi.first.shuffleboard.api.widget.Widgets;
+import edu.wpi.first.shuffleboard.api.util.TypeUtils;
+import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.app.components.DashboardTabPane;
 import edu.wpi.first.shuffleboard.app.components.WidgetGallery;
 import edu.wpi.first.shuffleboard.app.components.WidgetPropertySheet;
@@ -23,11 +24,6 @@ import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
 import edu.wpi.first.shuffleboard.app.prefs.FlushableProperty;
 import edu.wpi.first.shuffleboard.app.sources.recording.Playback;
 
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.Tab;
-import javafx.scene.input.KeyCode;
-import javafx.stage.Stage;
 import org.controlsfx.control.PropertySheet;
 import org.fxmisc.easybind.EasyBind;
 
@@ -50,23 +46,27 @@ import javafx.collections.MapChangeListener;
 import javafx.fxml.FXML;
 import javafx.scene.Scene;
 import javafx.scene.control.Accordion;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.Tab;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableRow;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
+import javafx.stage.Stage;
 
 import static edu.wpi.first.shuffleboard.api.components.SourceTreeTable.alphabetical;
 import static edu.wpi.first.shuffleboard.api.components.SourceTreeTable.branchesFirst;
-import static edu.wpi.first.shuffleboard.api.util.TypeUtils.optionalCast;
 
 
 /**
@@ -183,7 +183,7 @@ public class MainWindowController {
         }
 
         DataSource<?> source = selectedItem.getValue().get();
-        List<String> widgetNames = Widgets.getDefault().widgetNamesForSource(source);
+        List<String> widgetNames = Components.getDefault().widgetNamesForSource(source);
         if (widgetNames.isEmpty()) {
           // No known widgets that can show this data
           return;
@@ -214,7 +214,7 @@ public class MainWindowController {
     });
 
     // Add widgets to the gallery as well
-    widgetGallery.setWidgets(Widgets.getDefault().allWidgets());
+    widgetGallery.setWidgets(Components.getDefault().allWidgets().collect(Collectors.toList()));
   }
 
   /**
@@ -229,15 +229,13 @@ public class MainWindowController {
         .filter(tab -> tab instanceof DashboardTabPane.DashboardTab)
         .map(tab -> (DashboardTabPane.DashboardTab) tab)
         .map(DashboardTabPane.DashboardTab::getWidgetPane)
-        .forEach(pane -> {
+        .forEach(pane ->
           pane.getTiles().stream()
-              .filter(tile -> plugin.getWidgets()
-                  .contains(tile.getWidget().getClass()))
+              .filter(tile -> plugin.getWidgets().contains(tile.getContent().getClass()))
               .collect(Collectors.toList()) // collect into temporary list to prevent comodification
-              .forEach(tile -> pane.getChildren().remove(tile));
-        });
+              .forEach(tile -> pane.getChildren().remove(tile)));
     // ... and from the gallery
-    widgetGallery.setWidgets(Widgets.getDefault().allWidgets());
+    widgetGallery.setWidgets(Components.getDefault().allWidgets().collect(Collectors.toList()));
   }
 
   /**
@@ -269,7 +267,7 @@ public class MainWindowController {
   private MenuItem createShowAsMenuItem(String widgetName, DataSource<?> source) {
     MenuItem menuItem = new MenuItem("Show as: " + widgetName);
     menuItem.setOnAction(action -> {
-      Widgets.getDefault().createWidget(widgetName, source)
+      Components.getDefault().createWidget(widgetName, source)
           .ifPresent(dashboard::addWidgetToActivePane);
     });
     return menuItem;
@@ -383,7 +381,7 @@ public class MainWindowController {
 
     Dialog<Boolean> dialog = new Dialog<>();
     EasyBind.listBind(dialog.getDialogPane().getStylesheets(), root.getStylesheets());
-    dialog.getDialogPane().setContent(propertySheet);
+    dialog.getDialogPane().setContent(new BorderPane(propertySheet));
     dialog.initModality(Modality.APPLICATION_MODAL);
     dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CANCEL, ButtonType.OK);
     dialog.setTitle("Shuffleboard Preferences");
@@ -395,9 +393,7 @@ public class MainWindowController {
           .map(WidgetPropertySheet.PropertyItem::getObservableValue)
           .filter(Optional::isPresent)
           .map(Optional::get)
-          .map(o -> optionalCast(o, FlushableProperty.class))
-          .filter(Optional::isPresent)
-          .map(Optional::get)
+          .flatMap(TypeUtils.castStream(FlushableProperty.class))
           .filter(FlushableProperty::isChanged)
           .forEach(FlushableProperty::flush);
     }
@@ -417,7 +413,7 @@ public class MainWindowController {
     FileChooser chooser = new FileChooser();
     chooser.setInitialDirectory(new File(Storage.RECORDING_DIR));
     chooser.getExtensionFilters().setAll(
-        new FileChooser.ExtensionFilter("FRC Data Recording", "*.frc"));
+        new FileChooser.ExtensionFilter("Shuffleboard Data Recording", "*.sbr"));
     final File selected = chooser.showOpenDialog(root.getScene().getWindow());
     if (selected == null) {
       return;

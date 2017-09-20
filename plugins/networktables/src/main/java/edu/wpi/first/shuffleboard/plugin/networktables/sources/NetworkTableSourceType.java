@@ -6,12 +6,12 @@ import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.recording.TimestampedData;
 import edu.wpi.first.shuffleboard.api.util.AsyncUtils;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
+import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -52,8 +52,7 @@ public final class NetworkTableSourceType extends SourceType {
     hierarchy.stream()
         .map(NetworkTableSourceType.INSTANCE::toUri)
         .map(NetworkTableSource::getExisting)
-        .filter(Optional::isPresent)
-        .map(Optional::get)
+        .flatMap(TypeUtils.optionalStream())
         .forEach(source -> {
           if (source instanceof CompositeNetworkTableSource) {
             @SuppressWarnings("unchecked")

@@ -2,7 +2,7 @@ package edu.wpi.first.shuffleboard.plugin.base.widget;
 
 
 import edu.wpi.first.shuffleboard.api.sources.DummySource;
-import edu.wpi.first.shuffleboard.api.widget.Widgets;
+import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.BooleanType;
 
 import org.junit.jupiter.api.BeforeAll;
@@ -28,7 +28,7 @@ public class BooleanBoxTest extends AbstractWidgetTest {
 
   @Override
   public void start(Stage stage) throws Exception {
-    widget = (BooleanBox) Widgets.getDefault().createWidget("Boolean Box",
+    widget = (BooleanBox) Components.getDefault().createWidget("Boolean Box",
         DummySource.forTypes(new BooleanType()).get()).get();
     stage.setScene(new Scene(widget.getView()));
     stage.show();

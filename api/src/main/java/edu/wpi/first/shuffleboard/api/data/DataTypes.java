@@ -9,6 +9,7 @@ import edu.wpi.first.shuffleboard.api.data.types.NoneType;
 import edu.wpi.first.shuffleboard.api.data.types.UnknownType;
 import edu.wpi.first.shuffleboard.api.util.Registry;
 import edu.wpi.first.shuffleboard.api.util.TestUtils;
+import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 
 import java.util.Arrays;
 import java.util.Comparator;
@@ -138,8 +139,7 @@ public class DataTypes extends Registry<DataType> {
   public Set<DataType> forJavaTypes(Class<?>... types) {
     return Stream.of(types)
         .map(this::forJavaType)
-        .filter(Optional::isPresent)
-        .map(Optional::get)
+        .flatMap(TypeUtils.optionalStream())
         .collect(Collectors.toSet());
   }
 
@@ -238,8 +238,7 @@ public class DataTypes extends Registry<DataType> {
   public Set<DataType> forTypes(Class<? extends DataType>... types) {
     return Arrays.stream(types)
         .map(this::forType)
-        .filter(Optional::isPresent)
-        .map(Optional::get)
+        .flatMap(TypeUtils.optionalStream())
         .collect(Collectors.toSet());
   }
 }
