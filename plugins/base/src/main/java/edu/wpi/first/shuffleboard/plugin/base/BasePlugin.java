@@ -8,6 +8,8 @@ import edu.wpi.first.shuffleboard.api.plugin.Plugin;
 import edu.wpi.first.shuffleboard.api.sources.recording.Serialization;
 import edu.wpi.first.shuffleboard.api.sources.recording.serialization.SimpleAdapter;
 import edu.wpi.first.shuffleboard.api.sources.recording.serialization.TypeAdapter;
+import edu.wpi.first.shuffleboard.api.widget.ComponentType;
+import edu.wpi.first.shuffleboard.api.widget.LayoutClass;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.AnalogInputType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.BooleanArrayType;
@@ -22,6 +24,7 @@ import edu.wpi.first.shuffleboard.plugin.base.data.types.SendableChooserType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.SpeedControllerType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.StringArrayType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.StringType;
+import edu.wpi.first.shuffleboard.plugin.base.layout.ListLayout;
 import edu.wpi.first.shuffleboard.plugin.base.recording.serialization.BooleanArrayAdapter;
 import edu.wpi.first.shuffleboard.plugin.base.recording.serialization.NumberArrayAdapter;
 import edu.wpi.first.shuffleboard.plugin.base.recording.serialization.StringAdapter;
@@ -83,6 +86,13 @@ public class BasePlugin extends Plugin {
         ToggleButton.class,
         ToggleSwitch.class,
         VoltageViewWidget.class
+    );
+  }
+
+  @Override
+  public List<ComponentType> getComponents() {
+    return ImmutableList.of(
+        new LayoutClass<>("List Layout", ListLayout.class)
     );
   }
 

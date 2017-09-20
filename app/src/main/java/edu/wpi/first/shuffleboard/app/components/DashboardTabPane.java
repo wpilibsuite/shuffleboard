@@ -5,8 +5,8 @@ import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
 import edu.wpi.first.shuffleboard.api.util.Debouncer;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
+import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
-import edu.wpi.first.shuffleboard.api.widget.Widgets;
 import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
 
 import org.fxmisc.easybind.EasyBind;
@@ -209,8 +209,8 @@ public class DashboardTabPane extends TabPane {
           // Don't create widgets for the catchall types
           if (source.getDataType() != DataTypes.Unknown
               && source.getDataType() != DataTypes.Map
-              && !Widgets.getDefault().widgetNamesForSource(source).isEmpty()) {
-            Widgets.getDefault().createWidget(Widgets.getDefault().widgetNamesForSource(source).get(0), source)
+              && !Components.getDefault().widgetNamesForSource(source).isEmpty()) {
+            Components.getDefault().createWidget(Components.getDefault().widgetNamesForSource(source).get(0), source)
                 .ifPresent(w -> getWidgetPane().addWidget(w));
           }
         }
@@ -228,13 +228,10 @@ public class DashboardTabPane extends TabPane {
      * @param id the ID of the source to check for
      */
     private boolean noExistingWidgetsForSource(String id) {
-      for (WidgetTile tile : getWidgetPane().getTiles()) {
-        DataSource<?> source = tile.getWidget().getSource();
-        if (id.startsWith(source.getId())) {
-          return false;
-        }
-      }
-      return true;
+      return getWidgetPane().getTiles().stream()
+          .flatMap(t -> t.getContent().allWidgets())
+          .map(Widget::getSource)
+          .noneMatch(s -> id.startsWith(s.getId()));
     }
 
     public WidgetPane getWidgetPane() {

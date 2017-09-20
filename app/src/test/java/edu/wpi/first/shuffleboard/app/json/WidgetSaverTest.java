@@ -6,7 +6,7 @@ import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
 import edu.wpi.first.shuffleboard.api.widget.AnnotatedWidget;
 import edu.wpi.first.shuffleboard.api.widget.Description;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
-import edu.wpi.first.shuffleboard.api.widget.Widgets;
+import edu.wpi.first.shuffleboard.api.widget.Components;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -46,13 +46,13 @@ public class WidgetSaverTest extends ApplicationTest {
 
   @BeforeEach
   public void setUp() {
-    Widgets.setDefault(new Widgets());
+    Components.setDefault(new Components());
     DataTypes.setDefault(new DataTypes());
   }
 
   @AfterEach
   public void tearDown() {
-    Widgets.setDefault(new Widgets());
+    Components.setDefault(new Components());
     DataTypes.setDefault(new DataTypes());
   }
 
@@ -66,7 +66,7 @@ public class WidgetSaverTest extends ApplicationTest {
 
   @Test
   public void loadSimpleWidget() throws Exception {
-    Widgets.getDefault().register(SimpleWidget.class);
+    Components.getDefault().register(SimpleWidget.class);
     String widgetJson = "{\n"
         + "\"_type\": \"Simple Widget\",\n"
         + "\"_source\": \"example://All\",\n"
