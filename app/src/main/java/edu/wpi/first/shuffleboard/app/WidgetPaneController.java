@@ -4,6 +4,7 @@ import edu.wpi.first.shuffleboard.api.dnd.DataFormats;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.DummySource;
 import edu.wpi.first.shuffleboard.api.sources.SourceEntry;
+import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.GridPoint;
 import edu.wpi.first.shuffleboard.api.util.RoundingMode;
@@ -14,6 +15,7 @@ import edu.wpi.first.shuffleboard.api.widget.Layout;
 import edu.wpi.first.shuffleboard.api.widget.LayoutType;
 import edu.wpi.first.shuffleboard.api.widget.TileSize;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
+import edu.wpi.first.shuffleboard.app.components.DashboardTabPane;
 import edu.wpi.first.shuffleboard.app.components.LayoutTile;
 import edu.wpi.first.shuffleboard.app.components.Tile;
 import edu.wpi.first.shuffleboard.app.components.TileLayout;
@@ -23,11 +25,14 @@ import edu.wpi.first.shuffleboard.app.dnd.TileDragResizer;
 
 import org.fxmisc.easybind.EasyBind;
 
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.WeakHashMap;
 import java.util.function.Function;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -35,6 +40,7 @@ import javafx.beans.binding.Binding;
 import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
@@ -50,6 +56,8 @@ import javafx.scene.layout.Region;
 // needs refactoring to split out per-widget interaction
 @SuppressWarnings("PMD.GodClass")
 public class WidgetPaneController {
+
+  private static final Logger log = Logger.getLogger(WidgetPaneController.class.getName());
 
   @FXML
   private WidgetPane pane;
@@ -252,6 +260,23 @@ public class WidgetPaneController {
       contextMenu.show(pane.getScene().getWindow(), event.getScreenX(), event.getScreenY());
     });
 
+    Parent parent = pane.getParent();
+    if (parent.getClass().getName().equals("com.sun.javafx.scene.control.skin.TabPaneSkin$TabContentRegion")) {
+      try {
+        // This class is package-private, so we have to use reflection to access the tab
+        Field tabField = parent.getClass().getDeclaredField("tab");
+        tabField.setAccessible(true);
+        DashboardTabPane.DashboardTab tab = (DashboardTabPane.DashboardTab) tabField.get(parent);
+        // Prefix without the protocol or leading slash
+        String namePrefix = SourceTypes.getDefault().stripProtocol(tab.getSourcePrefix()).replaceFirst("^/", "");
+        tile.getContent().allWidgets()
+            .filter(w -> w.getTitle().startsWith(namePrefix))
+            .forEach(w -> w.setTitle(w.getTitle().substring(namePrefix.length())));
+      } catch (NoSuchFieldException | IllegalAccessException e) {
+        log.log(Level.SEVERE, "Could not get the tab containing the widget pane!", e);
+      }
+    }
+
     TileDragResizer resizer = TileDragResizer.makeResizable(pane, tile);
 
     tile.setOnDragDetected(event -> {
@@ -284,10 +309,10 @@ public class WidgetPaneController {
           return;
         }
         pane.tileMatching(t -> t.getId().equals(data.getId()))
-                .ifPresent(t -> {
-                  Component content = pane.removeTile(t);
-                  ((LayoutTile) tile).getContent().addChild(content);
-                });
+            .ifPresent(t -> {
+              Component content = pane.removeTile(t);
+              ((LayoutTile) tile).getContent().addChild(content);
+            });
         event.consume();
 
         return;
@@ -310,10 +335,10 @@ public class WidgetPaneController {
         Layout container = ((LayoutTile) tile).getContent();
         DataSource<?> source = entry.get();
         Components.getDefault().widgetNamesForSource(entry.get())
-                .stream()
-                .findAny()
-                .flatMap(name -> Components.getDefault().createWidget(name, source))
-                .ifPresent(container::addChild);
+            .stream()
+            .findAny()
+            .flatMap(name -> Components.getDefault().createWidget(name, source))
+            .ifPresent(container::addChild);
         event.consume();
 
         return;
@@ -390,21 +415,21 @@ public class WidgetPaneController {
     Widget widget = tile.getContent();
     Menu changeView = new Menu("Show as...");
     Components.getDefault().widgetNamesForType(widget.getSource().getDataType())
-           .stream()
-           .sorted()
-           .forEach(name -> {
-             MenuItem changeItem = new MenuItem(name);
-             if (name.equals(widget.getName())) {
-               changeItem.setGraphic(new Label("✓"));
-             } else {
-               // only need to change if it's to another type
-               changeItem.setOnAction(__ -> {
-                 Components.getDefault().createWidget(name, widget.getSource())
-                        .ifPresent(tile::setContent);
-               });
-             }
-             changeView.getItems().add(changeItem);
-           });
+        .stream()
+        .sorted()
+        .forEach(name -> {
+          MenuItem changeItem = new MenuItem(name);
+          if (name.equals(widget.getName())) {
+            changeItem.setGraphic(new Label("✓"));
+          } else {
+            // only need to change if it's to another type
+            changeItem.setOnAction(__ -> {
+              Components.getDefault().createWidget(name, widget.getSource())
+                  .ifPresent(tile::setContent);
+            });
+          }
+          changeView.getItems().add(changeItem);
+        });
     return changeView;
   }
 
@@ -438,9 +463,9 @@ public class WidgetPaneController {
    * @param shrink               the function to use to shrink the tile
    */
   private Optional<Runnable> collapseTile(Tile tile,
-                                      Function<TileLayout, TileLayout> targetLayoutFunction,
-                                      Function<TileSize, TileSize> shrink,
-                                      boolean left) {
+                                          Function<TileLayout, TileLayout> targetLayoutFunction,
+                                          Function<TileSize, TileSize> shrink,
+                                          boolean left) {
     TileSize minSize = pane.round(tile.getContent().getView().getMinWidth(),
         tile.getContent().getView().getMinHeight());
     TileLayout layout = pane.getTileLayout(tile);
