@@ -4,8 +4,6 @@ import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
 
-import org.fxmisc.easybind.EasyBind;
-
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
