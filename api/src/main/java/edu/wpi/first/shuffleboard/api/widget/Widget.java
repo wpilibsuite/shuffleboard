@@ -81,11 +81,6 @@ public interface Widget extends Component {
   List<Property<?>> getProperties();
 
   @Override
-  default Property<String> titleProperty() {
-    return EasyBind.monadic(sourceProperty()).selectProperty(DataSource::nameProperty);
-  }
-
-  @Override
   default Stream<Widget> allWidgets() {
     return Stream.of(this);
   }
