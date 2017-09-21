@@ -48,7 +48,6 @@ public class EditableLabel extends StackPane {
       if (isEditing) {
         editField.requestFocus();
       }
-      label.setVisible(!isEditing);
     });
   }
 
