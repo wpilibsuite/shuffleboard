@@ -1,17 +1,17 @@
 package edu.wpi.first.shuffleboard.plugin.networktables.sources;
 
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.sources.Sources;
 import edu.wpi.first.shuffleboard.api.util.EqualityUtils;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
-import edu.wpi.first.wpilibj.tables.ITable;
 
 /**
  * A data source backed by a single key-value pair in a network table.
  */
 public class SingleKeyNetworkTableSource<T> extends NetworkTableSource<T> {
-
   /**
    * Creates a single-key network table source backed by the value in the given table
    * associated with the given key.
@@ -21,7 +21,7 @@ public class SingleKeyNetworkTableSource<T> extends NetworkTableSource<T> {
    * @param dataType the allowable data type. A value that is not an instance of this
    *                 type is considered "null" and will make the source inactive
    */
-  public SingleKeyNetworkTableSource(ITable table, String key, DataType dataType) {
+  public SingleKeyNetworkTableSource(NetworkTable table, String key, DataType dataType) {
     super(key, dataType);
     setName(key);
     setTableListener((__, value, flags) -> {
@@ -44,12 +44,16 @@ public class SingleKeyNetworkTableSource<T> extends NetworkTableSource<T> {
         // The change was from network tables; setting the value again would be redundant
         return;
       }
-      if (table.getValue(key, null) == newValue || !isConnected()) {
+
+      NetworkTableEntry entry = table.getEntry(key);
+
+      if (entry.getValue() == newValue || !isConnected()) {
         // no change
         return;
       }
+
       if (isActive()) {
-        table.putValue(key, newValue);
+        NetworkTableUtils.setEntryValue(entry, newValue);
       } else {
         throw new IllegalStateException("Source is not active");
       }
@@ -57,5 +61,4 @@ public class SingleKeyNetworkTableSource<T> extends NetworkTableSource<T> {
 
     Sources.getDefault().register(this);
   }
-
 }

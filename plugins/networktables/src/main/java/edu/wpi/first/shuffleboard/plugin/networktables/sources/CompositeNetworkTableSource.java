@@ -1,11 +1,11 @@
 package edu.wpi.first.shuffleboard.plugin.networktables.sources;
 
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.shuffleboard.api.data.ComplexData;
 import edu.wpi.first.shuffleboard.api.data.ComplexDataType;
 import edu.wpi.first.shuffleboard.api.sources.Sources;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
-import edu.wpi.first.wpilibj.networktables.NetworkTable;
-import edu.wpi.first.wpilibj.tables.ITable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -35,7 +35,7 @@ public class CompositeNetworkTableSource<D extends ComplexData<D>> extends Netwo
     super(tableName, dataType);
     this.dataType = dataType;
     String path = NetworkTableUtils.normalizeKey(tableName, false);
-    ITable table = NetworkTable.getTable(path);
+    NetworkTable table = NetworkTableInstance.getDefault().getTable(path);
     setData(dataType.getDefaultValue());
 
     setTableListener((key, value, flags) -> {
@@ -58,7 +58,9 @@ public class CompositeNetworkTableSource<D extends ComplexData<D>> extends Netwo
       Map<String, Object> diff = newData.changesFrom(oldData);
       backingMap.putAll(diff);
       if (isConnected()) {
-        diff.forEach(table::putValue);
+        for (Map.Entry<String, Object> elem : diff.entrySet()) {
+          NetworkTableUtils.setEntryValue(table.getEntry(elem.getKey()), elem.getValue());
+        }
       }
     });
 

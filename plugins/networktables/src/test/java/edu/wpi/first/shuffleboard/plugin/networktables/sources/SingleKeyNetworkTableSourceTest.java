@@ -1,14 +1,12 @@
 package edu.wpi.first.shuffleboard.plugin.networktables.sources;
 
-
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.util.AsyncUtils;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
-import edu.wpi.first.wpilibj.networktables.NetworkTable;
-import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
-import edu.wpi.first.wpilibj.tables.ITable;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,14 +23,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SingleKeyNetworkTableSourceTest {
 
-  private ITable table;
+  private NetworkTable table;
 
   @BeforeEach
   public void setUp() {
     NetworkTableUtils.shutdown();
-    NetworkTablesJNI.setUpdateRate(0.01);
+    final NetworkTableInstance inst = NetworkTableInstance.getDefault();
+    inst.setUpdateRate(0.01);
     AsyncUtils.setAsyncRunner(Runnable::run);
-    table = NetworkTable.getTable("");
+    table = inst.getTable("");
   }
 
   @AfterEach
@@ -58,8 +57,8 @@ public class SingleKeyNetworkTableSourceTest {
     DataType type = DataTypes.All;
     SingleKeyNetworkTableSource<String> source
         = new SingleKeyNetworkTableSource<>(table, key, type);
-    table.putString(key, "a value");
-    NetworkTableUtils.waitForNtcoreEvents();
+    table.getEntry(key).setString("a value");
+    NetworkTableInstance.getDefault().waitForEntryListenerQueue(-1.0);
     assertEquals("a value", source.getData());
     assertTrue(source.isActive(), "The source should be active");
   }
@@ -70,9 +69,8 @@ public class SingleKeyNetworkTableSourceTest {
     DataType type = DataTypes.All;
     SingleKeyNetworkTableSource<String> source
         = new SingleKeyNetworkTableSource<>(table, key, type);
-    table.putNumber(key, 12345);
+    table.getEntry(key).setNumber(12345);
     assertEquals(null, source.getData(), "The source should not have any data");
     assertFalse(source.isActive());
   }
-
 }

@@ -1,11 +1,12 @@
 package edu.wpi.first.shuffleboard.plugin.networktables.components;
 
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.shuffleboard.api.components.SourceTreeTable;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.plugin.networktables.NetworkTableTreeWidget;
-import edu.wpi.first.shuffleboard.plugin.networktables.sources.NetworkTableEntry;
+import edu.wpi.first.shuffleboard.plugin.networktables.sources.NetworkTableSourceEntry;
 import edu.wpi.first.shuffleboard.plugin.networktables.sources.NetworkTableSource;
-import edu.wpi.first.wpilibj.networktables.NetworkTable;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Disabled;
@@ -18,7 +19,6 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableCell;
 import javafx.stage.Stage;
 
-import static edu.wpi.first.shuffleboard.api.util.NetworkTableUtils.waitForNtcoreEvents;
 import static edu.wpi.first.shuffleboard.plugin.networktables.components.NetworkTableTreeItemMatcher.hasDisplayString;
 import static edu.wpi.first.shuffleboard.plugin.networktables.components.NetworkTableTreeItemMatcher.hasKey;
 import static edu.wpi.first.shuffleboard.plugin.networktables.components.NetworkTableTreeItemMatcher.hasSimpleKey;
@@ -37,13 +37,13 @@ import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
 public class NetworkTableTreeTest extends ApplicationTest {
 
   private NetworkTable table;
-  private SourceTreeTable<NetworkTableEntry, ?> tree;
-  private TreeItem<NetworkTableEntry> root;
+  private SourceTreeTable<NetworkTableSourceEntry, ?> tree;
+  private TreeItem<NetworkTableSourceEntry> root;
 
   @Override
   public void start(Stage stage) throws Exception {
     NetworkTableUtils.shutdown();
-    table = NetworkTable.getTable("");
+    table = NetworkTableInstance.getDefault().getTable("");
     NetworkTableTreeWidget widget = new NetworkTableTreeWidget();
     widget.setSource(NetworkTableSource.forKey(""));
     tree = widget.getTree();
@@ -65,13 +65,13 @@ public class NetworkTableTreeTest extends ApplicationTest {
 
   @Test
   public void testFirstLevel() {
-    table.putString("entry", "value");
-    waitForNtcoreEvents();
+    table.getEntry("entry").setString("value");
+    NetworkTableInstance.getDefault().waitForEntryListenerQueue(-1.0);
     waitForFxEvents();
 
-    ObservableList<TreeItem<NetworkTableEntry>> children = root.getChildren();
+    ObservableList<TreeItem<NetworkTableSourceEntry>> children = root.getChildren();
     assertEquals(1, children.size(), "There should be a single child");
-    TreeItem<NetworkTableEntry> child = children.get(0);
+    TreeItem<NetworkTableSourceEntry> child = children.get(0);
     assertThat(child, hasKey("/entry"));
     assertThat(child, hasSimpleKey("entry"));
     assertThat(child, hasDisplayString("value"));
@@ -80,15 +80,15 @@ public class NetworkTableTreeTest extends ApplicationTest {
 
   @Test
   public void testBranches() {
-    table.putString("branch/entry", "x");
-    waitForNtcoreEvents();
+    table.getEntry("branch/entry").setString("x");
+    NetworkTableInstance.getDefault().waitForEntryListenerQueue(-1.0);
     waitForFxEvents();
-    ObservableList<TreeItem<NetworkTableEntry>> children = root.getChildren();
+    ObservableList<TreeItem<NetworkTableSourceEntry>> children = root.getChildren();
 
     assertEquals(1, children.size(), "There should be 1 first-level child");
     assertEquals(1, children.get(0).getChildren().size(), "There should be 1 second-level child");
-    final TreeItem<NetworkTableEntry> branch = children.get(0);
-    final TreeItem<NetworkTableEntry> leaf = branch.getChildren().get(0);
+    final TreeItem<NetworkTableSourceEntry> branch = children.get(0);
+    final TreeItem<NetworkTableSourceEntry> leaf = branch.getChildren().get(0);
 
     assertThat(branch, hasKey("/branch"));
     assertThat(branch, hasDisplayString(""));
@@ -104,16 +104,16 @@ public class NetworkTableTreeTest extends ApplicationTest {
   @Test
   public void testSort() {
     // deliberately not in order
-    table.putString("c", "");
-    table.putString("sub_a/sub_entry_a", "");
-    table.putString("a", "");
-    table.putString("b", "");
-    table.putString("sub_b/sub_entry_b", "");
-    waitForNtcoreEvents();
+    table.getEntry("c").setString("");
+    table.getEntry("sub_a/sub_entry_a").setString("");
+    table.getEntry("a").setString("");
+    table.getEntry("b").setString("");
+    table.getEntry("sub_b/sub_entry_b").setString("");
+    NetworkTableInstance.getDefault().waitForEntryListenerQueue(-1.0);
     waitForFxEvents();
     tree.sort();
 
-    ObservableList<TreeItem<NetworkTableEntry>> children = root.getChildren();
+    ObservableList<TreeItem<NetworkTableSourceEntry>> children = root.getChildren();
     assertEquals(5, children.size(), "There should be 5 children");
     assertThat(root, hasKey("/sub_a").atIndex(0));
     assertThat(root, hasKey("/sub_b").atIndex(1));
@@ -139,15 +139,17 @@ public class NetworkTableTreeTest extends ApplicationTest {
 
   @Test
   public void testDelete() {
+    final NetworkTableInstance inst = NetworkTableInstance.getDefault();
+
     String key = "testDelete";
-    table.putString(key, "value");
-    waitForNtcoreEvents();
+    table.getEntry(key).setString("value");
+    inst.waitForEntryListenerQueue(-1.0);
     waitForFxEvents();
 
     assertNotNull(lookup(hasText(key)).query(), "There should be a cell for the entry");
 
     table.delete(key);
-    waitForNtcoreEvents();
+    inst.waitForEntryListenerQueue(-1.0);
     waitForFxEvents();
     assertNull(lookup(hasText(key)).query(), "The cell should have been removed");
   }
@@ -157,16 +159,18 @@ public class NetworkTableTreeTest extends ApplicationTest {
     final String key = "testUpdate";
     final String firstValue = "value 1";
     final String secondValue = "value 2";
-    table.putString(key, firstValue);
-    waitForNtcoreEvents();
+    final NetworkTableInstance inst = NetworkTableInstance.getDefault();
+
+    table.getEntry(key).setString(firstValue);
+    inst.waitForEntryListenerQueue(-1.0);
     waitForFxEvents();
     assertCellIndex(key, 0);
     assertCellIndex(firstValue, 0);
     assertNotNull(lookup(hasText(firstValue)).query());
     assertNull(lookup(hasText(secondValue)).query());
 
-    table.putString(key, secondValue);
-    waitForNtcoreEvents();
+    table.getEntry(key).setString(secondValue);
+    inst.waitForEntryListenerQueue(-1.0);
     waitForFxEvents();
     assertCellIndex(key, 0);
     assertNull(lookup(hasText(firstValue)).query());

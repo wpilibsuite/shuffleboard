@@ -1,17 +1,16 @@
 package edu.wpi.first.shuffleboard.plugin.networktables.sources;
 
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.data.MapData;
 import edu.wpi.first.shuffleboard.api.util.AsyncUtils;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
-import edu.wpi.first.wpilibj.networktables.NetworkTable;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static edu.wpi.first.shuffleboard.api.util.NetworkTableUtils.waitForNtcoreEvents;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -42,28 +41,29 @@ public class CompositeNetworkTableSourceTest {
 
   @Test
   public void testDataUpdates() {
-    CompositeNetworkTableSource<MapData> source
+    final CompositeNetworkTableSource<MapData> source
         = new CompositeNetworkTableSource<>(tableName, DataTypes.Map);
     source.setConnected(true);
     final String key = "key1";
+    final NetworkTableInstance inst = NetworkTableInstance.getDefault();
 
-    NetworkTable.getTable(tableName).putString(key, "value1");
-    waitForNtcoreEvents();
+    inst.getTable(tableName).getEntry(key).setString("value1");
+    inst.waitForEntryListenerQueue(-1.0);
     assertEquals("value1", source.getData().get(key));
 
-    NetworkTable.getTable(tableName).putString(key, "value2");
-    waitForNtcoreEvents();
+    inst.getTable(tableName).getEntry(key).setString("value2");
+    inst.waitForEntryListenerQueue(-1.0);
     assertEquals("value2", source.getData().get(key));
   }
 
   @Test
   public void testTypeDetectedCorrectly() {
-    CompositeNetworkTableSource<?> source
+    final CompositeNetworkTableSource<?> source
         = new CompositeNetworkTableSource<>(tableName, DataTypes.Map);
+    final NetworkTableInstance inst = NetworkTableInstance.getDefault();
 
-    NetworkTable.getTable(tableName).putString(".type", "Map");
-    waitForNtcoreEvents();
+    inst.getTable(tableName).getEntry(".type").setString("Map");
+    inst.waitForEntryListenerQueue(-1.0);
     assertTrue(source.isActive(), "Source not active");
   }
-
 }

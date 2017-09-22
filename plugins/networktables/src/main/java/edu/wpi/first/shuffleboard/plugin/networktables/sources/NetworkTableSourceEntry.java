@@ -11,7 +11,7 @@ import java.util.Objects;
 /**
  * A simple value class for information about an entry in NetworkTables.
  */
-public final class NetworkTableEntry implements SourceEntry {
+public final class NetworkTableSourceEntry implements SourceEntry {
 
   private final String key;
   private final String simpleKey;
@@ -24,7 +24,7 @@ public final class NetworkTableEntry implements SourceEntry {
    * @param key   the network table key the source would be for
    * @param value the value that the source would contain
    */
-  public NetworkTableEntry(String key, Object value) {
+  public NetworkTableSourceEntry(String key, Object value) {
     this.key = key;
     this.simpleKey = NetworkTableUtils.simpleKey(key);
     this.value = value;
@@ -88,7 +88,7 @@ public final class NetworkTableEntry implements SourceEntry {
       return false;
     }
 
-    NetworkTableEntry that = (NetworkTableEntry) obj;
+    NetworkTableSourceEntry that = (NetworkTableSourceEntry) obj;
 
     return Objects.equals(key, that.key) && Objects.equals(displayString, that.displayString);
   }
@@ -100,7 +100,7 @@ public final class NetworkTableEntry implements SourceEntry {
 
   @Override
   public String toString() {
-    return String.format("NetworkTableEntry(key='%s', displayString='%s')", key, displayString);
+    return String.format("NetworkTableSourceEntry(key='%s', displayString='%s')", key, displayString);
   }
 
   @Override

@@ -1,5 +1,7 @@
 package edu.wpi.first.shuffleboard.plugin.networktables.sources;
 
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.NetworkTablesJNI;
 import edu.wpi.first.shuffleboard.api.data.ComplexDataType;
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.sources.AbstractDataSource;
@@ -7,7 +9,6 @@ import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.util.AsyncUtils;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
-import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -50,14 +51,14 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
    * Sets the table listener to call when a value changes under this source's key.
    */
   protected final void setTableListener(TableListener listener) {
-    NetworkTablesJNI.removeEntryListener(listenerUid);
-    listenerUid = NetworkTablesJNI.addEntryListener(
-        fullTableKey,
-        (uid, key, value, flags) -> {
+    NetworkTableInstance inst = NetworkTableInstance.getDefault();
+    inst.removeEntryListener(listenerUid);
+    listenerUid = inst.getEntry(fullTableKey).addListener(
+        (event) -> {
           if (isConnected()) {
             AsyncUtils.runAsync(() -> {
               ntUpdate = true;
-              listener.onChange(key, value, flags);
+              listener.onChange(event.name, event.value, event.flags);
               ntUpdate = false;
             });
           }

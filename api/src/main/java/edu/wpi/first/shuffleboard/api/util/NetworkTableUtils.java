@@ -1,15 +1,15 @@
 package edu.wpi.first.shuffleboard.api.util;
 
+import edu.wpi.first.networktables.EntryListenerFlags;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.NetworkTableValue;
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
-import edu.wpi.first.wpilibj.networktables.NetworkTable;
-import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
-import edu.wpi.first.wpilibj.tables.ITable;
-import edu.wpi.first.wpilibj.tables.ITableListener;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
 
 /**
@@ -20,18 +20,14 @@ public final class NetworkTableUtils {
   /**
    * The root network table.
    */
-  public static final ITable rootTable = NetworkTable.getTable("");
+  public static final NetworkTableInstance inst = NetworkTableInstance.getDefault();
+  public static final NetworkTable rootTable = new NetworkTable(inst, "");
 
   private static final Pattern oldMetadataPattern = Pattern.compile("/~\\w+~($|/)");
   private static final Pattern newMetadataPattern = Pattern.compile("/\\.");
 
   private NetworkTableUtils() {
     throw new UnsupportedOperationException("This is a utility class!");
-  }
-
-  @FunctionalInterface
-  public interface ITableListenerEx {
-    void valueChangedEx(ITable source, String key, Object value, int flags);
   }
 
   /**
@@ -104,7 +100,7 @@ public final class NetworkTableUtils {
    * Checks if network table flags contains a specific flag.
    *
    * @param flags the network table flags
-   * @param flag  the flag to check (eg {@link ITable#NOTIFY_DELETE})
+   * @param flag  the flag to check (eg {@link EntryListenerFlags#kDelete})
    *
    * @return true if the flags match, false otherwise
    */
@@ -113,14 +109,14 @@ public final class NetworkTableUtils {
   }
 
   /**
-   * Checks if the given network table flags contains the {@link ITable#NOTIFY_DELETE delete flag}.
+   * Checks if the given network table flags contains the {@link EntryListenerFlags#kDelete delete flag}.
    *
-   * <p>This is equivalent to {@code flagMatches(flags, ITable.NOTIFY_DELETE)}
+   * <p>This is equivalent to {@code flagMatches(flags, EntryListenerFlags.kDelete)}
    *
    * @see #flagMatches(int, int)
    */
   public static boolean isDelete(int flags) {
-    return flagMatches(flags, ITable.NOTIFY_DELETE);
+    return flagMatches(flags, EntryListenerFlags.kDelete);
   }
 
   /**
@@ -144,11 +140,11 @@ public final class NetworkTableUtils {
       return DataTypes.Map;
     }
     if (rootTable.containsKey(normalKey)) {
-      return DataTypes.getDefault().forJavaType(rootTable.getValue(normalKey, null).getClass()).get();
+      return DataTypes.getDefault().forJavaType(rootTable.getEntry(normalKey).getValue().getClass()).get();
     }
     if (rootTable.containsSubTable(normalKey)) {
-      ITable table = rootTable.getSubTable(normalKey);
-      String type = table.getString("~TYPE~", table.getString(".type", null));
+      NetworkTable table = rootTable.getSubTable(normalKey);
+      String type = table.getEntry("~TYPE~").getString(table.getEntry(".type").getString(null));
       if (type == null) {
         return DataTypes.Map;
       } else {
@@ -160,43 +156,16 @@ public final class NetworkTableUtils {
   }
 
   /**
-   * Waits for ntcore listeners to be fired. This is a <i>blocking operation</i>.
-   */
-  public static void waitForNtcoreEvents() {
-    CompletableFuture<?> future = new CompletableFuture<>();
-    final String indexKey = "waitForNtcoreEvents";
-
-    NetworkTablesJNI.addEntryListener(indexKey, (uid, key, value, flags) -> {
-      NetworkTablesJNI.deleteEntry(indexKey);
-      NetworkTablesJNI.removeEntryListener(uid);
-    },  ITable.NOTIFY_NEW | ITable.NOTIFY_LOCAL);
-    NetworkTablesJNI.addEntryListener(indexKey, (uid, key, value, flags) -> {
-      NetworkTablesJNI.removeEntryListener(uid);
-      future.complete(null);
-    }, ITable.NOTIFY_DELETE | ITable.NOTIFY_LOCAL);
-
-    /*
-     * This works because all notifications are put into a single queue and are processed by a
-     * single thread.
-     *
-     * https://github.com/wpilibsuite/shuffleboard/pull/118#issuecomment-321374691
-     */
-    NetworkTablesJNI.putBoolean(indexKey, false);
-    future.join();
-  }
-
-
-  /**
    * Shuts down the network table client or server, then clears all entries from network tables.
    * This should be used when changing from server mode to client mode, or changing server
    * address while in client mode.
    */
   public static void shutdown() {
-    NetworkTablesJNI.stopDSClient();
-    NetworkTablesJNI.stopClient();
-    NetworkTablesJNI.stopServer();
-    NetworkTablesJNI.deleteAllEntries(); // delete AFTER shutting down the server/client
-    NetworkTable.shutdown();
+    NetworkTableInstance inst = NetworkTableInstance.getDefault();
+    inst.stopDSClient();
+    inst.stopClient();
+    inst.stopServer();
+    inst.deleteAllEntries(); // delete AFTER shutting down the server/client
   }
 
   /**
@@ -206,8 +175,8 @@ public final class NetworkTableUtils {
    */
   public static void setServer(int port) {
     shutdown();
-    NetworkTablesJNI.startServer("networktables.ini", "", port);
-    NetworkTable.initialize();
+    NetworkTableInstance inst = NetworkTableInstance.getDefault();
+    inst.startServer("networktables.ini", "", port);
   }
 
   /**
@@ -218,8 +187,8 @@ public final class NetworkTableUtils {
    */
   public static void setClient(String serverIp, int serverPort) {
     shutdown();
-    NetworkTablesJNI.startClient(serverIp, serverPort);
-    NetworkTable.initialize();
+    NetworkTableInstance inst = NetworkTableInstance.getDefault();
+    inst.startClient(serverIp, serverPort);
   }
 
   /**
@@ -238,22 +207,36 @@ public final class NetworkTableUtils {
   }
 
   /**
-   * Creates an ITableListener that wraps an extended table listener to make it usable in the ntcore API.
+   * Determines the type of the value object and calls the corresponding NetworkTableEntry set
+   * method.
    *
-   * @param extendedListener the listener to wrap
+   * @param entry the entry to modify
+   * @param value the value to which to set the entry
    */
-  public static ITableListener createListenerEx(ITableListenerEx extendedListener) {
-    return new ITableListener() {
-      @Override
-      public void valueChanged(ITable source, String key, Object value, boolean isNew) {
-        throw new UnsupportedOperationException();
-      }
-
-      @Override
-      public void valueChangedEx(ITable source, String key, Object value, int flags) {
-        extendedListener.valueChangedEx(source, key, value, flags);
-      }
-    };
+  public static <T> void setEntryValue(NetworkTableEntry entry, T value) throws IllegalArgumentException {
+    if (value instanceof Boolean) {
+      entry.setBoolean((Boolean)value);
+    } else if (value instanceof Number) {
+      entry.setDouble(((Number)value).doubleValue());
+    } else if (value instanceof String) {
+      entry.setString((String)value);
+    } else if (value instanceof byte[]) {
+      entry.setRaw((byte[])value);
+    } else if (value instanceof boolean[]) {
+      entry.setBooleanArray((boolean[])value);
+    } else if (value instanceof double[]) {
+      entry.setNumberArray((Number[])value);
+    } else if (value instanceof Boolean[]) {
+      entry.setBooleanArray((Boolean[])value);
+    } else if (value instanceof Number[]) {
+      entry.setNumberArray((Number[])value);
+    } else if (value instanceof String[]) {
+      entry.setStringArray((String[])value);
+    } else if (value instanceof NetworkTableValue) {
+      entry.setValue((NetworkTableValue)value);
+    } else {
+      throw new IllegalArgumentException("Value of type " + value.getClass().getName()
+        + " cannot be put into a table");
+    }
   }
-
 }

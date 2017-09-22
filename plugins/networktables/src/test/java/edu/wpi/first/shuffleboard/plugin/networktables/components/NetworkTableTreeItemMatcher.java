@@ -1,7 +1,7 @@
 package edu.wpi.first.shuffleboard.plugin.networktables.components;
 
 
-import edu.wpi.first.shuffleboard.plugin.networktables.sources.NetworkTableEntry;
+import edu.wpi.first.shuffleboard.plugin.networktables.sources.NetworkTableSourceEntry;
 
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
@@ -13,25 +13,25 @@ import javafx.scene.control.TreeItem;
 /**
  * Matchers for tree items of network table entries.
  */
-public class NetworkTableTreeItemMatcher extends TypeSafeMatcher<TreeItem<NetworkTableEntry>> {
+public class NetworkTableTreeItemMatcher extends TypeSafeMatcher<TreeItem<NetworkTableSourceEntry>> {
 
-  private final Predicate<TreeItem<NetworkTableEntry>> predicate;
+  private final Predicate<TreeItem<NetworkTableSourceEntry>> predicate;
   private final String description;
 
   public NetworkTableTreeItemMatcher(
-      Predicate<TreeItem<NetworkTableEntry>> predicate, String description) {
+      Predicate<TreeItem<NetworkTableSourceEntry>> predicate, String description) {
     this.predicate = predicate;
     this.description = description;
   }
 
   @Override
-  protected boolean matchesSafely(TreeItem<NetworkTableEntry> item) {
+  protected boolean matchesSafely(TreeItem<NetworkTableSourceEntry> item) {
     return predicate.test(item);
   }
 
   @Override
   public void describeTo(Description description) {
-    description.appendText("NetworkTableEntry ").appendText(this.description);
+    description.appendText("NetworkTableSourceEntry ").appendText(this.description);
   }
 
   /**

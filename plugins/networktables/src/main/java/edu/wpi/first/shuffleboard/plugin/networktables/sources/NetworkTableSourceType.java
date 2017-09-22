@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.plugin.networktables.sources;
 
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.shuffleboard.api.data.ComplexData;
 import edu.wpi.first.shuffleboard.api.sources.SourceEntry;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
@@ -7,7 +8,6 @@ import edu.wpi.first.shuffleboard.api.sources.recording.TimestampedData;
 import edu.wpi.first.shuffleboard.api.util.AsyncUtils;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
-import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
 
 import java.util.HashMap;
 import java.util.List;
@@ -26,7 +26,8 @@ public final class NetworkTableSourceType extends SourceType {
 
   private NetworkTableSourceType() {
     super("NetworkTable", true, "network_table://", NetworkTableSource::forKey);
-    NetworkTablesJNI.addEntryListener("", (uid, key, value, flags) -> {
+    NetworkTableInstance inst = NetworkTableInstance.getDefault();
+    inst.getTable("").addEntryListener("", (table, key, entry, value, flags) -> {
       AsyncUtils.runAsync(() -> {
         NetworkTableUtils.getHierarchy(key)
             .stream()
@@ -89,7 +90,8 @@ public final class NetworkTableSourceType extends SourceType {
   @Override
   public SourceEntry createSourceEntryForUri(String uri) {
     String key = removeProtocol(uri);
-    return new NetworkTableEntry(key, NetworkTablesJNI.getValue(key, null));
+    NetworkTableInstance inst = NetworkTableInstance.getDefault();
+    return new NetworkTableSourceEntry(key, inst.getEntry(key).getValue());
   }
 
   @Override
