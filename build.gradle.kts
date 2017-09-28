@@ -153,6 +153,15 @@ subprojects {
         }
     }
 
+    if (project.hasProperty("jenkinsBuild")) {
+        junitPlatform {
+            filters {
+                tags {
+                    exclude("NonJenkinsTest")
+                }
+            }
+        }
+    }
 }
 
 project(":app") {
