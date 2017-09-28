@@ -59,6 +59,7 @@ public class BooleanBoxTest extends AbstractWidgetTest {
   }
 
   @Test
+  @Disabled
   public void testChangeFalseColor() {
     widget.getSource().setData(false);
     widget.setFalseColor(Color.BLACK);
