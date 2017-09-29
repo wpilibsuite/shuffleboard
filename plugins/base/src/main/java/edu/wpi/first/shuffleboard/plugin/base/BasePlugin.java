@@ -26,6 +26,7 @@ import edu.wpi.first.shuffleboard.plugin.base.data.types.StringArrayType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.StringType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.SubsystemType;
 import edu.wpi.first.shuffleboard.plugin.base.layout.ListLayout;
+import edu.wpi.first.shuffleboard.plugin.base.layout.SubsystemLayout;
 import edu.wpi.first.shuffleboard.plugin.base.recording.serialization.BooleanArrayAdapter;
 import edu.wpi.first.shuffleboard.plugin.base.recording.serialization.NumberArrayAdapter;
 import edu.wpi.first.shuffleboard.plugin.base.recording.serialization.StringAdapter;
@@ -88,7 +89,8 @@ public class BasePlugin extends Plugin {
         WidgetType.forAnnotatedWidget(EncoderWidget.class),
         WidgetType.forAnnotatedWidget(SpeedController.class),
         WidgetType.forAnnotatedWidget(CommandWidget.class),
-        new LayoutClass<>("List Layout", ListLayout.class)
+        new LayoutClass<>("List Layout", ListLayout.class),
+        new LayoutClass<>("Subsystem Layout", SubsystemLayout.class)
     );
   }
 
@@ -118,7 +120,7 @@ public class BasePlugin extends Plugin {
         .put(new EncoderType(), WidgetType.forAnnotatedWidget(EncoderWidget.class))
         .put(new SpeedControllerType(), WidgetType.forAnnotatedWidget(SpeedController.class))
         .put(new CommandType(), WidgetType.forAnnotatedWidget(CommandWidget.class))
-        .put(new SubsystemType(), new LayoutClass<>("List Layout", ListLayout.class))
+        .put(new SubsystemType(), new LayoutClass<>("Subsystem Layout", SubsystemLayout.class))
         .build();
   }
 
