@@ -10,7 +10,7 @@ import edu.wpi.first.shuffleboard.api.sources.recording.serialization.SimpleAdap
 import edu.wpi.first.shuffleboard.api.sources.recording.serialization.TypeAdapter;
 import edu.wpi.first.shuffleboard.api.widget.ComponentType;
 import edu.wpi.first.shuffleboard.api.widget.LayoutClass;
-import edu.wpi.first.shuffleboard.api.widget.Widget;
+import edu.wpi.first.shuffleboard.api.widget.WidgetType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.AnalogInputType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.BooleanArrayType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.BooleanType;
@@ -24,6 +24,7 @@ import edu.wpi.first.shuffleboard.plugin.base.data.types.SendableChooserType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.SpeedControllerType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.StringArrayType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.StringType;
+import edu.wpi.first.shuffleboard.plugin.base.data.types.SubsystemType;
 import edu.wpi.first.shuffleboard.plugin.base.layout.ListLayout;
 import edu.wpi.first.shuffleboard.plugin.base.recording.serialization.BooleanArrayAdapter;
 import edu.wpi.first.shuffleboard.plugin.base.recording.serialization.NumberArrayAdapter;
@@ -67,31 +68,26 @@ public class BasePlugin extends Plugin {
         new EncoderType(),
         new SendableChooserType(),
         new SpeedControllerType(),
+        new SubsystemType(),
         new CommandType()
-    );
-  }
-
-  @Override
-  public List<Class<? extends Widget>> getWidgets() {
-    return ImmutableList.of(
-        BooleanBox.class,
-        ComboBoxChooser.class,
-        CommandWidget.class,
-        EncoderWidget.class,
-        NumberBarWidget.class,
-        NumberSlider.class,
-        PowerDistributionPanelWidget.class,
-        SpeedController.class,
-        TextView.class,
-        ToggleButton.class,
-        ToggleSwitch.class,
-        VoltageViewWidget.class
     );
   }
 
   @Override
   public List<ComponentType> getComponents() {
     return ImmutableList.of(
+        WidgetType.forAnnotatedWidget(BooleanBox.class),
+        WidgetType.forAnnotatedWidget(ToggleButton.class),
+        WidgetType.forAnnotatedWidget(ToggleSwitch.class),
+        WidgetType.forAnnotatedWidget(NumberSlider.class),
+        WidgetType.forAnnotatedWidget(NumberBarWidget.class),
+        WidgetType.forAnnotatedWidget(TextView.class),
+        WidgetType.forAnnotatedWidget(VoltageViewWidget.class),
+        WidgetType.forAnnotatedWidget(PowerDistributionPanelWidget.class),
+        WidgetType.forAnnotatedWidget(ComboBoxChooser.class),
+        WidgetType.forAnnotatedWidget(EncoderWidget.class),
+        WidgetType.forAnnotatedWidget(SpeedController.class),
+        WidgetType.forAnnotatedWidget(CommandWidget.class),
         new LayoutClass<>("List Layout", ListLayout.class)
     );
   }
@@ -111,17 +107,18 @@ public class BasePlugin extends Plugin {
   }
 
   @Override
-  public Map<DataType, Class<? extends Widget>> getDefaultWidgets() {
-    return ImmutableMap.<DataType, Class<? extends Widget>>builder()
-        .put(new BooleanType(), BooleanBox.class)
-        .put(new NumberType(), TextView.class)
-        .put(new StringType(), TextView.class)
-        .put(new AnalogInputType(), VoltageViewWidget.class)
-        .put(new PowerDistributionType(), PowerDistributionPanelWidget.class)
-        .put(new SendableChooserType(), ComboBoxChooser.class)
-        .put(new EncoderType(), EncoderWidget.class)
-        .put(new SpeedControllerType(), SpeedController.class)
-        .put(new CommandType(), CommandWidget.class)
+  public Map<DataType, ComponentType> getDefaultComponents() {
+    return ImmutableMap.<DataType, ComponentType>builder()
+        .put(new BooleanType(), WidgetType.forAnnotatedWidget(BooleanBox.class))
+        .put(new NumberType(), WidgetType.forAnnotatedWidget(TextView.class))
+        .put(new StringType(), WidgetType.forAnnotatedWidget(TextView.class))
+        .put(new AnalogInputType(), WidgetType.forAnnotatedWidget(VoltageViewWidget.class))
+        .put(new PowerDistributionType(), WidgetType.forAnnotatedWidget(PowerDistributionPanelWidget.class))
+        .put(new SendableChooserType(), WidgetType.forAnnotatedWidget(ComboBoxChooser.class))
+        .put(new EncoderType(), WidgetType.forAnnotatedWidget(EncoderWidget.class))
+        .put(new SpeedControllerType(), WidgetType.forAnnotatedWidget(SpeedController.class))
+        .put(new CommandType(), WidgetType.forAnnotatedWidget(CommandWidget.class))
+        .put(new SubsystemType(), new LayoutClass<>("List Layout", ListLayout.class))
         .build();
   }
 

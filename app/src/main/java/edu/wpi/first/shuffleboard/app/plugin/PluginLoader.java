@@ -7,8 +7,8 @@ import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
 import edu.wpi.first.shuffleboard.api.sources.recording.serialization.Serializers;
 import edu.wpi.first.shuffleboard.api.theme.Themes;
-import edu.wpi.first.shuffleboard.api.widget.Widget;
 import edu.wpi.first.shuffleboard.api.widget.Components;
+import edu.wpi.first.shuffleboard.api.widget.Widget;
 import edu.wpi.first.shuffleboard.app.sources.DestroyedSource;
 
 import java.io.File;
@@ -154,14 +154,13 @@ public class PluginLoader {
     plugin.getDataTypes().forEach(DataTypes.getDefault()::register);
     plugin.getSourceTypes().forEach(SourceTypes.getDefault()::register);
     plugin.getTypeAdapters().forEach(Serializers::add);
-    plugin.getWidgets().forEach(Components.getDefault()::register);
     plugin.getComponents().forEach(Components.getDefault()::register);
-    plugin.getDefaultWidgets().forEach(Components.getDefault()::setDefaultWidget);
+    plugin.getDefaultComponents().forEach(Components.getDefault()::setDefaultComponent);
     Components.getDefault().getActiveWidgets().stream()
         .filter(w -> w.getSource() instanceof DestroyedSource)
         .filter(w -> {
           DataSource<?> source = w.getSource();
-          return plugin.getWidgets().contains(w.getClass())
+          return plugin.getComponents().stream().anyMatch(t -> t.getName().equals(w.getName()))
               || plugin.getDataTypes().contains(source.getDataType())
               || plugin.getSourceTypes().contains(source.getType());
         })
@@ -202,7 +201,6 @@ public class PluginLoader {
               || plugin.getSourceTypes().contains(source.getType());
         })
         .forEach(w -> w.setSource(new DestroyedSource<>(w.getSource())));
-    plugin.getWidgets().forEach(Components.getDefault()::unregister);
     plugin.getComponents().forEach(Components.getDefault()::unregister);
     plugin.getSourceTypes().forEach(SourceTypes.getDefault()::unregister);
     plugin.getTypeAdapters().forEach(Serializers::remove);

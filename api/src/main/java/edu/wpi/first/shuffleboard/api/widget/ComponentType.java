@@ -9,7 +9,7 @@ import java.util.function.Supplier;
  * <p>It can be thought of as a wrapper around Class&lt;? extends Component&gt; with a
  * more useful API and additional metadata.
  */
-public interface ComponentType extends Supplier<Component> {
+public interface ComponentType<C extends Component> extends Supplier<C> {
   /**
    * Get the name of the component (ex: "Number Slider").
    */

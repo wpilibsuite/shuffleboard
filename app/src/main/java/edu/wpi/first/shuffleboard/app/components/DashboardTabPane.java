@@ -5,8 +5,11 @@ import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
 import edu.wpi.first.shuffleboard.api.util.Debouncer;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
+import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.Components;
+import edu.wpi.first.shuffleboard.api.widget.Layout;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
+import edu.wpi.first.shuffleboard.api.widget.ComponentContainer;
 import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
 
 import org.fxmisc.easybind.EasyBind;
@@ -14,6 +17,7 @@ import org.fxmisc.easybind.EasyBind;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
@@ -211,13 +215,38 @@ public class DashboardTabPane extends TabPane {
 
           // Don't create widgets for the catchall types
           if (source.getDataType() != DataTypes.Unknown
-              && source.getDataType() != DataTypes.Map
-              && !Components.getDefault().widgetNamesForSource(source).isEmpty()) {
-            Components.getDefault().createWidget(Components.getDefault().widgetNamesForSource(source).get(0), source)
-                .ifPresent(w -> getWidgetPane().addWidget(w));
+              && source.getDataType() != DataTypes.Map) {
+            Components.getDefault().defaultWidgetNameFor(source.getDataType())
+                .flatMap(n -> Components.getDefault().createComponent(n))
+                .map(c -> {
+                  if (c instanceof Widget) {
+                    ((Widget) c).setSource(source);
+                  } else {
+                    c.titleProperty().setValue(source.getName());
+                  }
+                  return c;
+                })
+                .filter(c -> noDuplicateTiles(c))
+                .ifPresent(component -> {
+                  getWidgetPane().components()
+                      .filter(c -> c instanceof ComponentContainer)
+                      .map(c -> (ComponentContainer & Component) c)
+                      .filter(c -> source.getName().startsWith(c.getTitle()) && !c.getTitle().equals(source.getName()))
+                      .findFirst()
+                      .map(c -> (ComponentContainer) c)
+                      .orElseGet(this::getWidgetPane)
+                      .addComponent(component);
+                });
           }
         }
       }
+    }
+
+    private boolean noDuplicateTiles(Component component) {
+      if (component instanceof Layout) {
+        return getWidgetPane().components().noneMatch(c -> c.getTitle().equals(component.getTitle()));
+      }
+      return true;
     }
 
     private boolean shouldAutopopulate(String sourceId) {
@@ -232,9 +261,18 @@ public class DashboardTabPane extends TabPane {
      */
     private boolean noExistingWidgetsForSource(String id) {
       return getWidgetPane().getTiles().stream()
-          .flatMap(t -> t.getContent().allWidgets())
+          .map(Tile::getContent)
+          .flatMap(component -> getWidgets(component))
           .map(Widget::getSource)
           .noneMatch(s -> id.startsWith(s.getId()));
+    }
+
+    private static Stream<Widget> getWidgets(Component component) {
+      if (component instanceof Layout) {
+        return ((Layout) component).getChildren().stream().flatMap(c -> getWidgets(c));
+      } else {
+        return component.allWidgets();
+      }
     }
 
     public WidgetPane getWidgetPane() {

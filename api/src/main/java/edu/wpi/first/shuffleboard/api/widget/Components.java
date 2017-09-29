@@ -37,9 +37,8 @@ public class Components extends Registry<ComponentType> {
   // TODO replace with DI eg Guice
   private static Components defaultInstance = new Components();
 
-  private final Map<String, ComponentType> widgets = new TreeMap<>();
-
-  private final Map<DataType, WidgetType> defaultWidgets = new HashMap<>();
+  private final Map<String, ComponentType<?>> components = new TreeMap<>();
+  private final Map<DataType, ComponentType<?>> defaultComponents = new HashMap<>();
   private final WeakHashMap<Widget, Widget> activeWidgets = new WeakHashMap<>();
 
   /**
@@ -62,10 +61,10 @@ public class Components extends Registry<ComponentType> {
 
   @Override
   public void register(ComponentType type) {
-    if (widgets.containsKey(type.getName())) {
+    if (components.containsKey(type.getName())) {
       throw new IllegalArgumentException("Component class " + type.getClass().getName() + " is already registered");
     }
-    widgets.put(type.getName(), type);
+    components.put(type.getName(), type);
     addItem(type);
   }
 
@@ -73,7 +72,7 @@ public class Components extends Registry<ComponentType> {
    * Convenience overload for registering annotated widgets.
    */
   public <T extends Widget> void register(Class<T> widgetClass) {
-    validateComponentClass(widgetClass);
+    validateAnnotatedComponentClass(widgetClass);
     Description description = widgetClass.getAnnotation(Description.class);
 
     WidgetType widgetType = new AbstractWidgetType(description) {
@@ -93,12 +92,18 @@ public class Components extends Registry<ComponentType> {
     register(widgetType);
   }
 
-  private <T extends Widget> void validateComponentClass(Class<T> componentClass) {
+  /**
+   * Validates a component class. An exception is thrown if the class does not have a {@link Description @Description}
+   * annotation, or if its name is empty.
+   *
+   * @throws InvalidWidgetException if the component class is not valid
+   */
+  public static <T extends Component> void validateAnnotatedComponentClass(Class<T> componentClass) {
     requireNonNull(componentClass, "componentClass");
 
     if (!componentClass.isAnnotationPresent(Description.class)) {
       throw new InvalidWidgetException(
-          "No description present on widget class " + componentClass.getName());
+          "No description present on component class " + componentClass.getName());
     }
     Description description = componentClass.getAnnotation(Description.class);
 
@@ -109,32 +114,17 @@ public class Components extends Registry<ComponentType> {
 
   @Override
   public void unregister(ComponentType type) {
-    widgets.remove(type.getName());
-    List<DataType> defaultWidgetsToRemove = defaultWidgets.entrySet().stream()
+    components.remove(type.getName());
+    List<DataType> defaultWidgetsToRemove = defaultComponents.entrySet().stream()
         .filter(e -> e.getValue().getName().equals(type.getName()))
         .map(Map.Entry::getKey)
         .collect(Collectors.toList());
-    defaultWidgetsToRemove.forEach(defaultWidgets::remove);
+    defaultWidgetsToRemove.forEach(defaultComponents::remove);
     removeItem(type);
   }
 
-  /**
-   * Convenience method for unregistering an annotated class.
-   */
-  public void unregister(Class<? extends Widget> widgetClass) {
-    validateComponentClass(widgetClass);
-    Description description = widgetClass.getAnnotation(Description.class);
-
-    unregister(new AbstractWidgetType(description) {
-      @Override
-      public Component get() {
-        return null;
-      }
-    });
-  }
-
-  public Stream<ComponentType> allComponents() {
-    return widgets.values().stream();
+  public Stream<ComponentType<?>> allComponents() {
+    return components.values().stream();
   }
 
   public Stream<WidgetType> allWidgets() {
@@ -202,14 +192,13 @@ public class Components extends Registry<ComponentType> {
    *
    * @return a ComponentType to create widgets of the same class
    */
-  private Optional<ComponentType> typeFor(String name) {
-    return Optional.ofNullable(widgets.get(name));
+  private Optional<ComponentType<?>> typeFor(String name) {
+    return Optional.ofNullable(components.get(name));
   }
 
   private Set<WidgetType> getWidgetsForType(DataType type) {
     return allWidgets()
-        .filter(d -> d.getDataTypes().contains(DataTypes.All)
-            || d.getDataTypes().contains(type))
+        .filter(d -> DataTypes.isCompatible(type, d.getDataTypes()))
         .collect(Collectors.toSet());
   }
 
@@ -231,29 +220,13 @@ public class Components extends Registry<ComponentType> {
   }
 
   /**
-   * Sets the default widget to use for a given data type.
+   * Sets the default component to use for a given data type.
    *
    * @param dataType   the type to set the default widget for
    * @param widgetType the type of widget to set as the default
    */
-  public void setDefaultWidget(DataType dataType, WidgetType widgetType) {
-    defaultWidgets.put(dataType, widgetType);
-  }
-
-  /**
-   * Sets the default widget to use for a given data type.
-   *
-   * @param dataType    the type to set the default widget for
-   * @param widgetClass the class of the widget to set as the default
-   *
-   * @throws IllegalArgumentException if the widget has not been registered
-   */
-  public void setDefaultWidget(DataType<?> dataType, Class<? extends Widget> widgetClass) {
-    validateComponentClass(widgetClass);
-    ComponentType type = widgets.get(widgetClass.getAnnotation(Description.class).name());
-    if (type instanceof WidgetType) {
-      setDefaultWidget(dataType, (WidgetType) type);
-    }
+  public void setDefaultComponent(DataType dataType, ComponentType<?> widgetType) {
+    defaultComponents.put(dataType, widgetType);
   }
 
   /**
@@ -261,7 +234,7 @@ public class Components extends Registry<ComponentType> {
    * widget for that type.
    */
   public Optional<String> defaultWidgetNameFor(DataType type) {
-    return Optional.ofNullable(defaultWidgets.get(type)).map(WidgetType::getName);
+    return Optional.ofNullable(defaultComponents.get(type)).map(ComponentType::getName);
   }
 
   /**
@@ -291,7 +264,7 @@ public class Components extends Registry<ComponentType> {
   }
 
   /**
-   * Create an instance for an PrametrizedController annotated class.
+   * Create an instance for a ParametrizedController annotated class.
    */
   public static <T> Optional<T> viewFor(Class<T> annotatedClass) {
     ParametrizedController controller = annotatedClass.getAnnotation(ParametrizedController.class);
@@ -302,11 +275,8 @@ public class Components extends Registry<ComponentType> {
         loader.load();
         return Optional.of(loader.getController());
       } catch (IOException e) {
-        logger.log(Level.WARNING, "error creating parametrized controller", e);
+        throw new RuntimeException("Could not instantiate the FXML controller", e);
       }
-    } else {
-      logger.log(Level.WARNING,
-          "No @ParametrizedController annotation on class " + annotatedClass);
     }
 
     return Optional.empty();

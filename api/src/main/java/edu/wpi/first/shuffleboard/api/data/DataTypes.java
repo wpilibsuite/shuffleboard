@@ -12,6 +12,7 @@ import edu.wpi.first.shuffleboard.api.util.TestUtils;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
@@ -241,4 +242,9 @@ public class DataTypes extends Registry<DataType> {
         .flatMap(TypeUtils.optionalStream())
         .collect(Collectors.toSet());
   }
+
+  public static boolean isCompatible(DataType type, Collection<? extends DataType> types) {
+    return All.equals(type) || types.contains(All) || types.contains(type);
+  }
+
 }

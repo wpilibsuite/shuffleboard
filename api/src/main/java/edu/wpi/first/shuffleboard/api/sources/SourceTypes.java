@@ -30,9 +30,8 @@ public final class SourceTypes extends Registry<SourceType> {
           "Static",
           false,
           "example://",
-          uri -> {
-            return DummySource.forTypes(DataTypes.getDefault().forName(uri).get()).get();
-          });
+          uri -> DummySource.forTypes(DataTypes.getDefault().forName(uri).orElse(DataTypes.Unknown))
+              .orElseGet(DataSource::none));
 
   /**
    * Gets the default source type registry.

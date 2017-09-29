@@ -5,6 +5,7 @@ import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.TileSize;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
+import edu.wpi.first.shuffleboard.api.widget.ComponentContainer;
 import edu.wpi.first.shuffleboard.app.dnd.DragUtils;
 
 import org.fxmisc.easybind.EasyBind;
@@ -12,6 +13,7 @@ import org.fxmisc.easybind.EasyBind;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.Property;
@@ -27,7 +29,7 @@ import javafx.scene.layout.StackPane;
 /**
  * A type of tile pane specifically for widgets.
  */
-public class WidgetPane extends TilePane {
+public class WidgetPane extends TilePane implements ComponentContainer {
 
   private final ObservableList<Tile> tiles;
   private final Pane gridHighlight = new StackPane();
@@ -148,6 +150,16 @@ public class WidgetPane extends TilePane {
     return tile;
   }
 
+  @Override
+  public void addComponent(Component component) {
+    if (component instanceof Widget) {
+      addWidget((Widget) component);
+    } else {
+      TileSize size = sizeOfWidget(component);
+      addComponent(component, firstPoint(size.getWidth(), size.getHeight()), size);
+    }
+  }
+
   /**
   * Add an arbitrary component to the WidgetPane in the specified location.
   * The tile will be the specified size.
@@ -160,6 +172,11 @@ public class WidgetPane extends TilePane {
     tile.sizeProperty().addListener(__ -> setSize(tile, tile.getSize()));
     addTile(tile, location, size);
     return tile;
+  }
+
+  @Override
+  public Stream<Component> components() {
+    return tiles.stream().map(Tile::getContent);
   }
 
   /**
@@ -180,7 +197,7 @@ public class WidgetPane extends TilePane {
   /**
    * Get the expected size of the widget, in tiles.
    */
-  public TileSize sizeOfWidget(Widget widget) {
+  public TileSize sizeOfWidget(Component widget) {
     Pane view = widget.getView();
     double width = Math.max(getTileSize(), view.getPrefWidth());
     double height = Math.max(getTileSize(), view.getPrefHeight());

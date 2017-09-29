@@ -5,11 +5,11 @@ import com.google.common.collect.ImmutableMap;
 
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
-import edu.wpi.first.shuffleboard.api.data.types.MapType;
 import edu.wpi.first.shuffleboard.api.plugin.Plugin;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
-import edu.wpi.first.shuffleboard.api.widget.Widget;
+import edu.wpi.first.shuffleboard.api.widget.ComponentType;
+import edu.wpi.first.shuffleboard.api.widget.WidgetType;
 import edu.wpi.first.shuffleboard.plugin.networktables.sources.NetworkTableSourceType;
 import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
 
@@ -48,9 +48,9 @@ public class NetworkTablesPlugin extends Plugin {
   }
 
   @Override
-  public List<Class<? extends Widget>> getWidgets() {
+  public List<ComponentType> getComponents() {
     return ImmutableList.of(
-        NetworkTableTreeWidget.class
+        WidgetType.forAnnotatedWidget(NetworkTableTreeWidget.class)
     );
   }
 
@@ -62,9 +62,9 @@ public class NetworkTablesPlugin extends Plugin {
   }
 
   @Override
-  public Map<DataType, Class<? extends Widget>> getDefaultWidgets() {
+  public Map<DataType, ComponentType> getDefaultComponents() {
     return ImmutableMap.of(
-        new MapType(), NetworkTableTreeWidget.class
+        DataTypes.Map, WidgetType.forAnnotatedWidget(NetworkTableTreeWidget.class)
     );
   }
 

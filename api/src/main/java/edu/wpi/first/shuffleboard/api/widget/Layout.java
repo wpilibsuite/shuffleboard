@@ -4,12 +4,23 @@ import java.util.Collection;
 import java.util.stream.Stream;
 
 /**
- * A Layout is a dashboard Component that holds other Components (i.e., widgets) in a nested fashion.
+ * A Layout is a dashboard Component that holds other Components (i.e., widgets or other layouts) in a nested fashion.
  */
-public interface Layout extends Component {
+public interface Layout extends Component, ComponentContainer {
+
   Collection<Component> getChildren();
 
   void addChild(Component widget);
+
+  @Override
+  default void addComponent(Component component) {
+    addChild(component);
+  }
+
+  @Override
+  default Stream<Component> components() {
+    return getChildren().stream();
+  }
 
   default Stream<Widget> allWidgets() {
     return getChildren().stream().flatMap(Component::allWidgets);

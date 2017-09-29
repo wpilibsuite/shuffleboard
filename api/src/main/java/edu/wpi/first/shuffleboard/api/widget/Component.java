@@ -19,6 +19,14 @@ public interface Component {
    */
   Property<String> titleProperty();
 
+  default String getTitle() {
+    return titleProperty().getValue();
+  }
+
+  default void setTitle(String title) {
+    titleProperty().setValue(title);
+  }
+
   /**
    * All of the widgets contained by or represented by this one, if any.
    */

@@ -231,7 +231,8 @@ public class MainWindowController {
         .map(DashboardTabPane.DashboardTab::getWidgetPane)
         .forEach(pane ->
           pane.getTiles().stream()
-              .filter(tile -> plugin.getWidgets().contains(tile.getContent().getClass()))
+              .filter(tile -> plugin.getComponents().stream()
+                  .anyMatch(t -> tile.getContent().getName().equals(t.getName())))
               .collect(Collectors.toList()) // collect into temporary list to prevent comodification
               .forEach(tile -> pane.getChildren().remove(tile)));
     // ... and from the gallery

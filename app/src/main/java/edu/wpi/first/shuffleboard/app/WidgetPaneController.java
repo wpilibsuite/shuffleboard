@@ -84,9 +84,9 @@ public class WidgetPaneController {
         SourceEntry entry = (SourceEntry) event.getDragboard().getContent(DataFormats.source);
         DataSource source = entry.get();
         Optional<String> widgetName = Components.getDefault().pickWidgetNameFor(source.getDataType());
-        Optional<DummySource> dummySource = DummySource.forTypes(source.getDataType());
+        Optional<DataSource<?>> dummySource = DummySource.forTypes(source.getDataType());
         if (widgetName.isPresent() && dummySource.isPresent()) {
-          Components.getDefault().createWidget(widgetName.get(), (DataSource<?>) dummySource.get()).ifPresent(w -> {
+          Components.getDefault().createWidget(widgetName.get(), dummySource.get()).ifPresent(w -> {
             pane.setHighlight(true);
             pane.setHighlightPoint(point);
             pane.setHighlightSize(pane.sizeOfWidget(w));
@@ -371,7 +371,7 @@ public class WidgetPaneController {
           wrapItem.setOnAction(__ -> {
             TileLayout was = pane.getTileLayout(tile);
             Component content = pane.removeTile(tile);
-            Layout layout = (Layout) layoutType.get();
+            Layout layout = layoutType.get();
             layout.addChild(content);
             pane.addComponent(layout, was.origin, was.size);
           });

@@ -30,7 +30,7 @@ public class ComboBoxChooserTest extends AbstractWidgetTest {
 
   @Override
   public void start(Stage stage) throws Exception {
-    source = DummySource.forTypes(new SendableChooserType()).get();
+    source = DummySource.forType(new SendableChooserType());
     widget = (ComboBoxChooser)
         Components.getDefault().createWidget("ComboBox Chooser", source).get();
 
