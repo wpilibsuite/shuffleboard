@@ -2,10 +2,8 @@ package edu.wpi.first.shuffleboard.plugin.cameraserver.source;
 
 import edu.wpi.cscore.CvSink;
 import edu.wpi.cscore.HttpCamera;
-import edu.wpi.cscore.VideoException;
 import edu.wpi.first.shuffleboard.api.sources.AbstractDataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
-import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
 import edu.wpi.first.shuffleboard.api.util.EqualityUtils;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.api.util.ThreadUtils;
@@ -20,11 +18,9 @@ import org.opencv.core.Mat;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
@@ -52,7 +48,8 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
   private final ChangeListener<Boolean> enabledListener;
   private Future<?> frameFuture = null;
   private final ChangeListener<CameraServerData> recordingListener = (__, prev, cur) -> {
-    Recorder.getInstance().recordCurrentValue(this);
+    // TODO enable after fixing recording/playback bugs
+    //Recorder.getInstance().recordCurrentValue(this);
   };
   private final ITable table;
 
@@ -61,11 +58,11 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
     setName(name);
     table = rootTable.getSubTable(name);
     videoSink = new CvSink(name + "-videosink");
-    try {
-      camera = new HttpCamera(name, removeCameraProtocols(table.getStringArray("streams", emptyStringArray)));
+
+    String[] streamUrls = removeCameraProtocols(table.getStringArray("streams", emptyStringArray));
+    if (streamUrls.length > 0) {
+      camera = new HttpCamera(name, streamUrls);
       videoSink.setSource(camera);
-    } catch (VideoException e) {
-      //
     }
 
     streamsListener = NetworkTableUtils.createListenerEx((source, key, value, flags) -> {

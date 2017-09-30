@@ -22,7 +22,8 @@ public final class CameraServerSourceType extends SourceType {
   private static final ObservableMap<String, Object> availableSources = FXCollections.observableHashMap();
 
   private CameraServerSourceType() {
-    super("CameraServer", true, "camera_server://", CameraServerSource::forName);
+    // TODO fix bugs with recording before enabling it on master
+    super("CameraServer", false, "camera_server://", CameraServerSource::forName);
     NetworkTablesJNI.addEntryListener("/CameraPublisher", (uid, key, value, flags) -> {
       Platform.runLater(() -> {
         List<String> hierarchy = NetworkTableUtils.getHierarchy(key);
