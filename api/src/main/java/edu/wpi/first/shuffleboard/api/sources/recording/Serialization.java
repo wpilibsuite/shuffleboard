@@ -7,6 +7,7 @@ import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.sources.recording.serialization.TypeAdapter;
 import edu.wpi.first.shuffleboard.api.sources.recording.serialization.Serializers;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
@@ -131,6 +132,7 @@ public final class Serialization {
     if (magic != MAGIC_NUMBER) {
       throw new IOException("Wrong magic number in the header. Expected " + MAGIC_NUMBER + ", but was " + magic);
     }
+    Serializers.getAdapters().forEach(a -> a.setCurrentFile(new File(file)));
     //final int numDataPoints = readInt(bytes, 4);
     final String[] sourceNames = readStringArray(bytes, 8);
 

@@ -1,6 +1,7 @@
 include ":api"
 include ":app"
 include ":plugins:base"
+include ":plugins:cameraserver"
 include ":plugins:networktables"
 
 rootProject.children.each { project ->
