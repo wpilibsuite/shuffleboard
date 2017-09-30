@@ -4,8 +4,6 @@ import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
 
-import org.fxmisc.easybind.EasyBind;
-
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -79,11 +77,6 @@ public interface Widget extends Component {
    * Gets the user-configurable properties for this widget.
    */
   List<Property<?>> getProperties();
-
-  @Override
-  default Property<String> titleProperty() {
-    return EasyBind.monadic(sourceProperty()).selectProperty(DataSource::nameProperty);
-  }
 
   @Override
   default Stream<Widget> allWidgets() {

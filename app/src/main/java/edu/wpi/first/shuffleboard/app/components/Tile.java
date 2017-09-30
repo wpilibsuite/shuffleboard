@@ -16,6 +16,8 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.control.Label;
+import javafx.scene.control.OverrunStyle;
 import javafx.scene.layout.BorderPane;
 
 /**
@@ -46,6 +48,7 @@ public class Tile<T extends Component> extends BorderPane {
     ((EditableLabel) lookup("#titleLabel")).textProperty().bindBidirectional(
         EasyBind.monadic(contentProperty()).selectProperty(Component::titleProperty)
     );
+    ((Label) lookup("#titleLabel").lookup(".label")).setTextOverrun(OverrunStyle.LEADING_ELLIPSIS);
     centerProperty().bind(EasyBind.monadic(contentProperty()).map(Component::getView));
   }
 

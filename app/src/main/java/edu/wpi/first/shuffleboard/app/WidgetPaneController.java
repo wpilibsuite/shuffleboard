@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.WeakHashMap;
 import java.util.function.Function;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -50,6 +51,8 @@ import javafx.scene.layout.Region;
 // needs refactoring to split out per-widget interaction
 @SuppressWarnings("PMD.GodClass")
 public class WidgetPaneController {
+
+  private static final Logger log = Logger.getLogger(WidgetPaneController.class.getName());
 
   @FXML
   private WidgetPane pane;
@@ -284,10 +287,10 @@ public class WidgetPaneController {
           return;
         }
         pane.tileMatching(t -> t.getId().equals(data.getId()))
-                .ifPresent(t -> {
-                  Component content = pane.removeTile(t);
-                  ((LayoutTile) tile).getContent().addChild(content);
-                });
+            .ifPresent(t -> {
+              Component content = pane.removeTile(t);
+              ((LayoutTile) tile).getContent().addChild(content);
+            });
         event.consume();
 
         return;
@@ -310,10 +313,10 @@ public class WidgetPaneController {
         Layout container = ((LayoutTile) tile).getContent();
         DataSource<?> source = entry.get();
         Components.getDefault().widgetNamesForSource(entry.get())
-                .stream()
-                .findAny()
-                .flatMap(name -> Components.getDefault().createWidget(name, source))
-                .ifPresent(container::addChild);
+            .stream()
+            .findAny()
+            .flatMap(name -> Components.getDefault().createWidget(name, source))
+            .ifPresent(container::addChild);
         event.consume();
 
         return;
@@ -390,21 +393,21 @@ public class WidgetPaneController {
     Widget widget = tile.getContent();
     Menu changeView = new Menu("Show as...");
     Components.getDefault().widgetNamesForType(widget.getSource().getDataType())
-           .stream()
-           .sorted()
-           .forEach(name -> {
-             MenuItem changeItem = new MenuItem(name);
-             if (name.equals(widget.getName())) {
-               changeItem.setGraphic(new Label("✓"));
-             } else {
-               // only need to change if it's to another type
-               changeItem.setOnAction(__ -> {
-                 Components.getDefault().createWidget(name, widget.getSource())
-                        .ifPresent(tile::setContent);
-               });
-             }
-             changeView.getItems().add(changeItem);
-           });
+        .stream()
+        .sorted()
+        .forEach(name -> {
+          MenuItem changeItem = new MenuItem(name);
+          if (name.equals(widget.getName())) {
+            changeItem.setGraphic(new Label("✓"));
+          } else {
+            // only need to change if it's to another type
+            changeItem.setOnAction(__ -> {
+              Components.getDefault().createWidget(name, widget.getSource())
+                  .ifPresent(tile::setContent);
+            });
+          }
+          changeView.getItems().add(changeItem);
+        });
     return changeView;
   }
 
@@ -438,9 +441,9 @@ public class WidgetPaneController {
    * @param shrink               the function to use to shrink the tile
    */
   private Optional<Runnable> collapseTile(Tile tile,
-                                      Function<TileLayout, TileLayout> targetLayoutFunction,
-                                      Function<TileSize, TileSize> shrink,
-                                      boolean left) {
+                                          Function<TileLayout, TileLayout> targetLayoutFunction,
+                                          Function<TileSize, TileSize> shrink,
+                                          boolean left) {
     TileSize minSize = pane.round(tile.getContent().getView().getMinWidth(),
         tile.getContent().getView().getMinHeight());
     TileLayout layout = pane.getTileLayout(tile);
