@@ -10,6 +10,7 @@ import edu.wpi.first.shuffleboard.api.widget.Components;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.testfx.framework.junit5.ApplicationTest;
 
@@ -65,6 +66,7 @@ public class WidgetSaverTest extends ApplicationTest {
   }
 
   @Test
+  @Tag("NonJenkinsTest") // More info here: https://github.com/wpilibsuite/shuffleboard/issues/214
   public void loadSimpleWidget() throws Exception {
     Components.getDefault().register(SimpleWidget.class);
     String widgetJson = "{\n"
