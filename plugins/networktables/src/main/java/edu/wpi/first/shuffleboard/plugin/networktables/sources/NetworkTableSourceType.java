@@ -45,6 +45,7 @@ public final class NetworkTableSourceType extends SourceType {
 
   @Override
   public void read(TimestampedData recordedData) {
+    super.read(recordedData);
     // Update all possible sources for the entry
     // This is a special case because of the treelike structure of network tables
     final String fullKey = NetworkTableSourceType.INSTANCE.removeProtocol(recordedData.getSourceId());
