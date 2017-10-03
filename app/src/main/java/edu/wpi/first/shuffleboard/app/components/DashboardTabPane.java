@@ -5,8 +5,8 @@ import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
 import edu.wpi.first.shuffleboard.api.util.Debouncer;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
+import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
-import edu.wpi.first.shuffleboard.api.widget.Widgets;
 import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
 
 import org.fxmisc.easybind.EasyBind;
@@ -151,34 +151,37 @@ public class DashboardTabPane extends TabPane {
       sourcePrefix.addListener(__ -> populateDebouncer.run());
       availableSourceIds.addListener((ListChangeListener<String>) c -> populateDebouncer.run());
 
-      setContextMenu(new ContextMenu(FxUtils.menuItem("Preferences", e -> {
-        // Use a dummy property here to prevent a call to populate() on every keystroke in the editor (!)
-        StringProperty dummySourcePrefix
-            = new SimpleStringProperty(sourcePrefix.getBean(), sourcePrefix.getName(), sourcePrefix.getValue());
-        WidgetPropertySheet propertySheet = new WidgetPropertySheet(
-            Arrays.asList(
-                this.title,
-                this.autoPopulate,
-                dummySourcePrefix,
-                getWidgetPane().tileSizeProperty()
-            ));
-        propertySheet.getItems().addAll(
-            new WidgetPropertySheet.PropertyItem<>(getWidgetPane().hgapProperty(), "Horizontal spacing"),
-            new WidgetPropertySheet.PropertyItem<>(getWidgetPane().vgapProperty(), "Vertical spacing")
-        );
-        Dialog<ButtonType> dialog = new Dialog<>();
-        dialog.getDialogPane().getStylesheets().setAll(AppPreferences.getInstance().getTheme().getStyleSheets());
-        dialog.setResizable(true);
-        dialog.titleProperty().bind(EasyBind.map(this.title, t -> t + " Preferences"));
+      setContextMenu(new ContextMenu(FxUtils.menuItem("Preferences", __ -> showPrefsDialog())));
+    }
 
-        // property sheet can't be used directly in dialogs because it doesn't respect padding
-        dialog.getDialogPane().setContent(new BorderPane(propertySheet));
-        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CLOSE);
-        dialog.setOnCloseRequest(__ -> {
-          this.sourcePrefix.setValue(dummySourcePrefix.getValue());
-        });
-        dialog.showAndWait();
-      })));
+    /**
+     * Shows a dialog for editing the properties of this tab.
+     */
+    public void showPrefsDialog() {
+      // Use a dummy property here to prevent a call to populate() on every keystroke in the editor (!)
+      StringProperty dummySourcePrefix
+          = new SimpleStringProperty(sourcePrefix.getBean(), sourcePrefix.getName(), sourcePrefix.getValue());
+      WidgetPropertySheet propertySheet = new WidgetPropertySheet(
+          Arrays.asList(
+              this.title,
+              this.autoPopulate,
+              dummySourcePrefix,
+              getWidgetPane().tileSizeProperty()
+          ));
+      propertySheet.getItems().addAll(
+          new WidgetPropertySheet.PropertyItem<>(getWidgetPane().hgapProperty(), "Horizontal spacing"),
+          new WidgetPropertySheet.PropertyItem<>(getWidgetPane().vgapProperty(), "Vertical spacing")
+      );
+      Dialog<ButtonType> dialog = new Dialog<>();
+      dialog.getDialogPane().getStylesheets().setAll(AppPreferences.getInstance().getTheme().getStyleSheets());
+      dialog.setResizable(true);
+      dialog.titleProperty().bind(EasyBind.map(this.title, t -> t + " Preferences"));
+      dialog.getDialogPane().setContent(new BorderPane(propertySheet));
+      dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CLOSE);
+      dialog.setOnCloseRequest(__ -> {
+        this.sourcePrefix.setValue(dummySourcePrefix.getValue());
+      });
+      dialog.showAndWait();
     }
 
     /**
@@ -209,8 +212,8 @@ public class DashboardTabPane extends TabPane {
           // Don't create widgets for the catchall types
           if (source.getDataType() != DataTypes.Unknown
               && source.getDataType() != DataTypes.Map
-              && !Widgets.getDefault().widgetNamesForSource(source).isEmpty()) {
-            Widgets.getDefault().createWidget(Widgets.getDefault().widgetNamesForSource(source).get(0), source)
+              && !Components.getDefault().widgetNamesForSource(source).isEmpty()) {
+            Components.getDefault().createWidget(Components.getDefault().widgetNamesForSource(source).get(0), source)
                 .ifPresent(w -> getWidgetPane().addWidget(w));
           }
         }
@@ -228,13 +231,10 @@ public class DashboardTabPane extends TabPane {
      * @param id the ID of the source to check for
      */
     private boolean noExistingWidgetsForSource(String id) {
-      for (WidgetTile tile : getWidgetPane().getTiles()) {
-        DataSource<?> source = tile.getWidget().getSource();
-        if (id.startsWith(source.getId())) {
-          return false;
-        }
-      }
-      return true;
+      return getWidgetPane().getTiles().stream()
+          .flatMap(t -> t.getContent().allWidgets())
+          .map(Widget::getSource)
+          .noneMatch(s -> id.startsWith(s.getId()));
     }
 
     public WidgetPane getWidgetPane() {

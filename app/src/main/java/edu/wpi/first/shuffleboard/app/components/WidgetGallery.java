@@ -1,6 +1,7 @@
 package edu.wpi.first.shuffleboard.app.components;
 
 import edu.wpi.first.shuffleboard.api.sources.DummySource;
+import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 import edu.wpi.first.shuffleboard.api.widget.WidgetType;
 
@@ -37,7 +38,9 @@ public class WidgetGallery extends TilePane {
    */
   public void setWidgets(Collection<WidgetType> widgets) {
     clear();
-    widgets.stream().map(WidgetType::get)
+    widgets.stream()
+            .map(WidgetType::get)
+            .flatMap(TypeUtils.castStream(Widget.class))
             .peek(widget ->
               widget.setSource(DummySource.forTypes(widget.getDataTypes()))
             )

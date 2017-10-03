@@ -2,6 +2,7 @@ package edu.wpi.first.shuffleboard.api.sources.recording.serialization;
 
 import edu.wpi.first.shuffleboard.api.data.DataType;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -13,6 +14,10 @@ import java.util.Optional;
 public final class Serializers {
 
   private static final Map<DataType, TypeAdapter> serializers = new HashMap<>();
+
+  static {
+    Runtime.getRuntime().addShutdownHook(new Thread(Serializers::cleanUpAll));
+  }
 
   private Serializers() {
   }
@@ -34,6 +39,7 @@ public final class Serializers {
    */
   public static void remove(TypeAdapter typeAdapter) {
     serializers.remove(typeAdapter.getDataType());
+    typeAdapter.cleanUp();
   }
 
   /**
@@ -58,6 +64,14 @@ public final class Serializers {
    */
   public static <T> Optional<TypeAdapter<T>> getOptional(DataType<T> type) {
     return Optional.ofNullable(get(type));
+  }
+
+  public static void cleanUpAll() {
+    serializers.forEach((__, adapter) -> adapter.cleanUp());
+  }
+
+  public static Collection<TypeAdapter> getAdapters() {
+    return serializers.values();
   }
 
 }

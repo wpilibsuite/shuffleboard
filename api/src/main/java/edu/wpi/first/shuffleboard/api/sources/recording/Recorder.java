@@ -2,9 +2,11 @@ package edu.wpi.first.shuffleboard.api.sources.recording;
 
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
+import edu.wpi.first.shuffleboard.api.sources.recording.serialization.Serializers;
 import edu.wpi.first.shuffleboard.api.util.Storage;
 import edu.wpi.first.shuffleboard.api.util.ThreadUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Instant;
@@ -28,6 +30,7 @@ public final class Recorder {
   private final BooleanProperty running = new SimpleBooleanProperty(this, "running", false);
   private Instant startTime = null;
   private Recording recording = null;
+  private File recordingFile;
 
   private Recorder() {
     // Save the recording at the start (get the initial values) and the stop
@@ -50,6 +53,9 @@ public final class Recorder {
     }
     try {
       Path file = Storage.createRecordingFilePath(startTime);
+      if (recordingFile == null) {
+        recordingFile = file.toFile();
+      }
       Serialization.saveRecording(recording, file);
       log.fine("Saved recording to " + file);
     } catch (IOException e) {
@@ -77,6 +83,8 @@ public final class Recorder {
    * Stops recording data.
    */
   public void stop() {
+    Serializers.cleanUpAll();
+    recordingFile = null;
     setRunning(false);
   }
 
@@ -125,4 +133,7 @@ public final class Recorder {
     this.running.set(running);
   }
 
+  public File getRecordingFile() {
+    return recordingFile;
+  }
 }

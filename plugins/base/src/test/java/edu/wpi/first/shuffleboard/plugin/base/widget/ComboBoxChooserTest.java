@@ -3,7 +3,7 @@ package edu.wpi.first.shuffleboard.plugin.base.widget;
 
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.DummySource;
-import edu.wpi.first.shuffleboard.api.widget.Widgets;
+import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.plugin.base.data.SendableChooserData;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.SendableChooserType;
 
@@ -30,7 +30,7 @@ public class ComboBoxChooserTest extends AbstractWidgetTest {
 
   @Override
   public void start(Stage stage) throws Exception {
-    widget = (ComboBoxChooser) Widgets.getDefault().createWidget("ComboBox Chooser",
+    widget = (ComboBoxChooser) Components.getDefault().createWidget("ComboBox Chooser",
         DummySource.forTypes(new SendableChooserType())).get();
     source = widget.getSource();
 

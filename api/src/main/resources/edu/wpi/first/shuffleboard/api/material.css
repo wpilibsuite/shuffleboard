@@ -683,3 +683,37 @@
 .toolbar-colored .text {
     -fx-fill: white;
 }
+
+/*******************************************************************************
+ *                                                                             *
+ * Tabs                                                                        *
+ *                                                                             *
+ ******************************************************************************/
+.tab-pane {
+    -fx-border-color: black;
+}
+
+.tab-header-background {
+    -fx-background-color: -swatch-500;
+}
+
+.tab {
+    -fx-background-color: transparent, -swatch-300, -swatch-dark-gray;
+}
+
+.tab:selected {
+    -fx-background-color: transparent;
+}
+
+.tab .tab-close-button {
+    -fx-background-color: white;
+}
+
+.tab .tab-label {
+    -fx-text-fill: white;
+}
+
+.tab:selected .tab-label {
+    -fx-border-width: 0 0 0.125em 0;
+    -fx-border-color: -fx-text-fill;
+}

@@ -1,86 +1,88 @@
 package edu.wpi.first.shuffleboard.app.components;
 
-import edu.wpi.first.shuffleboard.api.util.PropertyUtils;
-import edu.wpi.first.shuffleboard.api.util.PseudoClassProperty;
+import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.widget.TileSize;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
+import edu.wpi.first.shuffleboard.app.sources.DestroyedSource;
 
-import java.io.IOException;
+import org.fxmisc.easybind.EasyBind;
+import org.fxmisc.easybind.monadic.PropertyBinding;
 
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.Property;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.layout.BorderPane;
+import javafx.css.PseudoClass;
+import javafx.scene.Node;
+import javafx.scene.input.MouseEvent;
 
 /**
  * Represents a tile containing a widget.
  */
-public class WidgetTile extends BorderPane {
-
-  private final Property<Widget> widget = new SimpleObjectProperty<>(this, "widget", null);
-  private final Property<TileSize> size = new SimpleObjectProperty<>(this, "size", null);
-  private final BooleanProperty showWidget = new SimpleBooleanProperty(this, "showWidget", true);
-
-  private final BooleanProperty selected = new PseudoClassProperty(this, "selected");
+public class WidgetTile extends Tile<Widget> {
 
   /**
-   * Creates an empty tile. The widget and size must be set with {@link #setWidget(Widget)} and
-   * {@link #setSize(TileSize)}.
+   * Pseudoclass used on tiles when the widget inside loses its source.
    */
-  public WidgetTile() {
-    try {
-      FXMLLoader loader = new FXMLLoader(WidgetTile.class.getResource("WidgetTile.fxml"));
-      loader.setRoot(this);
-      loader.load();
-      getStyleClass().addAll("tile", "card");
-      PropertyUtils.bindWithConverter(idProperty(), widget, w -> "widget-tile[" + w + "]");
-    } catch (IOException e) {
-      throw new RuntimeException("Could not load the widget tile FXML", e);
-    }
-  }
+  private static final PseudoClass NO_SOURCE = PseudoClass.getPseudoClass("no-source");
+
+  private final BooleanProperty showWidget = new SimpleBooleanProperty(this, "showWidget", true);
+
+  // Store as a field to prevent GC
+  private PropertyBinding<DataSource> retainedSource; //NOPMD could be a local variable
 
   /**
    * Creates a tile with the given widget and size.
    */
   public WidgetTile(Widget widget, TileSize size) {
     this();
-    setWidget(widget);
+    setContent(widget);
     setSize(size);
   }
 
-  public final Widget getWidget() {
-    return widget.getValue();
+  private WidgetTile() {
+    super();
+
+    retainedSource = EasyBind.monadic(contentProperty()).selectProperty(Widget::sourceProperty);
+    retainedSource.addListener((__, oldSource, newSource) -> {
+      if (newSource instanceof DestroyedSource) {
+        pseudoClassStateChanged(NO_SOURCE, true);
+        setDisable(true);
+      } else {
+        pseudoClassStateChanged(NO_SOURCE, false);
+        setDisable(false);
+      }
+    });
+
+    centerProperty().unbind();
+    centerProperty().addListener((obv, oldV, newV) -> setupCenter(newV));
+    centerProperty().bind(Bindings.createObjectBinding(
+            this::createCenter, contentProperty(), showWidgetProperty()));
   }
 
-  public final Property<Widget> widgetProperty() {
-    return widget;
+  private void setupCenter(Node newV) {
+    if (newV != null) {
+      newV.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
+        if (event.getClickCount() == 2) {
+          toggleShowWidget();
+        }
+      });
+    }
   }
 
-  /**
-   * Sets the widget for this tile. This tile will update to show the view fo the given widget;
-   * however, the tile will not change size. The size must be set separately with
-   * {@link #setSize(TileSize)}.
-   */
-  public final void setWidget(Widget widget) {
-    this.widget.setValue(widget);
+  private Node createCenter() {
+    if (getContent() == null) {
+      return null;
+    } else if (isShowWidget() || getContent().getProperties().isEmpty()) {
+      return getContent().getView();
+    } else {
+      return createPrefsController(getContent());
+    }
   }
 
-  public final TileSize getSize() {
-    return size.getValue();
-  }
-
-  public final Property<TileSize> sizeProperty() {
-    return size;
-  }
-
-  /**
-   * Sets the size of this tile. This does not directly change the size of the tile; it is up to
-   * the parent pane to actually resize this tile.
-   */
-  public final void setSize(TileSize size) {
-    this.size.setValue(size);
+  private Node createPrefsController(Widget widget) {
+    WidgetPropertySheet propertySheet = new WidgetPropertySheet(widget.getProperties());
+    propertySheet.setOnDragDetected(getOnDragDetected());
+    return propertySheet;
   }
 
   public boolean isShowWidget() {
@@ -99,15 +101,4 @@ public class WidgetTile extends BorderPane {
     setShowWidget(!isShowWidget());
   }
 
-  public boolean isSelected() {
-    return selected.get();
-  }
-
-  public void setSelected(boolean value) {
-    selected.set(value);
-  }
-
-  public BooleanProperty selectedProperty() {
-    return selected;
-  }
 }

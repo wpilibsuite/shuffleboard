@@ -91,15 +91,11 @@ public class SourceType {
 
   /**
    * Reads a data point and passes it to all appropriate sources of this type.The default
-   * behavior is to do {
-   * nothing;
-   * }
-   * recordable subclasses <i > must </i > override this method.
+   * behavior is to do nothing; recordable subclasses <i> must </i> override this method.
    */
   public void read(TimestampedData recordedData) {
-    if (isRecordable) {
-      throw new AbstractMethodError("A recordable source type must implement this method");
-    }
+    getAvailableSourceUris().add(recordedData.getSourceId());
+    getAvailableSources().put(recordedData.getSourceId(), recordedData.getData());
   }
 
   /**

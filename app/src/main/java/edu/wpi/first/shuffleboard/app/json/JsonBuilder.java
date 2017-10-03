@@ -30,7 +30,7 @@ public final class JsonBuilder {
 
     try {
       for (Class<?> c : typeAdapters()) {
-        builder.registerTypeAdapter(
+        builder.registerTypeHierarchyAdapter(
                 c.getAnnotation(AnnotatedTypeAdapter.class).forType(),
                 c.newInstance());
       }
