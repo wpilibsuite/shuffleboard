@@ -1,0 +1,33 @@
+[
+  {
+    "title": "SmartDashboard",
+    "widgetPane": {
+      "1,1": {
+        "size": [
+          1,
+          1
+        ],
+        "content": {
+          "_type": "Boolean Box",
+          "_source": "example://",
+          "colorWhenTrue": "#7CFC00FF",
+          "colorWhenFalse": "#8B0000FF"
+        }
+      },
+      "4,3": {
+        "size": [
+          2,
+          1
+        ],
+        "content": {
+          "_type": "Encoder",
+          "_source": "example://"
+        }
+      }
+    }
+  },
+  {
+    "title": "LiveWindow",
+    "widgetPane": {}
+  }
+]
