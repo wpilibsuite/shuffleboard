@@ -50,6 +50,7 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.SplitPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.TreeItem;
@@ -81,7 +82,9 @@ public class MainWindowController {
   @FXML
   private WidgetGallery widgetGallery;
   @FXML
-  private BorderPane root;
+  private Pane root;
+  @FXML
+  private SplitPane centerSplitPane;
   @FXML
   private DashboardTabPane dashboard;
   @FXML
@@ -278,8 +281,9 @@ public class MainWindowController {
    */
   public void setDashboard(DashboardTabPane dashboard) {
     dashboard.setId("dashboard");
+    centerSplitPane.getItems().remove(this.dashboard);
     this.dashboard = dashboard;
-    root.setCenter(dashboard);
+    centerSplitPane.getItems().add(dashboard);
   }
 
   @FXML
