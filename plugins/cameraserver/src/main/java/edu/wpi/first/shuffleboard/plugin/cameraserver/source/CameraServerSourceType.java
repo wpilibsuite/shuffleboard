@@ -1,11 +1,11 @@
 package edu.wpi.first.shuffleboard.plugin.cameraserver.source;
 
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.shuffleboard.api.sources.SourceEntry;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.recording.TimestampedData;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.data.CameraServerData;
-import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
 
 import java.util.List;
 
@@ -24,25 +24,24 @@ public final class CameraServerSourceType extends SourceType {
   private CameraServerSourceType() {
     // TODO fix bugs with recording before enabling it on master
     super("CameraServer", false, "camera_server://", CameraServerSource::forName);
-    NetworkTablesJNI.addEntryListener("/CameraPublisher", (uid, key, value, flags) -> {
-      Platform.runLater(() -> {
-        List<String> hierarchy = NetworkTableUtils.getHierarchy(key);
-        // 0 is "/", 1 is "/CameraPublisher", 2 is "/CameraPublisher/<name>"
-        String name = NetworkTableUtils.simpleKey(hierarchy.get(2));
-        String uri = toUri(name);
-        if (CameraServerSource.rootTable.getSubTable(name).getKeys().isEmpty()
-            && CameraServerSource.rootTable.getSubTable(name).getSubTables().isEmpty()) {
-          // No keys and no subtables, remove it
-          availableUris.remove(uri);
-          availableSources.remove(uri);
-        } else if (!NetworkTableUtils.isDelete(flags)) {
-          if (!availableUris.contains(uri)) {
-            availableUris.add(uri);
+    NetworkTableInstance.getDefault().addEntryListener("/CameraPublisher", entryNotification ->
+        Platform.runLater(() -> {
+          List<String> hierarchy = NetworkTableUtils.getHierarchy(entryNotification.name);
+          // 0 is "/", 1 is "/CameraPublisher", 2 is "/CameraPublisher/<name>"
+          String name = NetworkTableUtils.simpleKey(hierarchy.get(2));
+          String uri = toUri(name);
+          if (NetworkTableInstance.getDefault().getTable(name).getKeys().isEmpty()
+              && NetworkTableInstance.getDefault().getTable(name).getSubTables().isEmpty()) {
+            // No keys and no subtables, remove it
+            availableUris.remove(uri);
+            availableSources.remove(uri);
+          } else if (!NetworkTableUtils.isDelete(entryNotification.flags)) {
+            if (!availableUris.contains(uri)) {
+              availableUris.add(uri);
+            }
+            availableSources.put(uri, new CameraServerData(name, null));
           }
-          availableSources.put(uri, new CameraServerData(name, null));
-        }
-      });
-    }, 0xFF);
+        }), 0xFF);
   }
 
   @Override
