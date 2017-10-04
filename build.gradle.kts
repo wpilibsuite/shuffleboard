@@ -34,6 +34,17 @@ allprojects {
             ktlint("0.9.1")
             endWithNewline()
         }
+        freshmark {
+            trimTrailingWhitespace()
+            indentWithSpaces()
+            endWithNewline()
+        }
+        format("extraneous") {
+            target("Dockerfile", "*.sh", "*.yml")
+            trimTrailingWhitespace()
+            indentWithSpaces()
+            endWithNewline()
+        }
     }
 }
 
