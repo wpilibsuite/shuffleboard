@@ -96,6 +96,11 @@ subprojects {
         effort = "max"
     }
 
+    tasks.withType<JavaCompile> {
+        // UTF-8 characters are used in menus
+        options.encoding = "UTF-8"
+    }
+
     tasks.withType<FindBugs> {
         reports {
             xml.isEnabled = false
