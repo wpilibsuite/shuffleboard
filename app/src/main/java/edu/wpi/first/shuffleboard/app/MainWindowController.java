@@ -327,7 +327,6 @@ public class MainWindowController {
   }
 
   private void saveFile(File selected) {
-    JsonBuilder.forSaveFile().toJson(dashboard, DashboardTabPane.class, System.out);
     try {
       Writer writer = Files.newWriter(selected, Charset.forName("UTF-8"));
 
