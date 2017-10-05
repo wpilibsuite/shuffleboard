@@ -2,6 +2,7 @@ package edu.wpi.first.shuffleboard.plugin.base;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.plugin.Plugin;
@@ -46,6 +47,7 @@ import edu.wpi.first.shuffleboard.plugin.base.widget.VoltageViewWidget;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class BasePlugin extends Plugin {
 
@@ -90,7 +92,7 @@ public class BasePlugin extends Plugin {
         WidgetType.forAnnotatedWidget(SpeedController.class),
         WidgetType.forAnnotatedWidget(CommandWidget.class),
         new LayoutClass<>("List Layout", ListLayout.class),
-        new LayoutClass<>("Subsystem Layout", SubsystemLayout.class)
+        createSubsystemLayoutType()
     );
   }
 
@@ -120,8 +122,17 @@ public class BasePlugin extends Plugin {
         .put(new EncoderType(), WidgetType.forAnnotatedWidget(EncoderWidget.class))
         .put(new SpeedControllerType(), WidgetType.forAnnotatedWidget(SpeedController.class))
         .put(new CommandType(), WidgetType.forAnnotatedWidget(CommandWidget.class))
-        .put(new SubsystemType(), new LayoutClass<>("Subsystem Layout", SubsystemLayout.class))
+        .put(new SubsystemType(), createSubsystemLayoutType())
         .build();
+  }
+
+  private static LayoutClass<SubsystemLayout> createSubsystemLayoutType() {
+    return new LayoutClass<SubsystemLayout>("Subsystem Layout", SubsystemLayout.class) {
+      @Override
+      public Set<DataType> getDataTypes() {
+        return ImmutableSet.of(new SubsystemType());
+      }
+    };
   }
 
 }

@@ -115,11 +115,11 @@ public class Components extends Registry<ComponentType> {
   @Override
   public void unregister(ComponentType type) {
     components.remove(type.getName());
-    List<DataType> defaultWidgetsToRemove = defaultComponents.entrySet().stream()
+    List<DataType> defaultComponentsToRemove = defaultComponents.entrySet().stream()
         .filter(e -> e.getValue().getName().equals(type.getName()))
         .map(Map.Entry::getKey)
         .collect(Collectors.toList());
-    defaultWidgetsToRemove.forEach(defaultComponents::remove);
+    defaultComponentsToRemove.forEach(defaultComponents::remove);
     removeItem(type);
   }
 
@@ -170,6 +170,25 @@ public class Components extends Registry<ComponentType> {
     }
   }
 
+  /**
+   * Creates a new component with the given name. If the component takes a source (ie implements {@link Sourced}),
+   * its source will be set to the one provided.
+   *
+   * @param name   the name of the component to create
+   * @param source the source for the created component to use, if the component accepts one
+   *
+   * @return an optional containing the created component, or empty if no component with the given name is registered
+   */
+  public Optional<? extends Component> createComponent(String name, DataSource<?> source) {
+    return createComponent(name)
+        .map(c -> {
+          if (c instanceof Sourced) {
+            ((Sourced) c).setSource(source);
+          }
+          return c;
+        });
+  }
+
   public Optional<Type> javaTypeFor(String name) {
     return typeFor(name).map(ComponentType::get).map(Object::getClass);
   }
@@ -196,25 +215,25 @@ public class Components extends Registry<ComponentType> {
     return Optional.ofNullable(components.get(name));
   }
 
-  private Set<WidgetType> getWidgetsForType(DataType type) {
-    return allWidgets()
+  private Set<ComponentType<?>> getComponentsForType(DataType type) {
+    return allComponents()
         .filter(d -> DataTypes.isCompatible(type, d.getDataTypes()))
         .collect(Collectors.toSet());
   }
 
   /**
-   * Gets the names of all the possible widget that can display the given type, sorted alphabetically. A widget can be
-   * created for these with {@link #createWidget(String, DataSource) createWidget}.
+   * Gets the names of all the possible components that can display the given type, sorted alphabetically. A component
+   * can be created for these with {@link #createWidget(String, DataSource) createWidget}.
    *
    * @param type the type of data to get possible widgets for.
    *
    * @return an alphabetically sorted list containing the names of all known widgets that can display data of the
    *         given type
    */
-  public List<String> widgetNamesForType(DataType type) {
-    return getWidgetsForType(type)
+  public List<String> componentNamesForType(DataType type) {
+    return getComponentsForType(type)
         .stream()
-        .map(WidgetType::getName)
+        .map(ComponentType::getName)
         .sorted()
         .collect(Collectors.toList());
   }
@@ -230,24 +249,24 @@ public class Components extends Registry<ComponentType> {
   }
 
   /**
-   * Gets the name of the default widget for the given data type, or {@link Optional#empty()} if there is no default
-   * widget for that type.
+   * Gets the name of the default component for the given data type, or {@link Optional#empty()} if there is no default
+   * component for that type.
    */
-  public Optional<String> defaultWidgetNameFor(DataType type) {
+  public Optional<String> defaultComponentNameFor(DataType type) {
     return Optional.ofNullable(defaultComponents.get(type)).map(ComponentType::getName);
   }
 
   /**
-   * Gets the name of a widget that can handle data of the given type. If a default widget has been set for that type,
-   * the name of the default widget is returned; otherwise, the name of the first widget returned by
-   * {@link #widgetNamesForType(DataType)} is used.
+   * Gets the name of a component that can handle data of the given type. If a default component has been set for that
+   * type, the name of the default component is returned; otherwise, the name of the first component returned by
+   * {@link #componentNamesForType(DataType)} is used.
    */
-  public Optional<String> pickWidgetNameFor(DataType type) {
-    Optional<String> defaultName = defaultWidgetNameFor(type);
+  public Optional<String> pickComponentNameFor(DataType type) {
+    Optional<String> defaultName = defaultComponentNameFor(type);
     if (defaultName.isPresent()) {
       return defaultName;
     } else {
-      List<String> names = widgetNamesForType(type);
+      List<String> names = componentNamesForType(type);
       if (names.isEmpty()) {
         return Optional.empty();
       } else {
@@ -257,10 +276,10 @@ public class Components extends Registry<ComponentType> {
   }
 
   /**
-   * Gets the names of all the possible widgets than can display the data in a given source.
+   * Gets the names of all the possible components than can display the data in a given source.
    */
-  public List<String> widgetNamesForSource(DataSource<?> source) {
-    return widgetNamesForType(source.getDataType());
+  public List<String> componentNamesForSource(DataSource<?> source) {
+    return componentNamesForType(source.getDataType());
   }
 
   /**

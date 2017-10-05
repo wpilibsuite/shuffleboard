@@ -86,13 +86,13 @@ public class WidgetPaneController {
       } else if (isSource) {
         SourceEntry entry = (SourceEntry) event.getDragboard().getContent(DataFormats.source);
         DataSource source = entry.get();
-        Optional<String> widgetName = Components.getDefault().pickWidgetNameFor(source.getDataType());
+        Optional<String> componentName = Components.getDefault().pickComponentNameFor(source.getDataType());
         Optional<DataSource<?>> dummySource = DummySource.forTypes(source.getDataType());
-        if (widgetName.isPresent() && dummySource.isPresent()) {
-          Components.getDefault().createWidget(widgetName.get(), dummySource.get()).ifPresent(w -> {
+        if (componentName.isPresent() && dummySource.isPresent()) {
+          Components.getDefault().createComponent(componentName.get(), dummySource.get()).ifPresent(c -> {
             pane.setHighlight(true);
             pane.setHighlightPoint(point);
-            pane.setHighlightSize(pane.sizeOfWidget(w));
+            pane.setHighlightSize(pane.sizeOfWidget(c));
           });
         }
       }
@@ -124,11 +124,11 @@ public class WidgetPaneController {
       }
 
       if (dragboard.hasContent(DataFormats.widgetType)) {
-        String widgetType = (String) dragboard.getContent(DataFormats.widgetType);
-        Components.getDefault().createWidget(widgetType).ifPresent(widget -> {
-          TileSize size = pane.sizeOfWidget(widget);
+        String componentType = (String) dragboard.getContent(DataFormats.widgetType);
+        Components.getDefault().createComponent(componentType).ifPresent(c -> {
+          TileSize size = pane.sizeOfWidget(c);
           if (pane.isOpen(point, size, _t -> false)) {
-            WidgetTile tile = pane.addWidget(widget);
+            Tile<?> tile = pane.addComponentToTile(c);
             moveTile(tile, point);
           }
         });
@@ -234,10 +234,10 @@ public class WidgetPaneController {
    * @param point  the point to place the widget for the source
    */
   private void dropSource(DataSource<?> source, GridPoint point) {
-    Components.getDefault().pickWidgetNameFor(source.getDataType())
-           .flatMap(name -> Components.getDefault().createWidget(name, source))
+    Components.getDefault().pickComponentNameFor(source.getDataType())
+           .flatMap(name -> Components.getDefault().createComponent(name, source))
            .filter(widget -> pane.isOpen(point, pane.sizeOfWidget(widget), n -> widget == n))
-           .map(pane::addWidget)
+           .map(pane::addComponentToTile)
            .ifPresent(tile -> pane.moveNode(tile, point));
   }
 
@@ -312,7 +312,7 @@ public class WidgetPaneController {
 
         Layout container = ((LayoutTile) tile).getContent();
         DataSource<?> source = entry.get();
-        Components.getDefault().widgetNamesForSource(entry.get())
+        Components.getDefault().componentNamesForSource(entry.get())
             .stream()
             .findAny()
             .flatMap(name -> Components.getDefault().createWidget(name, source))
@@ -392,7 +392,7 @@ public class WidgetPaneController {
   private Menu createChangeMenusForWidget(WidgetTile tile) {
     Widget widget = tile.getContent();
     Menu changeView = new Menu("Show as...");
-    Components.getDefault().widgetNamesForType(widget.getSource().getDataType())
+    Components.getDefault().componentNamesForType(widget.getSource().getDataType())
         .stream()
         .sorted()
         .forEach(name -> {

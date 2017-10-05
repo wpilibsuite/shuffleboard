@@ -1,5 +1,10 @@
 package edu.wpi.first.shuffleboard.api.widget;
 
+import com.google.common.collect.ImmutableSet;
+
+import edu.wpi.first.shuffleboard.api.data.DataType;
+
+import java.util.Set;
 import java.util.function.Supplier;
 
 /**
@@ -14,4 +19,12 @@ public interface ComponentType<C extends Component> extends Supplier<C> {
    * Get the name of the component (ex: "Number Slider").
    */
   String getName();
+
+  /**
+   * Gets a set of data types that this component is capable of displaying.
+   */
+  default Set<DataType> getDataTypes() {
+    return ImmutableSet.of();
+  }
+
 }

@@ -3,9 +3,9 @@ package edu.wpi.first.shuffleboard.app.components;
 import edu.wpi.first.shuffleboard.api.util.GridPoint;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 import edu.wpi.first.shuffleboard.api.widget.Component;
+import edu.wpi.first.shuffleboard.api.widget.ComponentContainer;
 import edu.wpi.first.shuffleboard.api.widget.TileSize;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
-import edu.wpi.first.shuffleboard.api.widget.ComponentContainer;
 import edu.wpi.first.shuffleboard.app.dnd.DragUtils;
 
 import org.fxmisc.easybind.EasyBind;
@@ -110,10 +110,10 @@ public class WidgetPane extends TilePane implements ComponentContainer {
    */
   public Optional<Tile> tileMatching(Predicate<Tile> predicate) {
     return tiles.stream()
-                .map(TypeUtils.optionalCast(Tile.class))
-                .flatMap(TypeUtils.optionalStream())
-                .filter(predicate)
-                .findFirst();
+        .map(TypeUtils.optionalCast(Tile.class))
+        .flatMap(TypeUtils.optionalStream())
+        .filter(predicate)
+        .findFirst();
   }
 
   /**
@@ -150,6 +150,22 @@ public class WidgetPane extends TilePane implements ComponentContainer {
     return tile;
   }
 
+  /**
+   * Adds a component to a tile.
+   *
+   * @param component the component to add
+   * @param <C>       the type of the component
+   *
+   * @return the tile containing the component, or null if no tile was added
+   */
+  public <C extends Component> Tile<C> addComponentToTile(C component) {
+    addComponent(component);
+    return getTiles().stream()
+        .filter(t -> t.getContent() == component)
+        .findFirst()
+        .orElse(null);
+  }
+
   @Override
   public void addComponent(Component component) {
     if (component instanceof Widget) {
@@ -161,12 +177,12 @@ public class WidgetPane extends TilePane implements ComponentContainer {
   }
 
   /**
-  * Add an arbitrary component to the WidgetPane in the specified location.
-  * The tile will be the specified size.
-  *
-  * @param component the component to add
-  * @param size   the size of the tile used to display the component
-  */
+   * Add an arbitrary component to the WidgetPane in the specified location.
+   * The tile will be the specified size.
+   *
+   * @param component the component to add
+   * @param size      the size of the tile used to display the component
+   */
   public Tile<?> addComponent(Component component, GridPoint location, TileSize size) {
     Tile<?> tile = Tile.tileFor(component, size);
     tile.sizeProperty().addListener(__ -> setSize(tile, tile.getSize()));
@@ -203,7 +219,7 @@ public class WidgetPane extends TilePane implements ComponentContainer {
     double height = Math.max(getTileSize(), view.getPrefHeight());
 
     return new TileSize((int) (width / getTileSize()),
-            (int) (height / getTileSize()));
+        (int) (height / getTileSize()));
   }
 
   /**
@@ -296,8 +312,8 @@ public class WidgetPane extends TilePane implements ComponentContainer {
    */
   public void selectWidgets(Predicate<Widget> predicate) {
     tiles.filtered(t -> t instanceof WidgetTile)
-         .forEach(tile -> tile.setSelected(
-                 predicate.test(((WidgetTile) tile).getContent())
-         ));
+        .forEach(tile -> tile.setSelected(
+            predicate.test(((WidgetTile) tile).getContent())
+        ));
   }
 }

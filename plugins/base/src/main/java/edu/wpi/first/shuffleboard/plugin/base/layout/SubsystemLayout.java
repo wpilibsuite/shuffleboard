@@ -8,6 +8,7 @@ import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.util.AlphanumComparator;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
+import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.api.widget.Layout;
@@ -72,10 +73,12 @@ public class SubsystemLayout implements Layout, Populatable, Sourced {
 
   @Override
   public void addChild(Component child) {
-    final String sourceName = getSource().getName();
-    if (child.getTitle().startsWith(sourceName)) {
-      // Remove leading redundant information
-      child.setTitle(NetworkTableUtils.normalizeKey(child.getTitle().substring(sourceName.length()), false));
+    if (getSource() != null) {
+      final String sourceName = getSource().getName();
+      if (child.getTitle().startsWith(sourceName)) {
+        // Remove leading redundant information
+        child.setTitle(NetworkTableUtils.normalizeKey(child.getTitle().substring(sourceName.length()), false));
+      }
     }
     if (children.isEmpty()) {
       children.add(child);
@@ -109,19 +112,18 @@ public class SubsystemLayout implements Layout, Populatable, Sourced {
 
   @Override
   public boolean hasComponentFor(DataSource<?> source) {
-    return allWidgets().anyMatch(w -> w.getSource().equals(source));
+    return components()
+        .flatMap(TypeUtils.castStream(Sourced.class))
+        .map(Sourced::getSource)
+        .map(DataSource::getId)
+        .anyMatch(uri -> uri.startsWith(source.getId()));
   }
 
   @Override
   public void addComponentFor(DataSource<?> source) {
-    Components.getDefault().defaultWidgetNameFor(source.getDataType())
-        .flatMap(Components.getDefault()::createComponent)
-        .ifPresent(c -> {
-          if (c instanceof Sourced) {
-            ((Sourced) c).setSource(source);
-          }
-          addChild(c);
-        });
+    Components.getDefault().defaultComponentNameFor(source.getDataType())
+        .flatMap(name -> Components.getDefault().createComponent(name, source))
+        .ifPresent(this::addChild);
   }
 
   @Override

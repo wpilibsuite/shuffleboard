@@ -7,6 +7,7 @@ import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
 import edu.wpi.first.shuffleboard.api.util.Debouncer;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
+import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.ComponentContainer;
 import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.api.widget.Sourced;
@@ -107,12 +108,12 @@ public class DashboardTabPane extends TabPane {
   }
 
   /**
-   * Add a widget to the active tab pane.
+   * Add a component to the active tab pane.
    * Should only be done by the result of specific user interaction.
    */
-  public void addWidgetToActivePane(Widget widget) {
+  public void addComponentToActivePane(Component widget) {
     optionalCast(getSelectionModel().getSelectedItem(), DashboardTab.class)
-        .ifPresent(tab -> tab.getWidgetPane().addWidget(widget));
+        .ifPresent(tab -> tab.getWidgetPane().addComponent(widget));
   }
 
   /**
@@ -291,14 +292,10 @@ public class DashboardTabPane extends TabPane {
 
       if (targets.isEmpty()) {
         // No nested components capable of adding a component for the source, add it to the root widget pane
-        Components.getDefault().defaultWidgetNameFor(source.getDataType())
-            .flatMap(s -> Components.getDefault().createComponent(s))
+        Components.getDefault().defaultComponentNameFor(source.getDataType())
+            .flatMap(s -> Components.getDefault().createComponent(s, source))
             .ifPresent(c -> {
-              if (c instanceof Sourced) {
-                ((Sourced) c).setSource(source);
-              } else {
-                c.setTitle(source.getName());
-              }
+              c.setTitle(source.getName());
               getWidgetPane().addComponent(c);
             });
       } else {
