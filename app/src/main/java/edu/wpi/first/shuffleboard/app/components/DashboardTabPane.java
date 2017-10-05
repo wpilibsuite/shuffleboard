@@ -141,6 +141,24 @@ public class DashboardTabPane extends TabPane {
     private final Debouncer populateDebouncer =
         new Debouncer(() -> FxUtils.runOnFxThread(this::populate), Duration.ofMillis(50));
 
+    private final ListChangeListener<Tile> tileListChangeListener = c -> {
+      while (c.next()) {
+        if (c.wasAdded()) {
+          c.getAddedSubList().stream()
+              .map(Tile::getContent)
+              .flatMap(TypeUtils.castStream(Populatable.class))
+              .collect(Collectors.toList())
+              .forEach(Autopopulator.getDefault()::addTarget);
+        } else if (c.wasRemoved()) {
+          c.getRemoved().stream()
+              .map(Tile::getContent)
+              .flatMap(TypeUtils.castStream(Populatable.class))
+              .collect(Collectors.toList())
+              .forEach(Autopopulator.getDefault()::removeTarget);
+        }
+      }
+    };
+
     private boolean deferPopulation = true;
 
     /**
@@ -152,23 +170,12 @@ public class DashboardTabPane extends TabPane {
       setGraphic(new TabHandle(this));
 
       widgetPane.addListener((__, prev, cur) -> {
-        cur.getTiles().addListener((ListChangeListener<Tile>) c -> {
-          while (c.next()) {
-            if (c.wasAdded()) {
-              c.getAddedSubList().stream()
-                  .map(Tile::getContent)
-                  .flatMap(TypeUtils.castStream(Populatable.class))
-                  .collect(Collectors.toList())
-                  .forEach(Autopopulator.getDefault()::addTarget);
-            } else if (c.wasRemoved()) {
-              c.getRemoved().stream()
-                  .map(Tile::getContent)
-                  .flatMap(TypeUtils.castStream(Populatable.class))
-                  .collect(Collectors.toList())
-                  .forEach(Autopopulator.getDefault()::removeTarget);
-            }
-          }
-        });
+        if (prev != null) {
+          prev.getTiles().removeListener(tileListChangeListener);
+        }
+        if (cur != null) {
+          cur.getTiles().addListener(tileListChangeListener);
+        }
       });
 
       setWidgetPane(new WidgetPane());

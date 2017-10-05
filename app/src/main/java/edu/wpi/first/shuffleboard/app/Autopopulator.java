@@ -6,10 +6,10 @@ import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import javafx.collections.ListChangeListener;
 
@@ -50,11 +50,14 @@ public class Autopopulator {
   private void onChange(ListChangeListener.Change<? extends String> change) {
     while (change.next()) {
       if (change.wasAdded()) {
+        // Use a copy of the target list because addComponentIfPossible may add new targets,
+        // causing a ConcurrentModificationException
+        // Since addTarget also populates the target, we don't need to worry about responding to those changes here
+        List<Populatable> currentTargets = new ArrayList<>(targets);
         change.getAddedSubList().stream()
             .map(sourceTypes::forUri)
             .filter(notCatchallType)
-            .collect(Collectors.toList())
-            .forEach(source -> new ArrayList<>(targets).forEach(target -> target.addComponentIfPossible(source)));
+            .forEach(source -> currentTargets.forEach(target -> target.addComponentIfPossible(source)));
       }
     }
   }
@@ -68,7 +71,6 @@ public class Autopopulator {
     sourceTypes.allAvailableSourceUris().stream()
         .map(sourceTypes::forUri)
         .filter(notCatchallType)
-        .collect(Collectors.toList())
         .forEach(target::addComponentIfPossible);
   }
 
