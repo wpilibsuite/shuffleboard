@@ -21,13 +21,15 @@ public class CompositeNetworkTableSourceTest {
 
   @BeforeEach
   public void setUp() {
-    NetworkTableUtils.shutdown();
     AsyncUtils.setAsyncRunner(Runnable::run);
+    NetworkTableUtils.shutdown();
+    NetworkTableInstance.getDefault().waitForEntryListenerQueue(-1.0);
   }
 
   @AfterEach
   public void tearDown() {
     NetworkTableUtils.shutdown();
+    NetworkTableInstance.getDefault().waitForEntryListenerQueue(-1.0);
     AsyncUtils.setAsyncRunner(FxUtils::runOnFxThread);
   }
 
@@ -37,6 +39,7 @@ public class CompositeNetworkTableSourceTest {
         = new CompositeNetworkTableSource<>(tableName, DataTypes.Map);
     assertFalse(source.isActive());
     assertTrue(source.getData().isEmpty());
+    source.close();
   }
 
   @Test
@@ -54,6 +57,7 @@ public class CompositeNetworkTableSourceTest {
     inst.getTable(tableName).getEntry(key).setString("value2");
     inst.waitForEntryListenerQueue(-1.0);
     assertEquals("value2", source.getData().get(key));
+    source.close();
   }
 
   @Test
@@ -65,5 +69,6 @@ public class CompositeNetworkTableSourceTest {
     inst.getTable(tableName).getEntry(".type").setString("Map");
     inst.waitForEntryListenerQueue(-1.0);
     assertTrue(source.isActive(), "Source not active");
+    source.close();
   }
 }

@@ -1,7 +1,6 @@
 package edu.wpi.first.shuffleboard.plugin.networktables.sources;
 
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.NetworkTablesJNI;
 import edu.wpi.first.shuffleboard.api.data.ComplexDataType;
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.sources.AbstractDataSource;
@@ -53,17 +52,16 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
   protected final void setTableListener(TableListener listener) {
     NetworkTableInstance inst = NetworkTableInstance.getDefault();
     inst.removeEntryListener(listenerUid);
-    listenerUid = inst.getEntry(fullTableKey).addListener(
-        (event) -> {
-          if (isConnected()) {
-            AsyncUtils.runAsync(() -> {
-              ntUpdate = true;
-              listener.onChange(event.name, event.value, event.flags);
-              ntUpdate = false;
-            });
-          }
-        },
-        0xFF);
+    listenerUid = inst.addEntryListener(fullTableKey, (event) -> {
+      if (isConnected()) {
+        AsyncUtils.runAsync(() -> {
+          ntUpdate = true;
+          listener.onChange(event.name, event.value.getValue(), event.flags);
+          ntUpdate = false;
+        });
+      }
+    },
+    0xFF);
     connect();
   }
 
@@ -87,7 +85,7 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
 
   @Override
   public void close() {
-    NetworkTablesJNI.removeEntryListener(listenerUid);
+    NetworkTableInstance.getDefault().removeEntryListener(listenerUid);
   }
 
   @FunctionalInterface

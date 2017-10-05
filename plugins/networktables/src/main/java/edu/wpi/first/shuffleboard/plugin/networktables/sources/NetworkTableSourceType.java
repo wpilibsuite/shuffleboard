@@ -27,14 +27,14 @@ public final class NetworkTableSourceType extends SourceType {
   private NetworkTableSourceType() {
     super("NetworkTable", true, "network_table://", NetworkTableSource::forKey);
     NetworkTableInstance inst = NetworkTableInstance.getDefault();
-    inst.getTable("").addEntryListener("", (table, key, entry, value, flags) -> {
+    inst.addEntryListener("", (event) -> {
       AsyncUtils.runAsync(() -> {
-        NetworkTableUtils.getHierarchy(key)
+        NetworkTableUtils.getHierarchy(event.name)
             .stream()
             .map(this::toUri)
             .forEach(uri -> {
-              availableSources.put(uri, value);
-              if (NetworkTableUtils.isDelete(flags)) {
+              availableSources.put(uri, event.value);
+              if (NetworkTableUtils.isDelete(event.flags)) {
                 availableSourceIds.remove(uri);
               } else if (!availableSourceIds.contains(uri)) {
                 availableSourceIds.add(uri);
