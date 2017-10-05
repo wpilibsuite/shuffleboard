@@ -1,11 +1,19 @@
 package edu.wpi.first.shuffleboard.plugin.base.layout;
 
+import com.google.common.collect.ImmutableSet;
+
+import edu.wpi.first.shuffleboard.api.Populatable;
 import edu.wpi.first.shuffleboard.api.components.EditableLabel;
+import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
+import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.util.AlphanumComparator;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.api.widget.Component;
+import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.api.widget.Layout;
 import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
+import edu.wpi.first.shuffleboard.api.widget.Sourced;
+import edu.wpi.first.shuffleboard.plugin.base.data.types.SubsystemType;
 
 import org.fxmisc.easybind.EasyBind;
 import org.fxmisc.easybind.Subscription;
@@ -28,7 +36,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
 @ParametrizedController("SubsystemLayout.fxml")
-public class SubsystemLayout implements Layout {
+public class SubsystemLayout implements Layout, Populatable, Sourced {
 
   @FXML
   private StackPane root;
@@ -40,6 +48,7 @@ public class SubsystemLayout implements Layout {
   private final StringProperty title = new SimpleStringProperty(this, "title", "Subsystem");
 
   private Subscription retained; //NOPMD field due to GC
+  private DataSource<?> source;
 
   @FXML
   private void initialize() {
@@ -63,8 +72,10 @@ public class SubsystemLayout implements Layout {
 
   @Override
   public void addChild(Component child) {
-    if (child.getTitle().startsWith(getTitle())) {
-      child.setTitle(NetworkTableUtils.normalizeKey(child.getTitle().substring(getTitle().length()), false));
+    final String sourceName = getSource().getName();
+    if (child.getTitle().startsWith(sourceName)) {
+      // Remove leading redundant information
+      child.setTitle(NetworkTableUtils.normalizeKey(child.getTitle().substring(sourceName.length()), false));
     }
     if (children.isEmpty()) {
       children.add(child);
@@ -89,6 +100,43 @@ public class SubsystemLayout implements Layout {
   @Override
   public String getName() {
     return "Subsystem Layout";
+  }
+
+  @Override
+  public boolean supports(DataSource<?> source) {
+    return source.getName().startsWith(getSource().getName());
+  }
+
+  @Override
+  public boolean hasComponentFor(DataSource<?> source) {
+    return allWidgets().anyMatch(w -> w.getSource().equals(source));
+  }
+
+  @Override
+  public void addComponentFor(DataSource<?> source) {
+    Components.getDefault().defaultWidgetNameFor(source.getDataType())
+        .flatMap(Components.getDefault()::createComponent)
+        .ifPresent(c -> {
+          if (c instanceof Sourced) {
+            ((Sourced) c).setSource(source);
+          }
+          addChild(c);
+        });
+  }
+
+  @Override
+  public DataSource<?> getSource() {
+    return source;
+  }
+
+  @Override
+  public void setSource(DataSource<?> source) {
+    if (source.getDataType() instanceof SubsystemType) {
+      this.source = source;
+      setTitle(source.getName());
+    } else {
+      throw new IncompatibleSourceException(ImmutableSet.of(new SubsystemType()), source.getDataType());
+    }
   }
 
 }

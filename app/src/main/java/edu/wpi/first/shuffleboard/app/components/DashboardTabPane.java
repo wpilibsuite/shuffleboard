@@ -1,23 +1,25 @@
 package edu.wpi.first.shuffleboard.app.components;
 
+import edu.wpi.first.shuffleboard.api.Populatable;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
 import edu.wpi.first.shuffleboard.api.util.Debouncer;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
-import edu.wpi.first.shuffleboard.api.widget.Component;
-import edu.wpi.first.shuffleboard.api.widget.Components;
-import edu.wpi.first.shuffleboard.api.widget.Layout;
-import edu.wpi.first.shuffleboard.api.widget.Widget;
+import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 import edu.wpi.first.shuffleboard.api.widget.ComponentContainer;
+import edu.wpi.first.shuffleboard.api.widget.Components;
+import edu.wpi.first.shuffleboard.api.widget.Sourced;
+import edu.wpi.first.shuffleboard.api.widget.Widget;
 import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
 
 import org.fxmisc.easybind.EasyBind;
 
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.List;
 import java.util.function.Predicate;
-import java.util.stream.Stream;
+import java.util.stream.Collectors;
 
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
@@ -46,8 +48,8 @@ public class DashboardTabPane extends TabPane {
    * Creates a dashboard with one default tab.
    */
   public DashboardTabPane() {
-    this(createAutoPopulateTab("SmartDashboard", "/SmartDashboard/"),
-        createAutoPopulateTab("LiveWindow", "/LiveWindow/"));
+    this(createAutoPopulateTab("SmartDashboard", "network_table:///SmartDashboard/"),
+        createAutoPopulateTab("LiveWindow", "network_table:///LiveWindow/"));
   }
 
   private static DashboardTab createAutoPopulateTab(String name, String sourcePrefix) {
@@ -122,7 +124,7 @@ public class DashboardTabPane extends TabPane {
             .ifPresent(pane -> pane.selectWidgets(selector)));
   }
 
-  public static class DashboardTab extends Tab implements HandledTab {
+  public static class DashboardTab extends Tab implements HandledTab, Populatable {
     private final ObjectProperty<WidgetPane> widgetPane = new SimpleObjectProperty<>(this, "widgetPane");
     private final StringProperty title = new SimpleStringProperty(this, "title", "");
     private final BooleanProperty autoPopulate = new SimpleBooleanProperty(this, "autoPopulate", false);
@@ -205,73 +207,8 @@ public class DashboardTabPane extends TabPane {
         deferPopulation = false;
         Platform.runLater(this::populate);
       }
-      if (!isAutoPopulate() || getSourcePrefix().isEmpty()) {
-        return;
-      }
       for (String id : availableSourceIds) {
-        if (shouldAutopopulate(id)
-            && noExistingWidgetsForSource(id)) {
-          DataSource<?> source = SourceTypes.getDefault().forUri(id);
-
-          // Don't create widgets for the catchall types
-          if (source.getDataType() != DataTypes.Unknown
-              && source.getDataType() != DataTypes.Map) {
-            Components.getDefault().defaultWidgetNameFor(source.getDataType())
-                .flatMap(n -> Components.getDefault().createComponent(n))
-                .map(c -> {
-                  if (c instanceof Widget) {
-                    ((Widget) c).setSource(source);
-                  } else {
-                    c.titleProperty().setValue(source.getName());
-                  }
-                  return c;
-                })
-                .filter(c -> noDuplicateTiles(c))
-                .ifPresent(component -> {
-                  getWidgetPane().components()
-                      .filter(c -> c instanceof ComponentContainer)
-                      .map(c -> (ComponentContainer & Component) c)
-                      .filter(c -> source.getName().startsWith(c.getTitle()) && !c.getTitle().equals(source.getName()))
-                      .findFirst()
-                      .map(c -> (ComponentContainer) c)
-                      .orElseGet(this::getWidgetPane)
-                      .addComponent(component);
-                });
-          }
-        }
-      }
-    }
-
-    private boolean noDuplicateTiles(Component component) {
-      if (component instanceof Layout) {
-        return getWidgetPane().components().noneMatch(c -> c.getTitle().equals(component.getTitle()));
-      }
-      return true;
-    }
-
-    private boolean shouldAutopopulate(String sourceId) {
-      return sourceId.startsWith(getSourcePrefix())
-          || SourceTypes.getDefault().stripProtocol(sourceId).startsWith(getSourcePrefix());
-    }
-
-    /**
-     * Checks if there are any widgets in the widget pane backed by a source with the given ID.
-     *
-     * @param id the ID of the source to check for
-     */
-    private boolean noExistingWidgetsForSource(String id) {
-      return getWidgetPane().getTiles().stream()
-          .map(Tile::getContent)
-          .flatMap(component -> getWidgets(component))
-          .map(Widget::getSource)
-          .noneMatch(s -> id.startsWith(s.getId()));
-    }
-
-    private static Stream<Widget> getWidgets(Component component) {
-      if (component instanceof Layout) {
-        return ((Layout) component).getChildren().stream().flatMap(c -> getWidgets(c));
-      } else {
-        return component.allWidgets();
+        addComponentIfPossible(SourceTypes.getDefault().forUri(id));
       }
     }
 
@@ -327,6 +264,47 @@ public class DashboardTabPane extends TabPane {
 
     public void setSourcePrefix(String sourceRegex) {
       this.sourcePrefix.set(sourceRegex);
+    }
+
+    @Override
+    public boolean supports(DataSource<?> source) {
+      return isAutoPopulate()
+          && source.getDataType() != DataTypes.Map
+          && (source.getName().startsWith(getSourcePrefix()) || source.getId().startsWith(getSourcePrefix()));
+    }
+
+    @Override
+    public boolean hasComponentFor(DataSource<?> source) {
+      return getWidgetPane().getTiles().stream()
+          .map(Tile::getContent)
+          .flatMap(TypeUtils.castStream(Sourced.class))
+          .anyMatch(s -> s.getSource().equals(source)
+              || (source.getId().startsWith(s.getSource().getId()) && !(s instanceof ComponentContainer)));
+    }
+
+    @Override
+    public void addComponentFor(DataSource<?> source) {
+      List<Populatable> targets = getWidgetPane().components()
+          .flatMap(TypeUtils.castStream(Populatable.class))
+          .filter(p -> p.supports(source))
+          .collect(Collectors.toList());
+
+      if (targets.isEmpty()) {
+        // No nested components capable of adding a component for the source, add it to the root widget pane
+        Components.getDefault().defaultWidgetNameFor(source.getDataType())
+            .flatMap(s -> Components.getDefault().createComponent(s))
+            .ifPresent(c -> {
+              if (c instanceof Sourced) {
+                ((Sourced) c).setSource(source);
+              } else {
+                c.setTitle(source.getName());
+              }
+              getWidgetPane().addComponent(c);
+            });
+      } else {
+        // Add a component everywhere possible
+        targets.forEach(t -> t.addComponentIfPossible(source));
+      }
     }
   }
 }
