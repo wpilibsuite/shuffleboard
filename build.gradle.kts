@@ -34,6 +34,17 @@ allprojects {
             ktlint("0.9.1")
             endWithNewline()
         }
+        freshmark {
+            trimTrailingWhitespace()
+            indentWithSpaces()
+            endWithNewline()
+        }
+        format("extraneous") {
+            target("Dockerfile", "*.sh", "*.yml")
+            trimTrailingWhitespace()
+            indentWithSpaces()
+            endWithNewline()
+        }
     }
 }
 
@@ -83,6 +94,11 @@ subprojects {
         sourceSets = setOf(java.sourceSets["main"], java.sourceSets["test"])
         excludeFilter = file("$rootDir/findBugsSuppressions.xml")
         effort = "max"
+    }
+
+    tasks.withType<JavaCompile> {
+        // UTF-8 characters are used in menus
+        options.encoding = "UTF-8"
     }
 
     tasks.withType<FindBugs> {
