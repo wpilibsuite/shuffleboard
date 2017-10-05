@@ -3,7 +3,6 @@ package edu.wpi.first.shuffleboard.app.components;
 import edu.wpi.first.shuffleboard.api.Populatable;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
-import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
 import edu.wpi.first.shuffleboard.api.util.Debouncer;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
@@ -12,6 +11,7 @@ import edu.wpi.first.shuffleboard.api.widget.ComponentContainer;
 import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.api.widget.Sourced;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
+import edu.wpi.first.shuffleboard.app.Autopopulator;
 import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
 
 import org.fxmisc.easybind.EasyBind;
@@ -30,7 +30,6 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Dialog;
@@ -130,12 +129,14 @@ public class DashboardTabPane extends TabPane {
     private final StringProperty title = new SimpleStringProperty(this, "title", "");
     private final BooleanProperty autoPopulate = new SimpleBooleanProperty(this, "autoPopulate", false);
     private final StringProperty sourcePrefix = new SimpleStringProperty(this, "sourcePrefix", "");
-    private static final ObservableList<String> availableSourceIds = SourceTypes.getDefault().allAvailableSourceUris();
 
     /**
      * Debounces populate() calls so we don't freeze the app while a source type is doing its initial discovery of
      * available source URIs. Not debouncing makes typical application startup take at least 5 seconds on an i7-6700HQ
      * where the user sees nothing but a blank screen - no UI elements or anything!
+     *
+     * <p>Note that this is only used when we manually force a population call, which is only required because the
+     * filtering criteria for compatible sources changes based on the {@code sourcePrefix} property.
      */
     private final Debouncer populateDebouncer =
         new Debouncer(() -> FxUtils.runOnFxThread(this::populate), Duration.ofMillis(50));
@@ -150,13 +151,39 @@ public class DashboardTabPane extends TabPane {
       this.title.set(title);
       setGraphic(new TabHandle(this));
 
+      widgetPane.addListener((__, prev, cur) -> {
+        cur.getTiles().addListener((ListChangeListener<Tile>) c -> {
+          while (c.next()) {
+            if (c.wasAdded()) {
+              c.getAddedSubList().stream()
+                  .map(Tile::getContent)
+                  .flatMap(TypeUtils.castStream(Populatable.class))
+                  .collect(Collectors.toList())
+                  .forEach(Autopopulator.getDefault()::addTarget);
+            } else if (c.wasRemoved()) {
+              c.getRemoved().stream()
+                  .map(Tile::getContent)
+                  .flatMap(TypeUtils.castStream(Populatable.class))
+                  .collect(Collectors.toList())
+                  .forEach(Autopopulator.getDefault()::removeTarget);
+            }
+          }
+        });
+      });
+
       setWidgetPane(new WidgetPane());
 
       this.contentProperty().bind(widgetPane);
 
+      autoPopulate.addListener((__, was, is) -> {
+        if (is) {
+          Autopopulator.getDefault().addTarget(this);
+        } else {
+          Autopopulator.getDefault().removeTarget(this);
+        }
+      });
       autoPopulate.addListener(__ -> populateDebouncer.run());
       sourcePrefix.addListener(__ -> populateDebouncer.run());
-      availableSourceIds.addListener((ListChangeListener<String>) c -> populateDebouncer.run());
 
       setContextMenu(new ContextMenu(FxUtils.menuItem("Preferences", __ -> showPrefsDialog())));
     }
@@ -208,9 +235,7 @@ public class DashboardTabPane extends TabPane {
         deferPopulation = false;
         Platform.runLater(this::populate);
       }
-      for (String id : availableSourceIds) {
-        addComponentIfPossible(SourceTypes.getDefault().forUri(id));
-      }
+      Autopopulator.getDefault().populate(this);
     }
 
     public WidgetPane getWidgetPane() {
@@ -269,7 +294,8 @@ public class DashboardTabPane extends TabPane {
 
     @Override
     public boolean supports(DataSource<?> source) {
-      return isAutoPopulate()
+      return !deferPopulation
+          && isAutoPopulate()
           && source.getDataType() != DataTypes.Map
           && (source.getName().startsWith(getSourcePrefix()) || source.getId().startsWith(getSourcePrefix()));
     }
@@ -297,6 +323,9 @@ public class DashboardTabPane extends TabPane {
             .ifPresent(c -> {
               c.setTitle(source.getName());
               getWidgetPane().addComponent(c);
+              if (c instanceof Populatable) {
+                Autopopulator.getDefault().addTarget((Populatable) c);
+              }
             });
       } else {
         // Add a component everywhere possible
