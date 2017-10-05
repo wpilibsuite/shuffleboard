@@ -48,8 +48,8 @@ public class DashboardTabPane extends TabPane {
    * Creates a dashboard with one default tab.
    */
   public DashboardTabPane() {
-    this(createAutoPopulateTab("SmartDashboard", "network_table:///SmartDashboard/"),
-        createAutoPopulateTab("LiveWindow", "network_table:///LiveWindow/"));
+    this(createAutoPopulateTab("SmartDashboard", "SmartDashboard/"),
+        createAutoPopulateTab("LiveWindow", "LiveWindow/"));
   }
 
   private static DashboardTab createAutoPopulateTab(String name, String sourcePrefix) {
