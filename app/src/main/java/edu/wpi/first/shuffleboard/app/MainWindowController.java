@@ -330,7 +330,8 @@ public class MainWindowController {
     try {
       Writer writer = Files.newWriter(selected, Charset.forName("UTF-8"));
 
-      JsonBuilder.forSaveFile().toJson(dashboard, DashboardTabPane.class, writer);
+      DashboardData dashboardData = new DashboardData(centerSplitPane.getDividerPositions()[0], dashboard);
+      JsonBuilder.forSaveFile().toJson(dashboardData, writer);
       writer.flush();
     } catch (Exception e) {
       log.log(Level.WARNING, "Couldn't save", e);
@@ -360,7 +361,9 @@ public class MainWindowController {
     try {
       Reader reader = Files.newReader(selected, Charset.forName("UTF-8"));
 
-      setDashboard(JsonBuilder.forSaveFile().fromJson(reader, DashboardTabPane.class));
+      DashboardData dashboardData = JsonBuilder.forSaveFile().fromJson(reader, DashboardData.class);
+      setDashboard(dashboardData.getTabPane());
+      centerSplitPane.setDividerPositions(dashboardData.getDividerPosition());
     } catch (Exception e) {
       log.log(Level.WARNING, "Couldn't load", e);
       return;
