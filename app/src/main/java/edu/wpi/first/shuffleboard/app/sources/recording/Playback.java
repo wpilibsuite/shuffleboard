@@ -1,12 +1,12 @@
 package edu.wpi.first.shuffleboard.app.sources.recording;
 
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
 import edu.wpi.first.shuffleboard.api.sources.Sources;
 import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
 import edu.wpi.first.shuffleboard.api.sources.recording.Recording;
 import edu.wpi.first.shuffleboard.api.sources.recording.Serialization;
 import edu.wpi.first.shuffleboard.api.sources.recording.TimestampedData;
-import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -214,7 +214,8 @@ public final class Playback {
     }
     autoRunner.interrupt();
     currentPlayback.setValue(null);
-    NetworkTablesJNI.deleteAllEntries();
+    NetworkTableInstance inst = NetworkTableInstance.getDefault();
+    inst.deleteAllEntries();
     Sources.getDefault().connectAll();
     Recorder.getInstance().start();
   }

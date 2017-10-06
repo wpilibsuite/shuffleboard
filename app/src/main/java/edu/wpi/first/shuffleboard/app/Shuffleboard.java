@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.app;
 
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
 import edu.wpi.first.shuffleboard.api.util.Storage;
 import edu.wpi.first.shuffleboard.app.plugin.PluginLoader;
@@ -7,7 +8,6 @@ import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
 import edu.wpi.first.shuffleboard.plugin.base.BasePlugin;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.CameraServerPlugin;
 import edu.wpi.first.shuffleboard.plugin.networktables.NetworkTablesPlugin;
-import edu.wpi.first.wpilibj.networktables.NetworkTable;
 
 import java.io.IOException;
 
@@ -34,6 +34,7 @@ public class Shuffleboard extends Application {
 
   private Pane mainPane; //NOPMD local variable
   private Runnable onOtherAppStart = () -> {};
+  private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
 
   @Override
   public void init() throws AlreadyLockedException, IOException {
@@ -48,30 +49,27 @@ public class Shuffleboard extends Application {
     }
 
     ChangeListener<String> serverChangeListener = (observable, oldValue, newValue) -> {
-      NetworkTable.shutdown();
-
       String[] value = newValue.split(":");
 
       /*
        * You MUST set the port number before setting the team number.
        */
+      int port;
       if (value.length > 1) {
-        NetworkTable.setPort(Integer.parseInt(value[1]));
+        port = Integer.parseInt(value[1]);
       } else {
-        NetworkTable.setPort(NetworkTable.DEFAULT_PORT);
+        port = NetworkTableInstance.kDefaultPort;
       }
 
       if (value[0].matches("\\d{1,4}")) {
-        NetworkTable.setTeam(Integer.parseInt(value[0]));
+        inst.setServerTeam(Integer.parseInt(value[0]), port);
       } else if (value[0].isEmpty()) {
-        NetworkTable.setIPAddress("localhost");
+        inst.setServer("localhost", port);
       } else {
-        NetworkTable.setIPAddress(value[0]);
+        inst.setServer(value[0], port);
       }
-
-      NetworkTable.initialize();
     };
-    NetworkTable.setClientMode();
+    inst.startClient();
     serverChangeListener.changed(null, null, AppPreferences.getInstance().getServer());
     AppPreferences.getInstance().serverProperty().addListener(serverChangeListener);
 
