@@ -33,7 +33,7 @@ public final class NetworkTableSourceType extends SourceType {
             .stream()
             .map(this::toUri)
             .forEach(uri -> {
-              availableSources.put(uri, event.value);
+              availableSources.put(uri, event.value.getValue());
               if (NetworkTableUtils.isDelete(event.flags)) {
                 availableSourceIds.remove(uri);
               } else if (!availableSourceIds.contains(uri)) {
@@ -91,7 +91,7 @@ public final class NetworkTableSourceType extends SourceType {
   public SourceEntry createSourceEntryForUri(String uri) {
     String key = removeProtocol(uri);
     NetworkTableInstance inst = NetworkTableInstance.getDefault();
-    return new NetworkTableSourceEntry(key, inst.getEntry(key).getValue());
+    return new NetworkTableSourceEntry(key, inst.getEntry(key).getValue().getValue());
   }
 
   @Override

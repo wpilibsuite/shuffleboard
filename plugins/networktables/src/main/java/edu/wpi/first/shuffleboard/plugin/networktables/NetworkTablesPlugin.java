@@ -32,13 +32,14 @@ public class NetworkTablesPlugin extends Plugin {
     // in the recording (eg "/a/b/c" has 2 tables and 3 copies: "/a", "/a/b", and "/a/b/c")
     // This significantly reduces the size of recording files.
     NetworkTableInstance inst = NetworkTableInstance.getDefault();
-    recorderUid = inst.addEntryListener("", (entry) -> {
-      DataTypes.getDefault().forJavaType(entry.value.getClass())
+    recorderUid = inst.addEntryListener("", (event) -> {
+      Object value = event.value.getValue();
+      DataTypes.getDefault().forJavaType(value.getClass())
           .ifPresent(type -> {
             Recorder.getInstance().record(
-                NetworkTableSourceType.INSTANCE.toUri(entry.name),
+                NetworkTableSourceType.INSTANCE.toUri(event.name),
                 type,
-                entry.value
+                value
             );
           });
     }, 0xFF);

@@ -46,8 +46,9 @@ public class SingleKeyNetworkTableSource<T> extends NetworkTableSource<T> {
       }
 
       NetworkTableEntry entry = table.getEntry(key);
+      Object value = entry.getValue().getValue();
 
-      if (EqualityUtils.isEqual(entry.getValue(), newValue) || !isConnected()) {
+      if ((value != null && EqualityUtils.isEqual(value, newValue)) || !isConnected()) {
         // no change
         return;
       }
