@@ -1,6 +1,5 @@
 package edu.wpi.first.shuffleboard.api.sources;
 
-import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.util.PropertyUtils;
 import edu.wpi.first.shuffleboard.api.util.Registry;
 
@@ -25,14 +24,7 @@ public final class SourceTypes extends Registry<SourceType> {
   private final ObservableList<String> allUris = FXCollections.observableArrayList();
 
   public static final SourceType None = new SourceType("None", false, "", __ -> DataSource.none());
-  public static final SourceType Static =
-      new SourceType(
-          "Static",
-          false,
-          "example://",
-          uri -> {
-            return DummySource.forTypes(DataTypes.getDefault().forName(uri).get()).get();
-          });
+  public static final SourceType Static = new SourceType("Static", false, "example://", DummySource::forTypeName);
 
   /**
    * Gets the default source type registry.

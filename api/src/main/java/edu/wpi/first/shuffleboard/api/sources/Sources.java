@@ -52,7 +52,7 @@ public class Sources extends Registry<DataSource> {
   }
 
   public DataSource<?> forUri(String uri) {
-    return computeIfAbsent(uri, () -> SourceTypes.getDefault().getDefault().forUri(uri));
+    return computeIfAbsent(uri, () -> SourceTypes.getDefault().forUri(uri));
   }
 
   @SuppressWarnings("unchecked") //NOPMD multiple occurrences of string literal

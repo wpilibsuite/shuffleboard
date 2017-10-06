@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonSerializationContext;
+
 import edu.wpi.first.shuffleboard.api.sources.Sources;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 import edu.wpi.first.shuffleboard.api.widget.Components;
@@ -12,6 +13,7 @@ import javafx.beans.property.Property;
 
 @AnnotatedTypeAdapter(forType = Widget.class)
 public class WidgetSaver implements ElementTypeAdapter<Widget> {
+
   @Override
   public JsonElement serialize(Widget src, JsonSerializationContext context) {
     JsonObject object = new JsonObject();

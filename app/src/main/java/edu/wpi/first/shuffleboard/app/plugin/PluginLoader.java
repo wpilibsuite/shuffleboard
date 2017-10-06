@@ -45,8 +45,8 @@ public class PluginLoader {
   }
 
   /**
-   * Loads all jars found in the given directory. This does not load jars in nested directories. Jars will be loaded in
-   * alphabetical order.
+   * Loads all jars found in the given directory. This does not load jars in nested directories.
+   * Jars will be loaded in alphabetical order. Later plugins override previous ones.
    *
    * @param directory the directory to load plugins from
    *

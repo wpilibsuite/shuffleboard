@@ -29,7 +29,7 @@ public class BooleanBoxTest extends AbstractWidgetTest {
   @Override
   public void start(Stage stage) throws Exception {
     widget = (BooleanBox) Components.getDefault().createWidget("Boolean Box",
-        DummySource.forTypes(new BooleanType()).get()).get();
+        DummySource.forTypes(new BooleanType())).get();
     stage.setScene(new Scene(widget.getView()));
     stage.show();
   }
