@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.plugin.networktables.sources;
 
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.shuffleboard.api.data.ComplexData;
 import edu.wpi.first.shuffleboard.api.sources.SourceEntry;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
@@ -7,7 +8,6 @@ import edu.wpi.first.shuffleboard.api.sources.recording.TimestampedData;
 import edu.wpi.first.shuffleboard.api.util.AsyncUtils;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
-import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
 
 import java.util.HashMap;
 import java.util.List;
@@ -26,14 +26,15 @@ public final class NetworkTableSourceType extends SourceType {
 
   private NetworkTableSourceType() {
     super("NetworkTable", true, "network_table://", NetworkTableSource::forKey);
-    NetworkTablesJNI.addEntryListener("", (uid, key, value, flags) -> {
+    NetworkTableInstance inst = NetworkTableInstance.getDefault();
+    inst.addEntryListener("", (event) -> {
       AsyncUtils.runAsync(() -> {
-        NetworkTableUtils.getHierarchy(key)
+        NetworkTableUtils.getHierarchy(event.name)
             .stream()
             .map(this::toUri)
             .forEach(uri -> {
-              availableSources.put(uri, value);
-              if (NetworkTableUtils.isDelete(flags)) {
+              availableSources.put(uri, event.value.getValue());
+              if (NetworkTableUtils.isDelete(event.flags)) {
                 availableSourceIds.remove(uri);
               } else if (!availableSourceIds.contains(uri)) {
                 availableSourceIds.add(uri);
@@ -89,7 +90,8 @@ public final class NetworkTableSourceType extends SourceType {
   @Override
   public SourceEntry createSourceEntryForUri(String uri) {
     String key = removeProtocol(uri);
-    return new NetworkTableEntry(key, NetworkTablesJNI.getValue(key, null));
+    NetworkTableInstance inst = NetworkTableInstance.getDefault();
+    return new NetworkTableSourceEntry(key, inst.getEntry(key).getValue().getValue());
   }
 
   @Override
