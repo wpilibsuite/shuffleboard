@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.api.widget;
 
+import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
 
@@ -66,7 +67,7 @@ public abstract class AbstractWidget implements Widget {
 
   @Override
   public final void setSource(DataSource source) throws IncompatibleSourceException {
-    if (getDataTypes().contains(source.getDataType())) {
+    if (getDataTypes().contains(DataTypes.All) || getDataTypes().contains(source.getDataType())) {
       this.source.setValue(source);
     } else {
       throw new IncompatibleSourceException(getDataTypes(), source.getDataType());

@@ -4,6 +4,7 @@
 <?import edu.wpi.first.shuffleboard.app.components.Tile?>
 <?import javafx.scene.layout.StackPane?>
 
+<?import javafx.geometry.Insets?>
 <fx:root xmlns="http://javafx.com/javafx"
          xmlns:fx="http://javafx.com/fxml"
          type="Tile"
@@ -13,4 +14,11 @@
             <EditableLabel fx:id="titleLabel" styleClass="tile-title-label"/>
         </StackPane>
     </top>
+    <center>
+        <StackPane fx:id="contentPane">
+            <padding>
+                <Insets topRightBottomLeft="2"/>
+            </padding>
+        </StackPane>
+    </center>
 </fx:root>

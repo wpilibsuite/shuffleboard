@@ -7,10 +7,13 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonSerializationContext;
 
+import edu.wpi.first.shuffleboard.api.sources.DataSource;
+import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
 import edu.wpi.first.shuffleboard.api.widget.Layout;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.Components;
+import edu.wpi.first.shuffleboard.api.widget.Sourced;
 
 import java.lang.reflect.Type;
 import java.util.Collection;
@@ -22,6 +25,10 @@ public class LayoutSaver implements ElementTypeAdapter<Layout> {
   public JsonElement serialize(Layout src, JsonSerializationContext context) {
     JsonObject object = new JsonObject();
     object.addProperty("_type", src.getName());
+
+    if (src instanceof Sourced) {
+      object.addProperty("_source", ((Sourced) src).getSource().getId());
+    }
 
     Collection<Component> components = src.getChildren();
     JsonArray children = new JsonArray(components.size());
@@ -38,6 +45,12 @@ public class LayoutSaver implements ElementTypeAdapter<Layout> {
 
     Layout layout = Components.getDefault().createComponent(name).flatMap(TypeUtils.optionalCast(Layout.class))
         .orElseThrow(() -> new JsonParseException("Can't find layout name " + name));
+
+    if (layout instanceof Sourced) {
+      String sourceUri = json.getAsJsonObject().get("_source").getAsString();
+      DataSource<?> source = SourceTypes.getDefault().forUri(sourceUri);
+      ((Sourced) layout).setSource(source);
+    }
 
     children.forEach(child -> {
       String childName = child.getAsJsonObject().get("_type").getAsString();

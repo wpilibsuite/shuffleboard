@@ -19,12 +19,12 @@ public interface Component {
    */
   Property<String> titleProperty();
 
-  default void setTitle(String title) {
-    titleProperty().setValue(title);
-  }
-
   default String getTitle() {
     return titleProperty().getValue();
+  }
+
+  default void setTitle(String title) {
+    titleProperty().setValue(title);
   }
 
   /**

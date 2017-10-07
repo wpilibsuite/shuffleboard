@@ -11,6 +11,7 @@ import edu.wpi.first.shuffleboard.api.widget.Widget;
 import org.fxmisc.easybind.EasyBind;
 
 import java.io.IOException;
+import java.util.Optional;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.Property;
@@ -19,6 +20,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Label;
 import javafx.scene.control.OverrunStyle;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Pane;
 
 /**
  * Contains any component directly embedded in a WidgetPane. Has a size, content, and title.
@@ -49,7 +51,17 @@ public class Tile<T extends Component> extends BorderPane {
         EasyBind.monadic(contentProperty()).selectProperty(Component::titleProperty)
     );
     ((Label) lookup("#titleLabel").lookup(".label")).setTextOverrun(OverrunStyle.LEADING_ELLIPSIS);
-    centerProperty().bind(EasyBind.monadic(contentProperty()).map(Component::getView));
+    EasyBind.monadic(content)
+        .map(Component::getView)
+        .addListener((__, oldContent, newContent) -> {
+          getContentPane()
+              .map(Pane::getChildren)
+              .ifPresent(c -> c.setAll(newContent));
+        });
+  }
+
+  private Optional<Pane> getContentPane() {
+    return Optional.ofNullable((Pane) lookup("#contentPane"));
   }
 
   public final T getContent() {

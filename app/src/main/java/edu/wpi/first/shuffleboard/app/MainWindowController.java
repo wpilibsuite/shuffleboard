@@ -186,14 +186,14 @@ public class MainWindowController {
         }
 
         DataSource<?> source = selectedItem.getValue().get();
-        List<String> widgetNames = Components.getDefault().widgetNamesForSource(source);
-        if (widgetNames.isEmpty()) {
-          // No known widgets that can show this data
+        List<String> componentNames = Components.getDefault().componentNamesForSource(source);
+        if (componentNames.isEmpty()) {
+          // No known components that can show this data
           return;
         }
 
         ContextMenu menu = new ContextMenu();
-        widgetNames.stream()
+        componentNames.stream()
             .map(name -> createShowAsMenuItem(name, source))
             .forEach(menu.getItems()::add);
 
@@ -234,7 +234,8 @@ public class MainWindowController {
         .map(DashboardTabPane.DashboardTab::getWidgetPane)
         .forEach(pane ->
           pane.getTiles().stream()
-              .filter(tile -> plugin.getWidgets().contains(tile.getContent().getClass()))
+              .filter(tile -> plugin.getComponents().stream()
+                  .anyMatch(t -> tile.getContent().getName().equals(t.getName())))
               .collect(Collectors.toList()) // collect into temporary list to prevent comodification
               .forEach(tile -> pane.getChildren().remove(tile)));
     // ... and from the gallery
@@ -267,11 +268,11 @@ public class MainWindowController {
     });
   }
 
-  private MenuItem createShowAsMenuItem(String widgetName, DataSource<?> source) {
-    MenuItem menuItem = new MenuItem("Show as: " + widgetName);
+  private MenuItem createShowAsMenuItem(String componentName, DataSource<?> source) {
+    MenuItem menuItem = new MenuItem("Show as: " + componentName);
     menuItem.setOnAction(action -> {
-      Components.getDefault().createWidget(widgetName, source)
-          .ifPresent(dashboard::addWidgetToActivePane);
+      Components.getDefault().createComponent(componentName, source)
+          .ifPresent(dashboard::addComponentToActivePane);
     });
     return menuItem;
   }

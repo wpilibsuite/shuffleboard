@@ -2,7 +2,6 @@ package edu.wpi.first.shuffleboard.api.widget;
 
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
-import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
 
 import java.util.List;
 import java.util.Set;
@@ -50,26 +49,12 @@ import javafx.collections.ObservableMap;
  * @param <T> the type of data the widget supports. For composite widgets, this is always
  *            {@link ObservableMap ObservableMap&lt;String, Object&gt;}.
  */
-public interface Widget extends Component {
+public interface Widget extends Component, Sourced {
 
   /**
    * Gets an unmodifiable copy of this widgets supported data types.
    */
   Set<DataType> getDataTypes();
-
-  /**
-   * Sets the source for this widget.
-   *
-   * @param source the new source
-   *
-   * @throws IncompatibleSourceException if the source is for a data type this widget does not support
-   */
-  void setSource(DataSource source) throws IncompatibleSourceException;
-
-  /**
-   * Gets the source for this widget.
-   */
-  DataSource<?> getSource();
 
   Property<DataSource> sourceProperty();
 
