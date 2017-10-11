@@ -116,7 +116,7 @@ public class SubsystemLayout implements Layout, Populatable, Sourced {
         .flatMap(TypeUtils.castStream(Sourced.class))
         .map(Sourced::getSource)
         .map(DataSource::getId)
-        .anyMatch(uri -> uri.startsWith(source.getId()));
+        .anyMatch(source.getId()::startsWith);
   }
 
   @Override
