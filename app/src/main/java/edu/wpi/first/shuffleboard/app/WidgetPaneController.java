@@ -356,7 +356,10 @@ public class WidgetPaneController {
         menu.getItems().addAll(changeMenus, new SeparatorMenuItem());
       }
 
-      menu.getItems().add(createPropertySheetMenu((WidgetTile) tile));
+      //Only add the properties menu item if the widget has properties
+      if (!((WidgetTile)tile).getContent().getProperties().isEmpty()) {
+        menu.getItems().add(createPropertySheetMenu((WidgetTile) tile));
+      }
     }
 
     return menu;
@@ -426,6 +429,7 @@ public class WidgetPaneController {
       WidgetPropertySheet propertySheet = new WidgetPropertySheet(tile.getContent().getProperties());
       Dialog<ButtonType> dialog = new Dialog<>();
 
+      dialog.setTitle("Edit widget properties");
       dialog.getDialogPane().getStylesheets().setAll(AppPreferences.getInstance().getTheme().getStyleSheets());
       dialog.getDialogPane().setContent(new BorderPane(propertySheet));
       dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CLOSE);
