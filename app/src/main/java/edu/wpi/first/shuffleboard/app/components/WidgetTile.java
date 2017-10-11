@@ -4,16 +4,13 @@ import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.widget.TileSize;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 import edu.wpi.first.shuffleboard.app.sources.DestroyedSource;
-
-import org.fxmisc.easybind.EasyBind;
-import org.fxmisc.easybind.monadic.PropertyBinding;
-
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.css.PseudoClass;
 import javafx.scene.Node;
-import javafx.scene.input.MouseEvent;
+import org.fxmisc.easybind.EasyBind;
+import org.fxmisc.easybind.monadic.PropertyBinding;
 
 /**
  * Represents a tile containing a widget.
@@ -54,19 +51,8 @@ public class WidgetTile extends Tile<Widget> {
     });
 
     centerProperty().unbind();
-    centerProperty().addListener((obv, oldV, newV) -> setupCenter(newV));
     centerProperty().bind(Bindings.createObjectBinding(
             this::createCenter, contentProperty(), showWidgetProperty()));
-  }
-
-  private void setupCenter(Node newV) {
-    if (newV != null) {
-      newV.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
-        if (event.getClickCount() == 2) {
-          toggleShowWidget();
-        }
-      });
-    }
   }
 
   private Node createCenter() {
@@ -74,15 +60,9 @@ public class WidgetTile extends Tile<Widget> {
       return null;
     } else if (isShowWidget() || getContent().getProperties().isEmpty()) {
       return getContent().getView();
-    } else {
-      return createPrefsController(getContent());
     }
-  }
 
-  private Node createPrefsController(Widget widget) {
-    WidgetPropertySheet propertySheet = new WidgetPropertySheet(widget.getProperties());
-    propertySheet.setOnDragDetected(getOnDragDetected());
-    return propertySheet;
+    return null;
   }
 
   public boolean isShowWidget() {
@@ -100,5 +80,4 @@ public class WidgetTile extends Tile<Widget> {
   public void toggleShowWidget() {
     setShowWidget(!isShowWidget());
   }
-
 }
