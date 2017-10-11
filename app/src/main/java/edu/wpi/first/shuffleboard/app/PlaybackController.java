@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.app;
 
+import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.app.components.Scrubber;
 import edu.wpi.first.shuffleboard.app.sources.recording.Playback;
 import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
@@ -35,6 +36,8 @@ public class PlaybackController {
   private ToggleSwitch loopingSwitch;
   @FXML
   private Label progressLabel;
+  @FXML
+  private Label connectionIndicator;
 
   private final ImageView recordIcon = new ImageView("/edu/wpi/first/shuffleboard/app/icons/icons8-Record-16.png");
   private final ImageView stopIcon = new ImageView("/edu/wpi/first/shuffleboard/app/icons/icons8-Stop-16.png");
@@ -94,6 +97,15 @@ public class PlaybackController {
     });
 
     loopingSwitch.selectedProperty().bindBidirectional(loopingProperty);
+
+    NetworkTableUtils.inst.addConnectionListener(connectionNotification ->
+        FxUtils.runOnFxThread(() -> {
+          if (connectionNotification.connected) {
+            connectionIndicator.setText("Connected to " + connectionNotification.conn.remote_ip);
+          } else {
+            connectionIndicator.setText("Disconnected!");
+          }
+        }), true);
   }
 
   private static String msToMinSec(long ms) {
