@@ -18,10 +18,11 @@ import edu.wpi.first.shuffleboard.app.components.LayoutTile;
 import edu.wpi.first.shuffleboard.app.components.Tile;
 import edu.wpi.first.shuffleboard.app.components.TileLayout;
 import edu.wpi.first.shuffleboard.app.components.WidgetPane;
-import edu.wpi.first.shuffleboard.app.components.WidgetPropertySheet;
 import edu.wpi.first.shuffleboard.app.components.WidgetTile;
 import edu.wpi.first.shuffleboard.app.dnd.TileDragResizer;
-import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
+
+import org.fxmisc.easybind.EasyBind;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -30,13 +31,12 @@ import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
 import javafx.beans.binding.Binding;
 import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
-import javafx.scene.control.ButtonType;
 import javafx.scene.control.ContextMenu;
-import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
@@ -45,10 +45,8 @@ import javafx.scene.image.WritableImage;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
-import org.fxmisc.easybind.EasyBind;
 
 // needs refactoring to split out per-widget interaction
 @SuppressWarnings("PMD.GodClass")
@@ -355,8 +353,6 @@ public class WidgetPaneController {
       if (changeMenus.getItems().size() > 1) {
         menu.getItems().addAll(changeMenus, new SeparatorMenuItem());
       }
-
-      menu.getItems().add(createPropertySheetMenu((WidgetTile) tile));
     }
 
     return menu;
@@ -413,25 +409,6 @@ public class WidgetPaneController {
           changeView.getItems().add(changeItem);
         });
     return changeView;
-  }
-
-  /**
-   * Creates the menu for editing the properties of a widget.
-   *
-   * @param tile the tile to pull properties from
-   * @return     the edit property menu
-   */
-  private MenuItem createPropertySheetMenu(WidgetTile tile) {
-    return FxUtils.menuItem("Edit Properties", event -> {
-      WidgetPropertySheet propertySheet = new WidgetPropertySheet(tile.getContent().getProperties());
-      Dialog<ButtonType> dialog = new Dialog<>();
-
-      dialog.getDialogPane().getStylesheets().setAll(AppPreferences.getInstance().getTheme().getStyleSheets());
-      dialog.getDialogPane().setContent(new BorderPane(propertySheet));
-      dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CLOSE);
-
-      dialog.showAndWait();
-    });
   }
 
   private void collapseTile(Tile tile, int count, boolean left) {
