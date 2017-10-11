@@ -357,8 +357,9 @@ public class WidgetPaneController {
       }
 
       //Only add the properties menu item if the widget has properties
-      if (!((WidgetTile)tile).getContent().getProperties().isEmpty())
+      if (!((WidgetTile)tile).getContent().getProperties().isEmpty()) {
         menu.getItems().add(createPropertySheetMenu((WidgetTile) tile));
+      }
     }
 
     return menu;
