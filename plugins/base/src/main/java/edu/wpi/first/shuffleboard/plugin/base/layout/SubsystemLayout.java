@@ -109,7 +109,8 @@ public class SubsystemLayout implements Layout, Populatable, Sourced {
   public boolean supports(DataSource<?> source) {
     return this.source != null
         && this.source != source
-        && source.getName().startsWith(getSource().getName());
+        && source.getName().startsWith(this.source.getName())
+        && !NetworkTableUtils.isMetadata(source.getId());
   }
 
   @Override

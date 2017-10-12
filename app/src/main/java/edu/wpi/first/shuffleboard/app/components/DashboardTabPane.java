@@ -5,6 +5,7 @@ import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.util.Debouncer;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
+import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.ComponentContainer;
@@ -307,6 +308,7 @@ public class DashboardTabPane extends TabPane {
       return !deferPopulation
           && isAutoPopulate()
           && source.getDataType() != DataTypes.Map
+          && !NetworkTableUtils.isMetadata(source.getId())
           && (source.getName().startsWith(getSourcePrefix()) || source.getId().startsWith(getSourcePrefix()));
     }
 
