@@ -27,6 +27,9 @@ allprojects {
     apply {
         plugin("com.diffplug.gradle.spotless")
     }
+
+    getWPILibVersion()?.let { version = it }
+
     // Spotless is used to lint and reformat source files.
     spotless {
         kotlinGradle {
