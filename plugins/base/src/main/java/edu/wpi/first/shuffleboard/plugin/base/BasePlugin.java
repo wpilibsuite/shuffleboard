@@ -19,6 +19,7 @@ import edu.wpi.first.shuffleboard.plugin.base.data.types.CommandType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.EncoderType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.NumberArrayType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.NumberType;
+import edu.wpi.first.shuffleboard.plugin.base.data.types.PIDControllerType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.PowerDistributionType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.RawByteType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.SendableChooserType;
@@ -38,6 +39,7 @@ import edu.wpi.first.shuffleboard.plugin.base.widget.CommandWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.EncoderWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.NumberBarWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.NumberSlider;
+import edu.wpi.first.shuffleboard.plugin.base.widget.PIDControllerWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.PowerDistributionPanelWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.SpeedController;
 import edu.wpi.first.shuffleboard.plugin.base.widget.TextView;
@@ -72,7 +74,8 @@ public class BasePlugin extends Plugin {
         new SendableChooserType(),
         new SpeedControllerType(),
         new SubsystemType(),
-        new CommandType()
+        new CommandType(),
+        new PIDControllerType()
     );
   }
 
@@ -91,6 +94,7 @@ public class BasePlugin extends Plugin {
         WidgetType.forAnnotatedWidget(EncoderWidget.class),
         WidgetType.forAnnotatedWidget(SpeedController.class),
         WidgetType.forAnnotatedWidget(CommandWidget.class),
+        WidgetType.forAnnotatedWidget(PIDControllerWidget.class),
         new LayoutClass<>("List Layout", ListLayout.class),
         createSubsystemLayoutType()
     );
@@ -122,6 +126,7 @@ public class BasePlugin extends Plugin {
         .put(new EncoderType(), WidgetType.forAnnotatedWidget(EncoderWidget.class))
         .put(new SpeedControllerType(), WidgetType.forAnnotatedWidget(SpeedController.class))
         .put(new CommandType(), WidgetType.forAnnotatedWidget(CommandWidget.class))
+        .put(new PIDControllerType(), WidgetType.forAnnotatedWidget(PIDControllerWidget.class))
         .put(new SubsystemType(), createSubsystemLayoutType())
         .build();
   }
