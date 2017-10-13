@@ -203,7 +203,6 @@ project(":app") {
                 artifact (shadowJar) {
                     classifier = null
                 }
-                from(components["java"])
                 artifact(sourceJar)
             }
         }
