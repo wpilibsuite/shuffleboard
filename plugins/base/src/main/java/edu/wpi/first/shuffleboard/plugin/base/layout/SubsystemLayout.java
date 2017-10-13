@@ -107,7 +107,10 @@ public class SubsystemLayout implements Layout, Populatable, Sourced {
 
   @Override
   public boolean supports(DataSource<?> source) {
-    return this.source != null && source.getName().startsWith(getSource().getName());
+    return this.source != null
+        && this.source != source
+        && source.getName().startsWith(this.source.getName())
+        && !NetworkTableUtils.isMetadata(source.getId());
   }
 
   @Override
@@ -116,7 +119,7 @@ public class SubsystemLayout implements Layout, Populatable, Sourced {
         .flatMap(TypeUtils.castStream(Sourced.class))
         .map(Sourced::getSource)
         .map(DataSource::getId)
-        .anyMatch(uri -> uri.startsWith(source.getId()));
+        .anyMatch(source.getId()::startsWith);
   }
 
   @Override
