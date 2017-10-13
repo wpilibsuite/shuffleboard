@@ -7,8 +7,6 @@ import edu.wpi.first.shuffleboard.api.widget.SimpleAnnotatedWidget;
 
 import org.fxmisc.easybind.EasyBind;
 
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.Pane;
@@ -25,8 +23,6 @@ import javafx.scene.layout.Pane;
 @ParametrizedController("TextView.fxml")
 public class TextView extends SimpleAnnotatedWidget<Object> {
 
-  private final StringProperty text = new SimpleStringProperty(this, "text", "");
-
   @FXML
   private Pane root;
   @FXML
@@ -36,14 +32,19 @@ public class TextView extends SimpleAnnotatedWidget<Object> {
 
   @FXML
   private void initialize() {
-    text.bind(EasyBind.map(dataProperty(), this::simpleToString));
+    dataProperty().addListener((__, prev, cur) -> {
+      if (cur != null) {
+        if (cur instanceof Number) {
+          numberField.setNumber(((Number) cur).doubleValue());
+        } else if (cur instanceof String || cur instanceof Boolean) {
+          textField.setText(cur.toString());
+        } else {
+          throw new UnsupportedOperationException("Unsupported type: " + cur.getClass().getName());
+        }
+      }
+    });
     numberField.visibleProperty().bind(EasyBind.map(dataProperty(), d -> d instanceof Number).orElse(false));
     textField.visibleProperty().bind(numberField.visibleProperty().not());
-
-    text.addListener((__, oldText, newText) -> {
-      textField.setText(newText);
-      numberField.setText(newText);
-    });
 
     textField.textProperty().addListener((__, oldText, newText) -> {
       if (getData() instanceof Boolean) {
@@ -60,13 +61,6 @@ public class TextView extends SimpleAnnotatedWidget<Object> {
   @Override
   public Pane getView() {
     return root;
-  }
-
-  private String simpleToString(Object obj) {
-    if (obj == null) {
-      return "";
-    }
-    return obj.toString();
   }
 
 }
