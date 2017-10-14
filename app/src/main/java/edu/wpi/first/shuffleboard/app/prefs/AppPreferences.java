@@ -6,6 +6,8 @@ import com.google.common.collect.ImmutableList;
 import edu.wpi.first.shuffleboard.api.theme.Theme;
 import edu.wpi.first.shuffleboard.api.theme.Themes;
 
+import java.util.prefs.Preferences;
+
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -27,6 +29,29 @@ public final class AppPreferences {
 
   @VisibleForTesting
   static AppPreferences instance = new AppPreferences();
+
+  /**
+   * Creates a new AppPreferences instance that uses the default user-level preferences at
+   * "/edu/wpi/first/shuffleboard/app/prefs".
+   */
+  public AppPreferences() {
+    this(Preferences.userNodeForPackage(AppPreferences.class));
+  }
+
+  /**
+   * Creates a new AppPreferences instance.
+   *
+   * @param storage the preferences object to use to save and load preferences between application runs
+   */
+  public AppPreferences(Preferences storage) {
+    setTheme(Themes.getDefault().forName(storage.get("theme", Themes.INITIAL_THEME.getName())));
+    setDefaultTileSize(storage.getDouble("defaultTileSize", 128));
+    setServer(storage.get("server", "localhost"));
+
+    theme.addListener(__ -> storage.put("theme", getTheme().getName()));
+    defaultTileSize.addListener(__ -> storage.putDouble("defaultTileSize", getDefaultTileSize()));
+    server.addListener(__ -> storage.put("server", getServer()));
+  }
 
   public static AppPreferences getInstance() {
     return instance;
