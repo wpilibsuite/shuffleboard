@@ -11,13 +11,16 @@ import edu.wpi.first.shuffleboard.api.plugin.Plugin;
 import edu.wpi.first.shuffleboard.api.prefs.FlushableProperty;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
+import edu.wpi.first.shuffleboard.api.util.PreferencesUtils;
 import edu.wpi.first.shuffleboard.api.widget.ComponentType;
 import edu.wpi.first.shuffleboard.api.widget.WidgetType;
 import edu.wpi.first.shuffleboard.plugin.networktables.sources.NetworkTableSourceType;
 
 import java.util.List;
 import java.util.Map;
+import java.util.prefs.Preferences;
 
+import javafx.beans.InvalidationListener;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -27,8 +30,10 @@ public class NetworkTablesPlugin extends Plugin {
 
   private int recorderUid = -1;
   private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
+  private final Preferences preferences = Preferences.userNodeForPackage(getClass());
 
   private final StringProperty serverId = new SimpleStringProperty(this, "server", "localhost");
+  private final InvalidationListener serverSaver = __ -> PreferencesUtils.save(serverId, preferences);
 
   private final ChangeListener<String> serverChangeListener = (observable, oldValue, newValue) -> {
     String[] value = newValue.split(":");
@@ -62,6 +67,9 @@ public class NetworkTablesPlugin extends Plugin {
 
   @Override
   public void onLoad() {
+    PreferencesUtils.read(serverId, preferences);
+    serverId.addListener(serverSaver);
+
     // Automatically capture and record changes in network tables
     // This is done here because each key under N subtables would have N+1 copies
     // in the recording (eg "/a/b/c" has 2 tables and 3 copies: "/a", "/a/b", and "/a/b/c")
@@ -88,6 +96,7 @@ public class NetworkTablesPlugin extends Plugin {
     NetworkTablesJNI.removeEntryListener(recorderUid);
     inst.stopClient();
     inst.stopDSClient();
+    serverId.removeListener(serverSaver);
   }
 
   @Override

@@ -5,6 +5,9 @@ import com.google.common.collect.ImmutableList;
 
 import edu.wpi.first.shuffleboard.api.theme.Theme;
 import edu.wpi.first.shuffleboard.api.theme.Themes;
+import edu.wpi.first.shuffleboard.api.util.PreferencesUtils;
+
+import java.util.prefs.Preferences;
 
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.Property;
@@ -17,13 +20,23 @@ import javafx.beans.property.SimpleObjectProperty;
  */
 public final class AppPreferences {
 
-  private final Property<Theme> theme
-      = new SimpleObjectProperty<>(this, "Theme", Themes.INITIAL_THEME);
-  private final DoubleProperty defaultTileSize
-      = new SimpleDoubleProperty(this, "defaultTileSize", 128);
+  private final Property<Theme> theme = new SimpleObjectProperty<>(this, "Theme", Themes.INITIAL_THEME);
+  private final DoubleProperty defaultTileSize = new SimpleDoubleProperty(this, "defaultTileSize", 128);
 
   @VisibleForTesting
   static AppPreferences instance = new AppPreferences();
+
+  /**
+   * Creates a new app preferences instance.
+   */
+  public AppPreferences() {
+    Preferences preferences = Preferences.userNodeForPackage(getClass());
+    PreferencesUtils.read(theme, preferences, Themes.getDefault()::forName);
+    PreferencesUtils.read(defaultTileSize, preferences);
+
+    theme.addListener(__ -> PreferencesUtils.save(theme, preferences, Theme::getName));
+    defaultTileSize.addListener(__ -> PreferencesUtils.save(defaultTileSize, preferences));
+  }
 
   public static AppPreferences getInstance() {
     return instance;
