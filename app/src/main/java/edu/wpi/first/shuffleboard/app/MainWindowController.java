@@ -21,10 +21,9 @@ import edu.wpi.first.shuffleboard.app.components.WidgetPropertySheet;
 import edu.wpi.first.shuffleboard.app.json.JsonBuilder;
 import edu.wpi.first.shuffleboard.app.plugin.PluginLoader;
 import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
-import edu.wpi.first.shuffleboard.app.prefs.FlushableProperty;
+import edu.wpi.first.shuffleboard.api.prefs.FlushableProperty;
 import edu.wpi.first.shuffleboard.app.sources.recording.Playback;
 
-import org.controlsfx.control.PropertySheet;
 import org.fxmisc.easybind.EasyBind;
 
 import java.io.File;
@@ -52,6 +51,7 @@ import javafx.scene.control.Dialog;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableRow;
@@ -379,27 +379,35 @@ public class MainWindowController {
   @SuppressWarnings("unchecked")
   @FXML
   public void showPrefs() {
-    PropertySheet propertySheet
-        = new WidgetPropertySheet(AppPreferences.getInstance().getProperties());
+    TabPane tabs = new TabPane();
+    tabs.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
 
-    propertySheet.setModeSwitcherVisible(false);
-    propertySheet.setSearchBoxVisible(false);
-    propertySheet.setMode(PropertySheet.Mode.NAME);
+    tabs.getTabs().add(new Tab("Application", new WidgetPropertySheet(AppPreferences.getInstance().getProperties())));
+
+    for (Plugin plugin : PluginLoader.getDefault().getLoadedPlugins()) {
+      if (plugin.getProperties().isEmpty()) {
+        continue;
+      }
+      Tab tab = new Tab(plugin.getName());
+      tab.setContent(new WidgetPropertySheet(plugin.getProperties()));
+      tabs.getTabs().add(tab);
+    }
 
     Dialog<Boolean> dialog = new Dialog<>();
     EasyBind.listBind(dialog.getDialogPane().getStylesheets(), root.getStylesheets());
-    dialog.getDialogPane().setContent(new BorderPane(propertySheet));
+    dialog.getDialogPane().setContent(new BorderPane(tabs));
     dialog.initModality(Modality.APPLICATION_MODAL);
     dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CANCEL, ButtonType.OK);
     dialog.setTitle("Shuffleboard Preferences");
     dialog.setResizable(true);
     dialog.setResultConverter(button -> !button.getButtonData().isCancelButton());
     if (dialog.showAndWait().orElse(false)) {
-      propertySheet.getItems().stream()
-          .map(item -> (WidgetPropertySheet.PropertyItem) item)
-          .map(WidgetPropertySheet.PropertyItem::getObservableValue)
-          .filter(Optional::isPresent)
-          .map(Optional::get)
+      tabs.getTabs().stream()
+          .map(t -> (WidgetPropertySheet) t.getContent())
+          .flatMap(p -> p.getItems().stream())
+          .flatMap(TypeUtils.castStream(WidgetPropertySheet.PropertyItem.class))
+          .map(i -> (Optional<ObservableValue>) i.getObservableValue())
+          .flatMap(TypeUtils.optionalStream())
           .flatMap(TypeUtils.castStream(FlushableProperty.class))
           .filter(FlushableProperty::isChanged)
           .forEach(FlushableProperty::flush);

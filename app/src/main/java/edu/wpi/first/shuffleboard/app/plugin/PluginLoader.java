@@ -1,5 +1,7 @@
 package edu.wpi.first.shuffleboard.app.plugin;
 
+import com.google.common.collect.ImmutableSet;
+
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
 import edu.wpi.first.shuffleboard.api.plugin.Plugin;
@@ -220,4 +222,7 @@ public class PluginLoader {
     return knownPlugins;
   }
 
+  public ImmutableSet<Plugin> getLoadedPlugins() {
+    return ImmutableSet.copyOf(loadedPlugins);
+  }
 }

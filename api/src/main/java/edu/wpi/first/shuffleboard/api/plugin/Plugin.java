@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.Property;
 import javafx.beans.property.SimpleBooleanProperty;
 
 /**
@@ -130,6 +131,16 @@ public class Plugin {
    * Gets a list of themes that this plugin defines.
    */
   public List<Theme> getThemes() {
+    return ImmutableList.of();
+  }
+
+  /**
+   * Gets a list of properties of this plugin that can be changed by users. Properties that are sensitive to rapid
+   * changes (for example, a server URI that will attempt a connection on a change) should be wrapped in a
+   * {@link edu.wpi.first.shuffleboard.api.prefs.FlushableProperty FlushableProperty} to ensure that a change will only
+   * occur when a user manually confirms the change.
+   */
+  public List<Property<?>> getProperties() {
     return ImmutableList.of();
   }
 
