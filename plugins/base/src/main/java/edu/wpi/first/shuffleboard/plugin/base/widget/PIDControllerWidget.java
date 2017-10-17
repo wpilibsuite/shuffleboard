@@ -23,13 +23,13 @@ public class PIDControllerWidget extends SimpleAnnotatedWidget<PIDControllerData
 
   @FXML
   private Pane root;
-  @FXML @SuppressWarnings("MemberName") //NOPMD
+  @FXML
   private NumberField pField;
-  @FXML @SuppressWarnings("MemberName") //NOPMD
+  @FXML
   private NumberField iField;
-  @FXML @SuppressWarnings("MemberName") //NOPMD
+  @FXML
   private NumberField dField;
-  @FXML @SuppressWarnings("MemberName") //NOPMD
+  @FXML
   private NumberField fField;
   @FXML
   private NumberField setpointField;

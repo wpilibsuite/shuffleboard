@@ -9,13 +9,9 @@ import java.util.Objects;
 
 public final class PIDControllerData extends ComplexData<PIDControllerData> {
 
-  @SuppressWarnings("MemberName") //NOPMD
   private final double p;
-  @SuppressWarnings("MemberName") //NOPMD
   private final double i;
-  @SuppressWarnings("MemberName") //NOPMD
   private final double d;
-  @SuppressWarnings("MemberName") //NOPMD
   private final double f;
   private final double setpoint;
   private final boolean enabled;
@@ -30,7 +26,6 @@ public final class PIDControllerData extends ComplexData<PIDControllerData> {
    * @param setpoint the controller setpoint
    * @param enabled  whether or not the controller is enabled
    */
-  @SuppressWarnings("ParameterName") //NOPMD
   public PIDControllerData(double p, double i, double d, double f, double setpoint, boolean enabled) {
     this.p = p;
     this.i = i;
@@ -77,22 +72,18 @@ public final class PIDControllerData extends ComplexData<PIDControllerData> {
     return enabled;
   }
 
-  @SuppressWarnings("ParameterName") //NOPMD
   public PIDControllerData withP(double p) {
     return new PIDControllerData(p, i, d, f, setpoint, enabled);
   }
 
-  @SuppressWarnings("ParameterName") //NOPMD
   public PIDControllerData withI(double i) {
     return new PIDControllerData(p, i, d, f, setpoint, enabled);
   }
 
-  @SuppressWarnings("ParameterName") //NOPMD
   public PIDControllerData withD(double d) {
     return new PIDControllerData(p, i, d, f, setpoint, enabled);
   }
 
-  @SuppressWarnings("ParameterName") //NOPMD
   public PIDControllerData withF(double f) {
     return new PIDControllerData(p, i, d, f, setpoint, enabled);
   }
