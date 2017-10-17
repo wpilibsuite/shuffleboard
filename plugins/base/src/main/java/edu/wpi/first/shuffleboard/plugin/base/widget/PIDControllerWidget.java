@@ -40,6 +40,7 @@ public class PIDControllerWidget extends SimpleAnnotatedWidget<PIDControllerData
 
   @FXML
   private void initialize() {
+    root.setStyle("-fx-font-size: 10pt;");
     dataProperty().addListener((__, old, newData) -> {
       pField.setNumber(newData.getP());
       iField.setNumber(newData.getI());

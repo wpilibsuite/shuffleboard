@@ -10,10 +10,10 @@
           xmlns:fx="http://javafx.com/fxml"
           fx:controller="edu.wpi.first.shuffleboard.plugin.base.widget.PIDControllerWidget"
           fx:id="root"
-          minWidth="200" minHeight="272"
+          minWidth="112" minHeight="232"
           hgap="4" vgap="4">
     <columnConstraints>
-        <ColumnConstraints minWidth="64" prefWidth="64" maxWidth="64"/>
+        <ColumnConstraints minWidth="52" prefWidth="52" maxWidth="52"/>
         <ColumnConstraints maxWidth="Infinity"/>
     </columnConstraints>
     <padding>
