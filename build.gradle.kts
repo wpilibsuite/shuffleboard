@@ -6,6 +6,7 @@ import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.tasks.wrapper.Wrapper
 import org.gradle.jvm.tasks.Jar
 import org.gradle.testing.jacoco.tasks.JacocoReport
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 buildscript {
     repositories {
@@ -27,6 +28,9 @@ allprojects {
     apply {
         plugin("com.diffplug.gradle.spotless")
     }
+
+    getWPILibVersion()?.let { version = it }
+
     // Spotless is used to lint and reformat source files.
     spotless {
         kotlinGradle {
@@ -195,8 +199,10 @@ project(":app") {
                 groupId = "edu.wpi.first.shuffleboard"
                 artifactId = "Shuffleboard"
                 getWPILibVersion()?.let { version = it }
-                shadow.component(this)
-                from(components["java"])
+                val shadowJar: ShadowJar by tasks
+                artifact (shadowJar) {
+                    classifier = null
+                }
                 artifact(sourceJar)
             }
         }

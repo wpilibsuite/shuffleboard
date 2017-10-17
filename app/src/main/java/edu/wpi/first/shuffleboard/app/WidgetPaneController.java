@@ -70,6 +70,13 @@ public class WidgetPaneController {
       }
     });
 
+    // Add a context menu for pane-related actions
+    pane.setOnContextMenuRequested(e -> {
+      MenuItem clear = FxUtils.menuItem("Clear", __ -> pane.getChildren().clear());
+      ContextMenu contextMenu = new ContextMenu(clear);
+      contextMenu.show(pane.getScene().getWindow(), e.getScreenX(), e.getScreenY());
+    });
+
     // Handle being dragged over
     pane.setOnDragOver(event -> {
       event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
@@ -255,6 +262,7 @@ public class WidgetPaneController {
     tile.setOnContextMenuRequested(event -> {
       ContextMenu contextMenu = createContextMenu(tile);
       contextMenu.show(pane.getScene().getWindow(), event.getScreenX(), event.getScreenY());
+      event.consume();
     });
 
     TileDragResizer resizer = TileDragResizer.makeResizable(pane, tile);
