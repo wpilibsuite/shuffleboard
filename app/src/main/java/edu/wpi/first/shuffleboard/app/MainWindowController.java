@@ -65,6 +65,7 @@ import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 import static edu.wpi.first.shuffleboard.api.components.SourceTreeTable.alphabetical;
 import static edu.wpi.first.shuffleboard.api.components.SourceTreeTable.branchesFirst;
@@ -389,7 +390,9 @@ public class MainWindowController {
     Dialog<Boolean> dialog = new Dialog<>();
     EasyBind.listBind(dialog.getDialogPane().getStylesheets(), root.getStylesheets());
     dialog.getDialogPane().setContent(new BorderPane(propertySheet));
+    dialog.initOwner(root.getScene().getWindow());
     dialog.initModality(Modality.APPLICATION_MODAL);
+    dialog.initStyle(StageStyle.UTILITY);
     dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CANCEL, ButtonType.OK);
     dialog.setTitle("Shuffleboard Preferences");
     dialog.setResizable(true);
