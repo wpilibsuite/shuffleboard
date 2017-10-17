@@ -17,6 +17,7 @@ import edu.wpi.first.shuffleboard.plugin.base.data.types.BooleanArrayType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.BooleanType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.CommandType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.EncoderType;
+import edu.wpi.first.shuffleboard.plugin.base.data.types.GyroType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.NumberArrayType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.NumberType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.PIDControllerType;
@@ -37,6 +38,7 @@ import edu.wpi.first.shuffleboard.plugin.base.widget.BooleanBox;
 import edu.wpi.first.shuffleboard.plugin.base.widget.ComboBoxChooser;
 import edu.wpi.first.shuffleboard.plugin.base.widget.CommandWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.EncoderWidget;
+import edu.wpi.first.shuffleboard.plugin.base.widget.GyroWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.NumberBarWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.NumberSlider;
 import edu.wpi.first.shuffleboard.plugin.base.widget.PIDControllerWidget;
@@ -75,7 +77,8 @@ public class BasePlugin extends Plugin {
         new SpeedControllerType(),
         new SubsystemType(),
         new CommandType(),
-        new PIDControllerType()
+        new PIDControllerType(),
+        new GyroType()
     );
   }
 
@@ -95,6 +98,7 @@ public class BasePlugin extends Plugin {
         WidgetType.forAnnotatedWidget(SpeedController.class),
         WidgetType.forAnnotatedWidget(CommandWidget.class),
         WidgetType.forAnnotatedWidget(PIDControllerWidget.class),
+        WidgetType.forAnnotatedWidget(GyroWidget.class),
         new LayoutClass<>("List Layout", ListLayout.class),
         createSubsystemLayoutType()
     );
@@ -127,6 +131,7 @@ public class BasePlugin extends Plugin {
         .put(new SpeedControllerType(), WidgetType.forAnnotatedWidget(SpeedController.class))
         .put(new CommandType(), WidgetType.forAnnotatedWidget(CommandWidget.class))
         .put(new PIDControllerType(), WidgetType.forAnnotatedWidget(PIDControllerWidget.class))
+        .put(new GyroType(), WidgetType.forAnnotatedWidget(GyroWidget.class))
         .put(new SubsystemType(), createSubsystemLayoutType())
         .build();
   }
