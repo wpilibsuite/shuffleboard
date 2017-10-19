@@ -42,6 +42,8 @@ public final class Playback {
   private final int maxFrameNum;
   private Thread autoRunner;
   private volatile boolean started = false;
+  private volatile int frameDelta = 1;
+  private volatile int lastFrameDelta = 0;
   private volatile TimestampedData currentFrame;
   private final Object sleepLock = new Object();
   private final BooleanProperty paused = new SimpleBooleanProperty(this, "paused", true);
@@ -95,6 +97,8 @@ public final class Playback {
     frame.addListener((__, prev, cur) -> {
       int lastFrame = prev.intValue();
       int newFrame = cur.intValue();
+      lastFrameDelta = frameDelta;
+      frameDelta = Math.abs(lastFrame - newFrame);
       currentFrame = data.get(newFrame);
       Set<String> remainingSources = new HashSet<>(recording.getSourceIds());
       if (newFrame > lastFrame) {
@@ -157,7 +161,7 @@ public final class Playback {
         // Sleep only if we're not paused and the frames are consecutive.
         // If the frames are not consecutive, it means that the frame was manually moved by a user and we would delay
         // when we shouldn't
-        if (!isPaused() && previous != null && data.indexOf(current) == data.indexOf(previous) + 1) {
+        if (!isPaused() && previous != null && lastFrameDelta <= 1) {
           try {
             Thread.sleep(current.getTimestamp() - previous.getTimestamp());
           } catch (InterruptedException e) {
