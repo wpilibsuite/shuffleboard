@@ -72,7 +72,12 @@ public final class NetworkTableSourceType extends SourceType {
   }
 
   private <T extends ComplexData<T>> void updateTable(CompositeNetworkTableSource<T> source, String key, Object value) {
-    Map<String, Object> map = new HashMap<>(source.getData().asMap());
+    T data = source.getData();
+    if (data == null) {
+      // No data to update
+      return;
+    }
+    Map<String, Object> map = new HashMap<>(data.asMap());
     map.put(key, value);
     source.setData(source.getDataType().fromMap(map));
   }
