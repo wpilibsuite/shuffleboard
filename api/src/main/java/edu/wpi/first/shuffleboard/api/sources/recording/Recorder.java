@@ -113,7 +113,10 @@ public final class Recorder {
     if (!isRunning()) {
       return;
     }
-    recording.append(new TimestampedData(id, dataType, value, timestamp()));
+    // Store the ID in the common string pool
+    // There can easily tens or hundreds of thousands of instances, so storing it in the pool can cut memory
+    // use by megabytes per data point
+    recording.append(new TimestampedData(id.intern(), dataType, value, timestamp()));
   }
 
   private long timestamp() {
