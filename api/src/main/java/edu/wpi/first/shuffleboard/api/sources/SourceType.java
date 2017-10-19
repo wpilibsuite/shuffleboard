@@ -1,6 +1,7 @@
 package edu.wpi.first.shuffleboard.api.sources;
 
 import edu.wpi.first.shuffleboard.api.sources.recording.TimestampedData;
+import edu.wpi.first.shuffleboard.api.util.FxUtils;
 
 import java.util.function.Function;
 
@@ -94,8 +95,10 @@ public class SourceType {
    * behavior is to do nothing; recordable subclasses <i> must </i> override this method.
    */
   public void read(TimestampedData recordedData) {
-    getAvailableSourceUris().add(recordedData.getSourceId());
-    getAvailableSources().put(recordedData.getSourceId(), recordedData.getData());
+    FxUtils.runOnFxThread(() -> {
+      getAvailableSourceUris().add(recordedData.getSourceId());
+      getAvailableSources().put(recordedData.getSourceId(), recordedData.getData());
+    });
   }
 
   /**
