@@ -94,9 +94,7 @@ public final class NetworkTableSourceType extends SourceType {
 
   @Override
   public SourceEntry createSourceEntryForUri(String uri) {
-    String key = removeProtocol(uri);
-    NetworkTableInstance inst = NetworkTableInstance.getDefault();
-    return new NetworkTableSourceEntry(key, inst.getEntry(key).getValue().getValue());
+    return new NetworkTableSourceEntry(removeProtocol(uri), availableSources.get(uri));
   }
 
   @Override
