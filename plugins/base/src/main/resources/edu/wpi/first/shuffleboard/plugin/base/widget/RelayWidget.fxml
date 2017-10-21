@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<StackPane fx:id="root" stylesheets="@RelayWidget.css" xmlns="http://javafx.com/javafx/8.0.121"
+           xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="edu.wpi.first.shuffleboard.plugin.base.widget.RelayWidget">
+    <VBox>
+        <children>
+            <ToggleButton id="offButton" fx:id="offButton" alignment="CENTER" maxHeight="Infinity" maxWidth="Infinity"
+                          mnemonicParsing="false" text="Off">
+                <toggleGroup>
+                    <ToggleGroup fx:id="state"/>
+                </toggleGroup>
+            </ToggleButton>
+            <ToggleButton id="onButton" fx:id="onButton" maxHeight="Infinity" maxWidth="Infinity"
+                          mnemonicParsing="false" text="On" toggleGroup="$state"/>
+            <ToggleButton id="forwardButton" fx:id="forwardButton" maxHeight="Infinity" maxWidth="Infinity"
+                          mnemonicParsing="false" text="Forward" toggleGroup="$state"/>
+            <ToggleButton id="reverseButton" fx:id="reverseButton" maxHeight="Infinity" maxWidth="Infinity"
+                          mnemonicParsing="false" text="Reverse" toggleGroup="$state"/>
+        </children>
+    </VBox>
+</StackPane>

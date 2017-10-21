@@ -1,0 +1,7 @@
+.toggle-button {
+    -fx-padding: 0.07em;
+}
+
+.toggle-button:hover {
+    -fx-cursor: default;
+}
