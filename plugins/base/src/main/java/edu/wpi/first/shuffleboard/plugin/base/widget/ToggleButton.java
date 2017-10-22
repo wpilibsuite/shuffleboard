@@ -1,8 +1,13 @@
 package edu.wpi.first.shuffleboard.plugin.base.widget;
 
+import edu.wpi.first.shuffleboard.api.sources.DataSource;
+import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.api.widget.Description;
 import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 import edu.wpi.first.shuffleboard.api.widget.SimpleAnnotatedWidget;
+
+import org.fxmisc.easybind.EasyBind;
+import org.fxmisc.easybind.monadic.MonadicBinding;
 
 import javafx.fxml.FXML;
 import javafx.scene.layout.Pane;
@@ -15,11 +20,16 @@ public class ToggleButton extends SimpleAnnotatedWidget<Boolean> {
   private Pane root;
   @FXML
   private javafx.scene.control.ToggleButton button;
+  private MonadicBinding<String> simpleSourceName; // NOPMD use a field to avoid GC
 
   @FXML
   private void initialize() {
+    simpleSourceName = EasyBind.monadic(sourceProperty())
+        .map(DataSource::getName)
+        .map(NetworkTableUtils::simpleKey)
+        .orElse("");
     button.selectedProperty().bindBidirectional(dataProperty());
-    button.textProperty().bind(sourceNameProperty());
+    button.textProperty().bind(simpleSourceName);
   }
 
   @Override
