@@ -119,11 +119,17 @@
 
 .toggle-button, .button {
     -fx-text-fill: -fx-text-button-normal;
-    -fx-font-family: 'Roboto';
     -fx-font-weight: bold;
     -fx-background-insets: 0.0;
-    -fx-background-radius: 4.0;
+    -fx-background-radius: 0.0;
     -fx-alignment: CENTER;
+    -fx-background-color: rgba(250, 250, 250);
+    -fx-effect: dropshadow(gaussian, rgba(0.0, 0.0, 0.0, 0.30), 6.0, 0.3, 0, 2);
+}
+
+.toggle-button:selected, .button:selected {
+    -fx-background-color: -swatch-500;
+    -fx-text-fill: white;
 }
 
 .button-raised .button .text, .button-flat .button .text {
@@ -132,23 +138,22 @@
 
 .button:default {
     -fx-background-color: -swatch-500;
-    -fx-text-fill: -fx-text-button-colored;
+    -fx-text-fill: white;
 }
 
 .toggle-button:focused, .button:focused, .button:default:focused {
-    -fx-background-color: -swatch-light-gray;
+    -fx-background-color: rgb(240, 240, 240);
+    -fx-text-fill: -swatch-500;
 }
 
 .toggle-button:focused:selected {
-    -fx-background-color: derive(-swatch-500, 50.0%),
-    derive(-swatch-500, -20.0%);
-    -fx-background-insets: 0.0, 0.2em;
-    -fx-text-fill: -fx-text-button-colored;
+    -fx-background-color: derive(-swatch-500, -12%);
+    -fx-text-fill: white;
 }
 
 .toggle-button:armed, .toggle-button:selected, .button:armed, .button:default:armed {
-    -fx-background-color: -swatch-gray;
-    -fx-text-fill: -fx-text-button-colored;
+    -fx-background-color: -swatch-500;
+    -fx-text-fill: white;
 }
 
 .icon-button {

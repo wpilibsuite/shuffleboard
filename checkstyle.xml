@@ -114,7 +114,7 @@
                      value="Member name ''{0}'' must match pattern ''{1}''."/>
         </module>
         <module name="ParameterName">
-            <property name="format" value="^([a-z][a-zA-Z0-9]*)|(x|y)|(_\w*)$"/>
+            <property name="format" value="^([a-z][a-zA-Z0-9]*)|(x|y|z)|(_\w*)$"/>
             <message key="name.invalidPattern"
                      value="Parameter name ''{0}'' must match pattern ''{1}''."/>
         </module>
