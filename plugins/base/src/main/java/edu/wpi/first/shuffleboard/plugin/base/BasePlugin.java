@@ -27,6 +27,7 @@ import edu.wpi.first.shuffleboard.plugin.base.data.types.SpeedControllerType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.StringArrayType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.StringType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.SubsystemType;
+import edu.wpi.first.shuffleboard.plugin.base.data.types.ThreeAxisAccelerometerType;
 import edu.wpi.first.shuffleboard.plugin.base.layout.ListLayout;
 import edu.wpi.first.shuffleboard.plugin.base.layout.SubsystemLayout;
 import edu.wpi.first.shuffleboard.plugin.base.recording.serialization.BooleanArrayAdapter;
@@ -43,6 +44,7 @@ import edu.wpi.first.shuffleboard.plugin.base.widget.PIDControllerWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.PowerDistributionPanelWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.SpeedController;
 import edu.wpi.first.shuffleboard.plugin.base.widget.TextView;
+import edu.wpi.first.shuffleboard.plugin.base.widget.ThreeAxisAccelerometerWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.ToggleButton;
 import edu.wpi.first.shuffleboard.plugin.base.widget.ToggleSwitch;
 import edu.wpi.first.shuffleboard.plugin.base.widget.VoltageViewWidget;
@@ -75,6 +77,7 @@ public class BasePlugin extends Plugin {
         new SpeedControllerType(),
         new SubsystemType(),
         new CommandType(),
+        new ThreeAxisAccelerometerType(),
         new PIDControllerType()
     );
   }
@@ -94,6 +97,7 @@ public class BasePlugin extends Plugin {
         WidgetType.forAnnotatedWidget(EncoderWidget.class),
         WidgetType.forAnnotatedWidget(SpeedController.class),
         WidgetType.forAnnotatedWidget(CommandWidget.class),
+        WidgetType.forAnnotatedWidget(ThreeAxisAccelerometerWidget.class),
         WidgetType.forAnnotatedWidget(PIDControllerWidget.class),
         new LayoutClass<>("List Layout", ListLayout.class),
         createSubsystemLayoutType()
@@ -126,6 +130,7 @@ public class BasePlugin extends Plugin {
         .put(new EncoderType(), WidgetType.forAnnotatedWidget(EncoderWidget.class))
         .put(new SpeedControllerType(), WidgetType.forAnnotatedWidget(SpeedController.class))
         .put(new CommandType(), WidgetType.forAnnotatedWidget(CommandWidget.class))
+        .put(new ThreeAxisAccelerometerType(), WidgetType.forAnnotatedWidget(ThreeAxisAccelerometerWidget.class))
         .put(new PIDControllerType(), WidgetType.forAnnotatedWidget(PIDControllerWidget.class))
         .put(new SubsystemType(), createSubsystemLayoutType())
         .build();

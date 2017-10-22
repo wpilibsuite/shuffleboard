@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import edu.wpi.first.shuffleboard.api.components.LinearIndicator?>
+<?import edu.wpi.first.shuffleboard.api.util.UnitStringConverter?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.StackPane?>
+<GridPane xmlns="http://javafx.com/javafx"
+          xmlns:fx="http://javafx.com/fxml"
+          fx:controller="edu.wpi.first.shuffleboard.plugin.base.widget.ThreeAxisAccelerometerWidget"
+          hgap="12" vgap="4"
+          minWidth="120" minHeight="80"
+          fx:id="root">
+    <padding>
+        <Insets top="8" right="16" bottom="8" left="8"/>
+    </padding>
+    <columnConstraints>
+        <ColumnConstraints/>
+        <ColumnConstraints hgrow="ALWAYS"/>
+    </columnConstraints>
+    <rowConstraints>
+        <RowConstraints minHeight="24"/>
+        <RowConstraints minHeight="24"/>
+        <RowConstraints minHeight="24"/>
+    </rowConstraints>
+    <Label text="X" labelFor="${x}" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+    <Label text="Y" labelFor="${y}" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+    <Label text="Z" labelFor="${z}" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+    <StackPane GridPane.columnIndex="1" GridPane.rowIndex="0">
+        <LinearIndicator fx:id="x" showTickMarks="false" showTickLabels="false" StackPane.alignment="TOP_CENTER">
+            <labelFormatter>
+                <UnitStringConverter unit="G"/>
+            </labelFormatter>
+        </LinearIndicator>
+        <Label fx:id="xLabel" visible="${controller.showText}" styleClass="linear-indicator-text" StackPane.alignment="TOP_CENTER"/>
+    </StackPane>
+    <StackPane GridPane.columnIndex="1" GridPane.rowIndex="1">
+        <!-- Bind the properties to the X indicator to make all bars consistent -->
+        <LinearIndicator fx:id="y" min="${x.min}" max="${x.max}" showTickMarks="${x.showTickMarks}" showTickLabels="${x.showTickLabels}" majorTickUnit="${x.majorTickUnit}" labelFormatter="${x.labelFormatter}" StackPane.alignment="TOP_CENTER"/>
+        <Label fx:id="yLabel" visible="${controller.showText}" styleClass="linear-indicator-text" StackPane.alignment="TOP_CENTER"/>
+    </StackPane>
+    <StackPane GridPane.columnIndex="1" GridPane.rowIndex="2">
+        <!-- Bind the properties to the X indicator to make all bars consistent -->
+        <LinearIndicator fx:id="z" min="${x.min}" max="${x.max}" showTickMarks="${x.showTickMarks}" showTickLabels="${x.showTickLabels}" majorTickUnit="${x.majorTickUnit}" labelFormatter="${x.labelFormatter}" StackPane.alignment="TOP_CENTER"/>
+        <Label fx:id="zLabel" visible="${controller.showText}" styleClass="linear-indicator-text" StackPane.alignment="TOP_CENTER"/>
+    </StackPane>
+</GridPane>
