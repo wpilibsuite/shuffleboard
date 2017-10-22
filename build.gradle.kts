@@ -81,6 +81,12 @@ subprojects {
         "testRuntime"(testFx(name = "openjfx-monocle", version = "8u76-b04"))
     }
 
+    tasks.withType<JavaCompile> {
+        options.compilerArgs.add("-Xlint:unchecked")
+        options.compilerArgs.add("-Xlint:deprecation")
+        options.compilerArgs.add("-Werror")
+    }
+
     checkstyle {
         configFile = file("$rootDir/checkstyle.xml")
         toolVersion = "8.1"

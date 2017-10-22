@@ -9,6 +9,7 @@ import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 import java.util.Comparator;
 import java.util.List;
 
+import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.ReadOnlyStringWrapper;
@@ -21,9 +22,8 @@ import javafx.scene.control.TreeTableView;
  * A tree table view or displaying hierarchical sources.
  *
  * @param <S> the type of the source entries in the tree
- * @param <V> the type of the values of the sources
  */
-public class SourceTreeTable<S extends SourceEntry, V> extends TreeTableView<S> {
+public class SourceTreeTable<S extends SourceEntry> extends TreeTableView<S> {
 
   /**
    * Compares tree items, branches first.
@@ -40,7 +40,7 @@ public class SourceTreeTable<S extends SourceEntry, V> extends TreeTableView<S> 
   private final ObjectProperty<SourceType> sourceType = new SimpleObjectProperty<>(this, "sourceType", null);
 
   private final TreeTableColumn<S, String> keyColumn = new TreeTableColumn<>("Name");
-  private final TreeTableColumn<S, V> valueColumn = new TreeTableColumn<>("Value");
+  private final TreeTableColumn<S, Object> valueColumn = new TreeTableColumn<>("Value");
 
   /**
    * Creates a new source tree table. It comes pre-populated with a key and a value column.
@@ -52,9 +52,10 @@ public class SourceTreeTable<S extends SourceEntry, V> extends TreeTableView<S> 
     keyColumn.setCellValueFactory(
         f -> new ReadOnlyStringWrapper(getEntryForCellData(f).getViewName()));
     valueColumn.setCellValueFactory(
-        f -> new ReadOnlyObjectWrapper(getEntryForCellData(f).getValueView()));
+        f -> new ReadOnlyObjectWrapper<>(getEntryForCellData(f).getValueView()));
 
-    getColumns().addAll(keyColumn, valueColumn);
+    getColumns().add(keyColumn);
+    getColumns().add(valueColumn);
   }
 
   /**
@@ -81,6 +82,7 @@ public class SourceTreeTable<S extends SourceEntry, V> extends TreeTableView<S> 
    * @param entry   the entry that should be updated
    * @param deleted {@code true} if the entry was deleted, {@code false} otherwise
    */
+  @SuppressWarnings("unchecked")
   private void makeBranches(S entry, boolean deleted) {
     final SourceType sourceType = getSourceType();
     String name = entry.getName();

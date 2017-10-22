@@ -2,7 +2,7 @@ package edu.wpi.first.shuffleboard.api.data.types;
 
 import edu.wpi.first.shuffleboard.api.data.SimpleDataType;
 
-public class NoneType extends SimpleDataType {
+public class NoneType extends SimpleDataType<Object> {
 
   public NoneType() {
     super("None", null);

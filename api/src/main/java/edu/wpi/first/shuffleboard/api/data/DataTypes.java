@@ -236,7 +236,8 @@ public class DataTypes extends Registry<DataType> {
   /**
    * Gets the registered data types of the given types.
    */
-  public Set<DataType> forTypes(Class<? extends DataType>... types) {
+  @SafeVarargs
+  public final Set<DataType> forTypes(Class<? extends DataType>... types) {
     return Arrays.stream(types)
         .map(this::forType)
         .flatMap(TypeUtils.optionalStream())

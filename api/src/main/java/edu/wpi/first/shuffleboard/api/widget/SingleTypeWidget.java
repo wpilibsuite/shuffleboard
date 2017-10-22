@@ -32,6 +32,7 @@ public interface SingleTypeWidget<T> extends Widget {
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   default DataSource<T> getSource() {
     return sourceProperty().getValue();
   }

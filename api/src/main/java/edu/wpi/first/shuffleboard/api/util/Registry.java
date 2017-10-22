@@ -68,6 +68,7 @@ public abstract class Registry<T> {
    *
    * @param items the items to register
    */
+  @SafeVarargs
   public final void registerAll(T... items) {
     Objects.requireNonNull(items, "items");
     for (T item : items) {
