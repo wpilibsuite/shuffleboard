@@ -220,8 +220,8 @@ public class WidgetPane extends TilePane implements ComponentContainer {
     Pane view = widget.getView();
 
     return new TileSize(
-        roundWidthToNearestTile(view.getPrefWidth(), RoundingMode.UP),
-        roundHeightToNearestTile(view.getPrefHeight(), RoundingMode.UP)
+        roundWidthToNearestTile(Math.max(view.getMinWidth(), view.getPrefWidth()), RoundingMode.UP),
+        roundHeightToNearestTile(Math.max(view.getMinHeight(), view.getPrefHeight()), RoundingMode.UP)
     );
   }
 
