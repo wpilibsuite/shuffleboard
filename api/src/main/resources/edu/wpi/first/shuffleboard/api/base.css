@@ -203,3 +203,13 @@
 .voltage-view:vertical .range-bar {
     -fx-background-color: linear-gradient(to right, gold, derive(gold, -10%));
 }
+
+/*******************************************************************************
+ *                                                                             *
+ * Dialog pane                                                                 *
+ *                                                                             *
+ ******************************************************************************/
+.dialog-pane .content {
+    /* Bring the content to all edges */
+    -fx-padding: 0; /* 10 0 0 10 */
+}
