@@ -1,24 +1,22 @@
 package edu.wpi.first.shuffleboard.api.components;
 
-import eu.hansolo.medusa.Gauge;
+import edu.wpi.first.shuffleboard.api.css.SimpleColorCssMetaData;
+import edu.wpi.first.shuffleboard.api.css.SimpleCssMetaData;
 
 import com.google.common.collect.ImmutableList;
 import com.sun.javafx.css.converters.EnumConverter;
+
+import eu.hansolo.medusa.Gauge;
 
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.function.Function;
 
-import javafx.beans.property.Property;
 import javafx.css.CssMetaData;
 import javafx.css.PseudoClass;
-import javafx.css.SimpleStyleableObjectProperty;
 import javafx.css.StyleConverter;
 import javafx.css.Styleable;
-import javafx.css.StyleableProperty;
-import javafx.scene.control.Control;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
@@ -39,6 +37,14 @@ public class StyleableGauge extends Gauge {
     }
   }
 
+  public StyleableGauge() {
+    super();
+  }
+
+  public StyleableGauge(SkinType skinType) {
+    super(skinType);
+  }
+
   @Override
   protected List<CssMetaData<? extends Styleable, ?>> getControlCssMetaData() {
     return GaugeCss.STYLEABLES;
@@ -53,9 +59,10 @@ public class StyleableGauge extends Gauge {
 
   @Override
   public void setSkinType(SkinType skinType) {
-    if (skinType != getSkinType()) {
+    SkinType previousSkin = getSkinType();
+    if (skinType != previousSkin) {
       super.setSkinType(skinType);
-      skinTypePseudoClasses.values().forEach(p -> pseudoClassStateChanged(p, false));
+      pseudoClassStateChanged(skinTypePseudoClasses.get(previousSkin), false);
       pseudoClassStateChanged(skinTypePseudoClasses.get(skinType), true);
     }
   }
@@ -63,80 +70,13 @@ public class StyleableGauge extends Gauge {
   /**
    * A helper class that holds all the styleable properties.
    */
-  private static class GaugeCss {
+  private static final class GaugeCss {
 
-    private static final CssMetaData<Gauge, Color> NEEDLE_COLOR =
-        new SimpleColorCssMetaData<>(
-            "-fx-needle-color",
-            Gauge::needleColorProperty
-        );
-    private static final CssMetaData<Gauge, Color> TICK_LABEL_COLOR =
-        new SimpleColorCssMetaData<>(
-            "-fx-tick-label-color",
-            Gauge::tickLabelColorProperty
-        );
-    private static final CssMetaData<Gauge, Color> TICK_MARK_COLOR =
-        new SimpleColorCssMetaData<>(
-            "-fx-tick-mark-color",
-            Gauge::tickMarkColorProperty
-        );
-    private static final CssMetaData<Gauge, Color> MAJOR_TICK_COLOR =
-        new SimpleColorCssMetaData<>(
-            "-fx-major-tick-color",
-            Gauge::majorTickMarkColorProperty
-        );
-    private static final CssMetaData<Gauge, Color> MINOR_TICK_COLOR =
-        new SimpleColorCssMetaData<>(
-            "-fx-minor-tick-color",
-            Gauge::minorTickMarkColorProperty
-        );
-    private static final CssMetaData<Gauge, Color> MEDIUM_TICK_COLOR =
-        new SimpleColorCssMetaData<>(
-            "-fx-medium-tick-color",
-            Gauge::mediumTickMarkColorProperty
-        );
-    private static final CssMetaData<Gauge, Color> KNOB_COLOR =
-        new SimpleColorCssMetaData<>(
-            "-fx-knob-color",
-            Gauge::knobColorProperty
-        );
-    private static final CssMetaData<Gauge, Color> UNIT_COLOR =
-        new SimpleColorCssMetaData<>(
-            "-fx-unit-color",
-            Gauge::unitColorProperty
-        );
-    private static final CssMetaData<Gauge, Color> VALUE_COLOR =
-        new SimpleColorCssMetaData<>(
-            "-fx-value-color",
-            Gauge::valueColorProperty
-        );
-    private static final CssMetaData<Gauge, Color> TITLE_COLOR =
-        new SimpleColorCssMetaData<>(
-            "-fx-title-color",
-            Gauge::titleColorProperty
-        );
-    private static final CssMetaData<Gauge, Color> SUBTITLE_COLOR =
-        new SimpleColorCssMetaData<>(
-            "-fx-subtitle-color",
-            Gauge::subTitleColorProperty
-        );
     private static final CssMetaData<Gauge, Paint> BACKGROUND_PAINT =
         new SimpleCssMetaData<>(
             "-fx-background-color",
             StyleConverter.getPaintConverter(),
             Gauge::backgroundPaintProperty
-        );
-    private static final CssMetaData<Gauge, Paint> BORDER_PAINT =
-        new SimpleCssMetaData<>(
-            "-fx-border-color",
-            StyleConverter.getPaintConverter(),
-            Gauge::borderPaintProperty
-        );
-    private static final CssMetaData<Gauge, Number> BORDER_WIDTH =
-        new SimpleCssMetaData<>(
-            "-fx-border-width",
-            StyleConverter.getSizeConverter(),
-            Gauge::borderWidthProperty
         );
     private static final CssMetaData<Gauge, Color> BAR_BACKGROUND_COLOR =
         new SimpleColorCssMetaData<>(
@@ -152,6 +92,18 @@ public class StyleableGauge extends Gauge {
         new SimpleColorCssMetaData<>(
             "-fx-bar-color",
             Gauge::barColorProperty
+        );
+    private static final CssMetaData<Gauge, Paint> BORDER_PAINT =
+        new SimpleCssMetaData<>(
+            "-fx-border-color",
+            StyleConverter.getPaintConverter(),
+            Gauge::borderPaintProperty
+        );
+    private static final CssMetaData<Gauge, Number> BORDER_WIDTH =
+        new SimpleCssMetaData<>(
+            "-fx-border-width",
+            StyleConverter.getSizeConverter(),
+            Gauge::borderWidthProperty
         );
     private static final CssMetaData<Gauge, Font> CUSTOM_FONT =
         new SimpleCssMetaData<>(
@@ -183,6 +135,11 @@ public class StyleableGauge extends Gauge {
             StyleConverter.getBooleanConverter(),
             Gauge::keepAspectProperty
         );
+    private static final CssMetaData<Gauge, Color> KNOB_COLOR =
+        new SimpleColorCssMetaData<>(
+            "-fx-knob-color",
+            Gauge::knobColorProperty
+        );
     private static final CssMetaData<Gauge, KnobType> KNOB_TYPE =
         new SimpleCssMetaData<>(
             "-fx-knob-type",
@@ -195,11 +152,64 @@ public class StyleableGauge extends Gauge {
             StyleConverter.getBooleanConverter(),
             Gauge::knobVisibleProperty
         );
+    private static final CssMetaData<Gauge, Color> MAJOR_TICK_COLOR =
+        new SimpleColorCssMetaData<>(
+            "-fx-major-tick-color",
+            Gauge::majorTickMarkColorProperty
+        );
+    private static final CssMetaData<Gauge, Color> MEDIUM_TICK_COLOR =
+        new SimpleColorCssMetaData<>(
+            "-fx-medium-tick-color",
+            Gauge::mediumTickMarkColorProperty
+        );
+    private static final CssMetaData<Gauge, Color> MINOR_TICK_COLOR =
+        new SimpleColorCssMetaData<>(
+            "-fx-minor-tick-color",
+            Gauge::minorTickMarkColorProperty
+        );
+    private static final CssMetaData<Gauge, Color> NEEDLE_COLOR =
+        new SimpleColorCssMetaData<>(
+            "-fx-needle-color",
+            Gauge::needleColorProperty
+        );
+    private static final CssMetaData<Gauge, NeedleShape> NEEDLE_SHAPE =
+        new SimpleCssMetaData<>(
+            "-fx-needle-shape",
+            new EnumConverter<>(NeedleShape.class),
+            Gauge::needleShapeProperty
+        );
+    private static final CssMetaData<Gauge, NeedleSize> NEEDLE_SIZE =
+        new SimpleCssMetaData<>(
+            "-fx-needle-size",
+            new EnumConverter<>(NeedleSize.class),
+            Gauge::needleSizeProperty
+        );
+    private static final CssMetaData<Gauge, NeedleType> NEEDLE_TYPE =
+        new SimpleCssMetaData<>(
+            "-fx-needle-type",
+            new EnumConverter<>(NeedleType.class),
+            Gauge::needleTypeProperty
+        );
     private static final CssMetaData<Gauge, Number> START_ANGLE =
         new SimpleCssMetaData<>(
             "-fx-start-angle",
             StyleConverter.getSizeConverter(),
             Gauge::startAngleProperty
+        );
+    private static final CssMetaData<Gauge, Color> SUBTITLE_COLOR =
+        new SimpleColorCssMetaData<>(
+            "-fx-subtitle-color",
+            Gauge::subTitleColorProperty
+        );
+    private static final CssMetaData<Gauge, Color> TICK_LABEL_COLOR =
+        new SimpleColorCssMetaData<>(
+            "-fx-tick-label-color",
+            Gauge::tickLabelColorProperty
+        );
+    private static final CssMetaData<Gauge, Color> TICK_MARK_COLOR =
+        new SimpleColorCssMetaData<>(
+            "-fx-tick-mark-color",
+            Gauge::tickMarkColorProperty
         );
     private static final CssMetaData<Gauge, Boolean> TICK_MARK_RING_VISIBLE =
         new SimpleCssMetaData<>(
@@ -207,100 +217,59 @@ public class StyleableGauge extends Gauge {
             StyleConverter.getBooleanConverter(),
             Gauge::tickMarkRingVisibleProperty
         );
+    private static final CssMetaData<Gauge, Color> TITLE_COLOR =
+        new SimpleColorCssMetaData<>(
+            "-fx-title-color",
+            Gauge::titleColorProperty
+        );
+    private static final CssMetaData<Gauge, Color> UNIT_COLOR =
+        new SimpleColorCssMetaData<>(
+            "-fx-unit-color",
+            Gauge::unitColorProperty
+        );
+    private static final CssMetaData<Gauge, Color> VALUE_COLOR =
+        new SimpleColorCssMetaData<>(
+            "-fx-value-color",
+            Gauge::valueColorProperty
+        );
     private static final CssMetaData<Gauge, Color> ZERO_COLOR =
         new SimpleColorCssMetaData<>(
             "-fx-zero-color",
             Gauge::zeroColorProperty
         );
 
-    private static final List<CssMetaData<? extends Styleable, ?>> STYLEABLES;
-
-    static {
-      STYLEABLES = ImmutableList.<CssMetaData<? extends Styleable, ?>>builder()
-          .addAll(Control.getClassCssMetaData())
-          .add(NEEDLE_COLOR)
-          .add(TICK_LABEL_COLOR)
-          .add(TICK_MARK_COLOR)
-          .add(MAJOR_TICK_COLOR)
-          .add(MINOR_TICK_COLOR)
-          .add(MEDIUM_TICK_COLOR)
-          .add(KNOB_COLOR)
-          .add(UNIT_COLOR)
-          .add(VALUE_COLOR)
-          .add(TITLE_COLOR)
-          .add(SUBTITLE_COLOR)
-          .add(BACKGROUND_PAINT)
-          .add(BORDER_PAINT)
-          .add(BORDER_WIDTH)
-          .add(BAR_BACKGROUND_COLOR)
-          .add(BAR_BORDER_COLOR)
-          .add(BAR_COLOR)
-          .add(CUSTOM_FONT)
-          .add(CUSTOM_FONT_ENABLED)
-          .add(FOREGROUND_PAINT)
-          .add(INNER_SHADOW_ENABLED)
-          .add(KEEP_ASPECT_RATIO)
-          .add(KNOB_TYPE)
-          .add(KNOB_VISIBLE)
-          .add(START_ANGLE)
-          .add(TICK_MARK_RING_VISIBLE)
-          .add(ZERO_COLOR)
-          .build();
-    }
-
-    /**
-     * A simple implementation of CSS metadata that allows the property to be styled as long as it is not bound.
-     *
-     * @param <S> the type of the styleable
-     * @param <T> the type of the property to be styled
-     */
-    private static class SimpleCssMetaData<S extends Styleable, T> extends CssMetaData<S, T> {
-
-      private final Function<? super S, Property<T>> propertyExtractor;
-
-      SimpleCssMetaData(String property,
-                        StyleConverter<?, T> converter,
-                        Function<? super S, Property<T>> propertyExtractor) {
-        super(property, converter);
-        this.propertyExtractor = propertyExtractor;
-      }
-
-      @Override
-      public boolean isSettable(S styleable) {
-        return !propertyExtractor.apply(styleable).isBound();
-      }
-
-      @Override
-      public StyleableProperty<T> getStyleableProperty(S styleable) {
-        Property<T> property = propertyExtractor.apply(styleable);
-        if (property instanceof StyleableProperty) {
-          // no need to wrap an already styleable property
-          return (StyleableProperty<T>) property;
-        } else {
-          return new SimpleStyleableObjectPropertyWrapper<>(this, property);
-        }
-      }
-    }
-
-    private static class SimpleColorCssMetaData<S extends Styleable> extends SimpleCssMetaData<S, Color> {
-      SimpleColorCssMetaData(String property, Function<? super S, Property<Color>> propertyExtractor) {
-        super(property, StyleConverter.getColorConverter(), propertyExtractor);
-      }
-    }
-
-    /**
-     * Wraps a normal JavaFX property in a styleable wrapper property. Changes to the wrapper property will be
-     * propagated to the initial property.
-     *
-     * @param <T> the type of the property
-     */
-    private static class SimpleStyleableObjectPropertyWrapper<T> extends SimpleStyleableObjectProperty<T> {
-
-      public SimpleStyleableObjectPropertyWrapper(CssMetaData<? extends Styleable, T> d, Property<T> property) {
-        super(d, property.getBean(), property.getName(), property.getValue());
-        addListener((__, prev, cur) -> property.setValue(cur));
-      }
-    }
+    private static final List<CssMetaData<? extends Styleable, ?>> STYLEABLES = ImmutableList.of(
+        BACKGROUND_PAINT,
+        BAR_BACKGROUND_COLOR,
+        BAR_BORDER_COLOR,
+        BAR_COLOR,
+        BORDER_PAINT,
+        BORDER_WIDTH,
+        CUSTOM_FONT,
+        CUSTOM_FONT_ENABLED,
+        FOREGROUND_PAINT,
+        INNER_SHADOW_ENABLED,
+        KEEP_ASPECT_RATIO,
+        KNOB_COLOR,
+        KNOB_TYPE,
+        KNOB_VISIBLE,
+        MAJOR_TICK_COLOR,
+        MEDIUM_TICK_COLOR,
+        MINOR_TICK_COLOR,
+        NEEDLE_COLOR,
+        NEEDLE_SHAPE,
+        NEEDLE_SIZE,
+        NEEDLE_TYPE,
+        START_ANGLE,
+        SUBTITLE_COLOR,
+        TICK_LABEL_COLOR,
+        TICK_MARK_COLOR,
+        TICK_MARK_RING_VISIBLE,
+        TITLE_COLOR,
+        UNIT_COLOR,
+        VALUE_COLOR,
+        ZERO_COLOR
+    );
 
   }
 
