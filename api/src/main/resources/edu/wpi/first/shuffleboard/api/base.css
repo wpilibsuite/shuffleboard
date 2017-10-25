@@ -206,6 +206,26 @@
 
 /*******************************************************************************
  *                                                                             *
+ * Medusa gauges                                                               *
+ *                                                                             *
+ ******************************************************************************/
+.gauge {
+    -fx-needle-color: -swatch-500;
+    -fx-tick-label-color: -fx-text-base-color;
+    -fx-tick-mark-color: black;
+    -fx-major-tick-color: #333;
+    -fx-minor-tick-color: #aaa;
+    -fx-medium-tick-color: #aaa;
+    -fx-knob-color: -swatch-light-gray;
+    -fx-unit-color: -fx-text-base-color;
+    -fx-value-color: -fx-text-base-color;
+    -fx-title-color: -fx-text-title-color;
+    -fx-subtitle-color: -fx-text-subtitle-color;
+    -fx-tick-mark-ring-visible: true;
+}
+
+/*******************************************************************************
+ *                                                                             *
  * Dialog pane                                                                 *
  *                                                                             *
  ******************************************************************************/

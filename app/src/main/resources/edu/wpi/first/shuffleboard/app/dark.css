@@ -107,7 +107,7 @@
  *                                                                             *
  ******************************************************************************/
 .toggle-switch > .thumb-area {
-    -fx-background-color: derive(base, -25%);
+    -fx-background-color: -swatch-gray;
 }
 
 .toggle-switch > .thumb {
@@ -244,6 +244,19 @@
  ******************************************************************************/
 .slider .axis, .range-slider .axis {
     -fx-tick-label-fill: #eee;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Medusa gauges                                                               *
+ *                                                                             *
+ ******************************************************************************/
+.gauge {
+    -fx-needle-color: -swatch-100;
+    -fx-tick-mark-color: white;
+    -fx-major-tick-color: white;
+    -fx-minor-tick-color: #aaa;
+    -fx-medium-tick-color: #aaa;
 }
 
 /*******************************************************************************
