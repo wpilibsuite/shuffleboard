@@ -223,3 +223,13 @@
     -fx-subtitle-color: -fx-text-subtitle-color;
     -fx-tick-mark-ring-visible: true;
 }
+
+/*******************************************************************************
+ *                                                                             *
+ * Dialog pane                                                                 *
+ *                                                                             *
+ ******************************************************************************/
+.dialog-pane .content {
+    /* Bring the content to all edges */
+    -fx-padding: 0; /* 10 0 0 10 */
+}
