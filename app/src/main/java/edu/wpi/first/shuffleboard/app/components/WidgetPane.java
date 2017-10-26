@@ -24,6 +24,9 @@ import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
+import javafx.scene.image.Image;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundImage;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 
@@ -41,6 +44,8 @@ public class WidgetPane extends TilePane implements ComponentContainer {
       = new SimpleObjectProperty<>(this, "highlightPoint", null);
   private final Property<TileSize> highlightSize
       = new SimpleObjectProperty<>(this, "highlightSize", null);
+  private final BooleanProperty showGrid
+      = new SimpleBooleanProperty(this, "showGrid", true);
 
   /**
    * Creates a new widget pane. This sets up everything needed for dragging widgets and sources
@@ -48,6 +53,12 @@ public class WidgetPane extends TilePane implements ComponentContainer {
    */
   public WidgetPane() {
     gridHighlight.getStyleClass().add("grid-highlight");
+    backgroundProperty().bind(
+        EasyBind.combine(tileSizeProperty(), hgapProperty(), vgapProperty(), showGrid,
+            (tileSize, hgap, vgap, show) -> show ? makeGridImage(tileSize, hgap, vgap) : null)
+            .map(WidgetPane::makeTiledBackgroundImage)
+            .map(Background::new)
+    );
 
     tiles = EasyBind.map(getChildren().filtered(n -> n instanceof Tile), n -> (Tile) n);
 
@@ -99,6 +110,22 @@ public class WidgetPane extends TilePane implements ComponentContainer {
     }
   }
 
+  private static Image makeGridImage(Number tileSize, Number hgap, Number vgap) {
+    return new Image(
+        "/edu/wpi/first/shuffleboard/api/grid-20x20.png",
+        tileSize.doubleValue() + hgap.doubleValue(), tileSize.doubleValue() + vgap.doubleValue(),
+        false, // don't preserve ratio
+        true   // smooth scaling
+    );
+  }
+
+  private static BackgroundImage makeTiledBackgroundImage(Image image) {
+    if (image == null) {
+      return null;
+    } else {
+      return new BackgroundImage(image, null, null, null, null);
+    }
+  }
 
   public ObservableList<Tile> getTiles() {
     return tiles;
@@ -318,5 +345,17 @@ public class WidgetPane extends TilePane implements ComponentContainer {
         .forEach(tile -> tile.setSelected(
             predicate.test(((WidgetTile) tile).getContent())
         ));
+  }
+
+  public boolean isShowGrid() {
+    return showGrid.get();
+  }
+
+  public BooleanProperty showGridProperty() {
+    return showGrid;
+  }
+
+  public void setShowGrid(boolean showGrid) {
+    this.showGrid.set(showGrid);
   }
 }

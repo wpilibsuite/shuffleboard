@@ -22,6 +22,9 @@ import edu.wpi.first.shuffleboard.app.components.WidgetPropertySheet;
 import edu.wpi.first.shuffleboard.app.components.WidgetTile;
 import edu.wpi.first.shuffleboard.app.dnd.TileDragResizer;
 import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
+
+import org.fxmisc.easybind.EasyBind;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -30,6 +33,7 @@ import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
 import javafx.beans.binding.Binding;
 import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
@@ -48,7 +52,6 @@ import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
-import org.fxmisc.easybind.EasyBind;
 
 // needs refactoring to split out per-widget interaction
 @SuppressWarnings("PMD.GodClass")
@@ -80,7 +83,6 @@ public class WidgetPaneController {
     // Handle being dragged over
     pane.setOnDragOver(event -> {
       event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
-      pane.setGridLinesVisible(true);
       GridPoint point = pane.pointAt(event.getX(), event.getY());
       boolean isWidget = event.getDragboard().hasContent(DataFormats.widgetTile);
       boolean isSource = event.getDragboard().hasContent(DataFormats.source);
@@ -106,10 +108,6 @@ public class WidgetPaneController {
         }
       }
 
-      // setting grid lines visible puts them above every child, so move every widget view
-      // to the front to avoid them being obscure by the grid lines
-      // this is a limitation of the JavaFX API that we have to work around
-      pane.getTiles().forEach(Node::toFront);
       event.consume();
     });
 
@@ -200,7 +198,6 @@ public class WidgetPaneController {
    * Cleans up from dragging widgets around in the tile pane.
    */
   private void cleanupWidgetDrag() {
-    pane.setGridLinesVisible(false);
     pane.setHighlight(false);
   }
 
