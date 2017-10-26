@@ -9,6 +9,7 @@ import edu.wpi.first.shuffleboard.api.widget.TileSize;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 
 import org.fxmisc.easybind.EasyBind;
+import org.fxmisc.easybind.monadic.MonadicBinding;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -28,6 +29,7 @@ import javafx.scene.layout.Pane;
 public class Tile<T extends Component> extends BorderPane {
 
   private final Property<T> content = new SimpleObjectProperty<>(this, "content", null);
+  private final MonadicBinding<Pane> contentView = EasyBind.monadic(content).map(Component::getView); // NOPMD
 
   private final Property<TileSize> size = new SimpleObjectProperty<>(this, "size", null);
   private final BooleanProperty selected = new PseudoClassProperty(this, "selected");
@@ -51,13 +53,11 @@ public class Tile<T extends Component> extends BorderPane {
         EasyBind.monadic(contentProperty()).selectProperty(Component::titleProperty)
     );
     ((Label) lookup("#titleLabel").lookup(".label")).setTextOverrun(OverrunStyle.LEADING_ELLIPSIS);
-    EasyBind.monadic(content)
-        .map(Component::getView)
-        .addListener((__, oldContent, newContent) -> {
-          getContentPane()
-              .map(Pane::getChildren)
-              .ifPresent(c -> c.setAll(newContent));
-        });
+    contentView.addListener((__, oldContent, newContent) -> {
+      getContentPane()
+          .map(Pane::getChildren)
+          .ifPresent(c -> c.setAll(newContent));
+    });
   }
 
   private Optional<Pane> getContentPane() {
