@@ -7,6 +7,7 @@ import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.StringJoiner;
 
 /**
  * A simple value class for information about an entry in NetworkTables.
@@ -43,6 +44,14 @@ public final class NetworkTableSourceEntry implements SourceEntry {
     }
     if (value instanceof boolean[]) {
       return Arrays.toString((boolean[]) value);
+    }
+    if (value instanceof byte[]) {
+      StringJoiner joiner = new StringJoiner(", ", "[", "]");
+      for (byte raw : (byte[]) value) {
+        // Display as unsigned hexadecimal strings, eg 15 -> 0x0F
+        joiner.add(String.format("0x%02X", 0xFF & raw));
+      }
+      return joiner.toString();
     }
     return value.toString();
   }

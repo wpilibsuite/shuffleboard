@@ -12,6 +12,7 @@ dependencies {
     api(group = "org.controlsfx", name = "controlsfx", version = "8.40.11")
     api(group = "de.codecentric.centerdevice", name = "javafxsvg", version = "1.2.1")
     api(group = "edu.wpi.first.ntcore", name = "ntcore-java", version = "4.+")
+    api(group = "eu.hansolo", name = "Medusa", version = "7.9") // Note the capital 'M' -- lowercase is a much older version!
     implementation(group = "edu.wpi.first.wpiutil", name = "wpiutil-java", version = "3.+")
     implementation(group = "edu.wpi.first.ntcore", name = "ntcore-jni", version = "4.+", classifier = "all")
 }
