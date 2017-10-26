@@ -1,12 +1,14 @@
 package edu.wpi.first.shuffleboard.app.sources.recording;
 
-import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.shuffleboard.api.DashboardMode;
+import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
-import edu.wpi.first.shuffleboard.api.sources.Sources;
 import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
 import edu.wpi.first.shuffleboard.api.sources.recording.Recording;
 import edu.wpi.first.shuffleboard.api.sources.recording.Serialization;
 import edu.wpi.first.shuffleboard.api.sources.recording.TimestampedData;
+
+import edu.wpi.first.networktables.NetworkTableInstance;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -147,8 +149,9 @@ public final class Playback {
       return;
     }
     Recorder.getInstance().stop();
+    DashboardMode.setCurrentMode(DashboardMode.PLAYBACK);
     unpause();
-    Sources.getDefault().disconnectAll();
+    SourceTypes.getDefault().getItems().forEach(SourceType::disconnect);
     autoRunner = new Thread(() -> {
       TimestampedData previous;
       TimestampedData current = null;
@@ -190,7 +193,6 @@ public final class Playback {
           }
         }
       }
-      Sources.getDefault().connectAll();
     }, "PlaybackThread");
     autoRunner.setDaemon(true);
     autoRunner.start();
@@ -203,8 +205,8 @@ public final class Playback {
 
   private void set(TimestampedData data) {
     final String sourceId = data.getSourceId();
-    // TODO move record/set logic to SourceType
-    SourceTypes.getDefault().typeForUri(sourceId)
+    SourceTypes.getDefault()
+        .typeForUri(sourceId)
         .read(data);
   }
 
@@ -220,7 +222,7 @@ public final class Playback {
     currentPlayback.setValue(null);
     NetworkTableInstance inst = NetworkTableInstance.getDefault();
     inst.deleteAllEntries();
-    Sources.getDefault().connectAll();
+    SourceTypes.getDefault().getItems().forEach(SourceType::connect);
     Recorder.getInstance().start();
   }
 

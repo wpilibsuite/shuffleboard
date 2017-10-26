@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.api.sources.recording;
 
+import edu.wpi.first.shuffleboard.api.DashboardMode;
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
@@ -37,6 +38,13 @@ public final class Recorder {
   private Recorder() {
     // Save the recording at the start (get the initial values) and the stop
     running.addListener((__, wasRunning, isRunning) -> saveToDisk());
+    running.addListener((__, was, is) -> {
+      if (is) {
+        DashboardMode.setCurrentMode(DashboardMode.RECORDING);
+      } else {
+        DashboardMode.setCurrentMode(DashboardMode.NORMAL);
+      }
+    });
 
     // Save the recording every 2 seconds
     Executors.newSingleThreadScheduledExecutor(ThreadUtils::makeDaemonThread)

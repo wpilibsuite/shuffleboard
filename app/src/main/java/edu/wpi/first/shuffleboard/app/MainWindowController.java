@@ -4,6 +4,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.io.Files;
 
+import edu.wpi.first.shuffleboard.api.DashboardMode;
 import edu.wpi.first.shuffleboard.api.components.SourceTreeTable;
 import edu.wpi.first.shuffleboard.api.dnd.DataFormats;
 import edu.wpi.first.shuffleboard.api.plugin.Plugin;
@@ -391,6 +392,8 @@ public class MainWindowController {
       }
       Tab tab = new Tab(plugin.getName());
       tab.setContent(new WidgetPropertySheet(plugin.getProperties()));
+
+      tab.setDisable(DashboardMode.getCurrentMode() == DashboardMode.PLAYBACK);
       tabs.getTabs().add(tab);
     }
 

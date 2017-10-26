@@ -1,20 +1,23 @@
 package edu.wpi.first.shuffleboard.plugin.networktables;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.NetworkTablesJNI;
+import edu.wpi.first.shuffleboard.api.DashboardMode;
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.plugin.Plugin;
 import edu.wpi.first.shuffleboard.api.prefs.FlushableProperty;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
+import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.api.util.PreferencesUtils;
 import edu.wpi.first.shuffleboard.api.widget.ComponentType;
 import edu.wpi.first.shuffleboard.api.widget.WidgetType;
 import edu.wpi.first.shuffleboard.plugin.networktables.sources.NetworkTableSourceType;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.NetworkTablesJNI;
 
 import java.util.List;
 import java.util.Map;
@@ -36,6 +39,9 @@ public class NetworkTablesPlugin extends Plugin {
   private final InvalidationListener serverSaver = __ -> PreferencesUtils.save(serverId, preferences);
 
   private final ChangeListener<String> serverChangeListener = (observable, oldValue, newValue) -> {
+    if (DashboardMode.getCurrentMode() == DashboardMode.PLAYBACK) {
+      return;
+    }
     String[] value = newValue.split(":");
 
     /*
@@ -48,9 +54,7 @@ public class NetworkTablesPlugin extends Plugin {
       port = NetworkTableInstance.kDefaultPort;
     }
 
-    inst.stopClient();
-    inst.stopDSClient();
-    inst.deleteAllEntries();
+    NetworkTableUtils.shutdown(inst);
     if (value[0].matches("\\d{1,4}")) {
       inst.setServerTeam(Integer.parseInt(value[0]), port);
     } else if (value[0].isEmpty()) {
@@ -63,6 +67,7 @@ public class NetworkTablesPlugin extends Plugin {
 
   public NetworkTablesPlugin() {
     super("edu.wpi.first.shuffleboard", "NetworkTables", "1.0.0", "Provides sources and widgets for NetworkTables");
+    NetworkTableSourceType.setInstance(new NetworkTableSourceType(this));
   }
 
   @Override
@@ -79,7 +84,7 @@ public class NetworkTablesPlugin extends Plugin {
       DataTypes.getDefault().forJavaType(value.getClass())
           .ifPresent(type -> {
             Recorder.getInstance().record(
-                NetworkTableSourceType.INSTANCE.toUri(event.name),
+                NetworkTableSourceType.getInstance().toUri(event.name),
                 type,
                 value
             );
@@ -94,8 +99,7 @@ public class NetworkTablesPlugin extends Plugin {
   @Override
   public void onUnload() {
     NetworkTablesJNI.removeEntryListener(recorderUid);
-    inst.stopClient();
-    inst.stopDSClient();
+    NetworkTableUtils.shutdown(inst);
     serverId.removeListener(serverSaver);
   }
 
@@ -109,7 +113,7 @@ public class NetworkTablesPlugin extends Plugin {
   @Override
   public List<SourceType> getSourceTypes() {
     return ImmutableList.of(
-        NetworkTableSourceType.INSTANCE
+        NetworkTableSourceType.getInstance()
     );
   }
 
@@ -126,6 +130,18 @@ public class NetworkTablesPlugin extends Plugin {
         // use FlushableProperty so changes made are only effected when committed by the user
         new FlushableProperty<>(serverId)
     );
+  }
+
+  public String getServerId() {
+    return serverId.get();
+  }
+
+  public StringProperty serverIdProperty() {
+    return serverId;
+  }
+
+  public void setServerId(String serverId) {
+    this.serverId.set(serverId);
   }
 
 }

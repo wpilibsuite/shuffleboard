@@ -102,6 +102,21 @@ public class SourceType {
   }
 
   /**
+   * Connects sources of this type to the backing source interface.
+   */
+  public void connect() { // NOPMD empty method body
+    // Up to subclasses to implement
+  }
+
+  /**
+   * Disconnects sources of this type from the backing source interface. Sources may still be modified by users, but
+   * changes made when in this state should not affect the source interface.
+   */
+  public void disconnect() { // NOPMD empty method body
+    // Up to subclasses to implement
+  }
+
+  /**
    * Creates a root source entry. The entry will not be used to create a source, but to represent the root node in
    * the source tree view in the application window.
    */
