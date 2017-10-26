@@ -44,6 +44,7 @@ import edu.wpi.first.shuffleboard.plugin.base.widget.NumberBarWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.NumberSlider;
 import edu.wpi.first.shuffleboard.plugin.base.widget.PIDControllerWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.PowerDistributionPanelWidget;
+import edu.wpi.first.shuffleboard.plugin.base.widget.SimpleDialWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.SpeedController;
 import edu.wpi.first.shuffleboard.plugin.base.widget.TextView;
 import edu.wpi.first.shuffleboard.plugin.base.widget.ThreeAxisAccelerometerWidget;
@@ -93,6 +94,7 @@ public class BasePlugin extends Plugin {
         WidgetType.forAnnotatedWidget(ToggleSwitch.class),
         WidgetType.forAnnotatedWidget(NumberSlider.class),
         WidgetType.forAnnotatedWidget(NumberBarWidget.class),
+        WidgetType.forAnnotatedWidget(SimpleDialWidget.class),
         WidgetType.forAnnotatedWidget(TextView.class),
         WidgetType.forAnnotatedWidget(VoltageViewWidget.class),
         WidgetType.forAnnotatedWidget(PowerDistributionPanelWidget.class),
