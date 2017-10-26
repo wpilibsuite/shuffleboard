@@ -211,6 +211,8 @@
  ******************************************************************************/
 .gauge {
     -fx-needle-color: -swatch-500;
+    -fx-bar-color: -swatch-200;
+    -fx-bar-background-color: -swatch-light-gray;
     -fx-tick-label-color: -fx-text-base-color;
     -fx-tick-mark-color: black;
     -fx-major-tick-color: #333;
