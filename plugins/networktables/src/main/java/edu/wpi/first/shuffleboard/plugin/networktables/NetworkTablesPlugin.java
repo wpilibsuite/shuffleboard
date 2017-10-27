@@ -1,6 +1,5 @@
 package edu.wpi.first.shuffleboard.plugin.networktables;
 
-import edu.wpi.first.shuffleboard.api.DashboardMode;
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.plugin.Plugin;

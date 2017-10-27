@@ -7,7 +7,6 @@ import edu.wpi.first.shuffleboard.api.util.AsyncUtils;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.plugin.networktables.NetworkTablesPlugin;
 
-import edu.wpi.first.networktables.ConnectionInfo;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 
