@@ -1,6 +1,7 @@
 package edu.wpi.first.shuffleboard.app.components;
 
 import edu.wpi.first.shuffleboard.api.util.GridPoint;
+import edu.wpi.first.shuffleboard.api.util.RoundingMode;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.ComponentContainer;
@@ -147,6 +148,7 @@ public class WidgetPane extends TilePane implements ComponentContainer {
     WidgetTile tile = new WidgetTile(widget, size);
     tile.sizeProperty().addListener(__ -> setSize(tile, tile.getSize()));
     addTile(tile, size);
+    setSize(tile, size);
     return tile;
   }
 
@@ -172,7 +174,8 @@ public class WidgetPane extends TilePane implements ComponentContainer {
       addWidget((Widget) component);
     } else {
       TileSize size = sizeOfWidget(component);
-      addComponent(component, firstPoint(size.getWidth(), size.getHeight()), size);
+      Tile<?> tile = addComponent(component, firstPoint(size.getWidth(), size.getHeight()), size);
+      setSize(tile, size);
     }
   }
 
@@ -215,11 +218,11 @@ public class WidgetPane extends TilePane implements ComponentContainer {
    */
   public TileSize sizeOfWidget(Component widget) {
     Pane view = widget.getView();
-    double width = Math.max(getTileSize(), view.getPrefWidth());
-    double height = Math.max(getTileSize(), view.getPrefHeight());
 
-    return new TileSize((int) (width / getTileSize()),
-        (int) (height / getTileSize()));
+    return new TileSize(
+        roundWidthToNearestTile(Math.max(view.getMinWidth(), view.getPrefWidth()), RoundingMode.UP),
+        roundHeightToNearestTile(Math.max(view.getMinHeight(), view.getPrefHeight()), RoundingMode.UP)
+    );
   }
 
   /**

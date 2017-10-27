@@ -16,6 +16,8 @@ public class LinearIndicator extends RangeSlider {
     getStyleClass().add("linear-indicator");
     value.addListener(__ -> setRangeBounds());
     center.addListener(__ -> setRangeBounds());
+    maxProperty().addListener(__ -> setRangeBounds());
+    minProperty().addListener(__ -> setRangeBounds());
     setDisable(true);
     pseudoClassStateChanged(PseudoClass.getPseudoClass("disabled"), false);
   }

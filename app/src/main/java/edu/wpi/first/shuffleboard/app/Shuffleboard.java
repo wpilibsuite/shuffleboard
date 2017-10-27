@@ -1,28 +1,24 @@
 package edu.wpi.first.shuffleboard.app;
 
-import edu.wpi.first.networktables.NetworkTableInstance;
+import de.codecentric.centerdevice.javafxsvg.SvgImageLoaderFactory;
+
 import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
 import edu.wpi.first.shuffleboard.api.util.Storage;
 import edu.wpi.first.shuffleboard.app.plugin.PluginLoader;
-import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
 import edu.wpi.first.shuffleboard.plugin.base.BasePlugin;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.CameraServerPlugin;
 import edu.wpi.first.shuffleboard.plugin.networktables.NetworkTablesPlugin;
 
-import java.io.IOException;
-
 import it.sauronsoftware.junique.AlreadyLockedException;
 import it.sauronsoftware.junique.JUnique;
 
-import de.codecentric.centerdevice.javafxsvg.SvgImageLoaderFactory;
-
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
@@ -34,7 +30,6 @@ public class Shuffleboard extends Application {
 
   private Pane mainPane; //NOPMD local variable
   private Runnable onOtherAppStart = () -> {};
-  private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
 
   @Override
   public void init() throws AlreadyLockedException, IOException {
@@ -47,31 +42,6 @@ public class Shuffleboard extends Application {
       JUnique.sendMessage(getClass().getCanonicalName(), "alreadyRunning");
       throw alreadyLockedException;
     }
-
-    ChangeListener<String> serverChangeListener = (observable, oldValue, newValue) -> {
-      String[] value = newValue.split(":");
-
-      /*
-       * You MUST set the port number before setting the team number.
-       */
-      int port;
-      if (value.length > 1) {
-        port = Integer.parseInt(value[1]);
-      } else {
-        port = NetworkTableInstance.kDefaultPort;
-      }
-
-      if (value[0].matches("\\d{1,4}")) {
-        inst.setServerTeam(Integer.parseInt(value[0]), port);
-      } else if (value[0].isEmpty()) {
-        inst.setServer("localhost", port);
-      } else {
-        inst.setServer(value[0], port);
-      }
-    };
-    inst.startClient();
-    serverChangeListener.changed(null, null, AppPreferences.getInstance().getServer());
-    AppPreferences.getInstance().serverProperty().addListener(serverChangeListener);
 
     // Load the Roboto font
     Font.loadFont(getClass().getResource("font/roboto/Roboto-Regular.ttf").openStream(), -1);

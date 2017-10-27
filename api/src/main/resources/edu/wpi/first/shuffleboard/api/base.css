@@ -174,6 +174,10 @@
     -fx-pref-width: 1em;
 }
 
+.linear-indicator .range-bar {
+    -fx-background-color: -swatch-200;
+}
+
 .linear-indicator .low-thumb, .linear-indicator .high-thumb {
     -fx-background-radius: 0;
     -fx-border-radius: 0;
@@ -184,10 +188,50 @@
     -fx-background-color: transparent;
 }
 
+.linear-indicator-text {
+    -fx-text-fill: black;
+}
+
+.linear-indicator-text .text {
+    -fx-font-size: 9pt;
+}
+
 .voltage-view .range-bar {
     -fx-background-color: linear-gradient(to bottom, gold, derive(gold, -10%));
 }
 
 .voltage-view:vertical .range-bar {
     -fx-background-color: linear-gradient(to right, gold, derive(gold, -10%));
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Medusa gauges                                                               *
+ *                                                                             *
+ ******************************************************************************/
+.gauge {
+    -fx-needle-color: -swatch-500;
+    -fx-bar-color: -swatch-200;
+    -fx-bar-background-color: -swatch-light-gray;
+    -fx-tick-label-color: -fx-text-base-color;
+    -fx-tick-mark-color: black;
+    -fx-major-tick-color: #333;
+    -fx-minor-tick-color: #aaa;
+    -fx-medium-tick-color: #aaa;
+    -fx-knob-color: -swatch-light-gray;
+    -fx-unit-color: -fx-text-base-color;
+    -fx-value-color: -fx-text-base-color;
+    -fx-title-color: -fx-text-title-color;
+    -fx-subtitle-color: -fx-text-subtitle-color;
+    -fx-tick-mark-ring-visible: true;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Dialog pane                                                                 *
+ *                                                                             *
+ ******************************************************************************/
+.dialog-pane .content {
+    /* Bring the content to all edges */
+    -fx-padding: 0; /* 10 0 0 10 */
 }

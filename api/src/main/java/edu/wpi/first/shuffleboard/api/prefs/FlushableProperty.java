@@ -1,4 +1,4 @@
-package edu.wpi.first.shuffleboard.app.prefs;
+package edu.wpi.first.shuffleboard.api.prefs;
 
 import javafx.beans.property.SimpleObjectProperty;
 
