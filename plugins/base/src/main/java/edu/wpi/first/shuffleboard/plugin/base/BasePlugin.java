@@ -22,6 +22,7 @@ import edu.wpi.first.shuffleboard.plugin.base.data.types.NumberType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.PIDControllerType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.PowerDistributionType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.RawByteType;
+import edu.wpi.first.shuffleboard.plugin.base.data.types.RelayType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.SendableChooserType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.SpeedControllerType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.StringArrayType;
@@ -76,7 +77,8 @@ public class BasePlugin extends Plugin {
         new SpeedControllerType(),
         new SubsystemType(),
         new CommandType(),
-        new PIDControllerType()
+        new PIDControllerType(),
+        new RelayType()
     );
   }
 
@@ -130,6 +132,7 @@ public class BasePlugin extends Plugin {
         .put(new CommandType(), WidgetType.forAnnotatedWidget(CommandWidget.class))
         .put(new PIDControllerType(), WidgetType.forAnnotatedWidget(PIDControllerWidget.class))
         .put(new SubsystemType(), createSubsystemLayoutType())
+        .put(new RelayType(), WidgetType.forAnnotatedWidget(RelayWidget.class))
         .build();
   }
 

@@ -5,7 +5,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<StackPane fx:id="root" stylesheets="@RelayWidget.css" xmlns="http://javafx.com/javafx/8.0.121"
+<StackPane fx:id="root" stylesheets="@relay-widget.css" xmlns="http://javafx.com/javafx/8.0.121"
            xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="edu.wpi.first.shuffleboard.plugin.base.widget.RelayWidget">
     <VBox>

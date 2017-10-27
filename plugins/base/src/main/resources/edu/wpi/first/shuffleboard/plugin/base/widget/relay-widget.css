@@ -1,5 +1,5 @@
 .toggle-button {
-    -fx-padding: 0.07em;
+    -fx-padding: 0;
 }
 
 .toggle-button:hover {
