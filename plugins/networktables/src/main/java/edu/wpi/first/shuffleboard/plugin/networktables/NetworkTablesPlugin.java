@@ -39,9 +39,6 @@ public class NetworkTablesPlugin extends Plugin {
   private final InvalidationListener serverSaver = __ -> PreferencesUtils.save(serverId, preferences);
 
   private final ChangeListener<String> serverChangeListener = (observable, oldValue, newValue) -> {
-    if (DashboardMode.getCurrentMode() == DashboardMode.PLAYBACK) {
-      return;
-    }
     String[] value = newValue.split(":");
 
     /*

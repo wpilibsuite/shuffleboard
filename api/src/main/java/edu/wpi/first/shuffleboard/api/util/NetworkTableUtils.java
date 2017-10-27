@@ -174,9 +174,12 @@ public final class NetworkTableUtils {
     instance.stopServer();
     // Wait for the network mode to be zero (everything off)
     while (instance.getNetworkMode() != 0) { // NOPMD empty 'while' statement
-      // busy wait, 
+      // busy wait
     }
-    instance.deleteAllEntries(); // delete AFTER shutting down the server/client
+    // delete ALL entries, including persistent ones (deleteAllEntries skips persistent entries)
+    for (NetworkTableEntry entry : instance.getEntries("", 0)) {
+      entry.delete();
+    }
   }
 
   /**

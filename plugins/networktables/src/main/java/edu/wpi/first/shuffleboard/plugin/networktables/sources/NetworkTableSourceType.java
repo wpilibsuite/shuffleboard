@@ -7,6 +7,7 @@ import edu.wpi.first.shuffleboard.api.util.AsyncUtils;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.plugin.networktables.NetworkTablesPlugin;
 
+import edu.wpi.first.networktables.ConnectionInfo;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 
@@ -31,13 +32,18 @@ public final class NetworkTableSourceType extends SourceType {
     NetworkTableInstance inst = NetworkTableInstance.getDefault();
     inst.addEntryListener("", (event) -> {
       AsyncUtils.runAsync(() -> {
+        final boolean delete = NetworkTableUtils.isDelete(event.flags);
         List<String> hierarchy = NetworkTableUtils.getHierarchy(event.name);
         for (int i = 0; i < hierarchy.size(); i++) {
           String uri = toUri(hierarchy.get(i));
           if (i == hierarchy.size() - 1) {
-            availableSources.put(uri, event.value.getValue());
+            if (delete) {
+              availableSources.remove(uri);
+            } else {
+              availableSources.put(uri, event.value.getValue());
+            }
           }
-          if (NetworkTableUtils.isDelete(event.flags)) {
+          if (delete) {
             availableSourceIds.remove(uri);
           } else if (!availableSourceIds.contains(uri)) {
             availableSourceIds.add(uri);
@@ -69,8 +75,9 @@ public final class NetworkTableSourceType extends SourceType {
   @Override
   public void connect() {
     // force reconnect
+    // This is ugly and I hate it, but it works
     String id = plugin.getServerId();
-    plugin.setServerId("");
+    plugin.setServerId("notarealserver:0");
     plugin.setServerId(id);
   }
 
