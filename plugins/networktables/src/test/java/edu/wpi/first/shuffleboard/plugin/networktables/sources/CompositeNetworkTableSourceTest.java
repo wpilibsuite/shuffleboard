@@ -1,13 +1,15 @@
 package edu.wpi.first.shuffleboard.plugin.networktables.sources;
 
-import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.data.MapData;
 import edu.wpi.first.shuffleboard.api.util.AsyncUtils;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 
+import edu.wpi.first.networktables.NetworkTableInstance;
+
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -18,6 +20,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class CompositeNetworkTableSourceTest {
 
   private static final String tableName = "/CompositeNetworkTableSourceTest";
+
+  @BeforeAll
+  public static void clinit() {
+    NetworkTableSourceType.setInstance(new NetworkTableSourceType(null));
+  }
 
   @BeforeEach
   public void setUp() {
