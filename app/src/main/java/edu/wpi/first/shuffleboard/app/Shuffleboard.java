@@ -1,13 +1,13 @@
 package edu.wpi.first.shuffleboard.app;
 
-import de.codecentric.centerdevice.javafxsvg.SvgImageLoaderFactory;
-
 import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
 import edu.wpi.first.shuffleboard.api.util.Storage;
 import edu.wpi.first.shuffleboard.app.plugin.PluginLoader;
 import edu.wpi.first.shuffleboard.plugin.base.BasePlugin;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.CameraServerPlugin;
 import edu.wpi.first.shuffleboard.plugin.networktables.NetworkTablesPlugin;
+
+import de.codecentric.centerdevice.javafxsvg.SvgImageLoaderFactory;
 
 import it.sauronsoftware.junique.AlreadyLockedException;
 import it.sauronsoftware.junique.JUnique;
@@ -22,7 +22,6 @@ import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
-import javafx.scene.text.Font;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 
@@ -42,12 +41,6 @@ public class Shuffleboard extends Application {
       JUnique.sendMessage(getClass().getCanonicalName(), "alreadyRunning");
       throw alreadyLockedException;
     }
-
-    // Load the Roboto font
-    Font.loadFont(getClass().getResource("font/roboto/Roboto-Regular.ttf").openStream(), -1);
-    Font.loadFont(getClass().getResource("font/roboto/Roboto-Bold.ttf").openStream(), -1);
-    Font.loadFont(getClass().getResource("font/roboto/Roboto-Italic.ttf").openStream(), -1);
-    Font.loadFont(getClass().getResource("font/roboto/Roboto-BoldItalic.ttf").openStream(), -1);
 
     // Install SVG image loaders so SVGs can be used like any other image
     SvgImageLoaderFactory.install();
