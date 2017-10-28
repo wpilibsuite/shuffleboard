@@ -2,6 +2,7 @@ package edu.wpi.first.shuffleboard.plugin.base;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.plugin.Plugin;
@@ -10,21 +11,26 @@ import edu.wpi.first.shuffleboard.api.sources.recording.serialization.SimpleAdap
 import edu.wpi.first.shuffleboard.api.sources.recording.serialization.TypeAdapter;
 import edu.wpi.first.shuffleboard.api.widget.ComponentType;
 import edu.wpi.first.shuffleboard.api.widget.LayoutClass;
-import edu.wpi.first.shuffleboard.api.widget.Widget;
+import edu.wpi.first.shuffleboard.api.widget.WidgetType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.AnalogInputType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.BooleanArrayType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.BooleanType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.CommandType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.EncoderType;
+import edu.wpi.first.shuffleboard.plugin.base.data.types.GyroType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.NumberArrayType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.NumberType;
+import edu.wpi.first.shuffleboard.plugin.base.data.types.PIDControllerType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.PowerDistributionType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.RawByteType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.SendableChooserType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.SpeedControllerType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.StringArrayType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.StringType;
+import edu.wpi.first.shuffleboard.plugin.base.data.types.SubsystemType;
+import edu.wpi.first.shuffleboard.plugin.base.data.types.ThreeAxisAccelerometerType;
 import edu.wpi.first.shuffleboard.plugin.base.layout.ListLayout;
+import edu.wpi.first.shuffleboard.plugin.base.layout.SubsystemLayout;
 import edu.wpi.first.shuffleboard.plugin.base.recording.serialization.BooleanArrayAdapter;
 import edu.wpi.first.shuffleboard.plugin.base.recording.serialization.NumberArrayAdapter;
 import edu.wpi.first.shuffleboard.plugin.base.recording.serialization.StringAdapter;
@@ -33,17 +39,22 @@ import edu.wpi.first.shuffleboard.plugin.base.widget.BooleanBox;
 import edu.wpi.first.shuffleboard.plugin.base.widget.ComboBoxChooser;
 import edu.wpi.first.shuffleboard.plugin.base.widget.CommandWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.EncoderWidget;
+import edu.wpi.first.shuffleboard.plugin.base.widget.GyroWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.NumberBarWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.NumberSlider;
+import edu.wpi.first.shuffleboard.plugin.base.widget.PIDControllerWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.PowerDistributionPanelWidget;
+import edu.wpi.first.shuffleboard.plugin.base.widget.SimpleDialWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.SpeedController;
 import edu.wpi.first.shuffleboard.plugin.base.widget.TextView;
+import edu.wpi.first.shuffleboard.plugin.base.widget.ThreeAxisAccelerometerWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.ToggleButton;
 import edu.wpi.first.shuffleboard.plugin.base.widget.ToggleSwitch;
 import edu.wpi.first.shuffleboard.plugin.base.widget.VoltageViewWidget;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class BasePlugin extends Plugin {
 
@@ -67,32 +78,35 @@ public class BasePlugin extends Plugin {
         new EncoderType(),
         new SendableChooserType(),
         new SpeedControllerType(),
-        new CommandType()
-    );
-  }
-
-  @Override
-  public List<Class<? extends Widget>> getWidgets() {
-    return ImmutableList.of(
-        BooleanBox.class,
-        ComboBoxChooser.class,
-        CommandWidget.class,
-        EncoderWidget.class,
-        NumberBarWidget.class,
-        NumberSlider.class,
-        PowerDistributionPanelWidget.class,
-        SpeedController.class,
-        TextView.class,
-        ToggleButton.class,
-        ToggleSwitch.class,
-        VoltageViewWidget.class
+        new SubsystemType(),
+        new CommandType(),
+        new PIDControllerType(),
+        new ThreeAxisAccelerometerType(),
+        new GyroType()
     );
   }
 
   @Override
   public List<ComponentType> getComponents() {
     return ImmutableList.of(
-        new LayoutClass<>("List Layout", ListLayout.class)
+        WidgetType.forAnnotatedWidget(BooleanBox.class),
+        WidgetType.forAnnotatedWidget(ToggleButton.class),
+        WidgetType.forAnnotatedWidget(ToggleSwitch.class),
+        WidgetType.forAnnotatedWidget(NumberSlider.class),
+        WidgetType.forAnnotatedWidget(NumberBarWidget.class),
+        WidgetType.forAnnotatedWidget(SimpleDialWidget.class),
+        WidgetType.forAnnotatedWidget(TextView.class),
+        WidgetType.forAnnotatedWidget(VoltageViewWidget.class),
+        WidgetType.forAnnotatedWidget(PowerDistributionPanelWidget.class),
+        WidgetType.forAnnotatedWidget(ComboBoxChooser.class),
+        WidgetType.forAnnotatedWidget(EncoderWidget.class),
+        WidgetType.forAnnotatedWidget(SpeedController.class),
+        WidgetType.forAnnotatedWidget(CommandWidget.class),
+        WidgetType.forAnnotatedWidget(ThreeAxisAccelerometerWidget.class),
+        WidgetType.forAnnotatedWidget(PIDControllerWidget.class),
+        WidgetType.forAnnotatedWidget(GyroWidget.class),
+        new LayoutClass<>("List Layout", ListLayout.class),
+        createSubsystemLayoutType()
     );
   }
 
@@ -111,18 +125,31 @@ public class BasePlugin extends Plugin {
   }
 
   @Override
-  public Map<DataType, Class<? extends Widget>> getDefaultWidgets() {
-    return ImmutableMap.<DataType, Class<? extends Widget>>builder()
-        .put(new BooleanType(), BooleanBox.class)
-        .put(new NumberType(), TextView.class)
-        .put(new StringType(), TextView.class)
-        .put(new AnalogInputType(), VoltageViewWidget.class)
-        .put(new PowerDistributionType(), PowerDistributionPanelWidget.class)
-        .put(new SendableChooserType(), ComboBoxChooser.class)
-        .put(new EncoderType(), EncoderWidget.class)
-        .put(new SpeedControllerType(), SpeedController.class)
-        .put(new CommandType(), CommandWidget.class)
+  public Map<DataType, ComponentType> getDefaultComponents() {
+    return ImmutableMap.<DataType, ComponentType>builder()
+        .put(new BooleanType(), WidgetType.forAnnotatedWidget(BooleanBox.class))
+        .put(new NumberType(), WidgetType.forAnnotatedWidget(TextView.class))
+        .put(new StringType(), WidgetType.forAnnotatedWidget(TextView.class))
+        .put(new AnalogInputType(), WidgetType.forAnnotatedWidget(VoltageViewWidget.class))
+        .put(new PowerDistributionType(), WidgetType.forAnnotatedWidget(PowerDistributionPanelWidget.class))
+        .put(new SendableChooserType(), WidgetType.forAnnotatedWidget(ComboBoxChooser.class))
+        .put(new EncoderType(), WidgetType.forAnnotatedWidget(EncoderWidget.class))
+        .put(new SpeedControllerType(), WidgetType.forAnnotatedWidget(SpeedController.class))
+        .put(new CommandType(), WidgetType.forAnnotatedWidget(CommandWidget.class))
+        .put(new ThreeAxisAccelerometerType(), WidgetType.forAnnotatedWidget(ThreeAxisAccelerometerWidget.class))
+        .put(new PIDControllerType(), WidgetType.forAnnotatedWidget(PIDControllerWidget.class))
+        .put(new GyroType(), WidgetType.forAnnotatedWidget(GyroWidget.class))
+        .put(new SubsystemType(), createSubsystemLayoutType())
         .build();
+  }
+
+  private static LayoutClass<SubsystemLayout> createSubsystemLayoutType() {
+    return new LayoutClass<SubsystemLayout>("Subsystem Layout", SubsystemLayout.class) {
+      @Override
+      public Set<DataType> getDataTypes() {
+        return ImmutableSet.of(new SubsystemType());
+      }
+    };
   }
 
 }

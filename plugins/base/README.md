@@ -10,5 +10,5 @@ This includes, but is not limited to:
 | Boolean | Boolean Box, Toggle Button, Toggle Switch, Text View | Boolean Box
 | Command | Command |
 | Number | Number Slider, Linear Indicator, Slider, Text View, Graph | Linear Indicator
-| SpeedController | Speed Controller | 
+| SpeedController | Speed Controller |
 | Text | Text View |

@@ -1,10 +1,13 @@
 package edu.wpi.first.shuffleboard.api.widget;
 
+import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
 
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
@@ -16,7 +19,14 @@ public abstract class AbstractWidget implements Widget {
 
   protected final Property<DataSource> source
       = new SimpleObjectProperty<>(this, "source", DataSource.none());
+
+  private final StringProperty title = new SimpleStringProperty(this, "title", getSource().getName());
+
   private final ObservableList<Property<?>> properties = FXCollections.observableArrayList();
+
+  protected AbstractWidget() {
+    sourceProperty().addListener(__ -> setTitle(getSource().getName()));
+  }
 
   /**
    * Exports the given properties so other parts of the app can see the properties of this widget.
@@ -36,6 +46,11 @@ public abstract class AbstractWidget implements Widget {
   }
 
   @Override
+  public StringProperty titleProperty() {
+    return title;
+  }
+
+  @Override
   public final ObservableList<Property<?>> getProperties() {
     return properties;
   }
@@ -52,7 +67,7 @@ public abstract class AbstractWidget implements Widget {
 
   @Override
   public final void setSource(DataSource source) throws IncompatibleSourceException {
-    if (getDataTypes().contains(source.getDataType())) {
+    if (getDataTypes().contains(DataTypes.All) || getDataTypes().contains(source.getDataType())) {
       this.source.setValue(source);
     } else {
       throw new IncompatibleSourceException(getDataTypes(), source.getDataType());

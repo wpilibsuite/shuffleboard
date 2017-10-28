@@ -8,12 +8,12 @@ import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.recording.serialization.TypeAdapter;
 import edu.wpi.first.shuffleboard.api.theme.Theme;
 import edu.wpi.first.shuffleboard.api.widget.ComponentType;
-import edu.wpi.first.shuffleboard.api.widget.Widget;
 
 import java.util.List;
 import java.util.Map;
 
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.Property;
 import javafx.beans.property.SimpleBooleanProperty;
 
 /**
@@ -110,13 +110,6 @@ public class Plugin {
   }
 
   /**
-   * Gets a list of the annotated widget classes that this plugin defines.
-   */
-  public List<Class<? extends Widget>> getWidgets() {
-    return ImmutableList.of();
-  }
-
-  /**
    * Gets a list of the non-annotated components defined by this plugin.
    */
   public List<ComponentType> getComponents() {
@@ -124,9 +117,9 @@ public class Plugin {
   }
 
   /**
-   * Gets a map of the default widgets this plugin defines.
+   * Gets a map of the default components to use for each data type.
    */
-  public Map<DataType, Class<? extends Widget>> getDefaultWidgets() {
+  public Map<DataType, ComponentType> getDefaultComponents() {
     return ImmutableMap.of();
   }
 
@@ -138,6 +131,16 @@ public class Plugin {
    * Gets a list of themes that this plugin defines.
    */
   public List<Theme> getThemes() {
+    return ImmutableList.of();
+  }
+
+  /**
+   * Gets a list of properties of this plugin that can be changed by users. Properties that are sensitive to rapid
+   * changes (for example, a server URI that will attempt a connection on a change) should be wrapped in a
+   * {@link edu.wpi.first.shuffleboard.api.prefs.FlushableProperty FlushableProperty} to ensure that a change will only
+   * occur when a user manually confirms the change.
+   */
+  public List<Property<?>> getProperties() {
     return ImmutableList.of();
   }
 

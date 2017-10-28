@@ -13,11 +13,13 @@
 .root {
     -fx-text-base-color: #fefefe;
     /* Swatch Colors - Red */
+
     -swatch-100: hsb(0, 80%, 98%);
     -swatch-200: hsb(0, 80%, 88%);
     -swatch-300: hsb(0, 80%, 78%);
     -swatch-400: hsb(0, 80%, 68%);
     -swatch-500: hsb(0, 80%, 58%);
+
     -swatch-dark-gray: #222;
     -swatch-gray: #333;
     -swatch-light-gray: #444;
@@ -64,21 +66,39 @@
  * Button, toggle button                                                       *
  *                                                                             *
  ******************************************************************************/
-.button, .toggle-button {
-    -fx-background-color: -swatch-light-gray;
-    -fx-background-radius: 0;
+.toggle-button, .button {
+    -fx-background-color: rgb(64, 64, 64);
+    -fx-text-fill: white;
+    -fx-effect: dropshadow(gaussian, rgba(0.0, 0.0, 0.0, 0.70), 6.0, 0.3, 0, 2);
 }
 
-.button:pressed {
+.toggle-button:selected, .button:selected {
     -fx-background-color: -swatch-500;
+    -fx-text-fill: white;
 }
 
-.toggle-button:pressed {
-    -fx-background-color: -swatch-300;
+.button-raised .button .text, .button-flat .button .text {
+    -fx-text-weight: Bold;
 }
 
-.toggle-button:selected {
+.button:default {
     -fx-background-color: -swatch-500;
+    -fx-text-fill: white;
+}
+
+.toggle-button:focused, .button:focused, .button:default:focused {
+    -fx-background-color: rgb(48, 48, 48);
+    -fx-text-fill: white;
+}
+
+.toggle-button:focused:selected {
+    -fx-background-color: derive(-swatch-500, -12%);
+    -fx-text-fill: white;
+}
+
+.toggle-button:armed, .toggle-button:selected, .button:armed, .button:default:armed {
+    -fx-background-color: -swatch-500;
+    -fx-text-fill: white;
 }
 
 /*******************************************************************************
@@ -87,7 +107,7 @@
  *                                                                             *
  ******************************************************************************/
 .toggle-switch > .thumb-area {
-    -fx-background-color: derive(base, -25%);
+    -fx-background-color: -swatch-gray;
 }
 
 .toggle-switch > .thumb {
@@ -224,4 +244,26 @@
  ******************************************************************************/
 .slider .axis, .range-slider .axis {
     -fx-tick-label-fill: #eee;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Medusa gauges                                                               *
+ *                                                                             *
+ ******************************************************************************/
+.gauge {
+    -fx-needle-color: -swatch-100;
+    -fx-tick-mark-color: white;
+    -fx-major-tick-color: white;
+    -fx-minor-tick-color: #aaa;
+    -fx-medium-tick-color: #aaa;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Tab pane, tabs                                                              *
+ *                                                                             *
+ ******************************************************************************/
+.tab-pane {
+    -fx-border-color: transparent;
 }

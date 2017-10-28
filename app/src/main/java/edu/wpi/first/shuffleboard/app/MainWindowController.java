@@ -21,10 +21,9 @@ import edu.wpi.first.shuffleboard.app.components.WidgetPropertySheet;
 import edu.wpi.first.shuffleboard.app.json.JsonBuilder;
 import edu.wpi.first.shuffleboard.app.plugin.PluginLoader;
 import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
-import edu.wpi.first.shuffleboard.app.prefs.FlushableProperty;
+import edu.wpi.first.shuffleboard.api.prefs.FlushableProperty;
 import edu.wpi.first.shuffleboard.app.sources.recording.Playback;
 
-import org.controlsfx.control.PropertySheet;
 import org.fxmisc.easybind.EasyBind;
 
 import java.io.File;
@@ -50,7 +49,9 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.SplitPane;
 import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableRow;
@@ -64,6 +65,7 @@ import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 import static edu.wpi.first.shuffleboard.api.components.SourceTreeTable.alphabetical;
 import static edu.wpi.first.shuffleboard.api.components.SourceTreeTable.branchesFirst;
@@ -81,7 +83,9 @@ public class MainWindowController {
   @FXML
   private WidgetGallery widgetGallery;
   @FXML
-  private BorderPane root;
+  private Pane root;
+  @FXML
+  private SplitPane centerSplitPane;
   @FXML
   private DashboardTabPane dashboard;
   @FXML
@@ -183,14 +187,14 @@ public class MainWindowController {
         }
 
         DataSource<?> source = selectedItem.getValue().get();
-        List<String> widgetNames = Components.getDefault().widgetNamesForSource(source);
-        if (widgetNames.isEmpty()) {
-          // No known widgets that can show this data
+        List<String> componentNames = Components.getDefault().componentNamesForSource(source);
+        if (componentNames.isEmpty()) {
+          // No known components that can show this data
           return;
         }
 
         ContextMenu menu = new ContextMenu();
-        widgetNames.stream()
+        componentNames.stream()
             .map(name -> createShowAsMenuItem(name, source))
             .forEach(menu.getItems()::add);
 
@@ -231,7 +235,8 @@ public class MainWindowController {
         .map(DashboardTabPane.DashboardTab::getWidgetPane)
         .forEach(pane ->
           pane.getTiles().stream()
-              .filter(tile -> plugin.getWidgets().contains(tile.getContent().getClass()))
+              .filter(tile -> plugin.getComponents().stream()
+                  .anyMatch(t -> tile.getContent().getName().equals(t.getName())))
               .collect(Collectors.toList()) // collect into temporary list to prevent comodification
               .forEach(tile -> pane.getChildren().remove(tile)));
     // ... and from the gallery
@@ -264,11 +269,11 @@ public class MainWindowController {
     });
   }
 
-  private MenuItem createShowAsMenuItem(String widgetName, DataSource<?> source) {
-    MenuItem menuItem = new MenuItem("Show as: " + widgetName);
+  private MenuItem createShowAsMenuItem(String componentName, DataSource<?> source) {
+    MenuItem menuItem = new MenuItem("Show as: " + componentName);
     menuItem.setOnAction(action -> {
-      Components.getDefault().createWidget(widgetName, source)
-          .ifPresent(dashboard::addWidgetToActivePane);
+      Components.getDefault().createComponent(componentName, source)
+          .ifPresent(dashboard::addComponentToActivePane);
     });
     return menuItem;
   }
@@ -278,8 +283,9 @@ public class MainWindowController {
    */
   public void setDashboard(DashboardTabPane dashboard) {
     dashboard.setId("dashboard");
+    centerSplitPane.getItems().remove(this.dashboard);
     this.dashboard = dashboard;
-    root.setCenter(dashboard);
+    centerSplitPane.getItems().add(dashboard);
   }
 
   @FXML
@@ -323,11 +329,11 @@ public class MainWindowController {
   }
 
   private void saveFile(File selected) {
-    JsonBuilder.forSaveFile().toJson(dashboard, DashboardTabPane.class, System.out);
     try {
       Writer writer = Files.newWriter(selected, Charset.forName("UTF-8"));
 
-      JsonBuilder.forSaveFile().toJson(dashboard, DashboardTabPane.class, writer);
+      DashboardData dashboardData = new DashboardData(centerSplitPane.getDividerPositions()[0], dashboard);
+      JsonBuilder.forSaveFile().toJson(dashboardData, writer);
       writer.flush();
     } catch (Exception e) {
       log.log(Level.WARNING, "Couldn't save", e);
@@ -357,7 +363,9 @@ public class MainWindowController {
     try {
       Reader reader = Files.newReader(selected, Charset.forName("UTF-8"));
 
-      setDashboard(JsonBuilder.forSaveFile().fromJson(reader, DashboardTabPane.class));
+      DashboardData dashboardData = JsonBuilder.forSaveFile().fromJson(reader, DashboardData.class);
+      setDashboard(dashboardData.getTabPane());
+      centerSplitPane.setDividerPositions(dashboardData.getDividerPosition());
     } catch (Exception e) {
       log.log(Level.WARNING, "Couldn't load", e);
       return;
@@ -372,27 +380,37 @@ public class MainWindowController {
   @SuppressWarnings("unchecked")
   @FXML
   public void showPrefs() {
-    PropertySheet propertySheet
-        = new WidgetPropertySheet(AppPreferences.getInstance().getProperties());
+    TabPane tabs = new TabPane();
+    tabs.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
 
-    propertySheet.setModeSwitcherVisible(false);
-    propertySheet.setSearchBoxVisible(false);
-    propertySheet.setMode(PropertySheet.Mode.NAME);
+    tabs.getTabs().add(new Tab("Application", new WidgetPropertySheet(AppPreferences.getInstance().getProperties())));
+
+    for (Plugin plugin : PluginLoader.getDefault().getLoadedPlugins()) {
+      if (plugin.getProperties().isEmpty()) {
+        continue;
+      }
+      Tab tab = new Tab(plugin.getName());
+      tab.setContent(new WidgetPropertySheet(plugin.getProperties()));
+      tabs.getTabs().add(tab);
+    }
 
     Dialog<Boolean> dialog = new Dialog<>();
     EasyBind.listBind(dialog.getDialogPane().getStylesheets(), root.getStylesheets());
-    dialog.getDialogPane().setContent(new BorderPane(propertySheet));
+    dialog.getDialogPane().setContent(new BorderPane(tabs));
+    dialog.initOwner(root.getScene().getWindow());
     dialog.initModality(Modality.APPLICATION_MODAL);
+    dialog.initStyle(StageStyle.UTILITY);
     dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CANCEL, ButtonType.OK);
     dialog.setTitle("Shuffleboard Preferences");
     dialog.setResizable(true);
     dialog.setResultConverter(button -> !button.getButtonData().isCancelButton());
     if (dialog.showAndWait().orElse(false)) {
-      propertySheet.getItems().stream()
-          .map(item -> (WidgetPropertySheet.PropertyItem) item)
-          .map(WidgetPropertySheet.PropertyItem::getObservableValue)
-          .filter(Optional::isPresent)
-          .map(Optional::get)
+      tabs.getTabs().stream()
+          .map(t -> (WidgetPropertySheet) t.getContent())
+          .flatMap(p -> p.getItems().stream())
+          .flatMap(TypeUtils.castStream(WidgetPropertySheet.PropertyItem.class))
+          .map(i -> (Optional<ObservableValue>) i.getObservableValue())
+          .flatMap(TypeUtils.optionalStream())
           .flatMap(TypeUtils.castStream(FlushableProperty.class))
           .filter(FlushableProperty::isChanged)
           .forEach(FlushableProperty::flush);

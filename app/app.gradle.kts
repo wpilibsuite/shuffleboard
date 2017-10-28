@@ -16,11 +16,12 @@ All of the application specific code that makes shuffleboard run.
 dependencies {
     compile(project(":api"))
     compile(project(path = ":plugins:base"))
+    compile(project(path = ":plugins:cameraserver"))
     compile(project(path = ":plugins:networktables"))
-    compile(group = "com.google.code.gson", name = "gson", version = "2.8.1")
+    compile(group = "com.google.code.gson", name = "gson", version = "2.8.2")
     compile(group = "de.huxhorn.lilith", name = "de.huxhorn.lilith.3rdparty.junique", version = "1.0.4")
 
-    runtime(group = "edu.wpi.first.ntcore", name = "ntcore-jni", version = "3.1.7-20170808143930-12-gccfeab5", classifier = "all")
+    runtime(group = "edu.wpi.first.ntcore", name = "ntcore-jni", version = "4.+", classifier = "all")
 }
 
 val theMainClassName = "edu.wpi.first.shuffleboard.app.Shuffleboard"

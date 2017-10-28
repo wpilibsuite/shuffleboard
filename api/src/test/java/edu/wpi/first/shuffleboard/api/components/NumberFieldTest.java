@@ -35,7 +35,7 @@ public class NumberFieldTest extends ApplicationTest {
     numberField.clear();
     clickOn(".text-field").write(number);
 
-    assertEquals(Double.parseDouble(number), numberField.getNumber());
+    assertEquals(Double.parseDouble(number), numberField.getNumber().doubleValue());
   }
 
   @ParameterizedTest

@@ -24,8 +24,8 @@
             <Slider fx:id="control" min="-1" max="1" showTickLabels="true" showTickMarks="true" majorTickUnit="0.5"/>
         </center>
         <bottom>
-            <HBox alignment="CENTER">
-                <NumberField fx:id="valueField" number="0"/>
+            <HBox alignment="CENTER" spacing="8" maxWidth="Infinity">
+                <NumberField fx:id="valueField" HBox.hgrow="ALWAYS"/>
                 <Button text="Zero" onAction="#zero" minWidth="64"/>
             </HBox>
         </bottom>

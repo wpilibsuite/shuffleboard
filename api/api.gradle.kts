@@ -11,7 +11,8 @@ dependencies {
     api(group = "org.fxmisc.easybind", name = "easybind", version = "1.0.3")
     api(group = "org.controlsfx", name = "controlsfx", version = "8.40.11")
     api(group = "de.codecentric.centerdevice", name = "javafxsvg", version = "1.2.1")
-    api(group = "edu.wpi.first.ntcore", name = "ntcore-java", version = "3.1.7-20170808143930-12-gccfeab5")
-    implementation(group = "edu.wpi.first.wpiutil", name = "wpiutil-java", version = "2.0.0-20170808143537-16-gf0cc5d9")
-    implementation(group = "edu.wpi.first.ntcore", name = "ntcore-jni", version = "3.1.7-20170808143930-12-gccfeab5", classifier = "all")
+    api(group = "edu.wpi.first.ntcore", name = "ntcore-java", version = "4.+")
+    api(group = "eu.hansolo", name = "Medusa", version = "7.9") // Note the capital 'M' -- lowercase is a much older version!
+    implementation(group = "edu.wpi.first.wpiutil", name = "wpiutil-java", version = "3.+")
+    implementation(group = "edu.wpi.first.ntcore", name = "ntcore-jni", version = "4.+", classifier = "all")
 }

@@ -23,7 +23,7 @@ public class ComboBoxChooser extends ComplexAnnotatedWidget<SendableChooserData>
 
   @FXML
   private void initialize() {
-    dataProperty().addListener((__, oldData, newData) -> {
+    dataOrDefault.addListener((__, oldData, newData) -> {
       final Map<String, Object> changes = newData.changesFrom(oldData);
       if (changes.containsKey(SendableChooserData.OPTIONS_KEY)) {
         updateOptions(newData.getOptions());

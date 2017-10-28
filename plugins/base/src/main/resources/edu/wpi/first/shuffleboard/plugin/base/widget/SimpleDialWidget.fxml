@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import edu.wpi.first.shuffleboard.api.components.StyleableGauge?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.layout.StackPane?>
+<StackPane xmlns="http://javafx.com/javafx"
+           xmlns:fx="http://javafx.com/fxml"
+           fx:controller="edu.wpi.first.shuffleboard.plugin.base.widget.SimpleDialWidget"
+           fx:id="root"
+           minWidth="128" minHeight="128">
+    <padding>
+        <Insets topRightBottomLeft="4"/>
+    </padding>
+    <!-- Flat-style filled-arc gauge -->
+    <StyleableGauge fx:id="dial" skinType="DASHBOARD" minValue="0" maxValue="100" tickLabelsVisible="false"/>
+</StackPane>

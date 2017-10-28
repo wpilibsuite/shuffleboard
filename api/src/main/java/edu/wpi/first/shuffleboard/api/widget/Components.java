@@ -37,9 +37,8 @@ public class Components extends Registry<ComponentType> {
   // TODO replace with DI eg Guice
   private static Components defaultInstance = new Components();
 
-  private final Map<String, ComponentType> widgets = new TreeMap<>();
-
-  private final Map<DataType, WidgetType> defaultWidgets = new HashMap<>();
+  private final Map<String, ComponentType<?>> components = new TreeMap<>();
+  private final Map<DataType, ComponentType<?>> defaultComponents = new HashMap<>();
   private final WeakHashMap<Widget, Widget> activeWidgets = new WeakHashMap<>();
 
   /**
@@ -62,10 +61,10 @@ public class Components extends Registry<ComponentType> {
 
   @Override
   public void register(ComponentType type) {
-    if (widgets.containsKey(type.getName())) {
+    if (components.containsKey(type.getName())) {
       throw new IllegalArgumentException("Component class " + type.getClass().getName() + " is already registered");
     }
-    widgets.put(type.getName(), type);
+    components.put(type.getName(), type);
     addItem(type);
   }
 
@@ -73,7 +72,7 @@ public class Components extends Registry<ComponentType> {
    * Convenience overload for registering annotated widgets.
    */
   public <T extends Widget> void register(Class<T> widgetClass) {
-    validateComponentClass(widgetClass);
+    validateAnnotatedComponentClass(widgetClass);
     Description description = widgetClass.getAnnotation(Description.class);
 
     WidgetType widgetType = new AbstractWidgetType(description) {
@@ -93,12 +92,18 @@ public class Components extends Registry<ComponentType> {
     register(widgetType);
   }
 
-  private <T extends Widget> void validateComponentClass(Class<T> componentClass) {
+  /**
+   * Validates a component class. An exception is thrown if the class does not have a {@link Description @Description}
+   * annotation, or if its name is empty.
+   *
+   * @throws InvalidWidgetException if the component class is not valid
+   */
+  public static <T extends Component> void validateAnnotatedComponentClass(Class<T> componentClass) {
     requireNonNull(componentClass, "componentClass");
 
     if (!componentClass.isAnnotationPresent(Description.class)) {
       throw new InvalidWidgetException(
-          "No description present on widget class " + componentClass.getName());
+          "No description present on component class " + componentClass.getName());
     }
     Description description = componentClass.getAnnotation(Description.class);
 
@@ -109,32 +114,17 @@ public class Components extends Registry<ComponentType> {
 
   @Override
   public void unregister(ComponentType type) {
-    widgets.remove(type.getName());
-    List<DataType> defaultWidgetsToRemove = defaultWidgets.entrySet().stream()
+    components.remove(type.getName());
+    List<DataType> defaultComponentsToRemove = defaultComponents.entrySet().stream()
         .filter(e -> e.getValue().getName().equals(type.getName()))
         .map(Map.Entry::getKey)
         .collect(Collectors.toList());
-    defaultWidgetsToRemove.forEach(defaultWidgets::remove);
+    defaultComponentsToRemove.forEach(defaultComponents::remove);
     removeItem(type);
   }
 
-  /**
-   * Convenience method for unregistering an annotated class.
-   */
-  public void unregister(Class<? extends Widget> widgetClass) {
-    validateComponentClass(widgetClass);
-    Description description = widgetClass.getAnnotation(Description.class);
-
-    unregister(new AbstractWidgetType(description) {
-      @Override
-      public Component get() {
-        return null;
-      }
-    });
-  }
-
-  public Stream<ComponentType> allComponents() {
-    return widgets.values().stream();
+  public Stream<ComponentType<?>> allComponents() {
+    return components.values().stream();
   }
 
   public Stream<WidgetType> allWidgets() {
@@ -180,6 +170,25 @@ public class Components extends Registry<ComponentType> {
     }
   }
 
+  /**
+   * Creates a new component with the given name. If the component takes a source (ie implements {@link Sourced}),
+   * its source will be set to the one provided.
+   *
+   * @param name   the name of the component to create
+   * @param source the source for the created component to use, if the component accepts one
+   *
+   * @return an optional containing the created component, or empty if no component with the given name is registered
+   */
+  public Optional<? extends Component> createComponent(String name, DataSource<?> source) {
+    return createComponent(name)
+        .map(c -> {
+          if (c instanceof Sourced) {
+            ((Sourced) c).setSource(source);
+          }
+          return c;
+        });
+  }
+
   public Optional<Type> javaTypeFor(String name) {
     return typeFor(name).map(ComponentType::get).map(Object::getClass);
   }
@@ -202,79 +211,62 @@ public class Components extends Registry<ComponentType> {
    *
    * @return a ComponentType to create widgets of the same class
    */
-  private Optional<ComponentType> typeFor(String name) {
-    return Optional.ofNullable(widgets.get(name));
+  private Optional<ComponentType<?>> typeFor(String name) {
+    return Optional.ofNullable(components.get(name));
   }
 
-  private Set<WidgetType> getWidgetsForType(DataType type) {
-    return allWidgets()
-        .filter(d -> d.getDataTypes().contains(DataTypes.All)
-            || d.getDataTypes().contains(type))
+  private Set<ComponentType<?>> getComponentsForType(DataType type) {
+    return allComponents()
+        .filter(d -> DataTypes.isCompatible(type, d.getDataTypes()))
         .collect(Collectors.toSet());
   }
 
   /**
-   * Gets the names of all the possible widget that can display the given type, sorted alphabetically. A widget can be
-   * created for these with {@link #createWidget(String, DataSource) createWidget}.
+   * Gets the names of all the possible components that can display the given type, sorted alphabetically. A component
+   * can be created for these with {@link #createWidget(String, DataSource) createWidget}.
    *
    * @param type the type of data to get possible widgets for.
    *
    * @return an alphabetically sorted list containing the names of all known widgets that can display data of the
    *         given type
    */
-  public List<String> widgetNamesForType(DataType type) {
-    return getWidgetsForType(type)
+  public List<String> componentNamesForType(DataType type) {
+    return getComponentsForType(type)
         .stream()
-        .map(WidgetType::getName)
+        .map(ComponentType::getName)
         .sorted()
         .collect(Collectors.toList());
   }
 
   /**
-   * Sets the default widget to use for a given data type.
+   * Sets the default component to use for a given data type.
    *
    * @param dataType   the type to set the default widget for
    * @param widgetType the type of widget to set as the default
    */
-  public void setDefaultWidget(DataType dataType, WidgetType widgetType) {
-    defaultWidgets.put(dataType, widgetType);
+  public void setDefaultComponent(DataType dataType, ComponentType<?> widgetType) {
+    defaultComponents.put(dataType, widgetType);
   }
 
   /**
-   * Sets the default widget to use for a given data type.
-   *
-   * @param dataType    the type to set the default widget for
-   * @param widgetClass the class of the widget to set as the default
-   *
-   * @throws IllegalArgumentException if the widget has not been registered
+   * Gets the name of the default component for the given data type, or {@link Optional#empty()} if there is no default
+   * component for that type.
    */
-  public void setDefaultWidget(DataType<?> dataType, Class<? extends Widget> widgetClass) {
-    validateComponentClass(widgetClass);
-    ComponentType type = widgets.get(widgetClass.getAnnotation(Description.class).name());
-    if (type instanceof WidgetType) {
-      setDefaultWidget(dataType, (WidgetType) type);
-    }
+  public Optional<String> defaultComponentNameFor(DataType type) {
+    return Optional.ofNullable(defaultComponents.get(type)).map(ComponentType::getName);
   }
 
   /**
-   * Gets the name of the default widget for the given data type, or {@link Optional#empty()} if there is no default
-   * widget for that type.
+   * Gets the name of a component that can handle data of the given type. If a default component has been set for that
+   * type, the name of the default component is returned; otherwise, the name of the first component returned by
+   * {@link #componentNamesForType(DataType)} is used.
    */
-  public Optional<String> defaultWidgetNameFor(DataType type) {
-    return Optional.ofNullable(defaultWidgets.get(type)).map(WidgetType::getName);
-  }
-
-  /**
-   * Gets the name of a widget that can handle data of the given type. If a default widget has been set for that type,
-   * the name of the default widget is returned; otherwise, the name of the first widget returned by
-   * {@link #widgetNamesForType(DataType)} is used.
-   */
-  public Optional<String> pickWidgetNameFor(DataType type) {
-    Optional<String> defaultName = defaultWidgetNameFor(type);
+  public Optional<String> pickComponentNameFor(DataType type) {
+    Optional<String> defaultName = defaultComponentNameFor(type);
     if (defaultName.isPresent()) {
       return defaultName;
     } else {
-      List<String> names = widgetNamesForType(type);
+      List<String> names = componentNamesForType(type);
       if (names.isEmpty()) {
         return Optional.empty();
       } else {
@@ -284,14 +276,14 @@ public class Components extends Registry<ComponentType> {
   }
 
   /**
-   * Gets the names of all the possible widgets than can display the data in a given source.
+   * Gets the names of all the possible components than can display the data in a given source.
    */
-  public List<String> widgetNamesForSource(DataSource<?> source) {
-    return widgetNamesForType(source.getDataType());
+  public List<String> componentNamesForSource(DataSource<?> source) {
+    return componentNamesForType(source.getDataType());
   }
 
   /**
-   * Create an instance for an PrametrizedController annotated class.
+   * Create an instance for a ParametrizedController annotated class.
    */
   public static <T> Optional<T> viewFor(Class<T> annotatedClass) {
     ParametrizedController controller = annotatedClass.getAnnotation(ParametrizedController.class);
@@ -302,11 +294,8 @@ public class Components extends Registry<ComponentType> {
         loader.load();
         return Optional.of(loader.getController());
       } catch (IOException e) {
-        logger.log(Level.WARNING, "error creating parametrized controller", e);
+        throw new RuntimeException("Could not instantiate the FXML controller", e);
       }
-    } else {
-      logger.log(Level.WARNING,
-          "No @ParametrizedController annotation on class " + annotatedClass);
     }
 
     return Optional.empty();
