@@ -31,6 +31,8 @@ public class CameraServerPlugin extends Plugin {
         "CameraServer",
         "1.0.0",
         "Provides sources and widgets for viewing CameraServer MJPEG streams.");
+    // Depends on network tables to be able to discover camera streams
+    addDependency("edu.wpi.first.shuffleboard:NetworkTables:1.0.0");
   }
 
   @Override

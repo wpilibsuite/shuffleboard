@@ -1,7 +1,5 @@
 package edu.wpi.first.shuffleboard.app.plugin;
 
-import com.google.common.collect.ImmutableSet;
-
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
 import edu.wpi.first.shuffleboard.api.plugin.Plugin;
@@ -23,8 +21,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -32,6 +28,7 @@ import java.util.stream.Stream;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.ObservableSet;
 
 public class PluginLoader {
 
@@ -39,7 +36,7 @@ public class PluginLoader {
 
   private static final PluginLoader defaultLoader = new PluginLoader();
 
-  private final Set<Plugin> loadedPlugins = new HashSet<>();
+  private final ObservableSet<Plugin> loadedPlugins = FXCollections.observableSet();
   private final ObservableList<Plugin> knownPlugins = FXCollections.observableArrayList();
 
   public static PluginLoader getDefault() {
@@ -146,11 +143,16 @@ public class PluginLoader {
    *
    * @param plugin the plugin to load
    *
-   * @throws IllegalArgumentException if a plugin has already been loaded with the same name
+   * @throws IllegalArgumentException if a plugin already exists with the same ID
    */
   public void load(Plugin plugin) {
     if (loadedPlugins.contains(plugin)) {
-      throw new IllegalArgumentException("The plugin " + plugin + " is already loaded");
+      // Already loaded
+      return;
+    }
+    if (!canLoad(plugin)) {
+      log.warning("Not all dependencies are present for " + plugin.getArtifact().toGradleString());
+      return;
     }
     log.info("Loading plugin " + plugin.fullIdString());
     plugin.getDataTypes().forEach(DataTypes.getDefault()::register);
@@ -179,6 +181,27 @@ public class PluginLoader {
     }
   }
 
+  /**
+   * Checks if the given plugin can be loaded. A plugin is considered to be <i>loadable</i> if all plugins specified in
+   * its {@link Plugin#getDependencies() dependencies list} are loaded and have a version of at least the one specified
+   * in the dependency. For example, a plugin that depends on {@code "com.acme:PerfectPlugin:4.2.0"} is loadable
+   * if a plugin {@code "com.acme:PerfectPlugin:5.3.1"} is loaded, but is not loadable if a plugin
+   * {@code "com.acme:PerfectPlugin:0.1.0"} is loaded. Plugins with no dependencies are always loadable.
+   *
+   * @param plugin the plugin to check
+   *
+   * @return true if the plugin can be loaded, false if not
+   */
+  public boolean canLoad(Plugin plugin) {
+    return plugin != null
+        && plugin.getDependencies().stream()
+        .allMatch(a ->
+            loadedPlugins.stream()
+                .filter(p -> p.idString().equals(a.getIdString()))
+                .anyMatch(p -> p.getArtifact().getVersion().sameOrGreaterThan(a.getVersion()))
+        );
+  }
+
   private void tryRestoreSource(Widget widget, DestroyedSource destroyedSource) {
     try {
       widget.setSource(destroyedSource.restore());
@@ -194,6 +217,15 @@ public class PluginLoader {
    * @param plugin the plugin to unload
    */
   public void unload(Plugin plugin) {
+    if (!loadedPlugins.contains(plugin)) {
+      // It's not loaded, nothing to unload
+      return;
+    }
+    // Unload any dependent plugins first
+    knownPlugins.stream()
+        .filter(p -> p.dependsOn(plugin))
+        .forEach(this::unload);
+
     log.info("Unloading plugin " + plugin.fullIdString());
     Components.getDefault().getActiveWidgets().stream()
         .filter(w -> !(w.getSource() instanceof DestroyedSource))
@@ -222,7 +254,7 @@ public class PluginLoader {
     return knownPlugins;
   }
 
-  public ImmutableSet<Plugin> getLoadedPlugins() {
-    return ImmutableSet.copyOf(loadedPlugins);
+  public ObservableSet<Plugin> getLoadedPlugins() {
+    return FXCollections.unmodifiableObservableSet(loadedPlugins);
   }
 }

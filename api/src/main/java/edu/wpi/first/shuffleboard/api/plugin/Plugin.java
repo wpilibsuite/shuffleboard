@@ -1,16 +1,18 @@
 package edu.wpi.first.shuffleboard.api.plugin;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.recording.serialization.TypeAdapter;
 import edu.wpi.first.shuffleboard.api.theme.Theme;
 import edu.wpi.first.shuffleboard.api.widget.ComponentType;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.Property;
@@ -25,14 +27,61 @@ public class Plugin {
   private final String groupId;
   private final String name;
   private final String version;
+  private final PluginArtifact artifact;
   private final String description;
   private final BooleanProperty loaded = new SimpleBooleanProperty(this, "loaded", false);
+  private final List<PluginArtifact> dependencies = new ArrayList<>();
 
+  /**
+   * Creates a new plugin instance.
+   *
+   * @param groupId     the ID of the group developing the plugin (eg "edu.wpi.first")
+   * @param name        the name of the plugin
+   * @param version     the current version of the plugin. This must follow <a href="http://semver.org">Semantic Versioning</a>
+   * @param description a description of the plugin
+   */
   protected Plugin(String groupId, String name, String version, String description) {
     this.groupId = groupId;
     this.name = name;
     this.version = version;
+    this.artifact = new PluginArtifact(groupId, name, version);
     this.description = description;
+  }
+
+  /**
+   * Adds a dependency on another plugin. If no plugin matching the artifact is loaded, this plugin will be prevented
+   * from being loaded.
+   *
+   * @param artifact the plugin artifact describing the plugin that this depends on
+   */
+  protected final void addDependency(PluginArtifact artifact) {
+    dependencies.add(artifact);
+  }
+
+  /**
+   * Adds a dependency on another plugin. If no matching plugin is loaded, this plugin will be prevented from being
+   * loaded.
+   *
+   * @param groupId the group ID of the plugin to add a dependency for
+   * @param name    the name of the plugin
+   * @param version the earliest supported plugin version
+   */
+  protected final void addDependency(String groupId, String name, String version) {
+    addDependency(new PluginArtifact(groupId, name, version));
+  }
+
+  /**
+   * Adds a dependency on a plugin using a gradle-style dependency string in the format
+   * {@code "{groupId}:{name}:{version}"}.
+   *
+   * @throws IllegalArgumentException if the string does not follow gradle-style dependency string formatting rules
+   */
+  protected final void addDependency(String depString) {
+    String[] parts = depString.split(":");
+    if (parts.length != 3) {
+      throw new IllegalArgumentException("The dependency string was not in the correct format");
+    }
+    addDependency(parts[0], parts[1], parts[2]);
   }
 
   /**
@@ -58,19 +107,23 @@ public class Plugin {
     return version;
   }
 
-  /**
-   * Gets an ID string unique to this plugin in the format {@code "{groupId}.{name}"}.
-   */
-  public final String idString() {
-    return groupId + "." + name;
+  public PluginArtifact getArtifact() {
+    return artifact;
   }
 
   /**
-   * Gets an ID string unique to this plugin in the format {@code "{groupId}.{name}-v{version}}. For example,
-   * "foo.bar-v1.0.0".
+   * Gets an ID string unique to this plugin in the format {@code "{groupId}:{name}"}.
+   */
+  public final String idString() {
+    return artifact.getIdString();
+  }
+
+  /**
+   * Gets an ID string unique to this plugin in the format {@code "{groupId}:{name}:{version}}. For example,
+   * "foo.bar:baz:1.0.0".
    */
   public final String fullIdString() {
-    return groupId + "." + name + "-v" + version;
+    return artifact.toGradleString();
   }
 
   /**
@@ -78,6 +131,23 @@ public class Plugin {
    */
   public final String getDescription() {
     return description;
+  }
+
+  /**
+   * Gets a list of plugins that this plugin depends on. If matching plugins are not loaded, this plugin will not be
+   * able to be loaded.
+   */
+  public final List<PluginArtifact> getDependencies() {
+    return ImmutableList.copyOf(dependencies);
+  }
+
+  /**
+   * Checks if this plugin depends upon another. If that plugin is not loaded, this one will be unable to be loaded.
+   *
+   * @param plugin the plugin to check for a dependency on
+   */
+  public final boolean dependsOn(Plugin plugin) {
+    return getDependencies().stream().anyMatch(artifact -> artifact.getIdString().equals(plugin.idString()));
   }
 
   /**
@@ -161,6 +231,25 @@ public class Plugin {
    */
   public final void setLoaded(boolean loaded) {
     this.loaded.set(loaded);
+  }
+
+  @Override
+  public final boolean equals(Object obj) {
+    if (obj == null) {
+      return false;
+    }
+    if (obj == this) {
+      return true;
+    }
+    if (!obj.getClass().equals(this.getClass())) {
+      return false;
+    }
+    return ((Plugin) obj).getArtifact().equals(this.getArtifact());
+  }
+
+  @Override
+  public final int hashCode() {
+    return Objects.hash(groupId, name, version);
   }
 
 }
