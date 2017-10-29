@@ -1,5 +1,8 @@
 package edu.wpi.first.shuffleboard.app.components;
 
+import edu.wpi.first.shuffleboard.api.css.SimpleColorCssMetaData;
+import edu.wpi.first.shuffleboard.api.css.SimpleCssMetaData;
+import edu.wpi.first.shuffleboard.api.util.GridImage;
 import edu.wpi.first.shuffleboard.api.util.GridPoint;
 import edu.wpi.first.shuffleboard.api.util.RoundingMode;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
@@ -9,27 +12,42 @@ import edu.wpi.first.shuffleboard.api.widget.TileSize;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 import edu.wpi.first.shuffleboard.app.dnd.DragUtils;
 
+import com.google.common.collect.ImmutableList;
+
 import org.fxmisc.easybind.EasyBind;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ObservableList;
+import javafx.css.CssMetaData;
 import javafx.css.PseudoClass;
+import javafx.css.StyleConverter;
+import javafx.css.Styleable;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
+import javafx.scene.image.Image;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundImage;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
 
 /**
  * A type of tile pane specifically for widgets.
  */
+@SuppressWarnings("PMD.GodClass") // There's just a bunch of properties here
 public class WidgetPane extends TilePane implements ComponentContainer {
 
   private final ObservableList<Tile> tiles;
@@ -41,13 +59,39 @@ public class WidgetPane extends TilePane implements ComponentContainer {
       = new SimpleObjectProperty<>(this, "highlightPoint", null);
   private final Property<TileSize> highlightSize
       = new SimpleObjectProperty<>(this, "highlightSize", null);
+  private final BooleanProperty showGrid
+      = new SimpleBooleanProperty(this, "showGrid", true);
+  private final IntegerProperty gridLineBorderThickness
+      = new SimpleIntegerProperty(this, "gridLineBorderThickness", 2);
+  private final IntegerProperty secondaryGridLineCount
+      = new SimpleIntegerProperty(this, "secondaryGridLineCount", 3);
+  private final IntegerProperty secondaryGridLineThickness
+      = new SimpleIntegerProperty(this, "secondaryGridLineThickness", 1);
+  private final Property<Color> gridLineColor
+      = new SimpleObjectProperty<>(this, "gridLineColor", Color.TRANSPARENT);
 
   /**
    * Creates a new widget pane. This sets up everything needed for dragging widgets and sources
    * around in this pane.
    */
   public WidgetPane() {
+    getStyleClass().add("widget-pane");
     gridHighlight.getStyleClass().add("grid-highlight");
+
+    // Bind the background to show a grid matching the size of the tiles (if enabled via showGrid)
+    backgroundProperty().bind(
+        Bindings.createObjectBinding(
+            this::createGridBackground,
+            tileSizeProperty(),
+            hgapProperty(),
+            vgapProperty(),
+            showGrid,
+            gridLineBorderThickness,
+            secondaryGridLineCount,
+            secondaryGridLineThickness,
+            gridLineColor
+        )
+    );
 
     tiles = EasyBind.map(getChildren().filtered(n -> n instanceof Tile), n -> (Tile) n);
 
@@ -99,6 +143,30 @@ public class WidgetPane extends TilePane implements ComponentContainer {
     }
   }
 
+  @Override
+  public List<CssMetaData<? extends Styleable, ?>> getCssMetaData() {
+    List<CssMetaData<? extends Styleable, ?>> list = new ArrayList<>(super.getCssMetaData());
+    list.addAll(WidgetPaneCss.STYLEABLES);
+    return list;
+  }
+
+  private Image makeGridImage(Number tileSize, Number hgap, Number vgap) {
+    GridImage gridImage = new GridImage(
+        (int) (tileSize.doubleValue() + hgap.doubleValue()),
+        (int) (tileSize.doubleValue() + vgap.doubleValue()),
+        gridLineBorderThickness.get(),
+        secondaryGridLineCount.get(), secondaryGridLineThickness.get()
+    );
+    return gridImage.getAsImage(gridLineColor.getValue());
+  }
+
+  private static BackgroundImage makeTiledBackgroundImage(Image image) {
+    if (image == null) {
+      return null;
+    } else {
+      return new BackgroundImage(image, null, null, null, null);
+    }
+  }
 
   public ObservableList<Tile> getTiles() {
     return tiles;
@@ -324,4 +392,108 @@ public class WidgetPane extends TilePane implements ComponentContainer {
             predicate.test(((WidgetTile) tile).getContent())
         ));
   }
+
+  public boolean isShowGrid() {
+    return showGrid.get();
+  }
+
+  public BooleanProperty showGridProperty() {
+    return showGrid;
+  }
+
+  public void setShowGrid(boolean showGrid) {
+    this.showGrid.set(showGrid);
+  }
+
+  public int getGridLineBorderThickness() {
+    return gridLineBorderThickness.get();
+  }
+
+  public IntegerProperty gridLineBorderThicknessProperty() {
+    return gridLineBorderThickness;
+  }
+
+  public void setGridLineBorderThickness(int gridLineBorderThickness) {
+    this.gridLineBorderThickness.set(gridLineBorderThickness);
+  }
+
+  public int getSecondaryGridLineCount() {
+    return secondaryGridLineCount.get();
+  }
+
+  public IntegerProperty secondaryGridLineCountProperty() {
+    return secondaryGridLineCount;
+  }
+
+  public void setSecondaryGridLineCount(int secondaryGridLineCount) {
+    this.secondaryGridLineCount.set(secondaryGridLineCount);
+  }
+
+  public int getSecondaryGridLineThickness() {
+    return secondaryGridLineThickness.get();
+  }
+
+  public IntegerProperty secondaryGridLineThicknessProperty() {
+    return secondaryGridLineThickness;
+  }
+
+  public void setSecondaryGridLineThickness(int secondaryGridLineThickness) {
+    this.secondaryGridLineThickness.set(secondaryGridLineThickness);
+  }
+
+  public Color getGridLineColor() {
+    return gridLineColor.getValue();
+  }
+
+  public Property<Color> gridLineColorProperty() {
+    return gridLineColor;
+  }
+
+  public void setGridLineColor(Color gridLineColor) {
+    this.gridLineColor.setValue(gridLineColor);
+  }
+
+  private Background createGridBackground() {
+    if (isShowGrid()) {
+      return new Background(makeTiledBackgroundImage(makeGridImage(getTileSize(), getHgap(), getVgap())));
+    } else {
+      return null;
+    }
+  }
+
+  private static final class WidgetPaneCss {
+
+    private static final CssMetaData<WidgetPane, Color> GRID_LINE_COLOR =
+        new SimpleColorCssMetaData<>(
+            "-fx-grid-line-color",
+            WidgetPane::gridLineColorProperty
+        );
+    private static final CssMetaData<WidgetPane, Number> GRID_LINE_BORDER_THICKNESS =
+        new SimpleCssMetaData<>(
+            "-fx-grid-line-border-thickness",
+            StyleConverter.getSizeConverter(),
+            WidgetPane::gridLineBorderThicknessProperty
+        );
+    private static final CssMetaData<WidgetPane, Number> SECONDARY_GRID_LINE_COUNT =
+        new SimpleCssMetaData<>(
+            "-fx-secondary-grid-line-count",
+            StyleConverter.getSizeConverter(),
+            WidgetPane::secondaryGridLineCountProperty
+        );
+    private static final CssMetaData<WidgetPane, Number> SECONDARY_GRID_LINE_THICKNESS =
+        new SimpleCssMetaData<>(
+            "-fx-secondary-grid-line-thickness",
+            StyleConverter.getSizeConverter(),
+            WidgetPane::secondaryGridLineThicknessProperty
+        );
+
+    private static final List<CssMetaData<WidgetPane, ?>> STYLEABLES = ImmutableList.of(
+        GRID_LINE_COLOR,
+        GRID_LINE_BORDER_THICKNESS,
+        SECONDARY_GRID_LINE_COUNT,
+        SECONDARY_GRID_LINE_THICKNESS
+    );
+
+  }
+
 }

@@ -300,7 +300,7 @@ public class MainWindowController {
    * Otherwise is identical to #saveAs.
    */
   @FXML
-  public void save() {
+  public void save() throws IOException {
     if (currentFile == null) {
       saveAs();
     } else {
@@ -312,12 +312,12 @@ public class MainWindowController {
    * Choose a new file and save the dashboard to that file.
    */
   @FXML
-  private void saveAs() {
+  private void saveAs() throws IOException {
     FileChooser chooser = new FileChooser();
     chooser.getExtensionFilters().setAll(
         new FileChooser.ExtensionFilter("SmartDashboard Save File (.json)", "*.json"));
     if (currentFile == null) {
-      chooser.setInitialDirectory(new File(Storage.STORAGE_DIR));
+      chooser.setInitialDirectory(Storage.getStorageDir());
       chooser.setInitialFileName("smartdashboard.json");
     } else {
       chooser.setInitialDirectory(currentFile.getAbsoluteFile().getParentFile());
@@ -349,9 +349,9 @@ public class MainWindowController {
    * Load the dashboard from a save file.
    */
   @FXML
-  public void load() {
+  public void load() throws IOException {
     FileChooser chooser = new FileChooser();
-    chooser.setInitialDirectory(new File(Storage.STORAGE_DIR));
+    chooser.setInitialDirectory(Storage.getStorageDir());
     chooser.getExtensionFilters().setAll(
         new FileChooser.ExtensionFilter("SmartDashboard Save File (.json)", "*.json"));
 
@@ -432,7 +432,7 @@ public class MainWindowController {
   @FXML
   private void loadPlayback() throws IOException {
     FileChooser chooser = new FileChooser();
-    chooser.setInitialDirectory(new File(Storage.RECORDING_DIR));
+    chooser.setInitialDirectory(Storage.getRecordingDir());
     chooser.getExtensionFilters().setAll(
         new FileChooser.ExtensionFilter("Shuffleboard Data Recording", "*.sbr"));
     final File selected = chooser.showOpenDialog(root.getScene().getWindow());

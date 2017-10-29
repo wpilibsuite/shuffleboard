@@ -211,7 +211,8 @@ public class DashboardTabPane extends TabPane {
               this.title,
               this.autoPopulate,
               dummySourcePrefix,
-              getWidgetPane().tileSizeProperty()
+              getWidgetPane().tileSizeProperty(),
+              getWidgetPane().showGridProperty()
           ));
       propertySheet.getItems().addAll(
           new WidgetPropertySheet.PropertyItem<>(getWidgetPane().hgapProperty(), "Horizontal spacing"),

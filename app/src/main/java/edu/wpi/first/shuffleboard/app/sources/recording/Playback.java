@@ -11,6 +11,7 @@ import edu.wpi.first.shuffleboard.api.sources.recording.TimestampedData;
 import edu.wpi.first.networktables.NetworkTableInstance;
 
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -83,7 +84,7 @@ public final class Playback {
    * @throws IOException if the recording file could not be read
    */
   private Playback(String logFile) throws IOException {
-    recording = Serialization.loadRecording(logFile);
+    recording = Serialization.loadRecording(Paths.get(logFile));
     data = recording.getData();
     numFrames = data.size();
     maxFrameNum = numFrames - 1;
