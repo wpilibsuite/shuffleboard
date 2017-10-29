@@ -8,6 +8,7 @@ import edu.wpi.first.shuffleboard.api.util.ThreadUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.time.Instant;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -51,9 +52,9 @@ public final class Recorder {
       return;
     }
     try {
-      String file = Storage.createRecordingFilePath(startTime);
+      Path file = Storage.createRecordingFilePath(startTime);
       if (recordingFile == null) {
-        recordingFile = new File(file);
+        recordingFile = file.toFile();
       }
       Serialization.saveRecording(recording, file);
       log.fine("Saved recording to " + file);

@@ -13,9 +13,6 @@ import it.sauronsoftware.junique.AlreadyLockedException;
 import it.sauronsoftware.junique.JUnique;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -55,7 +52,7 @@ public class Shuffleboard extends Application {
     PluginLoader.getDefault().load(new BasePlugin());
     PluginLoader.getDefault().load(new NetworkTablesPlugin());
     PluginLoader.getDefault().load(new CameraServerPlugin());
-    loadPluginsFromDir();
+    PluginLoader.getDefault().loadAllJarsFromDir(Storage.getPluginPath());
 
     Recorder.getInstance().start();
     primaryStage.setTitle("Shuffleboard");
@@ -65,23 +62,4 @@ public class Shuffleboard extends Application {
     primaryStage.setHeight(Screen.getPrimary().getVisualBounds().getHeight());
     primaryStage.show();
   }
-
-  /**
-   * Attempts to loads plugins from all jars found in in the {@link Storage#PLUGINS_DIR plugin directory}. This will
-   * overwrite pre-existing plugins with the same ID string (eg "edu.wpi.first.shuffleboard.Base") in encounter order,
-   * which is alphabetical by jar name. For example, if a jar file "my_plugins.jar" defines a plugin with ID "foo.bar"
-   * and another jar file "more_plugins.jar" <i>also</i> defines a plugin with that ID, the plugin from "more_plugins"
-   * will be loaded first, then unloaded and replaced with the one from "my_plugins.jar". For this reason, plugin
-   * authors should be careful to use unique group IDs. We recommend Java's reverse-DNS naming scheme.
-   *
-   * @throws IOException if the plugin directory could not be read
-   */
-  private void loadPluginsFromDir() throws IOException {
-    Path pluginPath = Paths.get(Storage.PLUGINS_DIR);
-    if (!Files.exists(pluginPath)) {
-      Files.createDirectories(pluginPath);
-    }
-    PluginLoader.getDefault().loadAllJarsFromDir(pluginPath);
-  }
-
 }

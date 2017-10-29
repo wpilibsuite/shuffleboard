@@ -19,7 +19,7 @@ buildscript {
 plugins {
     `maven-publish`
     jacoco
-    id("edu.wpi.first.wpilib.versioning.WPILibVersioningPlugin") version "1.6"
+    id("edu.wpi.first.wpilib.versioning.WPILibVersioningPlugin") version "2.0"
     id("com.github.johnrengelman.shadow") version "2.0.1"
     id("com.diffplug.gradle.spotless") version "3.5.1"
 }
@@ -52,7 +52,7 @@ allprojects {
     }
 }
 
-subprojects {
+allprojects {
     apply {
         plugin("java")
         plugin("checkstyle")
@@ -182,6 +182,10 @@ subprojects {
             }
         }
     }
+
+    tasks.withType<Javadoc> {
+        isFailOnError = false
+    }
 }
 
 project(":app") {
@@ -193,17 +197,56 @@ project(":app") {
         from(java.sourceSets["main"].allSource)
         classifier = "sources"
     }
+    val javadocJar = task<Jar>("javadocJar") {
+        dependsOn("javadoc")
+        description = "Creates a JAR that contains the javadocs."
+        from(java.docsDir)
+        classifier = "javadoc"
+    }
     publishing {
         publications {
             create<MavenPublication>("app") {
                 groupId = "edu.wpi.first.shuffleboard"
-                artifactId = "Shuffleboard"
+                artifactId = "app"
                 getWPILibVersion()?.let { version = it }
                 val shadowJar: ShadowJar by tasks
                 artifact (shadowJar) {
                     classifier = null
                 }
                 artifact(sourceJar)
+                artifact(javadocJar)
+            }
+        }
+    }
+}
+
+project(":api") {
+    apply {
+        plugin("com.github.johnrengelman.shadow")
+    }
+    val sourceJar = task<Jar>("sourceJar") {
+        description = "Creates a JAR that contains the source code."
+        from(java.sourceSets["main"].allSource)
+        classifier = "sources"
+    }
+    val javadocJar = task<Jar>("javadocJar") {
+        dependsOn("javadoc")
+        description = "Creates a JAR that contains the javadocs."
+        from(java.docsDir)
+        classifier = "javadoc"
+    }
+    publishing {
+        publications {
+            create<MavenPublication>("api") {
+                groupId = "edu.wpi.first.shuffleboard"
+                artifactId = "api"
+                getWPILibVersion()?.let { version = it }
+                val shadowJar: ShadowJar by tasks
+                artifact (shadowJar) {
+                    classifier = null
+                }
+                artifact(sourceJar)
+                artifact(javadocJar)
             }
         }
     }
