@@ -5,9 +5,13 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonSerializationContext;
+
+import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
+import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.Sources;
-import edu.wpi.first.shuffleboard.api.widget.Widget;
 import edu.wpi.first.shuffleboard.api.widget.Components;
+import edu.wpi.first.shuffleboard.api.widget.Widget;
+
 import javafx.beans.property.Property;
 
 @AnnotatedTypeAdapter(forType = Widget.class)
@@ -30,8 +34,13 @@ public class WidgetSaver implements ElementTypeAdapter<Widget> {
     Widget widget = Components.getDefault().createWidget(type)
             .orElseThrow(() -> new JsonParseException("No widget found for " + type));
 
-    String source = obj.get("_source").getAsString();
-    widget.setSource(Sources.getDefault().forUri(source));
+    String uri = obj.get("_source").getAsString();
+    DataSource source = Sources.getDefault().forUri(uri);
+    try {
+      widget.setSource(source);
+    } catch (IncompatibleSourceException e){
+      // pass
+    }
 
     for (Property p : widget.getProperties()) {
       p.setValue(context.deserialize(obj.get(p.getName()), p.getValue().getClass()));
