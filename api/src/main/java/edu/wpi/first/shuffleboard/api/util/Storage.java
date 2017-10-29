@@ -90,8 +90,9 @@ public final class Storage {
         .replace("${date}", date)
         .replace("${time}", time));
 
-    if (!Files.exists(file.getParent())) {
-      Files.createDirectories(file);
+    Path parent = file.getParent();
+    if (parent != null && !Files.exists(parent)) {
+      Files.createDirectories(parent);
     }
 
     return file;

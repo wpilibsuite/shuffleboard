@@ -21,12 +21,12 @@ import javafx.beans.property.SimpleBooleanProperty;
  * <p>Common superclass for plugins that can be loaded by the app at startup or during runtime. Subclasses must have
  * public no-arg constructor or they will not be loaded.</p>
  *
- * <p>Shuffleboard will load plugins from all jars found in in the {@link Storage#PLUGINS_DIR plugin directory}. This will
- * overwrite pre-existing plugins with the same ID string (eg "edu.wpi.first.shuffleboard.Base") in encounter order,
- * which is alphabetical by jar name. For example, if a jar file "my_plugins.jar" defines a plugin with ID "foo.bar"
- * and another jar file "more_plugins.jar" <i>also</i> defines a plugin with that ID, the plugin from "more_plugins"
- * will be loaded first, then unloaded and replaced with the one from "my_plugins.jar". For this reason, plugin
- * authors should be careful to use unique group IDs. We recommend Java's reverse-DNS naming scheme.</p>
+ * <p>Shuffleboard will load plugins from all jars found in in the {@link Storage#PLUGINS_DIR plugin directory}.
+ * This will overwrite pre-existing plugins with the same ID string (eg "edu.wpi.first.shuffleboard.Base") in
+ * encounter order, which is alphabetical by jar name. For example, if a jar file "my_plugins.jar" defines a plugin
+ * with ID "foo.bar" and another jar file "more_plugins.jar" <i>also</i> defines a plugin with that ID, the plugin
+ * from "more_plugins" will be loaded first, then unloaded and replaced with the one from "my_plugins.jar". For this
+ * reason, plugin authors should be careful to use unique group IDs. We recommend Java's reverse-DNS naming scheme.</p>
  */
 public class Plugin {
 
