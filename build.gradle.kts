@@ -241,9 +241,8 @@ project(":api") {
                 groupId = "edu.wpi.first.shuffleboard"
                 artifactId = "api"
                 getWPILibVersion()?.let { version = it }
-                val shadowJar: ShadowJar by tasks
-                artifact (shadowJar) {
-                    classifier = null
+                afterEvaluate {
+                    from(components["java"])
                 }
                 artifact(sourceJar)
                 artifact(javadocJar)
