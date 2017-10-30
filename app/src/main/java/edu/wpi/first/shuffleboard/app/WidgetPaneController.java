@@ -18,7 +18,7 @@ import edu.wpi.first.shuffleboard.app.components.LayoutTile;
 import edu.wpi.first.shuffleboard.app.components.Tile;
 import edu.wpi.first.shuffleboard.app.components.TileLayout;
 import edu.wpi.first.shuffleboard.app.components.WidgetPane;
-import edu.wpi.first.shuffleboard.app.components.WidgetPropertySheet;
+import edu.wpi.first.shuffleboard.api.components.WidgetPropertySheet;
 import edu.wpi.first.shuffleboard.app.components.WidgetTile;
 import edu.wpi.first.shuffleboard.app.dnd.TileDragResizer;
 import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;

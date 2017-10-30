@@ -68,6 +68,11 @@
  ******************************************************************************/
 .text-field, .text-area {
     -fx-text-fill: -fx-text-base-color;
+    -underline-color: -swatch-gray;
+}
+
+.text-field:focused, .text-area:focused {
+    -fx-border-color: -swatch-200;
 }
 
 /*******************************************************************************
@@ -235,15 +240,6 @@
 .list-view:hover .list-cell:filled:hover {
     -fx-background-color: -swatch-light-gray;
     -fx-text-fill: -fx-text-base-color;
-}
-
-/*******************************************************************************
- *                                                                             *
- * Text field, text area                                                       *
- *                                                                             *
- ******************************************************************************/
-.text-area, .text-field {
-    -underline-color: -swatch-500;
 }
 
 /*******************************************************************************
