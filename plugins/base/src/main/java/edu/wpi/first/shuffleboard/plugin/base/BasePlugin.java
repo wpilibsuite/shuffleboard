@@ -24,6 +24,7 @@ import edu.wpi.first.shuffleboard.plugin.base.data.types.PIDControllerType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.PowerDistributionType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.RawByteType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.RobotPreferencesType;
+import edu.wpi.first.shuffleboard.plugin.base.data.types.RelayType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.SendableChooserType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.SpeedControllerType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.StringArrayType;
@@ -46,6 +47,7 @@ import edu.wpi.first.shuffleboard.plugin.base.widget.NumberSlider;
 import edu.wpi.first.shuffleboard.plugin.base.widget.PIDControllerWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.PowerDistributionPanelWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.RobotPreferencesWidget;
+import edu.wpi.first.shuffleboard.plugin.base.widget.RelayWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.SimpleDialWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.SpeedController;
 import edu.wpi.first.shuffleboard.plugin.base.widget.TextView;
@@ -85,7 +87,8 @@ public class BasePlugin extends Plugin {
         new CommandType(),
         new PIDControllerType(),
         new ThreeAxisAccelerometerType(),
-        new GyroType()
+        new GyroType(),
+        new RelayType()
     );
   }
 
@@ -109,6 +112,7 @@ public class BasePlugin extends Plugin {
         WidgetType.forAnnotatedWidget(ThreeAxisAccelerometerWidget.class),
         WidgetType.forAnnotatedWidget(PIDControllerWidget.class),
         WidgetType.forAnnotatedWidget(GyroWidget.class),
+        WidgetType.forAnnotatedWidget(RelayWidget.class),
         new LayoutClass<>("List Layout", ListLayout.class),
         createSubsystemLayoutType()
     );
@@ -144,6 +148,7 @@ public class BasePlugin extends Plugin {
         .put(new ThreeAxisAccelerometerType(), WidgetType.forAnnotatedWidget(ThreeAxisAccelerometerWidget.class))
         .put(new PIDControllerType(), WidgetType.forAnnotatedWidget(PIDControllerWidget.class))
         .put(new GyroType(), WidgetType.forAnnotatedWidget(GyroWidget.class))
+        .put(new RelayType(), WidgetType.forAnnotatedWidget(RelayWidget.class))
         .put(new SubsystemType(), createSubsystemLayoutType())
         .build();
   }
