@@ -5,7 +5,9 @@ import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 import edu.wpi.first.shuffleboard.api.widget.SimpleAnnotatedWidget;
 import edu.wpi.first.shuffleboard.plugin.base.data.RelayData;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.RelayType;
+
 import javafx.fxml.FXML;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.Pane;
 
 @Description(name = "Relay Widget", dataTypes = RelayType.class)
@@ -15,47 +17,24 @@ public class RelayWidget extends SimpleAnnotatedWidget<RelayData> {
   @FXML
   private Pane root;
   @FXML
-  private javafx.scene.control.ToggleButton offButton;
+  private ToggleButton offButton;
   @FXML
-  private javafx.scene.control.ToggleButton onButton;
+  private ToggleButton onButton;
   @FXML
-  private javafx.scene.control.ToggleButton forwardButton;
+  private ToggleButton forwardButton;
   @FXML
-  private javafx.scene.control.ToggleButton reverseButton;
+  private ToggleButton reverseButton;
 
   @FXML
   private void initialize() {
-    offButton.setOnMouseClicked(event -> {
-      if (dataProperty().get() != null) {
-        dataProperty().setValue(dataProperty().get().withState(RelayData.State.OFF));
-      }
-      offButton.setSelected(true);
-    });
-    onButton.setOnMouseClicked(event -> {
-      if (dataProperty().get() != null) {
-        dataProperty().setValue(dataProperty().get().withState(RelayData.State.ON));
-      }
-      onButton.setSelected(true);
-    });
-    forwardButton.setOnMouseClicked(event -> {
-      if (dataProperty().get() != null) {
-        dataProperty().setValue(dataProperty().get().withState(RelayData.State.FORWARD));
-      }
-      forwardButton.setSelected(true);
-    });
-    reverseButton.setOnMouseClicked(event -> {
-      if (dataProperty().get() != null) {
-        dataProperty().setValue(dataProperty().get().withState(RelayData.State.REVERSE));
-      }
-      reverseButton.setSelected(true);
-    });
-    dataProperty().addListener((obs, oldValue, newValue) -> {
+    setUpButton(offButton, RelayData.State.OFF);
+    setUpButton(onButton, RelayData.State.ON);
+    setUpButton(forwardButton, RelayData.State.FORWARD);
+    setUpButton(reverseButton, RelayData.State.REVERSE);
+    dataOrDefault.addListener((obs, oldValue, newValue) -> {
       RelayData.State state = newValue.getState();
       if (state == null) {
-        offButton.setSelected(false);
-        onButton.setSelected(false);
-        forwardButton.setSelected(false);
-        reverseButton.setSelected(false);
+        offButton.setSelected(true);
         return;
       }
       switch (state) {
@@ -80,6 +59,20 @@ public class RelayWidget extends SimpleAnnotatedWidget<RelayData> {
   @Override
   public Pane getView() {
     return root;
+  }
+
+  private void setUpButton(ToggleButton button, RelayData.State relayState) {
+    button.setOnAction(event -> {
+      if (button.isSelected()) {
+        setData(dataOrDefault.get().withState(relayState));
+      } else {
+        setDefaultState();
+      }
+    });
+  }
+
+  private void setDefaultState() {
+    setData(dataOrDefault.get().withState(RelayData.State.OFF));
   }
 
 }

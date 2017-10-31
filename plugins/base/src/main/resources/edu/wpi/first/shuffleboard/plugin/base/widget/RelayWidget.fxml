@@ -9,7 +9,7 @@
 <StackPane fx:id="root" minHeight="150.0" minWidth="80.0" stylesheets="@relay-widget.css" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="edu.wpi.first.shuffleboard.plugin.base.widget.RelayWidget">
     <VBox maxHeight="Infinity" maxWidth="Infinity" spacing="2.0" StackPane.alignment="TOP_CENTER">
         <children>
-            <ToggleButton id="offButton" fx:id="offButton" alignment="CENTER" maxHeight="Infinity" maxWidth="Infinity" mnemonicParsing="false" text="Off" VBox.vgrow="ALWAYS">
+            <ToggleButton id="offButton" fx:id="offButton" selected="true" maxHeight="Infinity" maxWidth="Infinity" mnemonicParsing="false" text="Off" VBox.vgrow="ALWAYS">
                 <toggleGroup>
                     <ToggleGroup fx:id="state" />
                 </toggleGroup>
