@@ -2,6 +2,7 @@ package edu.wpi.first.shuffleboard.plugin.base.widget;
 
 import edu.wpi.first.shuffleboard.api.components.WidgetPropertySheet;
 import edu.wpi.first.shuffleboard.api.util.AlphanumComparator;
+import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.api.widget.Description;
 import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 import edu.wpi.first.shuffleboard.api.widget.SimpleAnnotatedWidget;
@@ -10,6 +11,7 @@ import edu.wpi.first.shuffleboard.plugin.base.data.RobotPreferencesData;
 import org.controlsfx.control.PropertySheet;
 
 import java.util.Comparator;
+import java.util.Locale;
 import java.util.Map;
 
 import javafx.beans.property.ObjectProperty;
@@ -39,7 +41,7 @@ public class RobotPreferencesWidget extends SimpleAnnotatedWidget<RobotPreferenc
   private final ObservableMap<String, ObjectProperty<Object>> wrapperProperties = FXCollections.observableHashMap();
 
   private static final Comparator<PropertySheet.Item> itemSorter =
-      Comparator.comparing(PropertySheet.Item::getName, AlphanumComparator.INSTANCE);
+      Comparator.comparing(i -> i.getName().toLowerCase(Locale.US), AlphanumComparator.INSTANCE);
 
   @FXML
   private void initialize() {
@@ -53,6 +55,9 @@ public class RobotPreferencesWidget extends SimpleAnnotatedWidget<RobotPreferenc
             .forEach(wrapperProperties::remove);
       }
       updated.forEach((key, value) -> {
+        if (NetworkTableUtils.isMetadata(key)) {
+          return;
+        }
         if (wrapperProperties.containsKey(key)) {
           // Already created a wrapper, update it
           wrapperProperties.get(key).set(value);
