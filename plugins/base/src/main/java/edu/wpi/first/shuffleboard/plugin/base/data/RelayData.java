@@ -57,14 +57,14 @@ public class RelayData extends ComplexData<RelayData> {
    * @param map the map containing the data to be stored by this RelayData
    */
   public RelayData(Map<String, Object> map) {
-    this((String) map.getOrDefault("Name", ""),
+    this((String) map.getOrDefault(".name", ""),
             (String) map.getOrDefault("Value", "Off"));
   }
 
   @Override
   public Map<String, Object> asMap() {
     return Maps.<String, Object>builder()
-            .put("Name", name)
+            .put(".name", name)
             .put("Value", value)
             .build();
   }
