@@ -215,8 +215,10 @@ public class WidgetPane extends TilePane implements ComponentContainer {
   public WidgetTile addWidget(Widget widget, TileSize size) {
     WidgetTile tile = new WidgetTile(widget, size);
     tile.sizeProperty().addListener(__ -> setSize(tile, tile.getSize()));
-    addTile(tile, size);
-    setSize(tile, size);
+    if (addTile(tile, size) != null) {
+      // can't set the size if it wasn't actually added
+      setSize(tile, size);
+    }
     return tile;
   }
 
@@ -243,7 +245,10 @@ public class WidgetPane extends TilePane implements ComponentContainer {
     } else {
       TileSize size = sizeOfWidget(component);
       Tile<?> tile = addComponent(component, firstPoint(size.getWidth(), size.getHeight()), size);
-      setSize(tile, size);
+      if (getChildren().contains(tile)) {
+        // Can only set the size if the tile was actually added
+        setSize(tile, size);
+      }
     }
   }
 

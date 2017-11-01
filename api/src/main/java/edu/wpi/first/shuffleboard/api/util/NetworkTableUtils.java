@@ -1,12 +1,13 @@
 package edu.wpi.first.shuffleboard.api.util;
 
+import edu.wpi.first.shuffleboard.api.data.DataType;
+import edu.wpi.first.shuffleboard.api.data.DataTypes;
+
 import edu.wpi.first.networktables.EntryListenerFlags;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.NetworkTableValue;
-import edu.wpi.first.shuffleboard.api.data.DataType;
-import edu.wpi.first.shuffleboard.api.data.DataTypes;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -156,16 +157,29 @@ public final class NetworkTableUtils {
   }
 
   /**
+   * Shuts down the default instance.
+   */
+  public static void shutdown() {
+    shutdown(NetworkTableInstance.getDefault());
+  }
+
+  /**
    * Shuts down the network table client or server, then clears all entries from network tables.
    * This should be used when changing from server mode to client mode, or changing server
    * address while in client mode.
    */
-  public static void shutdown() {
-    NetworkTableInstance inst = NetworkTableInstance.getDefault();
-    inst.stopDSClient();
-    inst.stopClient();
-    inst.stopServer();
-    inst.deleteAllEntries(); // delete AFTER shutting down the server/client
+  public static void shutdown(NetworkTableInstance instance) {
+    instance.stopDSClient();
+    instance.stopClient();
+    instance.stopServer();
+    // Wait for the network mode to be zero (everything off)
+    while (instance.getNetworkMode() != 0) { // NOPMD empty 'while' statement
+      // busy wait
+    }
+    // delete ALL entries, including persistent ones (deleteAllEntries skips persistent entries)
+    for (NetworkTableEntry entry : instance.getEntries("", 0)) {
+      entry.delete();
+    }
   }
 
   /**
@@ -174,8 +188,8 @@ public final class NetworkTableUtils {
    * @param port the port on the local machine to run the ntcore server on
    */
   public static void setServer(int port) {
-    shutdown();
     NetworkTableInstance inst = NetworkTableInstance.getDefault();
+    shutdown(inst);
     inst.startServer("networktables.ini", "", port);
   }
 
@@ -186,8 +200,8 @@ public final class NetworkTableUtils {
    * @param serverPort the port of the server to connect to. This is normally 1735.
    */
   public static void setClient(String serverIp, int serverPort) {
-    shutdown();
     NetworkTableInstance inst = NetworkTableInstance.getDefault();
+    shutdown(inst);
     inst.startClient(serverIp, serverPort);
   }
 

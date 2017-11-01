@@ -1,15 +1,16 @@
 package edu.wpi.first.shuffleboard.app;
 
-import de.codecentric.centerdevice.javafxsvg.SvgImageLoaderFactory;
-import it.sauronsoftware.junique.AlreadyLockedException;
-import it.sauronsoftware.junique.JUnique;
-
 import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
 import edu.wpi.first.shuffleboard.api.util.Storage;
 import edu.wpi.first.shuffleboard.app.plugin.PluginLoader;
 import edu.wpi.first.shuffleboard.plugin.base.BasePlugin;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.CameraServerPlugin;
 import edu.wpi.first.shuffleboard.plugin.networktables.NetworkTablesPlugin;
+
+import de.codecentric.centerdevice.javafxsvg.SvgImageLoaderFactory;
+
+import it.sauronsoftware.junique.AlreadyLockedException;
+import it.sauronsoftware.junique.JUnique;
 
 import java.io.IOException;
 
@@ -49,11 +50,13 @@ public class Shuffleboard extends Application {
     primaryStage.setScene(new Scene(mainPane));
 
     PluginLoader.getDefault().load(new BasePlugin());
+
+    Recorder.getInstance().start();
+
     PluginLoader.getDefault().load(new CameraServerPlugin());
     PluginLoader.getDefault().load(new NetworkTablesPlugin());
     PluginLoader.getDefault().loadAllJarsFromDir(Storage.getPluginPath());
 
-    Recorder.getInstance().start();
     primaryStage.setTitle("Shuffleboard");
     primaryStage.setMinWidth(640);
     primaryStage.setMinHeight(480);

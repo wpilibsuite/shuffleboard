@@ -67,14 +67,6 @@ public class Sources extends Registry<DataSource> {
     return sources.computeIfAbsent(uri, __ -> sourceSupplier.get());
   }
 
-  public void disconnectAll() {
-    sources.forEach((__, source) -> source.disconnect());
-  }
-
-  public void connectAll() {
-    sources.forEach((__, source) -> source.connect());
-  }
-
   public Stream<DataSource<?>> hierarchy(DataSource<?> source) {
     return NetworkTableUtils.getHierarchy(source.getName()).stream()
         .map(n -> source.getType().forUri(source.getType().toUri(n)));
