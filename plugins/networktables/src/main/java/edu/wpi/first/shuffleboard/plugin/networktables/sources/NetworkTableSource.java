@@ -80,7 +80,7 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
 
   @Override
   public SourceType getType() {
-    return NetworkTableSourceType.INSTANCE;
+    return NetworkTableSourceType.getInstance();
   }
 
   @Override
@@ -112,7 +112,7 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
   @SuppressWarnings("unchecked")
   public static DataSource<?> forKey(String fullTableKey) {
     String key = NetworkTableUtils.normalizeKey(fullTableKey, false);
-    final String uri = NetworkTableSourceType.INSTANCE.toUri(key);
+    final String uri = NetworkTableSourceType.getInstance().toUri(key);
     if (NetworkTableUtils.rootTable.containsKey(key)) {
       // Key-value pair
       return sources.computeIfAbsent(uri, __ ->

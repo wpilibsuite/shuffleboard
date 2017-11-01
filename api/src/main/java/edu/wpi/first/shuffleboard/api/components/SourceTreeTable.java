@@ -119,6 +119,16 @@ public class SourceTreeTable<S extends SourceEntry, V> extends TreeTableView<S> 
     if (deleted) {
       if (current != null) {
         parent.getChildren().remove(current);
+
+        // Remove empty subtrees
+        if (parent.getChildren().isEmpty()) {
+          TreeItem<S> item = parent.getParent();
+          while (item != null) {
+            item.getChildren().remove(parent);
+            parent = item;
+            item = item.getParent();
+          }
+        }
         structureChanged = true;
       }
     } else {

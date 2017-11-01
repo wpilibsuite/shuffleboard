@@ -1,7 +1,11 @@
 package edu.wpi.first.shuffleboard.api.sources.recording;
 
+import edu.wpi.first.shuffleboard.api.DashboardMode;
 import edu.wpi.first.shuffleboard.api.data.DataType;
+import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
+import edu.wpi.first.shuffleboard.api.sources.SourceType;
+import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
 import edu.wpi.first.shuffleboard.api.sources.recording.serialization.Serializers;
 import edu.wpi.first.shuffleboard.api.util.Storage;
 import edu.wpi.first.shuffleboard.api.util.ThreadUtils;
@@ -35,6 +39,13 @@ public final class Recorder {
   private Recorder() {
     // Save the recording at the start (get the initial values) and the stop
     running.addListener((__, wasRunning, isRunning) -> saveToDisk());
+    running.addListener((__, was, is) -> {
+      if (is) {
+        DashboardMode.setCurrentMode(DashboardMode.RECORDING);
+      } else {
+        DashboardMode.setCurrentMode(DashboardMode.NORMAL);
+      }
+    });
 
     // Save the recording every 2 seconds
     Executors.newSingleThreadScheduledExecutor(ThreadUtils::makeDaemonThread)
@@ -76,6 +87,14 @@ public final class Recorder {
   public void start() {
     startTime = Instant.now();
     recording = new Recording();
+    // Record initial conditions
+    SourceTypes.getDefault().getItems().stream()
+        .map(SourceType::getAvailableSources)
+        .forEach(sources -> sources.forEach((id, value) -> {
+          DataTypes.getDefault().forJavaType(value.getClass())
+              .map(t -> new TimestampedData(id, t, value, 0L))
+              .ifPresent(recording::append);
+        }));
     setRunning(true);
   }
 
@@ -114,7 +133,10 @@ public final class Recorder {
     if (!isRunning()) {
       return;
     }
-    recording.append(new TimestampedData(id, dataType, value, timestamp()));
+    // Store the ID in the common string pool
+    // There can easily tens or hundreds of thousands of instances, so storing it in the pool can cut memory
+    // use by megabytes per data point
+    recording.append(new TimestampedData(id.intern(), dataType, value, timestamp()));
   }
 
   private long timestamp() {

@@ -50,11 +50,13 @@ public class Shuffleboard extends Application {
     primaryStage.setScene(new Scene(mainPane));
 
     PluginLoader.getDefault().load(new BasePlugin());
+
+    Recorder.getInstance().start();
+
     PluginLoader.getDefault().load(new NetworkTablesPlugin());
     PluginLoader.getDefault().load(new CameraServerPlugin());
     PluginLoader.getDefault().loadAllJarsFromDir(Storage.getPluginPath());
 
-    Recorder.getInstance().start();
     primaryStage.setTitle("Shuffleboard");
     primaryStage.setMinWidth(640);
     primaryStage.setMinHeight(480);

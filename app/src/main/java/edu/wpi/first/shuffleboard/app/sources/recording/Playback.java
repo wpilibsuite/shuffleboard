@@ -1,12 +1,14 @@
 package edu.wpi.first.shuffleboard.app.sources.recording;
 
-import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.shuffleboard.api.DashboardMode;
+import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
-import edu.wpi.first.shuffleboard.api.sources.Sources;
 import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
 import edu.wpi.first.shuffleboard.api.sources.recording.Recording;
 import edu.wpi.first.shuffleboard.api.sources.recording.Serialization;
 import edu.wpi.first.shuffleboard.api.sources.recording.TimestampedData;
+
+import edu.wpi.first.networktables.NetworkTableInstance;
 
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -43,6 +45,8 @@ public final class Playback {
   private final int maxFrameNum;
   private Thread autoRunner;
   private volatile boolean started = false;
+  private volatile int frameDelta = 1;
+  private volatile int lastFrameDelta = 0;
   private volatile TimestampedData currentFrame;
   private final Object sleepLock = new Object();
   private final BooleanProperty paused = new SimpleBooleanProperty(this, "paused", true);
@@ -96,6 +100,8 @@ public final class Playback {
     frame.addListener((__, prev, cur) -> {
       int lastFrame = prev.intValue();
       int newFrame = cur.intValue();
+      lastFrameDelta = frameDelta;
+      frameDelta = Math.abs(lastFrame - newFrame);
       currentFrame = data.get(newFrame);
       Set<String> remainingSources = new HashSet<>(recording.getSourceIds());
       if (newFrame > lastFrame) {
@@ -144,8 +150,9 @@ public final class Playback {
       return;
     }
     Recorder.getInstance().stop();
+    DashboardMode.setCurrentMode(DashboardMode.PLAYBACK);
     unpause();
-    Sources.getDefault().disconnectAll();
+    SourceTypes.getDefault().getItems().forEach(SourceType::disconnect);
     autoRunner = new Thread(() -> {
       TimestampedData previous;
       TimestampedData current = null;
@@ -158,7 +165,7 @@ public final class Playback {
         // Sleep only if we're not paused and the frames are consecutive.
         // If the frames are not consecutive, it means that the frame was manually moved by a user and we would delay
         // when we shouldn't
-        if (!isPaused() && previous != null && data.indexOf(current) == data.indexOf(previous) + 1) {
+        if (!isPaused() && previous != null && lastFrameDelta <= 1) {
           try {
             Thread.sleep(current.getTimestamp() - previous.getTimestamp());
           } catch (InterruptedException e) {
@@ -187,7 +194,6 @@ public final class Playback {
           }
         }
       }
-      Sources.getDefault().connectAll();
     }, "PlaybackThread");
     autoRunner.setDaemon(true);
     autoRunner.start();
@@ -200,8 +206,8 @@ public final class Playback {
 
   private void set(TimestampedData data) {
     final String sourceId = data.getSourceId();
-    // TODO move record/set logic to SourceType
-    SourceTypes.getDefault().typeForUri(sourceId)
+    SourceTypes.getDefault()
+        .typeForUri(sourceId)
         .read(data);
   }
 
@@ -217,7 +223,7 @@ public final class Playback {
     currentPlayback.setValue(null);
     NetworkTableInstance inst = NetworkTableInstance.getDefault();
     inst.deleteAllEntries();
-    Sources.getDefault().connectAll();
+    SourceTypes.getDefault().getItems().forEach(SourceType::connect);
     Recorder.getInstance().start();
   }
 

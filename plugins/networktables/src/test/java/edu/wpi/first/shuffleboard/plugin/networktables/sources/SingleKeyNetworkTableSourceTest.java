@@ -1,14 +1,16 @@
 package edu.wpi.first.shuffleboard.plugin.networktables.sources;
 
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.util.AsyncUtils;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
+
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -24,21 +26,26 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class SingleKeyNetworkTableSourceTest {
 
   private NetworkTable table;
+  private NetworkTableInstance inst;
+
+  @BeforeAll
+  public static void clinit() {
+    NetworkTableSourceType.setInstance(new NetworkTableSourceType(null));
+  }
 
   @BeforeEach
   public void setUp() {
     AsyncUtils.setAsyncRunner(Runnable::run);
     NetworkTableUtils.shutdown();
-    NetworkTableInstance.getDefault().waitForEntryListenerQueue(-1.0);
-    final NetworkTableInstance inst = NetworkTableInstance.getDefault();
+    inst = NetworkTableInstance.create();
+    inst.waitForEntryListenerQueue(-1.0);
     inst.setUpdateRate(0.01);
     table = inst.getTable("");
   }
 
   @AfterEach
   public void tearDown() {
-    NetworkTableUtils.shutdown();
-    NetworkTableInstance.getDefault().waitForEntryListenerQueue(-1.0);
+    NetworkTableUtils.shutdown(inst);
     AsyncUtils.setAsyncRunner(FxUtils::runOnFxThread);
   }
 

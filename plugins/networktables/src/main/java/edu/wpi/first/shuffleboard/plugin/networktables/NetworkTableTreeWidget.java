@@ -28,7 +28,7 @@ public class NetworkTableTreeWidget extends SimpleAnnotatedWidget<MapData> {
 
   @SuppressWarnings("JavadocMethod")
   public NetworkTableTreeWidget() {
-    tree.setSourceType(NetworkTableSourceType.INSTANCE);
+    tree.setSourceType(NetworkTableSourceType.getInstance());
     pane.getChildren().add(tree);
     root.setExpanded(true);
     tree.setRoot(root);
