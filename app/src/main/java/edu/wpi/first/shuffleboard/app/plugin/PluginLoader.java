@@ -21,6 +21,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.Objects;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -34,11 +35,37 @@ public class PluginLoader {
 
   private static final Logger log = Logger.getLogger(PluginLoader.class.getName());
 
-  private static final PluginLoader defaultLoader = new PluginLoader();
+  private static final PluginLoader defaultLoader =
+      new PluginLoader(DataTypes.getDefault(), SourceTypes.getDefault(), Components.getDefault(), Themes.getDefault());
 
   private final ObservableSet<Plugin> loadedPlugins = FXCollections.observableSet();
   private final ObservableList<Plugin> knownPlugins = FXCollections.observableArrayList();
+  private final DataTypes dataTypes;
+  private final SourceTypes sourceTypes;
+  private final Components components;
+  private final Themes themes;
 
+  /**
+   * Creates a new plugin loader object. For app use, use {@link #getDefault() the default instance}; this should only
+   * be used for tests.
+   *
+   * @param dataTypes   the data type registry to use for registering data types from plugins
+   * @param sourceTypes the source type registry to use for registering source types from plugins
+   * @param components  the component registry to use for registering components from plugins
+   * @param themes      the theme registry to use for registering themes from plugins
+   *                    
+   * @throws NullPointerException if any of the parameters is {@code null}
+   */
+  public PluginLoader(DataTypes dataTypes, SourceTypes sourceTypes, Components components, Themes themes) {
+    this.dataTypes = Objects.requireNonNull(dataTypes, "dataTypes");
+    this.sourceTypes = Objects.requireNonNull(sourceTypes, "sourceTypes");
+    this.components = Objects.requireNonNull(components, "components");
+    this.themes = Objects.requireNonNull(themes, "themes");
+  }
+
+  /**
+   * Gets the default plugin loader instance. This should be used as the global instance for use in the application.
+   */
   public static PluginLoader getDefault() {
     return defaultLoader;
   }
@@ -143,24 +170,27 @@ public class PluginLoader {
    *
    * @param plugin the plugin to load
    *
+   * @return true if the plugin was loaded, false if it wasn't. This could happen if the plugin were already loaded,
+   *         or if the plugin has unloaded dependencies.
+   *
    * @throws IllegalArgumentException if a plugin already exists with the same ID
    */
-  public void load(Plugin plugin) {
+  public boolean load(Plugin plugin) {
     if (loadedPlugins.contains(plugin)) {
       // Already loaded
-      return;
+      return false;
     }
     if (!canLoad(plugin)) {
       log.warning("Not all dependencies are present for " + plugin.getArtifact().toGradleString());
-      return;
+      return false;
     }
     log.info("Loading plugin " + plugin.fullIdString());
-    plugin.getDataTypes().forEach(DataTypes.getDefault()::register);
-    plugin.getSourceTypes().forEach(SourceTypes.getDefault()::register);
+    plugin.getDataTypes().forEach(dataTypes::register);
+    plugin.getSourceTypes().forEach(sourceTypes::register);
     plugin.getTypeAdapters().forEach(Serializers::add);
-    plugin.getComponents().forEach(Components.getDefault()::register);
-    plugin.getDefaultComponents().forEach(Components.getDefault()::setDefaultComponent);
-    Components.getDefault().getActiveWidgets().stream()
+    plugin.getComponents().forEach(components::register);
+    plugin.getDefaultComponents().forEach(components::setDefaultComponent);
+    components.getActiveWidgets().stream()
         .filter(w -> w.getSource() instanceof DestroyedSource)
         .filter(w -> {
           DataSource<?> source = w.getSource();
@@ -168,9 +198,9 @@ public class PluginLoader {
               || plugin.getDataTypes().contains(source.getDataType())
               || plugin.getSourceTypes().contains(source.getType());
         })
-        .filter(w -> SourceTypes.getDefault().isRegistered(w.getSource().getType()))
+        .filter(w -> sourceTypes.isRegistered(w.getSource().getType()))
         .forEach(w -> tryRestoreSource(w, (DestroyedSource) w.getSource()));
-    plugin.getThemes().forEach(Themes.getDefault()::register);
+    plugin.getThemes().forEach(themes::register);
 
     plugin.onLoad();
     plugin.setLoaded(true);
@@ -179,6 +209,7 @@ public class PluginLoader {
     if (!knownPlugins.contains(plugin)) {
       knownPlugins.add(plugin);
     }
+    return true;
   }
 
   /**
@@ -215,11 +246,13 @@ public class PluginLoader {
    * Unloads a plugin.
    *
    * @param plugin the plugin to unload
+   *
+   * @return true if the plugin was unloaded, false if not. This can occur if the plugin was not loaded to begin with.
    */
-  public void unload(Plugin plugin) {
+  public boolean unload(Plugin plugin) {
     if (!loadedPlugins.contains(plugin)) {
       // It's not loaded, nothing to unload
-      return;
+      return false;
     }
     // Unload any dependent plugins first
     knownPlugins.stream()
@@ -227,7 +260,7 @@ public class PluginLoader {
         .forEach(this::unload);
 
     log.info("Unloading plugin " + plugin.fullIdString());
-    Components.getDefault().getActiveWidgets().stream()
+    components.getActiveWidgets().stream()
         .filter(w -> !(w.getSource() instanceof DestroyedSource))
         .filter(w -> {
           DataSource<?> source = w.getSource();
@@ -235,16 +268,17 @@ public class PluginLoader {
               || plugin.getSourceTypes().contains(source.getType());
         })
         .forEach(w -> w.setSource(new DestroyedSource<>(w.getSource())));
-    plugin.getComponents().forEach(Components.getDefault()::unregister);
-    plugin.getSourceTypes().forEach(SourceTypes.getDefault()::unregister);
+    plugin.getComponents().forEach(components::unregister);
+    plugin.getSourceTypes().forEach(sourceTypes::unregister);
     plugin.getTypeAdapters().forEach(Serializers::remove);
-    plugin.getDataTypes().forEach(DataTypes.getDefault()::unregister);
+    plugin.getDataTypes().forEach(dataTypes::unregister);
     // TODO figure out a good way to remember the theme & reapply it when reloading the plugin
-    plugin.getThemes().forEach(Themes.getDefault()::unregister);
+    plugin.getThemes().forEach(themes::unregister);
 
     plugin.onUnload();
     plugin.setLoaded(false);
     loadedPlugins.remove(plugin);
+    return true;
   }
 
   /**
