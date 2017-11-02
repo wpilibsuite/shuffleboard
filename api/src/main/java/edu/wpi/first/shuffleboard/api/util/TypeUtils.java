@@ -1,7 +1,5 @@
 package edu.wpi.first.shuffleboard.api.util;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -61,9 +59,19 @@ public final class TypeUtils {
     return value -> value.map(Stream::of).orElseGet(Stream::empty);
   }
 
-  public static <T> T tryLoadClass(Class<T> type, Object... args)
-      throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-    return type.getConstructor(Arrays.stream(args).map(Object::getClass).toArray(Class[]::new)).newInstance(args);
+  /**
+   * Tries to create a new instance of {@code T} using a public no-arg ("default") constructor.
+   *
+   * @param type the type to create a new instance of
+   * @param <T>  the type of the object to be created
+   *
+   * @return a new instance of {@code T} created with a constructor matching the given arguments
+   *
+   * @throws IllegalAccessException if the constructor matching the given arguments is not public
+   * @throws InstantiationException if the class is abstract
+   */
+  public static <T> T tryInstantiate(Class<T> type) throws IllegalAccessException, InstantiationException {
+    return type.newInstance();
   }
 
 }

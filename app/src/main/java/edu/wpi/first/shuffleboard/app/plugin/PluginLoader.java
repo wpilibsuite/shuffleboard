@@ -126,7 +126,7 @@ public class PluginLoader {
           .map(c -> (Class<? extends Plugin>) c)
           .flatMap(c -> {
             try {
-              return Stream.of(TypeUtils.tryLoadClass(c));
+              return Stream.of(TypeUtils.tryInstantiate(c));
             } catch (ReflectiveOperationException e) {
               log.log(Level.WARNING, "Plugin class could not be loaded: " + c.getName(), e);
               return Stream.empty();
