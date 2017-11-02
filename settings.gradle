@@ -1,5 +1,6 @@
 include ":api"
 include ":app"
+include ":app:test_plugins"
 include "integ-test"
 include ":plugins:base"
 include ":plugins:cameraserver"

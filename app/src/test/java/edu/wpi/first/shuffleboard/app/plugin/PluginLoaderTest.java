@@ -9,6 +9,8 @@ import edu.wpi.first.shuffleboard.api.theme.Theme;
 import edu.wpi.first.shuffleboard.api.theme.Themes;
 import edu.wpi.first.shuffleboard.api.widget.ComponentType;
 import edu.wpi.first.shuffleboard.api.widget.Components;
+import edu.wpi.first.shuffleboard.testplugins.BasicPlugin;
+import edu.wpi.first.shuffleboard.testplugins.DependentOnUnknownPlugin;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -16,9 +18,14 @@ import com.google.common.collect.ImmutableMap;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.List;
 import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -72,6 +79,73 @@ public class PluginLoaderTest {
     assertTrue(components.isRegistered(MockPlugin.component));
     assertTrue(themes.isRegistered(MockPlugin.theme));
 
+  }
+
+  @Test
+  public void testLoadJar() throws URISyntaxException, IOException {
+    // given
+    URL jarUrl = PluginLoaderTest.class.getResource("/test_plugins.jar");
+    assumeTrue(jarUrl != null, "Test plugin jar is not present!");
+    URI testPluginsJar = jarUrl.toURI();
+
+    // when
+    loader.loadPluginJar(testPluginsJar);
+
+    // then
+    assertEquals(3, loader.getKnownPlugins().size(), "All 3 plugins should have been discovered");
+    assertEquals(2, loader.getLoadedPlugins().size(), "Only 2 plugins should have been loaded");
+    assertAll(loader.getLoadedPlugins()
+        .stream()
+        .map(p ->
+            () -> assertInstanceOf(
+                p,
+                BasicPlugin.class,
+                edu.wpi.first.shuffleboard.testplugins.DependentPlugin.class
+            )
+        )
+    );
+    assertAll(loader.getKnownPlugins()
+        .stream()
+        .map(p ->
+            () -> assertInstanceOf(
+                p,
+                BasicPlugin.class,
+                edu.wpi.first.shuffleboard.testplugins.DependentPlugin.class,
+                DependentOnUnknownPlugin.class
+            )
+        )
+    );
+
+  }
+
+  @Test
+  public void testLoadNewerVersionUnloadsExistingPlugin() {
+    Plugin olderVersion = new MockPlugin();
+    Plugin newerVersion = new NewerVersionPlugin();
+
+    assumeTrue(loader.load(olderVersion));
+    assumeTrue(loader.load(newerVersion));
+
+    // Loading a newer version of the same plugin should unload the previously loaded one
+    assertEquals(1, loader.getLoadedPlugins().size());
+    assertEquals(1, loader.getKnownPlugins().size());
+    assertEquals(newerVersion, loader.getKnownPlugins().get(0));
+    assertTrue(loader.getLoadedPlugins().contains(newerVersion));
+  }
+
+  @Test
+  public void testLoadOldVersionUnloadsExistingPlugin() {
+    Plugin olderVersion = new MockPlugin();
+    Plugin newerVersion = new NewerVersionPlugin();
+
+    assumeTrue(loader.load(newerVersion));
+    assumeTrue(loader.load(olderVersion));
+
+    // Loading a newer version of the same plugin should unload the previously loaded one
+    assertEquals(1, loader.getLoadedPlugins().size());
+    assertEquals(1, loader.getKnownPlugins().size());
+    assertEquals(olderVersion, loader.getKnownPlugins().get(0));
+    assertTrue(loader.getLoadedPlugins().contains(olderVersion));
   }
 
   @Test
@@ -161,6 +235,15 @@ public class PluginLoaderTest {
     assertFalse(dependent.isLoaded(), "Dependent plugin is still loaded");
   }
 
+  public static void assertInstanceOf(Object obj, Class<?>... possibleTypes) {
+    for (Class<?> possibleType : possibleTypes) {
+      if (possibleType.isInstance(obj)) {
+        return;
+      }
+    }
+    throw new AssertionError();
+  }
+
   /**
    * A mock plugin for testing.
    */
@@ -220,6 +303,12 @@ public class PluginLoaderTest {
     @Override
     public List<SourceType> getSourceTypes() {
       return ImmutableList.of(sourceType);
+    }
+  }
+
+  public static class NewerVersionPlugin extends Plugin {
+    public NewerVersionPlugin() {
+      super("test", "Mock Plugin", "9.9.9", "A newer version of the mock plugin");
     }
   }
 

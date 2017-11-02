@@ -134,10 +134,7 @@ public class PluginLoader {
           })
           .sorted(Comparator.<Plugin>comparingInt(p -> p.getDependencies().size())
               .thenComparing(PluginLoader::comparePluginsByDependencyGraph))
-          .forEach(plugin -> {
-            unloadOldVersion(plugin);
-            load(plugin);
-          });
+          .forEach(this::load);
     }
   }
 
@@ -188,8 +185,6 @@ public class PluginLoader {
       try {
         if (Modifier.isPublic(clazz.getConstructor().getModifiers())) {
           Plugin plugin = (Plugin) clazz.newInstance();
-          // Unload existing plugin, if it exists
-          unloadOldVersion(plugin);
           load(plugin);
           return true;
         }
@@ -204,6 +199,7 @@ public class PluginLoader {
   private void unloadOldVersion(Plugin plugin) {
     loadedPlugins.stream()
         .filter(p -> p.idString().equals(plugin.idString()))
+        .filter(p -> !p.getArtifact().getVersion().equals(plugin.getArtifact().getVersion()))
         .findFirst()
         .ifPresent(oldPlugin -> {
           unload(oldPlugin);
@@ -226,6 +222,11 @@ public class PluginLoader {
       // Already loaded
       return false;
     }
+
+    // Unload an already-loaded version of this plugin, if it exists
+    // This allows us to load
+    unloadOldVersion(plugin);
+
     if (!canLoad(plugin)) {
       log.warning("Not all dependencies are present for " + plugin.getArtifact().toGradleString());
       if (!knownPlugins.contains(plugin)) {
