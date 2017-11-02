@@ -1,5 +1,7 @@
 package edu.wpi.first.shuffleboard.api.util;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -58,4 +60,10 @@ public final class TypeUtils {
   public static <T> Function<Optional<T>, Stream<T>> optionalStream() {
     return value -> value.map(Stream::of).orElseGet(Stream::empty);
   }
+
+  public static <T> T tryLoadClass(Class<T> type, Object... args)
+      throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    return type.getConstructor(Arrays.stream(args).map(Object::getClass).toArray(Class[]::new)).newInstance(args);
+  }
+
 }

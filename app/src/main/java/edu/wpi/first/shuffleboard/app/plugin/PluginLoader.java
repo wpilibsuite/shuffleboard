@@ -7,9 +7,12 @@ import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
 import edu.wpi.first.shuffleboard.api.sources.recording.serialization.Serializers;
 import edu.wpi.first.shuffleboard.api.theme.Themes;
+import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 import edu.wpi.first.shuffleboard.app.sources.DestroyedSource;
+
+import com.google.common.annotations.VisibleForTesting;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,6 +24,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.Comparator;
 import java.util.Objects;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
@@ -53,7 +57,7 @@ public class PluginLoader {
    * @param sourceTypes the source type registry to use for registering source types from plugins
    * @param components  the component registry to use for registering components from plugins
    * @param themes      the theme registry to use for registering themes from plugins
-   *                    
+   *
    * @throws NullPointerException if any of the parameters is {@code null}
    */
   public PluginLoader(DataTypes dataTypes, SourceTypes sourceTypes, Components components, Themes themes) {
@@ -116,10 +120,48 @@ public class PluginLoader {
       jarFile.stream()
           .filter(e -> e.getName().endsWith(".class"))
           .map(e -> e.getName().replace('/', '.'))
-          .sorted() // sort alphabetically to make load order deterministic
           .map(n -> n.substring(0, n.length() - 6)) // ".class".length() == 6
           .flatMap(className -> tryLoadClass(className, classLoader))
-          .forEach(this::loadPluginClass);
+          .filter(Plugin.class::isAssignableFrom)
+          .map(c -> (Class<? extends Plugin>) c)
+          .flatMap(c -> {
+            try {
+              return Stream.of(TypeUtils.tryLoadClass(c));
+            } catch (ReflectiveOperationException e) {
+              log.log(Level.WARNING, "Plugin class could not be loaded: " + c.getName(), e);
+              return Stream.empty();
+            }
+          })
+          .sorted(Comparator.<Plugin>comparingInt(p -> p.getDependencies().size())
+              .thenComparing(PluginLoader::comparePluginsByDependencyGraph))
+          .forEach(plugin -> {
+            unloadOldVersion(plugin);
+            load(plugin);
+          });
+    }
+  }
+
+  /**
+   * Compares plugins such that plugins with dependencies will be at the end of the list or array being sorted.
+   *
+   * @param p1 the first plugin to compare
+   * @param p2 the second plugin to compare
+   *
+   * @throws IllegalStateException if the two plugins depend on each other, creating a cyclical dependency
+   */
+  @VisibleForTesting
+  static int comparePluginsByDependencyGraph(Plugin p1, Plugin p2) {
+    if (p1.dependsOn(p2)) {
+      if (p2.dependsOn(p1)) {
+        throw new IllegalStateException(
+            "Cyclical dependency detected! " + p1.fullIdString() + " <-> " + p2.fullIdString());
+      }
+      return 1;
+    } else if (p2.dependsOn(p1)) {
+      return -1;
+    } else {
+      // No dependencies
+      return 0;
     }
   }
 
@@ -147,13 +189,7 @@ public class PluginLoader {
         if (Modifier.isPublic(clazz.getConstructor().getModifiers())) {
           Plugin plugin = (Plugin) clazz.newInstance();
           // Unload existing plugin, if it exists
-          loadedPlugins.stream()
-              .filter(p -> p.idString().equals(plugin.idString()))
-              .findFirst()
-              .ifPresent(oldPlugin -> {
-                unload(oldPlugin);
-                knownPlugins.remove(oldPlugin);
-              });
+          unloadOldVersion(plugin);
           load(plugin);
           return true;
         }
@@ -163,6 +199,16 @@ public class PluginLoader {
       }
     }
     return false;
+  }
+
+  private void unloadOldVersion(Plugin plugin) {
+    loadedPlugins.stream()
+        .filter(p -> p.idString().equals(plugin.idString()))
+        .findFirst()
+        .ifPresent(oldPlugin -> {
+          unload(oldPlugin);
+          knownPlugins.remove(oldPlugin);
+        });
   }
 
   /**
@@ -182,6 +228,9 @@ public class PluginLoader {
     }
     if (!canLoad(plugin)) {
       log.warning("Not all dependencies are present for " + plugin.getArtifact().toGradleString());
+      if (!knownPlugins.contains(plugin)) {
+        knownPlugins.add(plugin);
+      }
       return false;
     }
     log.info("Loading plugin " + plugin.fullIdString());

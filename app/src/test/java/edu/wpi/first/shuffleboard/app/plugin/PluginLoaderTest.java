@@ -21,10 +21,12 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
+@SuppressWarnings("PMD.AvoidDuplicateLiterals")
 public class PluginLoaderTest {
 
   private PluginLoader loader;
@@ -101,6 +103,33 @@ public class PluginLoaderTest {
   public void testLoadDependent() {
     assumeTrue(loader.load(new MockPlugin()), "Mock plugin wasn't loaded");
     assertTrue(loader.load(new DependentPlugin()), "Dependent plugin should have been loaded");
+  }
+
+  @Test
+  public void testOrderPluginsNoDependencies() {
+    Plugin p1 = new MockPlugin();
+    Plugin p2 = new MockPlugin();
+    assertEquals(0, PluginLoader.comparePluginsByDependencyGraph(p1, p2));
+    assertEquals(0, PluginLoader.comparePluginsByDependencyGraph(p2, p1));
+  }
+
+  @Test
+  public void testOrderPluginsByDependencies() {
+    Plugin p1 = new MockPlugin();
+    Plugin p2 = new DependentPlugin();
+    assertEquals(1, PluginLoader.comparePluginsByDependencyGraph(p2, p1));
+    assertEquals(-1, PluginLoader.comparePluginsByDependencyGraph(p1, p2));
+  }
+
+  @Test
+  public void testCyclicalDependencyThrows() {
+    // PluginA depends on PluginB
+    Plugin p1 = new CyclicalPluginA();
+
+    // PluginB depends on PluginA: cyclical dependency!
+    Plugin p2 = new CyclicalPluginB();
+
+    assertThrows(IllegalStateException.class, () -> PluginLoader.comparePluginsByDependencyGraph(p1, p2));
   }
 
   @Test
@@ -199,6 +228,20 @@ public class PluginLoaderTest {
     public DependentOnHigherVersion() {
       super("test", "DependentOnHigherVersion", "0.0.0", "");
       addDependency("test:Mock Plugin:9999999.999999.99999999");
+    }
+  }
+
+  private static class CyclicalPluginA extends Plugin {
+    public CyclicalPluginA() {
+      super("foo", "PluginA", "0.0.0", "");
+      addDependency("foo:PluginB:0.0.0");
+    }
+  }
+
+  private static class CyclicalPluginB extends Plugin {
+    public CyclicalPluginB() {
+      super("foo", "PluginB", "0.0.0", "");
+      addDependency("foo:PluginA:0.0.0");
     }
   }
 
