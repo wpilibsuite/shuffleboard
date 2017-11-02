@@ -133,6 +133,18 @@ public class PluginLoaderTest {
   }
 
   @Test
+  public void testSelfDependencyThrows() {
+    Plugin plugin = new SelfDependentPlugin();
+    assertThrows(IllegalStateException.class, () -> PluginLoader.comparePluginsByDependencyGraph(plugin, plugin));
+  }
+
+  @Test
+  public void testSelfDependentCannotBeLoaded() {
+    Plugin plugin = new SelfDependentPlugin();
+    assertFalse(loader.canLoad(plugin), "A self-dependent plugin should never be able to be loaded");
+  }
+
+  @Test
   public void testDependentOnHigherVersion() {
     assumeTrue(loader.load(new MockPlugin()));
     assertFalse(loader.load(new DependentOnHigherVersion()));
@@ -242,6 +254,13 @@ public class PluginLoaderTest {
     public CyclicalPluginB() {
       super("foo", "PluginB", "0.0.0", "");
       addDependency("foo:PluginA:0.0.0");
+    }
+  }
+
+  private static class SelfDependentPlugin extends Plugin {
+    public SelfDependentPlugin() {
+      super("foo", "SelfDependent", "0.0.0", "");
+      addDependency(getArtifact());
     }
   }
 
