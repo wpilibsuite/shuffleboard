@@ -1,7 +1,5 @@
 package edu.wpi.first.shuffleboard.plugin.base.widget;
 
-import com.google.common.collect.ImmutableList;
-
 import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
@@ -9,6 +7,8 @@ import edu.wpi.first.shuffleboard.api.util.Time;
 import edu.wpi.first.shuffleboard.api.widget.AnnotatedWidget;
 import edu.wpi.first.shuffleboard.api.widget.Description;
 import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
+
+import com.google.common.collect.ImmutableList;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,6 +20,8 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -43,6 +45,8 @@ public class GraphWidget implements AnnotatedWidget {
   private NumberAxis xAxis;
   @FXML
   private NumberAxis yAxis;
+
+  private final StringProperty title = new SimpleStringProperty(this, "title", "");
 
   private final ObservableList<DataSource> sources = FXCollections.observableArrayList();
   private final Map<DataSource<? extends Number>, XYChart.Series<Number, Number>> numberSeriesMap = new HashMap<>();
@@ -79,6 +83,13 @@ public class GraphWidget implements AnnotatedWidget {
             }
           });
         }
+      }
+      if (getSources().isEmpty()) {
+        setTitle("Graph (no sources)");
+      } else if (getSources().size() == 1) {
+        setTitle(getSources().get(0).getName());
+      } else {
+        setTitle("Graph (" + getSources().size() + " sources)");
       }
     });
     xAxis.setTickLabelFormatter(new StringConverter<Number>() {
@@ -206,8 +217,13 @@ public class GraphWidget implements AnnotatedWidget {
   }
 
   @Override
+  public Property<String> titleProperty() {
+    return title;
+  }
+
+  @Override
   public void addSource(DataSource source) throws IncompatibleSourceException {
-    if (sources.contains(source) || sources.stream().anyMatch(s -> s.getName().equals(source.getName()))) {
+    if (sources.contains(source) || sources.stream().anyMatch(s -> s.getId().equals(source.getId()))) {
       // Already have it, don't graph it twice
       return;
     }

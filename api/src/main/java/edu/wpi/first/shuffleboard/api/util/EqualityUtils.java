@@ -6,6 +6,7 @@ import java.util.Objects;
 public final class EqualityUtils {
 
   private EqualityUtils() {
+    throw new UnsupportedOperationException("This is a utility class!");
   }
 
   /**

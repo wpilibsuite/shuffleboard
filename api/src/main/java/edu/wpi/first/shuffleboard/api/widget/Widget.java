@@ -2,15 +2,13 @@ package edu.wpi.first.shuffleboard.api.widget;
 
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
-import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
 
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import javafx.beans.property.Property;
-import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
-import javafx.scene.layout.Pane;
 
 /**
  * A widget is a UI element that displays data from a {@link DataSource} and has the ability to
@@ -51,27 +49,20 @@ import javafx.scene.layout.Pane;
  * @param <T> the type of data the widget supports. For composite widgets, this is always
  *            {@link ObservableMap ObservableMap&lt;String, Object&gt;}.
  */
-public interface Widget {
-
-  Pane getView();
-
-  /**
-   * Gets the name of this widget.
-   */
-  String getName();
+public interface Widget extends Component, Sourced {
 
   /**
    * Gets an unmodifiable copy of this widgets supported data types.
    */
   Set<DataType> getDataTypes();
 
-  void addSource(DataSource source) throws IncompatibleSourceException;
-
-  ObservableList<DataSource> getSources();
-
   /**
    * Gets the user-configurable properties for this widget.
    */
   List<Property<?>> getProperties();
 
+  @Override
+  default Stream<Widget> allWidgets() {
+    return Stream.of(this);
+  }
 }

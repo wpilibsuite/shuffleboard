@@ -1,10 +1,10 @@
 package edu.wpi.first.shuffleboard.app.json;
 
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.shuffleboard.app.components.DashboardTabPane;
 import edu.wpi.first.shuffleboard.api.util.AsyncUtils;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
-import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,17 +30,18 @@ public class DashboardTabPaneSaverTest extends ApplicationTest {
   @BeforeEach
   public void setUp() {
     NetworkTableUtils.shutdown();
-    NetworkTablesJNI.setUpdateRate(0.01);
+    NetworkTableInstance inst = NetworkTableInstance.getDefault();
+    inst.setUpdateRate(0.01);
     AsyncUtils.setAsyncRunner(Runnable::run);
-    NetworkTablesJNI.putDouble("/LiveWindow/TestSystem/Ultrasonic/Value", 0.5);
-    NetworkTablesJNI.putDouble("/LiveWindow/TestSystem/Compass/Value", 0.5);
-    NetworkTablesJNI.putDouble("/LiveWindow/Elevator/p", 0.5);
-    NetworkTablesJNI.putDouble("/LiveWindow/Elevator/d", 0.5);
-    NetworkTablesJNI.putDouble("/LiveWindow/Elevator/f", 0.5);
+    inst.getEntry("/LiveWindow/TestSystem/Ultrasonic/Value").setDouble(0.5);
+    inst.getEntry("/LiveWindow/TestSystem/Compass/Value").setDouble(0.5);
+    inst.getEntry("/LiveWindow/Elevator/p").setDouble(0.5);
+    inst.getEntry("/LiveWindow/Elevator/d").setDouble(0.5);
+    inst.getEntry("/LiveWindow/Elevator/f").setDouble(0.5);
 
-    NetworkTablesJNI.putBoolean("/LiveWindow/~STATUS~/LW Enabled", true);
-    NetworkTablesJNI.putBoolean("/LiveWindow/Elevator/enabled", false);
-    NetworkTableUtils.waitForNtcoreEvents();
+    inst.getEntry("/LiveWindow/~STATUS~/LW Enabled").setBoolean(true);
+    inst.getEntry("/LiveWindow/Elevator/enabled").setBoolean(false);
+    inst.waitForEntryListenerQueue(-1.0);
   }
 
   @AfterEach

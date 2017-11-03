@@ -6,9 +6,9 @@ import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import java.util.Set;
 
 /**
- * Describes a widget. This is used to make lookup of widgets easier for {@link Widgets}.
+ * Describes a widget. This is used to make lookup of widgets easier for {@link Components}.
  */
-public abstract class AbstractWidgetType implements WidgetType {
+public abstract class AbstractWidgetType<W extends Widget> implements WidgetType<W> {
 
   private final String name;
   private final Set<DataType> dataTypes;

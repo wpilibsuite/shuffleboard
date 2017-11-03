@@ -1,4 +1,8 @@
-# NOTE: Don't use `sudo` anywhere or the build will run on Travis's slower, outdated build system
+sudo: required
+
+services:
+  - docker
+
 language: java
 
 matrix:
@@ -9,25 +13,21 @@ matrix:
 #    - os: osx
 #      osx_image: xcode8
 
-addons:
-  apt:
-    sources:
-      - ubuntu-toolchain-r-test
-    packages:
-      - oracle-java8-installer
-      - libstdc++-4.9-dev
+env:
+  global:
+    - GRADLE_CACHES="/home/travis/.gradle/"
+    - DOCKER_GRADLE_CACHES="/root/.gradle/"
 
 before_install:
-  - if [[ $TRAVIS_OS_NAME != 'osx' ]]; then
-    export DISPLAY=:99.0;
-    sh -e /etc/init.d/xvfb start;
-    fi
+  - docker build -f Dockerfile -t shuffleboard-devel .
+
+install: echo "skip 'gradle assemble' step"
 
 script:
-  - ./gradlew check jacocoJunit5TestReport --stacktrace -PlogTests -Pheadless
-
-after_success:
-  - if [[ $TRAVIS_OS_NAME != 'osx' ]]; then bash <(curl -s https://codecov.io/bash); fi
+  # Get the code coverage environment variables to pass to docker
+  # https://github.com/codecov/support/wiki/Testing-with-Docker
+  - ci_env=`bash <(curl -s https://codecov.io/env)`
+  - docker run -it $ci_env -v ${GRADLE_CACHES}:${DOCKER_GRADLE_CACHES} shuffleboard-devel ./.travis.ubuntu.sh
 
 before_cache:
   - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock

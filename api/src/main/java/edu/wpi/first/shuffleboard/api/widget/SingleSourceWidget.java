@@ -2,12 +2,12 @@ package edu.wpi.first.shuffleboard.api.widget;
 
 import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
-import edu.wpi.first.shuffleboard.api.sources.DummySource;
 
 import org.fxmisc.easybind.EasyBind;
 import org.fxmisc.easybind.monadic.MonadicBinding;
 
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.Property;
 import javafx.beans.property.SimpleObjectProperty;
 
 /**
@@ -15,8 +15,7 @@ import javafx.beans.property.SimpleObjectProperty;
  */
 public abstract class SingleSourceWidget extends AbstractWidget {
 
-  protected final ObjectProperty<DataSource> source
-      = new SimpleObjectProperty<>(this, "source", DummySource.forTypes(getDataTypes()).get());
+  protected final ObjectProperty<DataSource> source = new SimpleObjectProperty<>(this, "source", DataSource.none());
   protected final MonadicBinding<String> sourceName;
 
   @SuppressWarnings("JavadocMethod")
@@ -35,7 +34,7 @@ public abstract class SingleSourceWidget extends AbstractWidget {
     }
   }
 
-  public final ObjectProperty<DataSource> sourceProperty() {
+  public final Property<DataSource> sourceProperty() {
     return source;
   }
 

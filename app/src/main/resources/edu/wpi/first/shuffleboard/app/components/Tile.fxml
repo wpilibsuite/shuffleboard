@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import edu.wpi.first.shuffleboard.api.components.EditableLabel?>
+<?import edu.wpi.first.shuffleboard.app.components.Tile?>
+<?import javafx.scene.layout.StackPane?>
+
+<?import javafx.geometry.Insets?>
+<fx:root xmlns="http://javafx.com/javafx"
+         xmlns:fx="http://javafx.com/fxml"
+         type="Tile"
+         fx:id="tile">
+    <top>
+        <StackPane styleClass="tile-title-bar">
+            <EditableLabel fx:id="titleLabel" styleClass="tile-title-label"/>
+        </StackPane>
+    </top>
+    <center>
+        <StackPane fx:id="contentPane">
+            <padding>
+                <Insets topRightBottomLeft="2"/>
+            </padding>
+        </StackPane>
+    </center>
+</fx:root>

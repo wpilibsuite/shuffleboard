@@ -1,17 +1,16 @@
 package edu.wpi.first.shuffleboard.plugin.networktables.sources;
 
-import edu.wpi.first.shuffleboard.api.data.ComplexData;
 import edu.wpi.first.shuffleboard.api.sources.SourceEntry;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.recording.TimestampedData;
 import edu.wpi.first.shuffleboard.api.util.AsyncUtils;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
-import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
+import edu.wpi.first.shuffleboard.plugin.networktables.NetworkTablesPlugin;
 
-import java.util.HashMap;
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
+
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -19,61 +18,73 @@ import javafx.collections.ObservableMap;
 
 public final class NetworkTableSourceType extends SourceType {
 
-  public static final NetworkTableSourceType INSTANCE = new NetworkTableSourceType();
+  private static NetworkTableSourceType INSTANCE;
 
   private final ObservableList<String> availableSourceIds = FXCollections.observableArrayList();
   private final ObservableMap<String, Object> availableSources = FXCollections.observableHashMap();
+  private final NetworkTablesPlugin plugin;
 
-  private NetworkTableSourceType() {
+  @SuppressWarnings("JavadocMethod")
+  public NetworkTableSourceType(NetworkTablesPlugin plugin) {
     super("NetworkTable", true, "network_table://", NetworkTableSource::forKey);
-    NetworkTablesJNI.addEntryListener("", (uid, key, value, flags) -> {
+    this.plugin = plugin;
+    NetworkTableInstance inst = NetworkTableInstance.getDefault();
+    inst.addEntryListener("", (event) -> {
       AsyncUtils.runAsync(() -> {
-        NetworkTableUtils.getHierarchy(key)
-            .stream()
-            .map(this::toUri)
-            .forEach(uri -> {
-              availableSources.put(uri, value);
-              if (NetworkTableUtils.isDelete(flags)) {
-                availableSourceIds.remove(uri);
-              } else if (!availableSourceIds.contains(uri)) {
-                availableSourceIds.add(uri);
-              }
-            });
+        final boolean delete = NetworkTableUtils.isDelete(event.flags);
+        List<String> hierarchy = NetworkTableUtils.getHierarchy(event.name);
+        for (int i = 0; i < hierarchy.size(); i++) {
+          String uri = toUri(hierarchy.get(i));
+          if (i == hierarchy.size() - 1) {
+            if (delete) {
+              availableSources.remove(uri);
+            } else {
+              availableSources.put(uri, event.value.getValue());
+            }
+          }
+          if (delete) {
+            availableSourceIds.remove(uri);
+          } else if (!availableSourceIds.contains(uri)) {
+            availableSourceIds.add(uri);
+          }
+        }
       });
     }, 0xFF);
   }
 
-  @Override
-  public void read(TimestampedData recordedData) {
-    // Update all possible sources for the entry
-    // This is a special case because of the treelike structure of network tables
-    final String fullKey = NetworkTableSourceType.INSTANCE.removeProtocol(recordedData.getSourceId());
-    List<String> hierarchy = NetworkTableUtils.getHierarchy(fullKey);
-    hierarchy.stream()
-        .map(NetworkTableSourceType.INSTANCE::toUri)
-        .map(NetworkTableSource::getExisting)
-        .filter(Optional::isPresent)
-        .map(Optional::get)
-        .forEach(source -> {
-          if (source instanceof CompositeNetworkTableSource) {
-            @SuppressWarnings("unchecked")
-            CompositeNetworkTableSource<? extends ComplexData<?>> comp = (CompositeNetworkTableSource) source;
-            if (comp.getKey().equals("/")) {
-              updateTable(comp, fullKey, recordedData.getData());
-            } else {
-              updateTable(comp, fullKey.substring(comp.getKey().length() + 1), recordedData.getData());
-            }
-          } else {
-            // It's the source just for the key, set it
-            source.setData(recordedData.getData());
-          }
-        });
+  /**
+   * For internal use only.
+   */
+  public static void setInstance(NetworkTableSourceType instance) {
+    INSTANCE = instance;
   }
 
-  private <T extends ComplexData<T>> void updateTable(CompositeNetworkTableSource<T> source, String key, Object value) {
-    Map<String, Object> map = new HashMap<>(source.getData().asMap());
-    map.put(key, value);
-    source.setData(source.getDataType().fromMap(map));
+  public static NetworkTableSourceType getInstance() {
+    return INSTANCE;
+  }
+
+  @Override
+  public void read(TimestampedData recordedData) {
+    super.read(recordedData);
+    final String fullKey = removeProtocol(recordedData.getSourceId());
+    NetworkTableEntry entry = NetworkTableInstance.getDefault().getEntry(fullKey);
+    NetworkTableUtils.setEntryValue(entry, recordedData.getData());
+  }
+
+  @Override
+  public void connect() {
+    // force reconnect
+    // This is ugly and I hate it, but it works
+    String id = plugin.getServerId();
+    plugin.setServerId("notarealserver:0");
+    plugin.setServerId(id);
+  }
+
+  @Override
+  public void disconnect() {
+    NetworkTableUtils.shutdown(NetworkTableInstance.getDefault());
+    availableSourceIds.clear();
+    availableSources.clear();
   }
 
   @Override
@@ -88,8 +99,7 @@ public final class NetworkTableSourceType extends SourceType {
 
   @Override
   public SourceEntry createSourceEntryForUri(String uri) {
-    String key = removeProtocol(uri);
-    return new NetworkTableEntry(key, NetworkTablesJNI.getValue(key, null));
+    return new NetworkTableSourceEntry(removeProtocol(uri), availableSources.get(uri));
   }
 
   @Override

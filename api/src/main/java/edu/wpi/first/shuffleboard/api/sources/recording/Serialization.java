@@ -4,14 +4,13 @@ import com.google.common.primitives.Bytes;
 
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
-import edu.wpi.first.shuffleboard.api.sources.recording.serialization.TypeAdapter;
 import edu.wpi.first.shuffleboard.api.sources.recording.serialization.Serializers;
-import edu.wpi.first.shuffleboard.api.util.Storage;
+import edu.wpi.first.shuffleboard.api.sources.recording.serialization.TypeAdapter;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -39,10 +38,6 @@ public final class Serialization {
   private Serialization() {
   }
 
-  public static void saveToDefaultLocation(Recording recording) throws IOException {
-    saveRecording(recording, Storage.DEFAULT_RECORDING_FILE);
-  }
-
   /**
    * Saves a recording to the given file.
    *
@@ -51,7 +46,7 @@ public final class Serialization {
    *
    * @throws IOException if the recording could not be saved to the given file
    */
-  public static void saveRecording(Recording recording, String file) throws IOException {
+  public static void saveRecording(Recording recording, Path file) throws IOException {
     // work on a copy of the data so changes to the recording don't mess this up
     final List<TimestampedData> dataCopy = new ArrayList<>(recording.getData());
     dataCopy.sort(TimestampedData::compareTo); // make sure the data is sorted properly
@@ -88,7 +83,11 @@ public final class Serialization {
       i += next.length;
       j++;
     }
-    Files.write(Paths.get(file), all);
+    Path saveDir = file.getParent();
+    if (saveDir != null) {
+      Files.createDirectories(saveDir);
+    }
+    Files.write(file, all);
   }
 
   public static <T> byte[] encode(T value) {
@@ -116,23 +115,14 @@ public final class Serialization {
   }
 
   /**
-   * Loads the default recording file at {@link Storage#DEFAULT_RECORDING_FILE}.
-   *
-   * @throws IOException if the file could not be read
-   */
-  public static Recording loadDefaultRecording() throws IOException {
-    return loadRecording(Storage.DEFAULT_RECORDING_FILE);
-  }
-
-  /**
    * Loads the recording stored in the given file.
    *
    * @param file the recording file to load
    *
    * @throws IOException if the file could not be read, or if it is in an unexpected binary format
    */
-  public static Recording loadRecording(String file) throws IOException {
-    final byte[] bytes = Files.readAllBytes(Paths.get(file));
+  public static Recording loadRecording(Path file) throws IOException {
+    final byte[] bytes = Files.readAllBytes(file);
     if (bytes.length < 8) {
       throw new IOException("Recording file too small");
     }
@@ -140,6 +130,7 @@ public final class Serialization {
     if (magic != MAGIC_NUMBER) {
       throw new IOException("Wrong magic number in the header. Expected " + MAGIC_NUMBER + ", but was " + magic);
     }
+    Serializers.getAdapters().forEach(a -> a.setCurrentFile(file.toFile()));
     //final int numDataPoints = readInt(bytes, 4);
     final String[] sourceNames = readStringArray(bytes, 8);
 

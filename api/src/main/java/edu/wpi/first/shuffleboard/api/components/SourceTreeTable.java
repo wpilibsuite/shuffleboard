@@ -2,12 +2,12 @@ package edu.wpi.first.shuffleboard.api.components;
 
 import edu.wpi.first.shuffleboard.api.sources.SourceEntry;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
+import edu.wpi.first.shuffleboard.api.util.AlphanumComparator;
 import edu.wpi.first.shuffleboard.api.util.EqualityUtils;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.Locale;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
@@ -35,7 +35,7 @@ public class SourceTreeTable<S extends SourceEntry, V> extends TreeTableView<S> 
    * Compares tree items alphabetically.
    */
   public static final Comparator<TreeItem<? extends SourceEntry>> alphabetical
-      = Comparator.comparing(item -> item.getValue().getViewName().toLowerCase(Locale.getDefault()));
+      = Comparator.comparing(item -> item.getValue().getViewName(), AlphanumComparator.INSTANCE);
 
   private final ObjectProperty<SourceType> sourceType = new SimpleObjectProperty<>(this, "sourceType", null);
 
@@ -87,6 +87,7 @@ public class SourceTreeTable<S extends SourceEntry, V> extends TreeTableView<S> 
     List<String> hierarchy = NetworkTableUtils.getHierarchy(name);
     TreeItem<S> current = getRoot();
     TreeItem<S> parent = current;
+    boolean structureChanged = false;
 
     // Get the appropriate node for the value, creating branches as needed
     // Skip the first path in the hierarchy; it's always the root
@@ -110,6 +111,7 @@ public class SourceTreeTable<S extends SourceEntry, V> extends TreeTableView<S> 
         current = new TreeItem<>(newEntry);
         current.setExpanded(true);
         parent.getChildren().add(current);
+        structureChanged = true;
       }
     }
 
@@ -117,6 +119,17 @@ public class SourceTreeTable<S extends SourceEntry, V> extends TreeTableView<S> 
     if (deleted) {
       if (current != null) {
         parent.getChildren().remove(current);
+
+        // Remove empty subtrees
+        if (parent.getChildren().isEmpty()) {
+          TreeItem<S> item = parent.getParent();
+          while (item != null) {
+            item.getChildren().remove(parent);
+            parent = item;
+            item = item.getParent();
+          }
+        }
+        structureChanged = true;
       }
     } else {
       if (current == null) {
@@ -124,12 +137,15 @@ public class SourceTreeTable<S extends SourceEntry, V> extends TreeTableView<S> 
         current = new TreeItem<>(entry);
         current.setExpanded(true);
         parent.getChildren().add(current);
+        structureChanged = true;
       } else if (EqualityUtils.isDifferent(current.getValue().getValue(), entry.getValue())) {
         // The value updated, so just update the existing node
         current.setValue(entry);
       }
     }
-    sort();
+    if (structureChanged) {
+      sort();
+    }
   }
 
   protected static <T> T getEntryForCellData(

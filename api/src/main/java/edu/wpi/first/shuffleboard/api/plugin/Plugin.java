@@ -7,17 +7,26 @@ import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.recording.serialization.TypeAdapter;
 import edu.wpi.first.shuffleboard.api.theme.Theme;
-import edu.wpi.first.shuffleboard.api.widget.Widget;
+import edu.wpi.first.shuffleboard.api.util.Storage;
+import edu.wpi.first.shuffleboard.api.widget.ComponentType;
 
 import java.util.List;
 import java.util.Map;
 
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.Property;
 import javafx.beans.property.SimpleBooleanProperty;
 
 /**
- * Common superclass for plugins that can be loaded by the app at startup or during runtime. Subclasses must have
- * public no-arg constructor or they will not be loaded.
+ * <p>Common superclass for plugins that can be loaded by the app at startup or during runtime. Subclasses must have
+ * public no-arg constructor or they will not be loaded.</p>
+ *
+ * <p>Shuffleboard will load plugins from all jars found in in the {@link Storage#PLUGINS_DIR plugin directory}.
+ * This will overwrite pre-existing plugins with the same ID string (eg "edu.wpi.first.shuffleboard.Base") in
+ * encounter order, which is alphabetical by jar name. For example, if a jar file "my_plugins.jar" defines a plugin
+ * with ID "foo.bar" and another jar file "more_plugins.jar" <i>also</i> defines a plugin with that ID, the plugin
+ * from "more_plugins" will be loaded first, then unloaded and replaced with the one from "my_plugins.jar". For this
+ * reason, plugin authors should be careful to use unique group IDs. We recommend Java's reverse-DNS naming scheme.</p>
  */
 public class Plugin {
 
@@ -109,16 +118,16 @@ public class Plugin {
   }
 
   /**
-   * Gets a list of the widget types that this plugin defines.
+   * Gets a list of the non-annotated components defined by this plugin.
    */
-  public List<Class<? extends Widget>> getWidgets() {
+  public List<ComponentType> getComponents() {
     return ImmutableList.of();
   }
 
   /**
-   * Gets a map of the default widgets this plugin defines.
+   * Gets a map of the default components to use for each data type.
    */
-  public Map<DataType, Class<? extends Widget>> getDefaultWidgets() {
+  public Map<DataType, ComponentType> getDefaultComponents() {
     return ImmutableMap.of();
   }
 
@@ -130,6 +139,16 @@ public class Plugin {
    * Gets a list of themes that this plugin defines.
    */
   public List<Theme> getThemes() {
+    return ImmutableList.of();
+  }
+
+  /**
+   * Gets a list of properties of this plugin that can be changed by users. Properties that are sensitive to rapid
+   * changes (for example, a server URI that will attempt a connection on a change) should be wrapped in a
+   * {@link edu.wpi.first.shuffleboard.api.prefs.FlushableProperty FlushableProperty} to ensure that a change will only
+   * occur when a user manually confirms the change.
+   */
+  public List<Property<?>> getProperties() {
     return ImmutableList.of();
   }
 

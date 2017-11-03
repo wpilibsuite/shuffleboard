@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.plugin.networktables.sources;
 
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.shuffleboard.api.data.ComplexDataType;
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.sources.AbstractDataSource;
@@ -7,7 +8,6 @@ import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.util.AsyncUtils;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
-import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -50,19 +50,18 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
    * Sets the table listener to call when a value changes under this source's key.
    */
   protected final void setTableListener(TableListener listener) {
-    NetworkTablesJNI.removeEntryListener(listenerUid);
-    listenerUid = NetworkTablesJNI.addEntryListener(
-        fullTableKey,
-        (uid, key, value, flags) -> {
-          if (isConnected()) {
-            AsyncUtils.runAsync(() -> {
-              ntUpdate = true;
-              listener.onChange(key, value, flags);
-              ntUpdate = false;
-            });
-          }
-        },
-        0xFF);
+    NetworkTableInstance inst = NetworkTableInstance.getDefault();
+    inst.removeEntryListener(listenerUid);
+    listenerUid = inst.addEntryListener(fullTableKey, (event) -> {
+      if (isConnected()) {
+        AsyncUtils.runAsync(() -> {
+          ntUpdate = true;
+          listener.onChange(event.name, event.value.getValue(), event.flags);
+          ntUpdate = false;
+        });
+      }
+    },
+    0xFF);
     connect();
   }
 
@@ -81,12 +80,12 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
 
   @Override
   public SourceType getType() {
-    return NetworkTableSourceType.INSTANCE;
+    return NetworkTableSourceType.getInstance();
   }
 
   @Override
   public void close() {
-    NetworkTablesJNI.removeEntryListener(listenerUid);
+    NetworkTableInstance.getDefault().removeEntryListener(listenerUid);
   }
 
   @FunctionalInterface
@@ -113,7 +112,7 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
   @SuppressWarnings("unchecked")
   public static DataSource<?> forKey(String fullTableKey) {
     String key = NetworkTableUtils.normalizeKey(fullTableKey, false);
-    final String uri = NetworkTableSourceType.INSTANCE.toUri(key);
+    final String uri = NetworkTableSourceType.getInstance().toUri(key);
     if (NetworkTableUtils.rootTable.containsKey(key)) {
       // Key-value pair
       return sources.computeIfAbsent(uri, __ ->

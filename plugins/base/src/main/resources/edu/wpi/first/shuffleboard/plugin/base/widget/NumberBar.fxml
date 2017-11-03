@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import edu.wpi.first.shuffleboard.api.components.LinearIndicator?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.layout.VBox?>
+<StackPane xmlns="http://javafx.com/javafx"
+           xmlns:fx="http://javafx.com/fxml"
+           fx:controller="edu.wpi.first.shuffleboard.plugin.base.widget.NumberBarWidget"
+           fx:id="root"
+           prefWidth="128" prefHeight="128" minHeight="32">
+    <padding>
+        <Insets topRightBottomLeft="8"/>
+    </padding>
+    <VBox alignment="CENTER" spacing="4">
+        <LinearIndicator fx:id="indicator" min="-1" max="1" center="0" showTickMarks="true" showTickLabels="true"/>
+        <Label fx:id="text" visible="${controller.showText}"/>
+    </VBox>
+</StackPane>

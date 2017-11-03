@@ -6,10 +6,11 @@ import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
 import edu.wpi.first.shuffleboard.api.widget.Description;
 import edu.wpi.first.shuffleboard.api.widget.SimpleAnnotatedWidget;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
-import edu.wpi.first.shuffleboard.api.widget.Widgets;
+import edu.wpi.first.shuffleboard.api.widget.Components;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.testfx.framework.junit5.ApplicationTest;
 
@@ -46,13 +47,13 @@ public class WidgetSaverTest extends ApplicationTest {
 
   @BeforeEach
   public void setUp() {
-    Widgets.setDefault(new Widgets());
+    Components.setDefault(new Components());
     DataTypes.setDefault(new DataTypes());
   }
 
   @AfterEach
   public void tearDown() {
-    Widgets.setDefault(new Widgets());
+    Components.setDefault(new Components());
     DataTypes.setDefault(new DataTypes());
   }
 
@@ -65,11 +66,12 @@ public class WidgetSaverTest extends ApplicationTest {
   }
 
   @Test
+  @Tag("NonJenkinsTest") // More info here: https://github.com/wpilibsuite/shuffleboard/issues/214
   public void loadSimpleWidget() throws Exception {
-    Widgets.getDefault().register(SimpleWidget.class);
+    Components.getDefault().register(SimpleWidget.class);
     String widgetJson = "{\n"
         + "\"_type\": \"Simple Widget\",\n"
-        + "\"_source\": \"example://All\",\n"
+        + "\"_source0\": \"example://All\",\n"
         + "\"min\": -1.0,\n"
         + "\"max\": 1.0,\n"
         + "\"blockIncrement\": 0.0625\n"

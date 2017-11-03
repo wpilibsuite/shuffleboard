@@ -3,7 +3,10 @@ package edu.wpi.first.shuffleboard.api.widget;
 import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 
+import javafx.beans.InvalidationListener;
 import javafx.beans.property.Property;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
@@ -14,7 +17,20 @@ import javafx.collections.ObservableList;
 public abstract class AbstractWidget implements Widget {
 
   protected final ObservableList<DataSource> sources = FXCollections.observableArrayList();
+
+  private final StringProperty title = new SimpleStringProperty(this, "title", "");
+
   private final ObservableList<Property<?>> properties = FXCollections.observableArrayList();
+
+  protected AbstractWidget() {
+    sources.addListener((InvalidationListener) __ -> {
+      if (sources.size() == 1) {
+        setTitle(sources.get(0).getName());
+      } else {
+        setTitle(getName() + " (" + sources.size() + " sources)");
+      }
+    });
+  }
 
   /**
    * Exports the given properties so other parts of the app can see the properties of this widget.
@@ -31,6 +47,11 @@ public abstract class AbstractWidget implements Widget {
         this.properties.add(property);
       }
     }
+  }
+
+  @Override
+  public StringProperty titleProperty() {
+    return title;
   }
 
   @Override

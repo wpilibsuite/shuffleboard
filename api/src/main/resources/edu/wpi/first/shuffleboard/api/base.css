@@ -18,6 +18,15 @@
 
 /*******************************************************************************
  *                                                                             *
+ * Widget pane                                                                 *
+ *                                                                             *
+ ******************************************************************************/
+.widget-pane {
+    -fx-grid-line-color: -swatch-light-gray;
+}
+
+/*******************************************************************************
+ *                                                                             *
  * Tab Pane                                                                    *
  *                                                                             *
  ******************************************************************************/
@@ -37,37 +46,37 @@
  * Dashboard Tabs                                                              *
  *                                                                             *
  ******************************************************************************/
-.dashboard-tabs .tab-label {
+.tab-label {
     -fx-font-size: 15px;
 }
 
-.dashboard-tabs .tab-header-area {
-    -fx-padding: 5px;
+.tab-header-area {
+    -fx-padding: 2px;
 }
 
-.dashboard-tabs .tab {
-    -fx-background-color: transparent;
-    -fx-border-color: white, -swatch-light-gray;
-    -fx-border-width: 1px 5px, 0px 4px;
-    -fx-padding: 4px 10px;
-    -fx-align: center;
-}
-
-.dashboard-tabs .tab .tab-close-button {
-    -fx-padding: 0 0 0 10px;
-}
-
-.dashboard-tabs .tab:hover {
+.tab:hover {
     -fx-cursor: hand;
 }
 
-.dashboard-tabs .tab:selected .focus-indicator {
-    -fx-border-color: TRANSPARENT;
+.dashboard-tabs .tab .label {
+    -fx-text-fill: white;
 }
 
-.dashboard-tabs .tab:selected {
-    -fx-background-color: base;
+.dashboard-tabs .tab .text-field {
+    -fx-text-fill: #DDDDDD;
+    -fx-highlight-fill: -swatch-200;
 }
+
+.tab {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-align: center;
+}
+
+.tab .tab-close-button {
+    -fx-padding: 0 0 0 10px;
+}
+
 
 /*******************************************************************************
  *                                                                             *
@@ -78,21 +87,37 @@
     -fx-font-size: 11pt;
 }
 
+.tile .toggle-switch {
+    -fx-font-size: 12pt;
+}
+
 .tile:selected {
     -fx-effect: dropshadow(gaussian, -swatch-500, 6, 0.1, 0, 4);
 }
 
 .tile-title-bar {
+    -fx-padding: 4px;
     -fx-background-color: linear-gradient(to bottom, -swatch-100, -swatch-200);
-}
-
-.tile-title-label {
     -fx-font-weight: bold;
-    -fx-font-size: 12pt;
+    -fx-font-size: 11pt;
 }
 
 .tile .property-sheet * {
     /* TODO figure out exactly what needs to be set */
+    -fx-background-color: transparent;
+}
+
+.layout-label {
+    -fx-padding: 0 12px 5px 12px;
+    -fx-font-size: 12px;
+}
+
+
+.layout-label * {
+    -fx-text-fill: #aaa;
+}
+
+.tile .scroll-pane, .tile .viewport {
     -fx-background-color: transparent;
 }
 
@@ -158,6 +183,10 @@
     -fx-pref-width: 1em;
 }
 
+.linear-indicator .range-bar {
+    -fx-background-color: -swatch-200;
+}
+
 .linear-indicator .low-thumb, .linear-indicator .high-thumb {
     -fx-background-radius: 0;
     -fx-border-radius: 0;
@@ -168,10 +197,50 @@
     -fx-background-color: transparent;
 }
 
+.linear-indicator-text {
+    -fx-text-fill: black;
+}
+
+.linear-indicator-text .text {
+    -fx-font-size: 9pt;
+}
+
 .voltage-view .range-bar {
     -fx-background-color: linear-gradient(to bottom, gold, derive(gold, -10%));
 }
 
 .voltage-view:vertical .range-bar {
     -fx-background-color: linear-gradient(to right, gold, derive(gold, -10%));
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Medusa gauges                                                               *
+ *                                                                             *
+ ******************************************************************************/
+.gauge {
+    -fx-needle-color: -swatch-500;
+    -fx-bar-color: -swatch-200;
+    -fx-bar-background-color: -swatch-light-gray;
+    -fx-tick-label-color: -fx-text-base-color;
+    -fx-tick-mark-color: black;
+    -fx-major-tick-color: #333;
+    -fx-minor-tick-color: #aaa;
+    -fx-medium-tick-color: #aaa;
+    -fx-knob-color: -swatch-light-gray;
+    -fx-unit-color: -fx-text-base-color;
+    -fx-value-color: -fx-text-base-color;
+    -fx-title-color: -fx-text-title-color;
+    -fx-subtitle-color: -fx-text-subtitle-color;
+    -fx-tick-mark-ring-visible: true;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Dialog pane                                                                 *
+ *                                                                             *
+ ******************************************************************************/
+.dialog-pane .content {
+    /* Bring the content to all edges */
+    -fx-padding: 0; /* 10 0 0 10 */
 }

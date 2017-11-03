@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.app.components;
 
+import edu.wpi.first.shuffleboard.api.components.IntegerField;
 import edu.wpi.first.shuffleboard.api.components.NumberField;
 import edu.wpi.first.shuffleboard.api.theme.Theme;
 import edu.wpi.first.shuffleboard.api.theme.Themes;
@@ -43,6 +44,9 @@ public class WidgetPropertySheet extends PropertySheet {
       public PropertyEditor<?> call(Item item) {
         if (item.getType() == String.class) {
           return new TextPropertyEditor(item);
+        }
+        if (item.getType() == Integer.class) {
+          return new IntegerPropertyEditor(item);
         }
         if (Number.class.isAssignableFrom(item.getType())) {
           return new NumberPropertyEditor(item);
@@ -143,6 +147,7 @@ public class WidgetPropertySheet extends PropertySheet {
 
   }
 
+
   private abstract static class AbstractEditor<T, C extends Control> extends AbstractPropertyEditor<T, C> {
 
     protected final BooleanProperty wait = new SimpleBooleanProperty(this, "wait", false);
@@ -152,7 +157,6 @@ public class WidgetPropertySheet extends PropertySheet {
     }
 
   }
-
 
   /**
    * A property editor for numbers. We use this instead of the one bundled with ControlsFX because
@@ -175,6 +179,24 @@ public class WidgetPropertySheet extends PropertySheet {
     }
 
   }
+
+  private static class IntegerPropertyEditor extends AbstractEditor<Integer, IntegerField> {
+
+    IntegerPropertyEditor(Item item) {
+      super(item, new IntegerField((Integer) item.getValue()));
+    }
+
+    @Override
+    protected ObservableValue<Integer> getObservableValue() {
+      return getEditor().numberProperty();
+    }
+
+    @Override
+    public void setValue(Integer value) {
+      getEditor().setNumber(value);
+    }
+  }
+
 
   private static class TextPropertyEditor extends AbstractEditor<String, TextField> {
 

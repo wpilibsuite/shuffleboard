@@ -1,6 +1,7 @@
 package edu.wpi.first.shuffleboard.api.sources;
 
 import edu.wpi.first.shuffleboard.api.sources.recording.TimestampedData;
+import edu.wpi.first.shuffleboard.api.util.FxUtils;
 
 import java.util.function.Function;
 
@@ -91,15 +92,28 @@ public class SourceType {
 
   /**
    * Reads a data point and passes it to all appropriate sources of this type.The default
-   * behavior is to do {
-   * nothing;
-   * }
-   * recordable subclasses <i > must </i > override this method.
+   * behavior is to do nothing; recordable subclasses <i> must </i> override this method.
    */
   public void read(TimestampedData recordedData) {
-    if (isRecordable) {
-      throw new AbstractMethodError("A recordable source type must implement this method");
-    }
+    FxUtils.runOnFxThread(() -> {
+      getAvailableSourceUris().add(recordedData.getSourceId());
+      getAvailableSources().put(recordedData.getSourceId(), recordedData.getData());
+    });
+  }
+
+  /**
+   * Connects sources of this type to the backing source interface.
+   */
+  public void connect() { // NOPMD empty method body
+    // Up to subclasses to implement
+  }
+
+  /**
+   * Disconnects sources of this type from the backing source interface. Sources may still be modified by users, but
+   * changes made when in this state should not affect the source interface.
+   */
+  public void disconnect() { // NOPMD empty method body
+    // Up to subclasses to implement
   }
 
   /**

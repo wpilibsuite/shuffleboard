@@ -6,10 +6,12 @@ import edu.wpi.first.shuffleboard.api.plugin.Plugin;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
 import edu.wpi.first.shuffleboard.api.sources.recording.serialization.Serializers;
 import edu.wpi.first.shuffleboard.api.theme.Themes;
+import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.api.widget.SingleSourceWidget;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
-import edu.wpi.first.shuffleboard.api.widget.Widgets;
 import edu.wpi.first.shuffleboard.app.sources.DestroyedSource;
+
+import com.google.common.collect.ImmutableSet;
 
 import java.io.File;
 import java.io.IOException;
@@ -154,12 +156,13 @@ public class PluginLoader {
     plugin.getDataTypes().forEach(DataTypes.getDefault()::register);
     plugin.getSourceTypes().forEach(SourceTypes.getDefault()::register);
     plugin.getTypeAdapters().forEach(Serializers::add);
-    plugin.getWidgets().forEach(Widgets.getDefault()::register);
-    plugin.getDefaultWidgets().forEach(Widgets.getDefault()::setDefaultWidget);
-    Widgets.getDefault().getActiveWidgets().stream()
+    plugin.getComponents().forEach(Components.getDefault()::register);
+    plugin.getDefaultComponents().forEach(Components.getDefault()::setDefaultComponent);
+
+    Components.getDefault().getActiveWidgets().stream()
         .filter(w -> w.getSources().stream().anyMatch(s -> s instanceof DestroyedSource))
         .filter(w -> {
-          return plugin.getWidgets().contains(w.getClass())
+          return plugin.getComponents().stream().anyMatch(t -> t.getType().equals(w.getClass()))
               || w.getSources().stream().anyMatch(s -> plugin.getDataTypes().contains(s.getDataType()))
               || w.getSources().stream().anyMatch(s -> plugin.getSourceTypes().contains(s.getType()));
         })
@@ -197,7 +200,7 @@ public class PluginLoader {
   @SuppressWarnings("unchecked")
   public void unload(Plugin plugin) {
     log.info("Unloading plugin " + plugin.fullIdString());
-    Widgets.getDefault().getActiveWidgets().stream()
+    Components.getDefault().getActiveWidgets().stream()
         .filter(w -> w.getSources().stream().anyMatch(s -> !(s instanceof DestroyedSource)))
         .filter(w -> {
           return w.getSources().stream().anyMatch(s -> plugin.getDataTypes().contains(s.getDataType()))
@@ -218,7 +221,7 @@ public class PluginLoader {
             });
           }
         });
-    plugin.getWidgets().forEach(Widgets.getDefault()::unregister);
+    plugin.getComponents().forEach(Components.getDefault()::unregister);
     plugin.getSourceTypes().forEach(SourceTypes.getDefault()::unregister);
     plugin.getTypeAdapters().forEach(Serializers::remove);
     plugin.getDataTypes().forEach(DataTypes.getDefault()::unregister);
@@ -237,4 +240,7 @@ public class PluginLoader {
     return knownPlugins;
   }
 
+  public ImmutableSet<Plugin> getLoadedPlugins() {
+    return ImmutableSet.copyOf(loadedPlugins);
+  }
 }

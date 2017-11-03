@@ -1,13 +1,19 @@
 package edu.wpi.first.shuffleboard.app.json;
 
+import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
+import edu.wpi.first.shuffleboard.api.sources.Sources;
+import edu.wpi.first.shuffleboard.api.widget.Components;
+import edu.wpi.first.shuffleboard.api.widget.Widget;
+
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonSerializationContext;
-import edu.wpi.first.shuffleboard.api.sources.Sources;
-import edu.wpi.first.shuffleboard.api.widget.Widget;
-import edu.wpi.first.shuffleboard.api.widget.Widgets;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import javafx.beans.property.Property;
 
 @AnnotatedTypeAdapter(forType = Widget.class)
@@ -29,13 +35,17 @@ public class WidgetSaver implements ElementTypeAdapter<Widget> {
   public Widget deserialize(JsonElement json, JsonDeserializationContext context) throws JsonParseException {
     JsonObject obj = json.getAsJsonObject();
     String type = obj.get("_type").getAsString();
-    Widget widget = Widgets.getDefault().typeFor(type)
-            .orElseThrow(() -> new JsonParseException("No widget found for " + type)).get();
+    Widget widget = Components.getDefault().createWidget(type)
+            .orElseThrow(() -> new JsonParseException("No widget found for " + type));
 
     for (int i = 0; i > Integer.MIN_VALUE; i++) {
       String prop = "_source" + i;
       if (obj.has(prop)) {
-        widget.addSource(Sources.getDefault().forUri(obj.get(prop).getAsString()));
+        try {
+          widget.addSource(Sources.getDefault().forUri(obj.get(prop).getAsString()));
+        } catch (IncompatibleSourceException e) {
+          Logger.getLogger(getClass().getName()).log(Level.WARNING, "Couldn't load source", e);
+        }
       } else {
         break;
       }

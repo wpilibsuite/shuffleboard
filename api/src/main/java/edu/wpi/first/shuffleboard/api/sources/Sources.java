@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.api.sources;
 
+import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.api.util.Registry;
 
 import java.util.HashMap;
@@ -9,6 +10,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Keeps track of all created data sources. This is primarily used for data recording and playback.
@@ -52,7 +54,7 @@ public class Sources extends Registry<DataSource> {
   }
 
   public DataSource<?> forUri(String uri) {
-    return computeIfAbsent(uri, () -> SourceTypes.getDefault().getDefault().forUri(uri));
+    return computeIfAbsent(uri, () -> SourceTypes.getDefault().forUri(uri));
   }
 
   @SuppressWarnings("unchecked") //NOPMD multiple occurrences of string literal
@@ -65,12 +67,9 @@ public class Sources extends Registry<DataSource> {
     return sources.computeIfAbsent(uri, __ -> sourceSupplier.get());
   }
 
-  public void disconnectAll() {
-    sources.forEach((__, source) -> source.disconnect());
-  }
-
-  public void connectAll() {
-    sources.forEach((__, source) -> source.connect());
+  public Stream<DataSource<?>> hierarchy(DataSource<?> source) {
+    return NetworkTableUtils.getHierarchy(source.getName()).stream()
+        .map(n -> source.getType().forUri(source.getType().toUri(n)));
   }
 
 }

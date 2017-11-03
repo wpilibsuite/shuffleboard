@@ -1,16 +1,19 @@
 package edu.wpi.first.shuffleboard.api.sources.recording;
 
+import edu.wpi.first.shuffleboard.api.DashboardMode;
 import edu.wpi.first.shuffleboard.api.data.DataType;
+import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
+import edu.wpi.first.shuffleboard.api.sources.SourceType;
+import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
+import edu.wpi.first.shuffleboard.api.sources.recording.serialization.Serializers;
 import edu.wpi.first.shuffleboard.api.util.Storage;
 import edu.wpi.first.shuffleboard.api.util.ThreadUtils;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.Locale;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
@@ -26,17 +29,23 @@ public final class Recorder {
 
   private static final Logger log = Logger.getLogger(Recorder.class.getName());
 
-  private static final DateTimeFormatter timeFormatter =
-      DateTimeFormatter.ofPattern("uuuu-MM-dd_HH:mm:ss", Locale.getDefault());
   private static final Recorder instance = new Recorder();
 
   private final BooleanProperty running = new SimpleBooleanProperty(this, "running", false);
   private Instant startTime = null;
   private Recording recording = null;
+  private File recordingFile;
 
   private Recorder() {
     // Save the recording at the start (get the initial values) and the stop
     running.addListener((__, wasRunning, isRunning) -> saveToDisk());
+    running.addListener((__, was, is) -> {
+      if (is) {
+        DashboardMode.setCurrentMode(DashboardMode.RECORDING);
+      } else {
+        DashboardMode.setCurrentMode(DashboardMode.NORMAL);
+      }
+    });
 
     // Save the recording every 2 seconds
     Executors.newSingleThreadScheduledExecutor(ThreadUtils::makeDaemonThread)
@@ -54,16 +63,15 @@ public final class Recorder {
       return;
     }
     try {
-      String file = String.format(Storage.RECORDING_FILE_FORMAT, createTimestamp());
+      Path file = Storage.createRecordingFilePath(startTime);
+      if (recordingFile == null) {
+        recordingFile = file.toFile();
+      }
       Serialization.saveRecording(recording, file);
       log.fine("Saved recording to " + file);
     } catch (IOException e) {
       throw new RuntimeException("Could not save the recording", e);
     }
-  }
-
-  private String createTimestamp() {
-    return timeFormatter.format(LocalDateTime.ofInstant(startTime, ZoneId.systemDefault()));
   }
 
   /**
@@ -79,6 +87,14 @@ public final class Recorder {
   public void start() {
     startTime = Instant.now();
     recording = new Recording();
+    // Record initial conditions
+    SourceTypes.getDefault().getItems().stream()
+        .map(SourceType::getAvailableSources)
+        .forEach(sources -> sources.forEach((id, value) -> {
+          DataTypes.getDefault().forJavaType(value.getClass())
+              .map(t -> new TimestampedData(id, t, value, 0L))
+              .ifPresent(recording::append);
+        }));
     setRunning(true);
   }
 
@@ -86,6 +102,8 @@ public final class Recorder {
    * Stops recording data.
    */
   public void stop() {
+    Serializers.cleanUpAll();
+    recordingFile = null;
     setRunning(false);
   }
 
@@ -115,7 +133,10 @@ public final class Recorder {
     if (!isRunning()) {
       return;
     }
-    recording.append(new TimestampedData(id, dataType, value, timestamp()));
+    // Store the ID in the common string pool
+    // There can easily tens or hundreds of thousands of instances, so storing it in the pool can cut memory
+    // use by megabytes per data point
+    recording.append(new TimestampedData(id.intern(), dataType, value, timestamp()));
   }
 
   private long timestamp() {
@@ -134,4 +155,7 @@ public final class Recorder {
     this.running.set(running);
   }
 
+  public File getRecordingFile() {
+    return recordingFile;
+  }
 }

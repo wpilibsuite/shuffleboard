@@ -9,8 +9,10 @@ import edu.wpi.first.shuffleboard.api.data.types.NoneType;
 import edu.wpi.first.shuffleboard.api.data.types.UnknownType;
 import edu.wpi.first.shuffleboard.api.util.Registry;
 import edu.wpi.first.shuffleboard.api.util.TestUtils;
+import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
@@ -138,8 +140,7 @@ public class DataTypes extends Registry<DataType> {
   public Set<DataType> forJavaTypes(Class<?>... types) {
     return Stream.of(types)
         .map(this::forJavaType)
-        .filter(Optional::isPresent)
-        .map(Optional::get)
+        .flatMap(TypeUtils.optionalStream())
         .collect(Collectors.toSet());
   }
 
@@ -238,8 +239,12 @@ public class DataTypes extends Registry<DataType> {
   public Set<DataType> forTypes(Class<? extends DataType>... types) {
     return Arrays.stream(types)
         .map(this::forType)
-        .filter(Optional::isPresent)
-        .map(Optional::get)
+        .flatMap(TypeUtils.optionalStream())
         .collect(Collectors.toSet());
   }
+
+  public static boolean isCompatible(DataType type, Collection<? extends DataType> types) {
+    return All.equals(type) || types.contains(All) || types.contains(type);
+  }
+
 }

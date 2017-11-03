@@ -1,8 +1,10 @@
 package edu.wpi.first.shuffleboard.app.dnd;
 
-import edu.wpi.first.shuffleboard.app.components.TilePane;
-import edu.wpi.first.shuffleboard.app.components.WidgetTile;
+import edu.wpi.first.shuffleboard.api.util.RoundingMode;
 import edu.wpi.first.shuffleboard.api.widget.TileSize;
+import edu.wpi.first.shuffleboard.app.components.Tile;
+import edu.wpi.first.shuffleboard.app.components.WidgetPane;
+import edu.wpi.first.shuffleboard.app.components.WidgetTile;
 
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -11,6 +13,7 @@ import javafx.scene.Cursor;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Pane;
 
 /**
  * {@link TileDragResizer} can be used to add mouse listeners to a {@link WidgetTile} and make it
@@ -21,15 +24,15 @@ public final class TileDragResizer {
   /**
    * Keep track of resizers to avoid creating more than one for the same tile.
    */
-  private static final Map<WidgetTile, TileDragResizer> resizers = new WeakHashMap<>();
+  private static final Map<Tile, TileDragResizer> resizers = new WeakHashMap<>();
 
   /**
    * The margin around the control that a user can click in to start resizing the tile.
    */
   private static final int RESIZE_MARGIN = 10;
 
-  private final TilePane tilePane;
-  private final WidgetTile tile;
+  private final WidgetPane tilePane;
+  private final Tile tile;
 
   private double lastX;
   private double lastY;
@@ -69,7 +72,7 @@ public final class TileDragResizer {
     }
   }
 
-  private TileDragResizer(TilePane tilePane, WidgetTile tile) {
+  private TileDragResizer(WidgetPane tilePane, Tile tile) {
     this.tilePane = tilePane;
     this.tile = tile;
     tile.addEventHandler(MouseEvent.MOUSE_PRESSED, this::mousePressed);
@@ -85,7 +88,7 @@ public final class TileDragResizer {
    * @param tilePane the pane containing the tile to make resizable
    * @param tile     the tile to make resizable
    */
-  public static TileDragResizer makeResizable(TilePane tilePane, WidgetTile tile) {
+  public static TileDragResizer makeResizable(WidgetPane tilePane, Tile tile) {
     return resizers.computeIfAbsent(tile, __ -> new TileDragResizer(tilePane, tile));
   }
 
@@ -106,14 +109,22 @@ public final class TileDragResizer {
     resizeLocation = ResizeLocation.NONE;
 
     // round size to nearest tile size
-    final int tileWidth = tilePane.roundWidthToNearestTile(tile.getMinWidth());
-    final int tileHeight = tilePane.roundHeightToNearestTile(tile.getMinHeight());
+    final int tileWidth = tilePane.roundWidthToNearestTile(tile.getWidth());
+    final int tileHeight = tilePane.roundHeightToNearestTile(tile.getHeight());
 
     // limit size to prevent exceeding the bounds of the grid
-    final int boundedWidth = Math.min(tilePane.getNumColumns() - GridPane.getColumnIndex(tile),
-                                      tileWidth);
-    final int boundedHeight = Math.min(tilePane.getNumRows() - GridPane.getRowIndex(tile),
-                                       tileHeight);
+    int boundedWidth = Math.min(tilePane.getNumColumns() - GridPane.getColumnIndex(tile),
+        tileWidth);
+    int boundedHeight = Math.min(tilePane.getNumRows() - GridPane.getRowIndex(tile),
+        tileHeight);
+
+    // Make sure the tile never gets smaller than it's content minimum size, otherwise weird clipping occurs
+    Pane view = tile.getContent().getView();
+    int minWidth = tilePane.roundWidthToNearestTile(view.getMinWidth(), RoundingMode.UP);
+    int minHeight = tilePane.roundHeightToNearestTile(view.getMinHeight(), RoundingMode.UP);
+
+    boundedWidth = Math.max(minWidth, boundedWidth);
+    boundedHeight = Math.max(minHeight, boundedHeight);
 
     tile.setSize(new TileSize(boundedWidth, boundedHeight));
     GridPane.setColumnSpan(tile, boundedWidth);
@@ -190,11 +201,15 @@ public final class TileDragResizer {
     final double newHeight = tile.getMinHeight() + (mouseY - lastY);
 
     if (resizeLocation.isHorizontal && newWidth >= tilePane.getTileSize()) {
-      tile.setMinWidth(newWidth);
+      if (tile.getContent().getView().getMinWidth() < newWidth) {
+        tile.setMinWidth(newWidth);
+      }
       tile.setMaxWidth(newWidth);
     }
     if (resizeLocation.isVertical && newHeight >= tilePane.getTileSize()) {
-      tile.setMinHeight(newHeight);
+      if (tile.getContent().getView().getMinHeight() < newHeight) {
+        tile.setMinHeight(newHeight);
+      }
       tile.setMaxHeight(newHeight);
     }
 
