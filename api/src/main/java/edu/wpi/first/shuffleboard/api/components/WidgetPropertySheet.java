@@ -28,7 +28,7 @@ import javafx.util.StringConverter;
 public class WidgetPropertySheet extends PropertySheet {
 
   /**
-   * Creates an empry property sheet.
+   * Creates an empty property sheet.
    */
   public WidgetPropertySheet() {
     super();

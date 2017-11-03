@@ -58,15 +58,7 @@ public class RobotPreferencesWidget extends SimpleAnnotatedWidget<RobotPreferenc
         if (NetworkTableUtils.isMetadata(key)) {
           return;
         }
-        if (wrapperProperties.containsKey(key)) {
-          // Already created a wrapper, update it
-          wrapperProperties.get(key).set(value);
-        } else {
-          // Create a new wrapper property
-          SimpleObjectProperty<Object> wrapper = new SimpleObjectProperty<>(this, key, value);
-          wrapper.addListener((o, p, newValue) -> setData(getData().put(key, newValue)));
-          wrapperProperties.put(key, wrapper);
-        }
+        wrapperProperties.computeIfAbsent(key, k -> generateWrapper(k, value)).setValue(value);
       });
     });
 
@@ -85,6 +77,12 @@ public class RobotPreferencesWidget extends SimpleAnnotatedWidget<RobotPreferenc
   @Override
   public Pane getView() {
     return root;
+  }
+
+  private <T> SimpleObjectProperty<T> generateWrapper(String key, T initialValue) {
+    SimpleObjectProperty<T> wrapper = new SimpleObjectProperty<>(this, key, initialValue);
+    wrapper.addListener((__, prev, value) -> setData(dataOrDefault.get().put(key, value)));
+    return wrapper;
   }
 
 }
