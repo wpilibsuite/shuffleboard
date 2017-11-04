@@ -96,6 +96,11 @@ public class WidgetPaneController {
         pane.tileMatching(tile -> tile.getId().equals(data.getId()))
             .ifPresent(tile -> previewTile(tile, point.subtract(data.getDragPoint())));
       } else if (isSource) {
+        if (!pane.isOpen(point, new TileSize(1, 1), n -> false)) {
+          // Dragged a source onto a tile, let the tile handle the drag and drop
+          pane.setHighlight(false);
+          return;
+        }
         SourceEntry entry = (SourceEntry) event.getDragboard().getContent(DataFormats.source);
         DataSource source = entry.get();
         Optional<String> componentName = Components.getDefault().pickComponentNameFor(source.getDataType());
