@@ -162,7 +162,6 @@ public class GraphWidget implements AnnotatedWidget {
   private void updateSeries(XYChart.Series<Number, Number> series, long now, double newData) {
     long elapsed = now - Time.getStartTime();
     XYChart.Data<Number, Number> point = new XYChart.Data<>(elapsed, newData);
-    realData.computeIfAbsent(series, __ -> FXCollections.observableArrayList());
     ObservableList<XYChart.Data<Number, Number>> dataList = series.getData();
     if (!dataList.isEmpty()) {
       // Make the graph a square wave
@@ -174,6 +173,7 @@ public class GraphWidget implements AnnotatedWidget {
       }
     }
     dataList.add(point);
+    realData.computeIfAbsent(series, __ -> FXCollections.observableArrayList()).add(point);
     if (!chart.getData().contains(series)) {
       chart.getData().add(series);
     }
