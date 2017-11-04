@@ -7,6 +7,7 @@
            xmlns:fx="http://javafx.com/fxml"
            fx:controller="edu.wpi.first.shuffleboard.plugin.base.widget.GraphWidget"
            prefWidth="256" prefHeight="256"
+           minWidth="200" minHeight="172"
            fx:id="root">
     <AreaChart fx:id="chart" animated="false" createSymbols="false">
         <xAxis>
