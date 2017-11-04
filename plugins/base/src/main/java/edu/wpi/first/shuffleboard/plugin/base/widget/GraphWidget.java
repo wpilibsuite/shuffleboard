@@ -2,6 +2,7 @@ package edu.wpi.first.shuffleboard.plugin.base.widget;
 
 import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
+import edu.wpi.first.shuffleboard.api.util.AlphanumComparator;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.Time;
 import edu.wpi.first.shuffleboard.api.widget.AnnotatedWidget;
@@ -11,14 +12,19 @@ import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 import com.google.common.collect.ImmutableList;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.Property;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -53,10 +59,11 @@ public class GraphWidget implements AnnotatedWidget {
   private final Map<DataSource<double[]>, List<XYChart.Series<Number, Number>>> arraySeriesMap = new HashMap<>();
   private final DoubleProperty visibleTime = new SimpleDoubleProperty(this, "Visible time", 30);
 
+  private final Map<XYChart.Series<Number, Number>, BooleanProperty> visibleSeries = new HashMap<>();
   private final Map<XYChart.Series<Number, Number>, ObservableList<XYChart.Data<Number, Number>>> realData
       = new HashMap<>();
 
-  private final ChangeListener<? extends Number> numberChangeLister = (property, oldNumber, newNumber) -> {
+  private final ChangeListener<Number> numberChangeLister = (property, oldNumber, newNumber) -> {
     final DataSource<Number> source = sourceFor(property);
     updateFromNumberSource(source);
   };
@@ -66,18 +73,34 @@ public class GraphWidget implements AnnotatedWidget {
     updateFromArraySource(source);
   };
 
+  private final Function<XYChart.Series<Number, Number>, BooleanProperty> createVisibleProperty = s -> {
+    SimpleBooleanProperty visible = new SimpleBooleanProperty(this, s.getName() + " visible", true);
+    visible.addListener((__, was, is) -> {
+      if (is) {
+        if (!chart.getData().contains(s)) {
+          chart.getData().add(s);
+        }
+      } else {
+        chart.getData().remove(s);
+      }
+    });
+    return visible;
+  };
+
   @FXML
   private void initialize() {
     chart.legendVisibleProperty().bind(
-        Bindings.createBooleanBinding(() -> chart.getData().size() > 1, chart.getData()));
+        Bindings.createBooleanBinding(() -> sources.size() > 1, sources));
     sources.addListener((ListChangeListener<DataSource>) c -> {
       while (c.next()) {
         if (c.wasAdded()) {
           c.getAddedSubList().forEach(source -> {
             if (source.getData() instanceof Number) {
               source.dataProperty().addListener(numberChangeLister);
+              numberChangeLister.changed(source.dataProperty(), null, (Number) source.getData());
             } else if (source.getData() instanceof double[]) {
               source.dataProperty().addListener(numberArrayChangeListener);
+              numberArrayChangeListener.changed(source.dataProperty(), null, (double[]) source.getData());
             } else {
               throw new IncompatibleSourceException(getDataTypes(), source.getDataType());
             }
@@ -174,7 +197,8 @@ public class GraphWidget implements AnnotatedWidget {
     }
     dataList.add(point);
     realData.computeIfAbsent(series, __ -> FXCollections.observableArrayList()).add(point);
-    if (!chart.getData().contains(series)) {
+    if (!chart.getData().contains(series)
+        && Optional.ofNullable(visibleSeries.get(series)).map(Property::getValue).orElse(true)) {
       chart.getData().add(series);
     }
     updateBounds(elapsed);
@@ -185,6 +209,8 @@ public class GraphWidget implements AnnotatedWidget {
       XYChart.Series<Number, Number> series = new XYChart.Series<>();
       series.setName(source.getName());
       numberSeriesMap.put(source, series);
+      realData.put(series, FXCollections.observableArrayList());
+      visibleSeries.computeIfAbsent(series, createVisibleProperty);
     }
     return numberSeriesMap.get(source);
   }
@@ -194,13 +220,17 @@ public class GraphWidget implements AnnotatedWidget {
     final double[] data = source.getData();
     if (data.length < series.size()) {
       while (series.size() != data.length) {
-        series.remove(series.size() - 1);
+        XYChart.Series<Number, Number> removed = series.remove(series.size() - 1);
+        realData.remove(removed);
+        visibleSeries.remove(removed);
       }
     } else if (data.length > series.size()) {
       for (int i = series.size(); i < data.length; i++) {
         XYChart.Series<Number, Number> newSeries = new XYChart.Series<>();
         newSeries.setName(source.getName() + "[" + i + "]"); // eg "array[0]", "array[1]", etc
         series.add(newSeries);
+        realData.put(newSeries, FXCollections.observableArrayList());
+        visibleSeries.computeIfAbsent(newSeries, createVisibleProperty);
       }
     }
     return series;
@@ -241,9 +271,13 @@ public class GraphWidget implements AnnotatedWidget {
 
   @Override
   public List<Property<?>> getProperties() {
-    return ImmutableList.of(
-        visibleTime
-    );
+    return ImmutableList.<Property<?>>builder()
+        .add(visibleTime)
+        .addAll(visibleSeries.values()
+            .stream()
+            .sorted(Comparator.comparing(Property::getName, AlphanumComparator.INSTANCE))
+            .collect(Collectors.toList()))
+        .build();
   }
 
   public double getVisibleTime() {
