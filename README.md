@@ -20,6 +20,7 @@ To run shuffleboard use the command `./gradlew :app:run`.
 ## Building
 
 To build the APIs and utility classes used in plugin creation, use the command ./gradlew :api:shadowJar
+
 To build the Shuffleboard application, use the command ./gradlew :app:shadowJar
 
 ### Requirements
