@@ -10,7 +10,7 @@ import java.util.function.Function;
 public class SendableChooserType extends ComplexDataType<SendableChooserData> {
 
   public SendableChooserType() {
-    super("SendableChooser", SendableChooserData.class);
+    super("String Chooser", SendableChooserData.class);
   }
 
   @Override
