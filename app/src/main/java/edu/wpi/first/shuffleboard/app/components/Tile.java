@@ -58,7 +58,13 @@ public class Tile<T extends Component> extends BorderPane {
     contentView.addListener((__, oldContent, newContent) -> {
       getContentPane()
           .map(Pane::getChildren)
-          .ifPresent(c -> c.setAll(newContent));
+          .ifPresent(c -> {
+            if (newContent == null) {
+              c.clear();
+            } else {
+              c.setAll(newContent);
+            }
+          });
     });
 
     contentTitle = EasyBind.monadic(content)
