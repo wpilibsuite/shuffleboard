@@ -6,6 +6,7 @@ import edu.wpi.first.shuffleboard.api.util.UnitStringConverter;
 import edu.wpi.first.shuffleboard.api.widget.AnnotatedWidget;
 import edu.wpi.first.shuffleboard.api.widget.Description;
 import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
+import edu.wpi.first.shuffleboard.api.widget.SingleSourceWidget;
 import edu.wpi.first.shuffleboard.plugin.base.data.AnalogInputData;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.AnalogInputType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.NumberType;
@@ -21,7 +22,7 @@ import javafx.scene.layout.Pane;
 
 @Description(name = "Voltage View", dataTypes = {NumberType.class, AnalogInputType.class})
 @ParametrizedController("VoltageView.fxml")
-public class VoltageViewWidget extends AnnotatedWidget {
+public class VoltageViewWidget extends SingleSourceWidget implements AnnotatedWidget {
 
   private static final Logger log = Logger.getLogger(VoltageViewWidget.class.getName());
 

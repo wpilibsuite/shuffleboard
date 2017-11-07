@@ -1,7 +1,6 @@
 package edu.wpi.first.shuffleboard.api.widget;
 
 import edu.wpi.first.shuffleboard.api.data.DataType;
-import edu.wpi.first.shuffleboard.api.sources.DataSource;
 
 import javafx.beans.property.Property;
 
@@ -29,11 +28,6 @@ public interface SingleTypeWidget<T> extends Widget {
    */
   default void setData(T data) {
     dataProperty().setValue(data);
-  }
-
-  @Override
-  default DataSource<T> getSource() {
-    return sourceProperty().getValue();
   }
 
 }

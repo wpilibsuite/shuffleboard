@@ -34,6 +34,8 @@ public class Tile<T extends Component> extends BorderPane {
   private final Property<TileSize> size = new SimpleObjectProperty<>(this, "size", null);
   private final BooleanProperty selected = new PseudoClassProperty(this, "selected");
 
+  private MonadicBinding<String> contentTitle; // NOPMD local variable
+
   /**
    * Creates an empty tile. The content and size must be set with {@link #setContent(T)} and
    * {@link #setSize(TileSize)}.
@@ -56,8 +58,18 @@ public class Tile<T extends Component> extends BorderPane {
     contentView.addListener((__, oldContent, newContent) -> {
       getContentPane()
           .map(Pane::getChildren)
-          .ifPresent(c -> c.setAll(newContent));
+          .ifPresent(c -> {
+            if (newContent == null) {
+              c.clear();
+            } else {
+              c.setAll(newContent);
+            }
+          });
     });
+
+    contentTitle = EasyBind.monadic(content)
+        .selectProperty(Component::titleProperty);
+    contentTitle.addListener((__, prev, cur) -> ((EditableLabel) lookup("#titleLabel")).setText(cur));
   }
 
   private Optional<Pane> getContentPane() {

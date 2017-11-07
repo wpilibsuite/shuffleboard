@@ -1,8 +1,8 @@
 package edu.wpi.first.shuffleboard.api.widget;
 
-import com.google.common.collect.ImmutableSet;
-
 import edu.wpi.first.shuffleboard.api.data.DataType;
+
+import com.google.common.collect.ImmutableSet;
 
 import java.util.Set;
 import java.util.function.Supplier;
@@ -15,6 +15,9 @@ import java.util.function.Supplier;
  * more useful API and additional metadata.
  */
 public interface ComponentType<C extends Component> extends Supplier<C> {
+
+  Class<C> getType();
+
   /**
    * Get the name of the component (ex: "Number Slider").
    */

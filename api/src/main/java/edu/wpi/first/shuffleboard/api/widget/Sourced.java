@@ -3,23 +3,25 @@ package edu.wpi.first.shuffleboard.api.widget;
 import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 
+import javafx.collections.ObservableList;
+
 /**
  * Common interface for objects that have data sources.
  */
 public interface Sourced {
 
   /**
-   * Gets the data source for this objects data.
+   * Adds a source.
+   *
+   * @param source the source to add
+   *
+   * @throws IncompatibleSourceException if the source is not compatible with this object
    */
-  DataSource<?> getSource();
+  void addSource(DataSource source) throws IncompatibleSourceException;
 
   /**
-   * Sets the source to use for this objects data.
-   *
-   * @param source the source to use
-   *
-   * @throws IncompatibleSourceException if the source is not compatible (for example, it has an unsupported data type)
+   * Gets an observable list of the sources for this object.
    */
-  void setSource(DataSource<?> source) throws IncompatibleSourceException;
+  ObservableList<DataSource> getSources();
 
 }

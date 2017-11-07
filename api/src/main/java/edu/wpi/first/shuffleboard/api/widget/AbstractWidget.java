@@ -1,31 +1,35 @@
 package edu.wpi.first.shuffleboard.api.widget;
 
-import edu.wpi.first.shuffleboard.api.data.DataTypes;
-import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
+import edu.wpi.first.shuffleboard.api.sources.DataSource;
 
+import javafx.beans.InvalidationListener;
 import javafx.beans.property.Property;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
 /**
- * A partial implementation of {@link Widget} that implements the source and property methods. This also has a method
+ * A partial implementation of {@link Widget} that implements property methods. This also has a method
  * {@link #exportProperties(Property[]) exportProperties} that allows subclasses to easily add properties.
  */
 public abstract class AbstractWidget implements Widget {
 
-  protected final Property<DataSource> source
-      = new SimpleObjectProperty<>(this, "source", DataSource.none());
+  protected final ObservableList<DataSource> sources = FXCollections.observableArrayList();
 
-  private final StringProperty title = new SimpleStringProperty(this, "title", getSource().getName());
+  private final StringProperty title = new SimpleStringProperty(this, "title", "");
 
   private final ObservableList<Property<?>> properties = FXCollections.observableArrayList();
 
   protected AbstractWidget() {
-    sourceProperty().addListener(__ -> setTitle(getSource().getName()));
+    sources.addListener((InvalidationListener) __ -> {
+      if (sources.size() == 1) {
+        setTitle(sources.get(0).getName());
+      } else {
+        setTitle(getName() + " (" + sources.size() + " sources)");
+      }
+    });
   }
 
   /**
@@ -56,22 +60,16 @@ public abstract class AbstractWidget implements Widget {
   }
 
   @Override
-  public Property<DataSource> sourceProperty() {
-    return source;
+  public final ObservableList<DataSource> getSources() {
+    return sources;
   }
 
   @Override
-  public final DataSource getSource() {
-    return source.getValue();
-  }
-
-  @Override
-  public final void setSource(DataSource source) throws IncompatibleSourceException {
-    if (getDataTypes().contains(DataTypes.All) || getDataTypes().contains(source.getDataType())) {
-      this.source.setValue(source);
-    } else {
+  public void addSource(DataSource source) throws IncompatibleSourceException {
+    if (!getDataTypes().contains(source.getDataType())) {
       throw new IncompatibleSourceException(getDataTypes(), source.getDataType());
     }
+    sources.add(source);
   }
 
 }

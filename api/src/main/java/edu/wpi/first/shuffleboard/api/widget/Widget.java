@@ -56,8 +56,6 @@ public interface Widget extends Component, Sourced {
    */
   Set<DataType> getDataTypes();
 
-  Property<DataSource> sourceProperty();
-
   /**
    * Gets the user-configurable properties for this widget.
    */

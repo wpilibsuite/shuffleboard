@@ -237,8 +237,9 @@ public class DashboardTab extends Tab implements HandledTab, Populatable {
     return getWidgetPane().getTiles().stream()
         .map(Tile::getContent)
         .flatMap(TypeUtils.castStream(Sourced.class))
-        .anyMatch(s -> s.getSource().equals(source)
-            || (source.getId().startsWith(s.getSource().getId()) && !(s instanceof ComponentContainer)));
+        .anyMatch(s -> s.getSources().contains(source)
+            || (s.getSources().stream().map(DataSource::getId).anyMatch(source.getId()::startsWith)
+            && !(s instanceof ComponentContainer)));
   }
 
   @Override
