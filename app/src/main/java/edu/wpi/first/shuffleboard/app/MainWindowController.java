@@ -16,6 +16,7 @@ import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.Storage;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 import edu.wpi.first.shuffleboard.api.widget.Components;
+import edu.wpi.first.shuffleboard.app.components.DashboardTab;
 import edu.wpi.first.shuffleboard.app.components.DashboardTabPane;
 import edu.wpi.first.shuffleboard.app.components.WidgetGallery;
 import edu.wpi.first.shuffleboard.app.components.WidgetPropertySheet;
@@ -75,6 +76,7 @@ import static edu.wpi.first.shuffleboard.api.components.SourceTreeTable.branches
 /**
  * Controller for the main UI window.
  */
+@SuppressWarnings("PMD.GodClass") // TODO refactor this class
 public class MainWindowController {
 
   private static final Logger log = Logger.getLogger(MainWindowController.class.getName());
@@ -231,9 +233,9 @@ public class MainWindowController {
     sourcesAccordion.getPanes().removeAll(sourcePanes.removeAll(plugin));
     // Remove widgets
     dashboard.getTabs().stream()
-        .filter(tab -> tab instanceof DashboardTabPane.DashboardTab)
-        .map(tab -> (DashboardTabPane.DashboardTab) tab)
-        .map(DashboardTabPane.DashboardTab::getWidgetPane)
+        .filter(tab -> tab instanceof DashboardTab)
+        .map(tab -> (DashboardTab) tab)
+        .map(DashboardTab::getWidgetPane)
         .forEach(pane ->
           pane.getTiles().stream()
               .filter(tile -> plugin.getComponents().stream()
@@ -285,6 +287,7 @@ public class MainWindowController {
   public void setDashboard(DashboardTabPane dashboard) {
     dashboard.setId("dashboard");
     centerSplitPane.getItems().remove(this.dashboard);
+    this.dashboard.getTabs().clear(); // Lets tabs get cleaned up (e.g. cancelling deferred autopopulation calls)
     this.dashboard = dashboard;
     centerSplitPane.getItems().add(dashboard);
   }
@@ -342,6 +345,7 @@ public class MainWindowController {
     }
 
     currentFile = selected;
+    AppPreferences.getInstance().setSaveFile(currentFile);
   }
 
 
@@ -356,13 +360,20 @@ public class MainWindowController {
         new FileChooser.ExtensionFilter("SmartDashboard Save File (.json)", "*.json"));
 
     final File selected = chooser.showOpenDialog(root.getScene().getWindow());
+    load(selected);
+  }
 
-    if (selected == null) {
+  /**
+   * Loads a saved dashboard layout.
+   *
+   * @param saveFile the save file to load
+   */
+  public void load(File saveFile) {
+    if (saveFile == null) {
       return;
     }
-
     try {
-      Reader reader = Files.newReader(selected, Charset.forName("UTF-8"));
+      Reader reader = Files.newReader(saveFile, Charset.forName("UTF-8"));
 
       DashboardData dashboardData = JsonBuilder.forSaveFile().fromJson(reader, DashboardData.class);
       setDashboard(dashboardData.getTabPane());
@@ -372,7 +383,8 @@ public class MainWindowController {
       return;
     }
 
-    currentFile = selected;
+    currentFile = saveFile;
+    AppPreferences.getInstance().setSaveFile(currentFile);
   }
 
   /**
@@ -451,14 +463,14 @@ public class MainWindowController {
   @FXML
   private void showCurrentTabPrefs() {
     Tab currentTab = dashboard.getSelectionModel().getSelectedItem();
-    if (currentTab instanceof DashboardTabPane.DashboardTab) {
-      ((DashboardTabPane.DashboardTab) currentTab).showPrefsDialog();
+    if (currentTab instanceof DashboardTab) {
+      ((DashboardTab) currentTab).showPrefsDialog();
     }
   }
 
   @FXML
   private void newTab() {
-    DashboardTabPane.DashboardTab newTab = dashboard.addNewTab();
+    DashboardTab newTab = dashboard.addNewTab();
     dashboard.getSelectionModel().select(newTab);
   }
 
