@@ -40,6 +40,7 @@ import edu.wpi.first.shuffleboard.plugin.base.widget.BooleanBox;
 import edu.wpi.first.shuffleboard.plugin.base.widget.ComboBoxChooser;
 import edu.wpi.first.shuffleboard.plugin.base.widget.CommandWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.EncoderWidget;
+import edu.wpi.first.shuffleboard.plugin.base.widget.GraphWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.GyroWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.NumberBarWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.NumberSlider;
@@ -98,6 +99,7 @@ public class BasePlugin extends Plugin {
         WidgetType.forAnnotatedWidget(NumberSlider.class),
         WidgetType.forAnnotatedWidget(NumberBarWidget.class),
         WidgetType.forAnnotatedWidget(SimpleDialWidget.class),
+        WidgetType.forAnnotatedWidget(GraphWidget.class),
         WidgetType.forAnnotatedWidget(TextView.class),
         WidgetType.forAnnotatedWidget(VoltageViewWidget.class),
         WidgetType.forAnnotatedWidget(PowerDistributionPanelWidget.class),

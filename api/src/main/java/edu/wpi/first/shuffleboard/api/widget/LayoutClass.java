@@ -32,4 +32,10 @@ public class LayoutClass<T extends Layout> implements LayoutType {
       }
     });
   }
+
+  @Override
+  public Class<T> getType() {
+    return layoutClass;
+  }
+
 }

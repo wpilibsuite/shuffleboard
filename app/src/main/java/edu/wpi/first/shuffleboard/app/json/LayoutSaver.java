@@ -1,5 +1,14 @@
 package edu.wpi.first.shuffleboard.app.json;
 
+import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
+import edu.wpi.first.shuffleboard.api.sources.DataSource;
+import edu.wpi.first.shuffleboard.api.sources.Sources;
+import edu.wpi.first.shuffleboard.api.util.TypeUtils;
+import edu.wpi.first.shuffleboard.api.widget.Component;
+import edu.wpi.first.shuffleboard.api.widget.Components;
+import edu.wpi.first.shuffleboard.api.widget.Layout;
+import edu.wpi.first.shuffleboard.api.widget.Sourced;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonElement;
@@ -7,17 +16,13 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonSerializationContext;
 
-import edu.wpi.first.shuffleboard.api.sources.DataSource;
-import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
-import edu.wpi.first.shuffleboard.api.widget.Layout;
-import edu.wpi.first.shuffleboard.api.util.TypeUtils;
-import edu.wpi.first.shuffleboard.api.widget.Component;
-import edu.wpi.first.shuffleboard.api.widget.Components;
-import edu.wpi.first.shuffleboard.api.widget.Sourced;
-
 import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javafx.collections.ObservableList;
 
 @AnnotatedTypeAdapter(forType = Layout.class)
 public class LayoutSaver implements ElementTypeAdapter<Layout> {
@@ -27,7 +32,10 @@ public class LayoutSaver implements ElementTypeAdapter<Layout> {
     object.addProperty("_type", src.getName());
 
     if (src instanceof Sourced) {
-      object.addProperty("_source", ((Sourced) src).getSource().getId());
+      ObservableList<DataSource> sources = ((Sourced) src).getSources();
+      for (int i = 0; i < sources.size(); i++) {
+        object.addProperty("_source" + i, sources.get(i).getId());
+      }
     }
 
     Collection<Component> components = src.getChildren();
@@ -40,16 +48,26 @@ public class LayoutSaver implements ElementTypeAdapter<Layout> {
 
   @Override
   public Layout deserialize(JsonElement json, JsonDeserializationContext context) throws JsonParseException {
-    String name = json.getAsJsonObject().get("_type").getAsString();
-    JsonArray children = json.getAsJsonObject().get("_children").getAsJsonArray();
+    JsonObject obj = json.getAsJsonObject();
+    String name = obj.get("_type").getAsString();
+    JsonArray children = obj.get("_children").getAsJsonArray();
 
     Layout layout = Components.getDefault().createComponent(name).flatMap(TypeUtils.optionalCast(Layout.class))
         .orElseThrow(() -> new JsonParseException("Can't find layout name " + name));
 
     if (layout instanceof Sourced) {
-      String sourceUri = json.getAsJsonObject().get("_source").getAsString();
-      DataSource<?> source = SourceTypes.getDefault().forUri(sourceUri);
-      ((Sourced) layout).setSource(source);
+      for (int i = 0; i > Integer.MIN_VALUE; i++) {
+        String prop = "_source" + i;
+        if (obj.has(prop)) {
+          try {
+            ((Sourced) layout).addSource(Sources.getDefault().forUri(obj.get(prop).getAsString()));
+          } catch (IncompatibleSourceException e) {
+            Logger.getLogger(getClass().getName()).log(Level.WARNING, "Couldn't load source", e);
+          }
+        } else {
+          break;
+        }
+      }
     }
 
     children.forEach(child -> {

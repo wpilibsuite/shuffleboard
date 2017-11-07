@@ -15,12 +15,6 @@ import edu.wpi.first.shuffleboard.api.widget.Widget;
 import edu.wpi.first.shuffleboard.app.Autopopulator;
 import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
 
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
 import org.fxmisc.easybind.EasyBind;
 
 import java.time.Duration;
@@ -37,6 +31,12 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.ListChangeListener;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import javafx.scene.layout.BorderPane;
 
 import static edu.wpi.first.shuffleboard.api.util.TypeUtils.optionalCast;
@@ -318,8 +318,9 @@ public class DashboardTabPane extends TabPane {
       return getWidgetPane().getTiles().stream()
           .map(Tile::getContent)
           .flatMap(TypeUtils.castStream(Sourced.class))
-          .anyMatch(s -> s.getSource().equals(source)
-              || (source.getId().startsWith(s.getSource().getId()) && !(s instanceof ComponentContainer)));
+          .anyMatch(s -> s.getSources().contains(source)
+              || (s.getSources().stream().map(DataSource::getId).anyMatch(source.getId()::startsWith)
+              && !(s instanceof ComponentContainer)));
     }
 
     @Override
