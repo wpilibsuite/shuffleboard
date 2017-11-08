@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.plugin.cameraserver.source;
 
+import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.shuffleboard.api.sources.SourceEntry;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
@@ -30,8 +31,8 @@ public final class CameraServerSourceType extends SourceType {
           // 0 is "/", 1 is "/CameraPublisher", 2 is "/CameraPublisher/<name>"
           String name = NetworkTableUtils.simpleKey(hierarchy.get(2));
           String uri = toUri(name);
-          if (NetworkTableInstance.getDefault().getTable(name).getKeys().isEmpty()
-              && NetworkTableInstance.getDefault().getTable(name).getSubTables().isEmpty()) {
+          NetworkTable table = NetworkTableInstance.getDefault().getTable(hierarchy.get(2));
+          if (table.getKeys().isEmpty() && table.getSubTables().isEmpty()) {
             // No keys and no subtables, remove it
             availableUris.remove(uri);
             availableSources.remove(uri);
