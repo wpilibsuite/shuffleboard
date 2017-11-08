@@ -20,6 +20,7 @@ import edu.wpi.first.shuffleboard.plugin.base.data.types.EncoderType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.GyroType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.NumberArrayType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.NumberType;
+import edu.wpi.first.shuffleboard.plugin.base.data.types.PIDCommandType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.PIDControllerType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.PowerDistributionType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.RawByteType;
@@ -44,6 +45,7 @@ import edu.wpi.first.shuffleboard.plugin.base.widget.GraphWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.GyroWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.NumberBarWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.NumberSlider;
+import edu.wpi.first.shuffleboard.plugin.base.widget.PIDCommandWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.PIDControllerWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.PowerDistributionPanelWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.RelayWidget;
@@ -85,6 +87,7 @@ public class BasePlugin extends Plugin {
         new CommandType(),
         new PIDControllerType(),
         new ThreeAxisAccelerometerType(),
+        new PIDCommandType(),
         new GyroType(),
         new RelayType()
     );
@@ -107,6 +110,7 @@ public class BasePlugin extends Plugin {
         WidgetType.forAnnotatedWidget(EncoderWidget.class),
         WidgetType.forAnnotatedWidget(SpeedController.class),
         WidgetType.forAnnotatedWidget(CommandWidget.class),
+        WidgetType.forAnnotatedWidget(PIDCommandWidget.class),
         WidgetType.forAnnotatedWidget(ThreeAxisAccelerometerWidget.class),
         WidgetType.forAnnotatedWidget(PIDControllerWidget.class),
         WidgetType.forAnnotatedWidget(GyroWidget.class),
@@ -142,6 +146,7 @@ public class BasePlugin extends Plugin {
         .put(new EncoderType(), WidgetType.forAnnotatedWidget(EncoderWidget.class))
         .put(new SpeedControllerType(), WidgetType.forAnnotatedWidget(SpeedController.class))
         .put(new CommandType(), WidgetType.forAnnotatedWidget(CommandWidget.class))
+        .put(new PIDCommandType(), WidgetType.forAnnotatedWidget(PIDCommandWidget.class))
         .put(new ThreeAxisAccelerometerType(), WidgetType.forAnnotatedWidget(ThreeAxisAccelerometerWidget.class))
         .put(new PIDControllerType(), WidgetType.forAnnotatedWidget(PIDControllerWidget.class))
         .put(new GyroType(), WidgetType.forAnnotatedWidget(GyroWidget.class))

@@ -88,6 +88,21 @@ public final class Maps {
     }
 
     /**
+     * Puts all the contents of a map into the builder.
+     *
+     * @param map the map whose contents to add
+     *
+     * @return this builder
+     */
+    public MapBuilder<K, V> putAll(Map<? extends K, ? extends V> map) {
+      if (completed) {
+        throw new IllegalStateException("Cannot modify a builder after it has built");
+      }
+      built.putAll(map);
+      return this;
+    }
+
+    /**
      * Returns the built map. The builder is no longer modifiable after calling this method.
      */
     public Map<K, V> build() {
