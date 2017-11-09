@@ -56,7 +56,13 @@ public class Tile<T extends Component> extends BorderPane {
     contentView.addListener((__, oldContent, newContent) -> {
       getContentPane()
           .map(Pane::getChildren)
-          .ifPresent(c -> c.setAll(newContent));
+          .ifPresent(c -> {
+            if (newContent != null) {
+              c.setAll(newContent);
+            } else {
+              c.clear();
+            }
+          });
     });
   }
 

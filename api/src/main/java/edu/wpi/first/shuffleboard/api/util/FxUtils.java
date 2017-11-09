@@ -158,6 +158,17 @@ public final class FxUtils {
   }
 
   /**
+   * Creates a disabled menu item for use as a label.
+   *
+   * @param text         the text of the label
+   */
+  public static MenuItem menuLabel(String text) {
+    MenuItem menuItem = new MenuItem(text);
+    menuItem.setDisable(true);
+    return menuItem;
+  }
+
+  /**
    * Gets the label associated with a node. If the node does not have a label, an empty optional is returned.
    *
    * @param node the node to get the label for

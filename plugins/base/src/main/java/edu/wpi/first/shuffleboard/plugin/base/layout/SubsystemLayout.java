@@ -3,6 +3,7 @@ package edu.wpi.first.shuffleboard.plugin.base.layout;
 import com.google.common.collect.ImmutableSet;
 
 import edu.wpi.first.shuffleboard.api.Populatable;
+import edu.wpi.first.shuffleboard.api.components.ActionList;
 import edu.wpi.first.shuffleboard.api.components.EditableLabel;
 import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
@@ -23,6 +24,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.WeakHashMap;
+import java.util.stream.Stream;
 
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleStringProperty;
@@ -51,19 +54,48 @@ public class SubsystemLayout implements Layout, Populatable, Sourced {
   private Subscription retained; //NOPMD field due to GC
   private DataSource<?> source;
 
+  private List<Component> hidden = new ArrayList<>();
+
   @FXML
   private void initialize() {
     retained = EasyBind.listBind(container.getChildren(), EasyBind.map(children, this::paneFor));
+
+    ActionList.registerSupplier(container, () -> {
+      ActionList al = ActionList.withName(getName());
+      if (!hidden.isEmpty()) {
+        al.addAction("Unhide all", () -> {
+          children.addAll(hidden);
+          hidden.clear();
+        });
+      }
+      return al;
+    });
   }
 
+  private WeakHashMap<Component, Pane> panes = new WeakHashMap<>();
+
   private Pane paneFor(Component component) {
+    if (panes.containsKey(component)) {
+      return panes.get(component);
+    }
+
     BorderPane pane = new BorderPane(component.getView());
+    ActionList.registerSupplier(pane, () -> this.actionsForComponent(component));
     pane.getStyleClass().add("layout-stack");
     EditableLabel label = new EditableLabel(component.titleProperty());
     label.getStyleClass().add("layout-label");
     BorderPane.setAlignment(label, Pos.TOP_LEFT);
     pane.setBottom(label);
+    panes.put(component, pane);
     return pane;
+  }
+
+  private ActionList actionsForComponent(Component component) {
+    return ActionList.withName(component.getTitle())
+        .addAction("Hide in layout", () -> {
+          children.remove(component);
+          hidden.add(component);
+        });
   }
 
   @Override
@@ -115,7 +147,7 @@ public class SubsystemLayout implements Layout, Populatable, Sourced {
 
   @Override
   public boolean hasComponentFor(DataSource<?> source) {
-    return components()
+    return Stream.concat(components(), hidden.stream())
         .flatMap(TypeUtils.castStream(Sourced.class))
         .map(Sourced::getSource)
         .map(DataSource::getId)

@@ -1,5 +1,7 @@
 package edu.wpi.first.shuffleboard.app.components;
 
+import com.google.common.collect.ImmutableList;
+
 import edu.wpi.first.shuffleboard.api.css.SimpleColorCssMetaData;
 import edu.wpi.first.shuffleboard.api.css.SimpleCssMetaData;
 import edu.wpi.first.shuffleboard.api.util.GridImage;
@@ -11,8 +13,6 @@ import edu.wpi.first.shuffleboard.api.widget.ComponentContainer;
 import edu.wpi.first.shuffleboard.api.widget.TileSize;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 import edu.wpi.first.shuffleboard.app.dnd.DragUtils;
-
-import com.google.common.collect.ImmutableList;
 
 import org.fxmisc.easybind.EasyBind;
 

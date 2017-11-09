@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.app;
 
+import edu.wpi.first.shuffleboard.api.components.ActionList;
 import edu.wpi.first.shuffleboard.api.dnd.DataFormats;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.DummySource;
@@ -25,14 +26,17 @@ import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
 
 import org.fxmisc.easybind.EasyBind;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.WeakHashMap;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import javafx.beans.binding.Binding;
 import javafx.collections.ListChangeListener;
@@ -47,6 +51,7 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
@@ -257,7 +262,7 @@ public class WidgetPaneController {
     tilesAlreadySetup.put(tile, true);
 
     tile.setOnContextMenuRequested(event -> {
-      ContextMenu contextMenu = createContextMenu(tile);
+      ContextMenu contextMenu = createContextMenu(tile, event);
       contextMenu.show(pane.getScene().getWindow(), event.getScreenX(), event.getScreenY());
       event.consume();
     });
@@ -348,7 +353,7 @@ public class WidgetPaneController {
    *
    * @param tile the tile for the widget to create a context menu for
    */
-  private ContextMenu createContextMenu(Tile<?> tile) {
+  private ContextMenu createContextMenu(Tile<?> tile, ContextMenuEvent event) {
     ContextMenu menu = new ContextMenu();
 
     MenuItem remove = FxUtils.menuItem("Remove", __ -> pane.removeTile(tile));
@@ -361,11 +366,26 @@ public class WidgetPaneController {
         menu.getItems().addAll(changeMenus, new SeparatorMenuItem());
       }
 
-      //Only add the properties menu item if the widget has properties
+      // Only add the properties menu item if the widget has properties
       if (!((WidgetTile)tile).getContent().getProperties().isEmpty()) {
         menu.getItems().add(createPropertySheetMenu((WidgetTile) tile));
       }
     }
+
+    List<MenuItem> actionListItems = new ArrayList<>();
+    if (event.getTarget() instanceof Node) {
+      Node leaf = (Node) event.getTarget();
+      Stream
+          .iterate(leaf, Node::getParent)
+          // non-functional ugliness necessary due to the lack of takeWhile in java 8
+          .peek(node -> ActionList.getSupplier(node).map(Supplier::get).ifPresent(al -> {
+            actionListItems.add(new SeparatorMenuItem());
+            actionListItems.add(FxUtils.menuLabel(al.getName()));
+            actionListItems.addAll(al.toMenuItems());
+          }))
+          .allMatch(n -> n.getParent() != null); // terminates infinite Stream#iterate
+    }
+    menu.getItems().addAll(actionListItems);
 
     return menu;
   }
@@ -387,6 +407,7 @@ public class WidgetPaneController {
             TileLayout was = pane.getTileLayout(tile);
             Component content = pane.removeTile(tile);
             Layout layout = layoutType.get();
+            System.out.println(content);
             layout.addChild(content);
             pane.addComponent(layout, was.origin, was.size);
           });
