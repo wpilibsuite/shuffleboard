@@ -145,9 +145,9 @@ allprojects {
     }
 
     /*
-     * Allows you to run the UI tests in headless mode by calling gradle with the -Pheadless argument
+     * Run UI tests in headless mode on Jenkins or when the `visibleUiTests` property is not set.
      */
-    if (project.hasProperty("jenkinsBuild") || project.hasProperty("headless")) {
+    if (project.hasProperty("jenkinsBuild") || !project.hasProperty("visibleUiTests")) {
         println("Running UI Tests Headless")
         junitPlatform {
             filters {
