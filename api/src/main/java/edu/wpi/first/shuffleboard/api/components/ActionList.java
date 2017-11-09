@@ -81,9 +81,10 @@ public class ActionList {
   /**
    * Retrieves the ActionList supplier that has been added to a node, if one exists.
    */
-  public static Optional<Supplier<ActionList>> getSupplier(Node node) {
+  public static Optional<ActionList> actionsForNode(Node node) {
     return Optional.ofNullable(node.getProperties().get(ACTION_LIST_KEY))
         .flatMap(TypeUtils.optionalCast(Supplier.class))
-        .map(s -> (Supplier<ActionList>) () -> (ActionList) s.get());
+        .map(Supplier::get)
+        .flatMap(TypeUtils.optionalCast(ActionList.class));
   }
 }

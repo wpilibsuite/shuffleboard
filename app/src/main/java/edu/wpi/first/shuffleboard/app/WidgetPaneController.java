@@ -32,7 +32,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.WeakHashMap;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -381,7 +380,7 @@ public class WidgetPaneController {
       Stream
           .iterate(leaf, Node::getParent)
           // non-functional ugliness necessary due to the lack of takeWhile in java 8
-          .peek(node -> ActionList.getSupplier(node).map(Supplier::get).ifPresent(al -> {
+          .peek(node -> ActionList.actionsForNode(node).ifPresent(al -> {
             if (actions.containsKey(al.getName())) {
               actions.get(al.getName()).addAll(al.toMenuItems());
             } else {
@@ -419,7 +418,6 @@ public class WidgetPaneController {
             TileLayout was = pane.getTileLayout(tile);
             Component content = pane.removeTile(tile);
             Layout layout = layoutType.get();
-            System.out.println(content);
             layout.addChild(content);
             pane.addComponent(layout, was.origin, was.size);
           });

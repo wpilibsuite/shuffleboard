@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.plugin.base.layout;
 
+import edu.wpi.first.shuffleboard.api.components.ActionList;
 import edu.wpi.first.shuffleboard.api.components.EditableLabel;
 import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.Layout;
@@ -9,6 +10,7 @@ import org.fxmisc.easybind.EasyBind;
 import org.fxmisc.easybind.Subscription;
 
 import java.util.Collection;
+import java.util.WeakHashMap;
 
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleStringProperty;
@@ -42,14 +44,56 @@ public class ListLayout implements Layout {
     retained = EasyBind.listBind(container.getChildren(), EasyBind.map(widgets, this::paneFor));
   }
 
-  private Pane paneFor(Component widget) {
-    BorderPane pane = new BorderPane(widget.getView());
+  private WeakHashMap<Component, Pane> panes = new WeakHashMap<>();
+
+  private Pane paneFor(Component component) {
+    if (panes.containsKey(component)) {
+      return panes.get(component);
+    }
+
+    BorderPane pane = new BorderPane(component.getView());
+    ActionList.registerSupplier(pane, () -> actionsForComponent(component));
     pane.getStyleClass().add("layout-stack");
-    EditableLabel label = new EditableLabel(widget.titleProperty());
+    EditableLabel label = new EditableLabel(component.titleProperty());
     label.getStyleClass().add("layout-label");
     BorderPane.setAlignment(label, Pos.TOP_LEFT);
     pane.setBottom(label);
+
+    panes.put(component, pane);
     return pane;
+  }
+
+  private ActionList actionsForComponent(Component component) {
+    ActionList al = ActionList.withName(component.getTitle());
+    int i = widgets.indexOf(component);
+
+    if (i > 0) {
+      al.addAction("Move up", () -> {
+        widgets.remove(i);
+        widgets.add(i - 1, component);
+      });
+      al.addAction("Send to top", () -> {
+        widgets.remove(i);
+        widgets.add(0, component);
+      });
+    }
+
+    if (i < widgets.size() - 1) {
+      al.addAction("Move down", () -> {
+        widgets.remove(i);
+        widgets.add(i + 1, component);
+      });
+      al.addAction("Send to bottom", () -> {
+        widgets.remove(i);
+        widgets.add(component);
+      });
+    }
+
+    al.addAction("Remove from list", () -> {
+      widgets.remove(i);
+    });
+
+    return al;
   }
 
   @Override

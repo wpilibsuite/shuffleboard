@@ -10,6 +10,7 @@ import edu.wpi.first.shuffleboard.api.widget.Widget;
 
 import org.fxmisc.easybind.EasyBind;
 import org.fxmisc.easybind.monadic.MonadicBinding;
+import org.fxmisc.easybind.monadic.PropertyBinding;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -34,6 +35,8 @@ public class Tile<T extends Component> extends BorderPane {
   private final Property<TileSize> size = new SimpleObjectProperty<>(this, "size", null);
   private final BooleanProperty selected = new PseudoClassProperty(this, "selected");
 
+  private final PropertyBinding<String> titleProperty;
+
   /**
    * Creates an empty tile. The content and size must be set with {@link #setContent(T)} and
    * {@link #setSize(TileSize)}.
@@ -49,9 +52,8 @@ public class Tile<T extends Component> extends BorderPane {
 
     getStyleClass().addAll("tile", "card");
     PropertyUtils.bindWithConverter(idProperty(), contentProperty(), w -> "tile[" + w + "]");
-    ((EditableLabel) lookup("#titleLabel")).textProperty().bindBidirectional(
-        EasyBind.monadic(contentProperty()).selectProperty(Component::titleProperty)
-    );
+    titleProperty = EasyBind.monadic(contentProperty()).selectProperty(Component::titleProperty);
+    ((EditableLabel) lookup("#titleLabel")).textProperty().bindBidirectional(titleProperty);
     ((Label) lookup("#titleLabel").lookup(".label")).setTextOverrun(OverrunStyle.LEADING_ELLIPSIS);
     contentView.addListener((__, oldContent, newContent) -> {
       getContentPane()
