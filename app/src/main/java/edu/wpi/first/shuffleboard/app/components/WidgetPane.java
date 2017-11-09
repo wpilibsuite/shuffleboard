@@ -100,6 +100,7 @@ public class WidgetPane extends TilePane implements ComponentContainer {
       if (highlight) {
         getChildren().add(gridHighlight);
         gridHighlight.toFront();
+        gridHighlight.setMouseTransparent(true);
       } else {
         getChildren().remove(gridHighlight);
       }

@@ -61,7 +61,7 @@ public class SubsystemLayout implements Layout, Populatable, Sourced {
     retained = EasyBind.listBind(container.getChildren(), EasyBind.map(children, this::paneFor));
 
     ActionList.registerSupplier(container, () -> {
-      ActionList al = ActionList.withName(getName());
+      ActionList al = ActionList.withName(getTitle());
       if (!hidden.isEmpty()) {
         al.addAction("Unhide all", () -> {
           children.addAll(hidden);

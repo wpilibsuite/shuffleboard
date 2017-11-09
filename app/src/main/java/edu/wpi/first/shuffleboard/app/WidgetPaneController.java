@@ -26,7 +26,7 @@ import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
 
 import org.fxmisc.easybind.EasyBind;
 
-import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -46,7 +46,6 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
-import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.image.WritableImage;
@@ -262,9 +261,31 @@ public class WidgetPaneController {
     tilesAlreadySetup.put(tile, true);
 
     tile.setOnContextMenuRequested(event -> {
-      ContextMenu contextMenu = createContextMenu(tile, event);
+      ContextMenu contextMenu = createContextMenu(event);
       contextMenu.show(pane.getScene().getWindow(), event.getScreenX(), event.getScreenY());
       event.consume();
+    });
+
+    ActionList.registerSupplier(tile, () -> {
+      ActionList widgetPaneActions = ActionList
+          .withName(tile.getContent().getTitle())
+          .addAction("Remove", () -> pane.removeTile(tile))
+          .addNested(createLayoutMenus(tile));
+
+      if (tile instanceof WidgetTile) {
+        WidgetTile widgetTile = (WidgetTile) tile;
+        ActionList changeMenus = createChangeMenusForWidget(widgetTile);
+        if (changeMenus.hasItems()) {
+          widgetPaneActions.addNested(changeMenus);
+        }
+
+        // Only add the properties menu item if the widget has properties
+        if (!widgetTile.getContent().getProperties().isEmpty()) {
+          widgetPaneActions.addAction("Edit Properties",
+              () -> showPropertySheet(widgetTile));
+        }
+      }
+      return widgetPaneActions;
     });
 
     TileDragResizer resizer = TileDragResizer.makeResizable(pane, tile);
@@ -349,43 +370,35 @@ public class WidgetPaneController {
   }
 
   /**
-   * Creates the context menu for a widget.
-   *
-   * @param tile the tile for the widget to create a context menu for
+   * Creates the context menu for a given tile.
    */
-  private ContextMenu createContextMenu(Tile<?> tile, ContextMenuEvent event) {
+  private ContextMenu createContextMenu(ContextMenuEvent event) {
     ContextMenu menu = new ContextMenu();
 
-    MenuItem remove = FxUtils.menuItem("Remove", __ -> pane.removeTile(tile));
-    menu.getItems().add(remove);
-    menu.getItems().add(createLayoutMenus(tile));
-
-    if (tile instanceof WidgetTile) {
-      Menu changeMenus = createChangeMenusForWidget((WidgetTile) tile);
-      if (changeMenus.getItems().size() > 1) {
-        menu.getItems().addAll(changeMenus, new SeparatorMenuItem());
-      }
-
-      // Only add the properties menu item if the widget has properties
-      if (!((WidgetTile)tile).getContent().getProperties().isEmpty()) {
-        menu.getItems().add(createPropertySheetMenu((WidgetTile) tile));
-      }
-    }
-
-    List<MenuItem> actionListItems = new ArrayList<>();
+    LinkedHashMap<String, List<MenuItem>> actions = new LinkedHashMap<>();
     if (event.getTarget() instanceof Node) {
       Node leaf = (Node) event.getTarget();
       Stream
           .iterate(leaf, Node::getParent)
           // non-functional ugliness necessary due to the lack of takeWhile in java 8
           .peek(node -> ActionList.getSupplier(node).map(Supplier::get).ifPresent(al -> {
-            actionListItems.add(new SeparatorMenuItem());
-            actionListItems.add(FxUtils.menuLabel(al.getName()));
-            actionListItems.addAll(al.toMenuItems());
+            if (actions.containsKey(al.getName())) {
+              actions.get(al.getName()).addAll(al.toMenuItems());
+            } else {
+              actions.put(al.getName(), al.toMenuItems());
+            }
           }))
           .allMatch(n -> n.getParent() != null); // terminates infinite Stream#iterate
     }
-    menu.getItems().addAll(actionListItems);
+
+    actions.forEach((key, value) -> {
+      menu.getItems().add(new SeparatorMenuItem());
+      menu.getItems().add(FxUtils.menuLabel(key));
+      menu.getItems().addAll(value);
+    });
+
+    // remove leading separator.
+    menu.getItems().remove(0);
 
     return menu;
   }
@@ -395,15 +408,14 @@ public class WidgetPaneController {
    *
    * @param tile the tile for the component to create the menus for
    */
-  private Menu createLayoutMenus(Tile<?> tile) {
-    Menu menu = new Menu("Add to new layout...");
+  private ActionList createLayoutMenus(Tile<?> tile) {
+    ActionList list = ActionList.withName("Add to new layout...");
 
     Components.getDefault()
         .allComponents()
         .flatMap(TypeUtils.castStream(LayoutType.class))
         .forEach(layoutType -> {
-          MenuItem wrapItem = new MenuItem(layoutType.getName());
-          wrapItem.setOnAction(__ -> {
+          list.addAction(layoutType.getName(), () -> {
             TileLayout was = pane.getTileLayout(tile);
             Component content = pane.removeTile(tile);
             Layout layout = layoutType.get();
@@ -411,10 +423,9 @@ public class WidgetPaneController {
             layout.addChild(content);
             pane.addComponent(layout, was.origin, was.size);
           });
-          menu.getItems().add(wrapItem);
         });
 
-    return menu;
+    return list;
   }
 
   /**
@@ -422,26 +433,25 @@ public class WidgetPaneController {
    *
    * @param tile the tile for the widget to create the change menus for
    */
-  private Menu createChangeMenusForWidget(WidgetTile tile) {
+  private ActionList createChangeMenusForWidget(WidgetTile tile) {
     Widget widget = tile.getContent();
-    Menu changeView = new Menu("Show as...");
+    ActionList list = ActionList.withName("Show as...");
+
     Components.getDefault().componentNamesForType(widget.getSource().getDataType())
         .stream()
         .sorted()
-        .forEach(name -> {
-          MenuItem changeItem = new MenuItem(name);
-          if (name.equals(widget.getName())) {
-            changeItem.setGraphic(new Label("✓"));
-          } else {
-            // only need to change if it's to another type
-            changeItem.setOnAction(__ -> {
-              Components.getDefault().createWidget(name, widget.getSource())
-                  .ifPresent(tile::setContent);
-            });
-          }
-          changeView.getItems().add(changeItem);
-        });
-    return changeView;
+        .forEach(name -> list.addAction(
+            name,
+            name.equals(widget.getName()) ? new Label("✓") : null,
+            () -> {
+              // no need to change it if it's already the same type
+              if (!name.equals(widget.getName())) {
+                Components.getDefault()
+                    .createWidget(name, widget.getSource())
+                    .ifPresent(tile::setContent);
+              }
+            }));
+    return list;
   }
 
   /**
@@ -450,18 +460,16 @@ public class WidgetPaneController {
    * @param tile the tile to pull properties from
    * @return     the edit property menu
    */
-  private MenuItem createPropertySheetMenu(WidgetTile tile) {
-    return FxUtils.menuItem("Edit Properties", event -> {
-      WidgetPropertySheet propertySheet = new WidgetPropertySheet(tile.getContent().getProperties());
-      Dialog<ButtonType> dialog = new Dialog<>();
+  private void showPropertySheet(WidgetTile tile) {
+    WidgetPropertySheet propertySheet = new WidgetPropertySheet(tile.getContent().getProperties());
+    Dialog<ButtonType> dialog = new Dialog<>();
 
-      dialog.setTitle("Edit widget properties");
-      dialog.getDialogPane().getStylesheets().setAll(AppPreferences.getInstance().getTheme().getStyleSheets());
-      dialog.getDialogPane().setContent(new BorderPane(propertySheet));
-      dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CLOSE);
+    dialog.setTitle("Edit widget properties");
+    dialog.getDialogPane().getStylesheets().setAll(AppPreferences.getInstance().getTheme().getStyleSheets());
+    dialog.getDialogPane().setContent(new BorderPane(propertySheet));
+    dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CLOSE);
 
-      dialog.showAndWait();
-    });
+    dialog.showAndWait();
   }
 
   private void collapseTile(Tile tile, int count, boolean left) {

@@ -27,6 +27,22 @@ public class ActionList {
     return this;
   }
 
+  public boolean hasItems() {
+    return actions.size() > 0;
+  }
+
+  /**
+   * Add an action with an associated graphic, such as a checkmark or icon.
+   */
+  public ActionList addAction(String name, Node graphic, Runnable r) {
+    actions.add(() -> {
+      MenuItem i = FxUtils.menuItem(name, _e -> r.run());
+      i.setGraphic(graphic);
+      return i;
+    });
+    return this;
+  }
+
   /**
    * @return a {@link MenuItem} view of the ActionList, with all items represented by either text items or sub-menus.
    */
