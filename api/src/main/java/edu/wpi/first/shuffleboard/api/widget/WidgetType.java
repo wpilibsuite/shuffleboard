@@ -7,7 +7,7 @@ import java.util.Set;
 /**
  * WidgetType extends ComponentType with Widget-specific metadata.
  */
-public interface WidgetType extends ComponentType<Widget> {
+public interface WidgetType<W extends Widget> extends ComponentType<W> {
   /**
    * Get data types the widget should be suggested for.
    */
@@ -18,11 +18,11 @@ public interface WidgetType extends ComponentType<Widget> {
    *
    * @param widgetClass the widget class
    */
-  static <T extends AnnotatedWidget> WidgetType forAnnotatedWidget(Class<T> widgetClass) {
+  static <T extends Widget> WidgetType<T> forAnnotatedWidget(Class<T> widgetClass) {
     Components.validateAnnotatedComponentClass(widgetClass);
-    return new AbstractWidgetType(widgetClass.getAnnotation(Description.class)) {
+    return new AbstractWidgetType<T>(widgetClass.getAnnotation(Description.class)) {
       @Override
-      public Widget get() {
+      public T get() {
         return Components.viewFor(widgetClass).orElseGet(() -> {
           try {
             return widgetClass.newInstance();
@@ -30,6 +30,11 @@ public interface WidgetType extends ComponentType<Widget> {
             throw new RuntimeException("The widget class could not be instantiated", e);
           }
         });
+      }
+
+      @Override
+      public Class<T> getType() {
+        return widgetClass;
       }
     };
   }

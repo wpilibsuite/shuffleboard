@@ -7,6 +7,7 @@ import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
 import edu.wpi.first.shuffleboard.api.theme.Theme;
 import edu.wpi.first.shuffleboard.api.theme.Themes;
+import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.ComponentType;
 import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.testplugins.BasicPlugin;
@@ -261,14 +262,20 @@ public class PluginLoaderTest {
       }
     };
 
-    private static final ComponentType component = new ComponentType() {
+    private static final ComponentType<Component> component = new ComponentType<Component>() {
+
+      @Override
+      public Class<Component> getType() {
+        return Component.class;
+      }
+
       @Override
       public String getName() {
         return "Mock Component";
       }
 
       @Override
-      public Object get() {
+      public Component get() {
         return null;
       }
     };

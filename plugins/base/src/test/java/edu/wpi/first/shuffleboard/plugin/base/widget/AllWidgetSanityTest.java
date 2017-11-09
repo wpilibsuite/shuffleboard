@@ -37,9 +37,9 @@ public class AllWidgetSanityTest extends ApplicationTest {
 
   @ParameterizedTest
   @MethodSource("createWidgetMap")
-  public void testCreateWidget(WidgetType widgetType, DataType<?> dataType) {
+  public void testCreateWidget(WidgetType<?> widgetType, DataType<?> dataType) {
     Widget widget = widgetType.get();
-    widget.setSource(DummySource.forType(dataType));
+    widget.addSource(DummySource.forType(dataType));
   }
 
   private static Stream<Arguments> createWidgetMap() {

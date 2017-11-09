@@ -1,17 +1,19 @@
 package edu.wpi.first.shuffleboard.api.widget;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
-
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
+import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.util.Registry;
 import edu.wpi.first.shuffleboard.api.util.TestUtils;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,7 +21,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.WeakHashMap;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -73,21 +74,7 @@ public class Components extends Registry<ComponentType> {
    */
   public <T extends Widget> void register(Class<T> widgetClass) {
     validateAnnotatedComponentClass(widgetClass);
-    Description description = widgetClass.getAnnotation(Description.class);
-
-    WidgetType widgetType = new AbstractWidgetType(description) {
-      @Override
-      public Widget get() {
-        return viewFor(widgetClass).orElseGet(() -> {
-          try {
-            return widgetClass.newInstance();
-          } catch (InstantiationException | IllegalAccessException e) {
-            logger.log(Level.WARNING, "error creating widget", e);
-            return null;
-          }
-        });
-      }
-    };
+    WidgetType<T> widgetType = WidgetType.forAnnotatedWidget(widgetClass);
 
     register(widgetType);
   }
@@ -138,12 +125,29 @@ public class Components extends Registry<ComponentType> {
    * @param name   the name of the widget to create
    * @param source the data source for the widget to use
    *
-   * @return an optional containing the created view, or an empty optional if no widget could
-   *         be created
+   * @return an optional containing the created view, or an empty optional if no widget could be created
    */
   public <T> Optional<Widget> createWidget(String name, DataSource<T> source) {
     Optional<Widget> widget = createWidget(name);
-    widget.ifPresent(w -> w.setSource(source));
+    widget.ifPresent(w -> w.addSource(source));
+    return widget;
+  }
+
+  /**
+   * Tries to create a widget from a known widget with the given name. If successful, the widgets data sources will be
+   * set to the given sources. If any of these sources are incompatible, an {@link IncompatibleSourceException} will be
+   * thrown.
+   *
+   * @param name    the name of the widget to create
+   * @param sources the data sources for the widget to use
+   *
+   * @return an optional containing the created widget, or an empty optional if no widget could be created
+   *
+   * @throws IncompatibleSourceException if the widget for the given name is incompatible with any of the given sources
+   */
+  public Optional<Widget> createWidget(String name, Collection<DataSource> sources) throws IncompatibleSourceException {
+    Optional<Widget> widget = createWidget(name);
+    widget.ifPresent(w -> sources.forEach(w::addSource));
     return widget;
   }
 
@@ -183,7 +187,7 @@ public class Components extends Registry<ComponentType> {
     return createComponent(name)
         .map(c -> {
           if (c instanceof Sourced) {
-            ((Sourced) c).setSource(source);
+            ((Sourced) c).addSource(source);
           }
           return c;
         });

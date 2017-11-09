@@ -3,16 +3,17 @@ package edu.wpi.first.shuffleboard.app.plugin;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
 import edu.wpi.first.shuffleboard.api.plugin.Plugin;
-import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
 import edu.wpi.first.shuffleboard.api.sources.recording.serialization.Serializers;
 import edu.wpi.first.shuffleboard.api.theme.Themes;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 import edu.wpi.first.shuffleboard.api.widget.Components;
+import edu.wpi.first.shuffleboard.api.widget.SingleSourceWidget;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 import edu.wpi.first.shuffleboard.app.sources.DestroyedSource;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableSet;
 
 import java.io.File;
 import java.io.IOException;
@@ -241,15 +242,18 @@ public class PluginLoader {
     plugin.getComponents().forEach(components::register);
     plugin.getDefaultComponents().forEach(components::setDefaultComponent);
     components.getActiveWidgets().stream()
-        .filter(w -> w.getSource() instanceof DestroyedSource)
+        .filter(w -> w.getSources().stream().anyMatch(s -> s instanceof DestroyedSource))
         .filter(w -> {
-          DataSource<?> source = w.getSource();
-          return plugin.getComponents().stream().anyMatch(t -> t.getName().equals(w.getName()))
-              || plugin.getDataTypes().contains(source.getDataType())
-              || plugin.getSourceTypes().contains(source.getType());
+          return plugin.getComponents().stream().anyMatch(t -> t.getType().equals(w.getClass()))
+              || w.getSources().stream().anyMatch(s -> plugin.getDataTypes().contains(s.getDataType()))
+              || w.getSources().stream().anyMatch(s -> plugin.getSourceTypes().contains(s.getType()));
         })
-        .filter(w -> sourceTypes.isRegistered(w.getSource().getType()))
-        .forEach(w -> tryRestoreSource(w, (DestroyedSource) w.getSource()));
+        .filter(w -> w.getSources().stream().anyMatch(s -> sourceTypes.isRegistered(s.getType())))
+        .forEach(w -> {
+          w.getSources().stream()
+              .filter(s -> s instanceof DestroyedSource)
+              .forEach(s -> tryRestoreSource(w, (DestroyedSource) s));
+        });
     plugin.getThemes().forEach(themes::register);
 
     plugin.onLoad();
@@ -285,7 +289,7 @@ public class PluginLoader {
 
   private void tryRestoreSource(Widget widget, DestroyedSource destroyedSource) {
     try {
-      widget.setSource(destroyedSource.restore());
+      widget.addSource(destroyedSource.restore());
     } catch (IncompatibleSourceException e) {
       log.fine("Could not set the restored source of " + widget
           + ". The plugin defining its data type was probably unloaded.");
@@ -299,6 +303,7 @@ public class PluginLoader {
    *
    * @return true if the plugin was unloaded, false if not. This can occur if the plugin was not loaded to begin with.
    */
+  @SuppressWarnings("unchecked")
   public boolean unload(Plugin plugin) {
     if (!loadedPlugins.contains(plugin)) {
       // It's not loaded, nothing to unload
@@ -311,13 +316,26 @@ public class PluginLoader {
 
     log.info("Unloading plugin " + plugin.fullIdString());
     components.getActiveWidgets().stream()
-        .filter(w -> !(w.getSource() instanceof DestroyedSource))
+        .filter(w -> w.getSources().stream().anyMatch(s -> !(s instanceof DestroyedSource)))
         .filter(w -> {
-          DataSource<?> source = w.getSource();
-          return plugin.getDataTypes().contains(source.getDataType())
-              || plugin.getSourceTypes().contains(source.getType());
+          return w.getSources().stream().anyMatch(s -> plugin.getDataTypes().contains(s.getDataType()))
+              || w.getSources().stream().anyMatch(s -> plugin.getSourceTypes().contains(s.getType()));
         })
-        .forEach(w -> w.setSource(new DestroyedSource<>(w.getSource())));
+        .forEach(w -> {
+          if (w instanceof SingleSourceWidget) {
+            SingleSourceWidget singleSource = (SingleSourceWidget) w;
+            singleSource.setSource(new DestroyedSource<>(singleSource.getSource()));
+          } else {
+            w.getSources().replaceAll(s -> {
+              if (!(s instanceof DestroyedSource)
+                  && (plugin.getDataTypes().contains(s.getDataType())
+                  || plugin.getSourceTypes().contains(s.getType()))) {
+                return new DestroyedSource<>(s);
+              }
+              return s;
+            });
+          }
+        });
     plugin.getComponents().forEach(components::unregister);
     plugin.getSourceTypes().forEach(sourceTypes::unregister);
     plugin.getTypeAdapters().forEach(Serializers::remove);
