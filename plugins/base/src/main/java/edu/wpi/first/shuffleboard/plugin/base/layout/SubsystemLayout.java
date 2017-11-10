@@ -1,7 +1,5 @@
 package edu.wpi.first.shuffleboard.plugin.base.layout;
 
-import com.google.common.collect.ImmutableSet;
-
 import edu.wpi.first.shuffleboard.api.Populatable;
 import edu.wpi.first.shuffleboard.api.components.ActionList;
 import edu.wpi.first.shuffleboard.api.components.EditableLabel;
@@ -16,6 +14,8 @@ import edu.wpi.first.shuffleboard.api.widget.Layout;
 import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 import edu.wpi.first.shuffleboard.api.widget.Sourced;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.SubsystemType;
+
+import com.google.common.collect.ImmutableSet;
 
 import org.fxmisc.easybind.EasyBind;
 import org.fxmisc.easybind.Subscription;
@@ -52,7 +52,7 @@ public class SubsystemLayout implements Layout, Populatable, Sourced {
   private final StringProperty title = new SimpleStringProperty(this, "title", "Subsystem");
 
   private Subscription retained; //NOPMD field due to GC
-  private DataSource<?> source;
+  private final ObservableList<DataSource> sources = FXCollections.observableArrayList();
 
   private WeakHashMap<Component, Pane> panes = new WeakHashMap<>();
 
@@ -137,9 +137,9 @@ public class SubsystemLayout implements Layout, Populatable, Sourced {
 
   @Override
   public boolean supports(DataSource<?> source) {
-    return this.source != null
-        && this.source != source
-        && source.getName().startsWith(this.source.getName())
+    return getSource() != null
+        && getSource() != source
+        && source.getName().startsWith(getSource().getName())
         && !NetworkTableUtils.isMetadata(source.getId());
   }
 
@@ -147,7 +147,8 @@ public class SubsystemLayout implements Layout, Populatable, Sourced {
   public boolean hasComponentFor(DataSource<?> source) {
     return Stream.concat(components(), hidden.stream())
         .flatMap(TypeUtils.castStream(Sourced.class))
-        .map(Sourced::getSource)
+        .map(Sourced::getSources)
+        .flatMap(List::stream)
         .map(DataSource::getId)
         .anyMatch(source.getId()::startsWith);
   }
@@ -159,15 +160,19 @@ public class SubsystemLayout implements Layout, Populatable, Sourced {
         .ifPresent(this::addChild);
   }
 
-  @Override
-  public DataSource<?> getSource() {
-    return source;
+  DataSource<?> getSource() {
+    return sources.isEmpty() ? null : sources.get(0);
   }
 
   @Override
-  public void setSource(DataSource<?> source) {
+  public ObservableList<DataSource> getSources() {
+    return sources;
+  }
+
+  @Override
+  public void addSource(DataSource source) throws IncompatibleSourceException {
     if (source.getDataType() instanceof SubsystemType) {
-      this.source = source;
+      getSources().setAll(source);
       setTitle(source.getName());
     } else {
       throw new IncompatibleSourceException(ImmutableSet.of(new SubsystemType()), source.getDataType());

@@ -35,7 +35,7 @@ public class Tile<T extends Component> extends BorderPane {
   private final Property<TileSize> size = new SimpleObjectProperty<>(this, "size", null);
   private final BooleanProperty selected = new PseudoClassProperty(this, "selected");
 
-  private final PropertyBinding<String> titleProperty; //NOPMD retained from GC
+  private PropertyBinding<String> contentTitle; // NOPMD retained from GC
 
   /**
    * Creates an empty tile. The content and size must be set with {@link #setContent(T)} and
@@ -52,13 +52,19 @@ public class Tile<T extends Component> extends BorderPane {
 
     getStyleClass().addAll("tile", "card");
     PropertyUtils.bindWithConverter(idProperty(), contentProperty(), w -> "tile[" + w + "]");
-    titleProperty = EasyBind.monadic(contentProperty()).selectProperty(Component::titleProperty);
-    ((EditableLabel) lookup("#titleLabel")).textProperty().bindBidirectional(titleProperty);
+    contentTitle = EasyBind.monadic(contentProperty()).selectProperty(Component::titleProperty);
+    ((EditableLabel) lookup("#titleLabel")).textProperty().bindBidirectional(contentTitle);
     ((Label) lookup("#titleLabel").lookup(".label")).setTextOverrun(OverrunStyle.LEADING_ELLIPSIS);
     contentView.addListener((__, oldContent, newContent) -> {
       getContentPane()
           .map(Pane::getChildren)
-          .ifPresent(c -> c.setAll(newContent));
+          .ifPresent(c -> {
+            if (newContent == null) {
+              c.clear();
+            } else {
+              c.setAll(newContent);
+            }
+          });
     });
   }
 

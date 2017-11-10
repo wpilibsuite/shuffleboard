@@ -13,6 +13,7 @@ import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.api.widget.Layout;
 import edu.wpi.first.shuffleboard.api.widget.LayoutType;
+import edu.wpi.first.shuffleboard.api.widget.Sourced;
 import edu.wpi.first.shuffleboard.api.widget.TileSize;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 import edu.wpi.first.shuffleboard.app.components.LayoutTile;
@@ -98,6 +99,11 @@ public class WidgetPaneController {
         pane.tileMatching(tile -> tile.getId().equals(data.getId()))
             .ifPresent(tile -> previewTile(tile, point.subtract(data.getDragPoint())));
       } else if (isSource) {
+        if (!pane.isOpen(point, new TileSize(1, 1), n -> false)) {
+          // Dragged a source onto a tile, let the tile handle the drag and drop
+          pane.setHighlight(false);
+          return;
+        }
         SourceEntry entry = (SourceEntry) event.getDragboard().getContent(DataFormats.source);
         DataSource source = entry.get();
         Optional<String> componentName = Components.getDefault().pickComponentNameFor(source.getDataType());
@@ -300,13 +306,11 @@ public class WidgetPaneController {
       event.consume();
     });
 
-
     tile.setOnDragDropped(event -> {
       Dragboard dragboard = event.getDragboard();
-      if (dragboard.hasContent(DataFormats.source) && tile instanceof WidgetTile) {
+      if (dragboard.hasContent(DataFormats.source) && tile.getContent() instanceof Sourced) {
         SourceEntry entry = (SourceEntry) dragboard.getContent(DataFormats.source);
-
-        ((WidgetTile) tile).getContent().setSource(entry.get());
+        ((Sourced) tile.getContent()).addSource(entry.get());
         event.consume();
 
         return;
@@ -413,6 +417,7 @@ public class WidgetPaneController {
     Components.getDefault()
         .allComponents()
         .flatMap(TypeUtils.castStream(LayoutType.class))
+        .map(t -> (LayoutType<?>) t)
         .forEach(layoutType -> {
           list.addAction(layoutType.getName(), () -> {
             TileLayout was = pane.getTileLayout(tile);
@@ -435,9 +440,11 @@ public class WidgetPaneController {
     Widget widget = tile.getContent();
     ActionList list = ActionList.withName("Show as...");
 
-    Components.getDefault().componentNamesForType(widget.getSource().getDataType())
-        .stream()
+    widget.getSources().stream()
+        .map(s -> Components.getDefault().componentNamesForSource(s))
+        .flatMap(List::stream)
         .sorted()
+        .distinct()
         .forEach(name -> list.addAction(
             name,
             name.equals(widget.getName()) ? new Label("✓") : null,
@@ -445,7 +452,7 @@ public class WidgetPaneController {
               // no need to change it if it's already the same type
               if (!name.equals(widget.getName())) {
                 Components.getDefault()
-                    .createWidget(name, widget.getSource())
+                    .createWidget(name, widget.getSources())
                     .ifPresent(tile::setContent);
               }
             }));

@@ -9,7 +9,7 @@
         ],
         "widget": {
           "_type": "Number Slider",
-          "_source": "network_table:///LiveWindow/TestSystem/Ultrasonic/Value",
+          "_source0": "network_table:///LiveWindow/TestSystem/Ultrasonic/Value",
           "min": -100.0,
           "max": 100.0,
           "blockIncrement": 0.0625
@@ -22,7 +22,7 @@
         ],
         "widget": {
           "_type": "Boolean Box",
-          "_source": "network_table:///LiveWindow/Elevator/enabled",
+          "_source0": "network_table:///LiveWindow/Elevator/enabled",
           "True Color": "#7CFC00",
           "False Color": "#8B0000"
         }
@@ -34,7 +34,7 @@
         ],
         "widget": {
           "_type": "Number Slider",
-          "_source": "network_table:///LiveWindow/Elevator/p",
+          "_source0": "network_table:///LiveWindow/Elevator/p",
           "min": -1.0,
           "max": 1.0,
           "blockIncrement": 0.0625
@@ -47,7 +47,7 @@
         ],
         "widget": {
           "_type": "Number Slider",
-          "_source": "network_table:///LiveWindow/Elevator/f",
+          "_source0": "network_table:///LiveWindow/Elevator/f",
           "min": -1.0,
           "max": 1.0,
           "blockIncrement": 0.0625
@@ -60,7 +60,7 @@
         ],
         "widget": {
           "_type": "Boolean Box",
-          "_source": "network_table:///LiveWindow/~STATUS~/LW Enabled",
+          "_source0": "network_table:///LiveWindow/~STATUS~/LW Enabled",
           "True Color": "#7CFC00",
           "False Color": "#8B0000"
         }
@@ -72,7 +72,7 @@
         ],
         "widget": {
           "_type": "Number Slider",
-          "_source": "network_table:///LiveWindow/Elevator/d",
+          "_source0": "network_table:///LiveWindow/Elevator/d",
           "min": -1.0,
           "max": 1.0,
           "blockIncrement": 0.0625
@@ -90,7 +90,7 @@
         ],
         "widget": {
           "_type": "Number Slider",
-          "_source": "network_table:///LiveWindow/TestSystem/Compass/Value",
+          "_source0": "network_table:///LiveWindow/TestSystem/Compass/Value",
           "min": -1.0,
           "max": 1.0,
           "blockIncrement": 0.0625
@@ -103,7 +103,7 @@
         ],
         "widget": {
           "_type": "Number Slider",
-          "_source": "network_table:///LiveWindow/TestSystem/Compass/Value",
+          "_source0": "network_table:///LiveWindow/TestSystem/Compass/Value",
           "min": -1.0,
           "max": 1.0,
           "blockIncrement": 0.0625
@@ -116,7 +116,7 @@
         ],
         "widget": {
           "_type": "Number Slider",
-          "_source": "network_table:///LiveWindow/TestSystem/Compass/Value",
+          "_source0": "network_table:///LiveWindow/TestSystem/Compass/Value",
           "min": -1.0,
           "max": 1.0,
           "blockIncrement": 0.0625
