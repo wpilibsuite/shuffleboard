@@ -35,7 +35,7 @@ public class Tile<T extends Component> extends BorderPane {
   private final Property<TileSize> size = new SimpleObjectProperty<>(this, "size", null);
   private final BooleanProperty selected = new PseudoClassProperty(this, "selected");
 
-  private final PropertyBinding<String> titleProperty;
+  private final PropertyBinding<String> titleProperty; //NOPMD retained from GC
 
   /**
    * Creates an empty tile. The content and size must be set with {@link #setContent(T)} and
@@ -58,13 +58,7 @@ public class Tile<T extends Component> extends BorderPane {
     contentView.addListener((__, oldContent, newContent) -> {
       getContentPane()
           .map(Pane::getChildren)
-          .ifPresent(c -> {
-            if (newContent != null) {
-              c.setAll(newContent);
-            } else {
-              c.clear();
-            }
-          });
+          .ifPresent(c -> c.setAll(newContent));
     });
   }
 

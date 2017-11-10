@@ -48,13 +48,13 @@ public class SubsystemLayout implements Layout, Populatable, Sourced {
   private VBox container;
 
   private final ObservableList<Component> children = FXCollections.observableArrayList();
-
+  private List<Component> hidden = new ArrayList<>();
   private final StringProperty title = new SimpleStringProperty(this, "title", "Subsystem");
 
   private Subscription retained; //NOPMD field due to GC
   private DataSource<?> source;
 
-  private List<Component> hidden = new ArrayList<>();
+  private WeakHashMap<Component, Pane> panes = new WeakHashMap<>();
 
   @FXML
   private void initialize() {
@@ -71,8 +71,6 @@ public class SubsystemLayout implements Layout, Populatable, Sourced {
       return al;
     });
   }
-
-  private WeakHashMap<Component, Pane> panes = new WeakHashMap<>();
 
   private Pane paneFor(Component component) {
     if (panes.containsKey(component)) {

@@ -14,12 +14,18 @@ import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 
 public class ActionList {
+  private static Object ACTION_LIST_KEY = new Object();
+
   private final String name;
   private final List<Supplier<MenuItem>> actions;
 
-  private ActionList(String name) {
+  protected ActionList(String name) {
     this.name = name;
     this.actions = new ArrayList<>();
+  }
+
+  public boolean hasItems() {
+    return actions.isEmpty();
   }
 
   public ActionList addAction(String name, Runnable r) {
@@ -27,24 +33,20 @@ public class ActionList {
     return this;
   }
 
-  public boolean hasItems() {
-    return actions.size() > 0;
-  }
-
   /**
    * Add an action with an associated graphic, such as a checkmark or icon.
    */
   public ActionList addAction(String name, Node graphic, Runnable r) {
     actions.add(() -> {
-      MenuItem i = FxUtils.menuItem(name, _e -> r.run());
-      i.setGraphic(graphic);
-      return i;
+      MenuItem item = FxUtils.menuItem(name, _e -> r.run());
+      item.setGraphic(graphic);
+      return item;
     });
     return this;
   }
 
   /**
-   * @return a {@link MenuItem} view of the ActionList, with all items represented by either text items or sub-menus.
+   * Returns {@link MenuItem} view of the ActionList, with all items represented by either text items or sub-menus.
    */
   public List<MenuItem> toMenuItems() {
     return actions.stream().map(Supplier::get).collect(Collectors.toList());
@@ -68,8 +70,6 @@ public class ActionList {
   public static ActionList withName(String name) {
     return new ActionList(name);
   }
-
-  private static Object ACTION_LIST_KEY = new Object();
 
   /**
    * Add an ActionList supplier to a Node, for insertion in a scene graph.

@@ -36,15 +36,14 @@ public class ListLayout implements Layout {
   private final ObservableList<Component> widgets = FXCollections.observableArrayList();
 
   private final StringProperty title = new SimpleStringProperty(this, "title", "List");
-
   private Subscription retained; //NOPMD field due to GC
+
+  private WeakHashMap<Component, Pane> panes = new WeakHashMap<>();
 
   @FXML
   private void initialize() {
     retained = EasyBind.listBind(container.getChildren(), EasyBind.map(widgets, this::paneFor));
   }
-
-  private WeakHashMap<Component, Pane> panes = new WeakHashMap<>();
 
   private Pane paneFor(Component component) {
     if (panes.containsKey(component)) {
