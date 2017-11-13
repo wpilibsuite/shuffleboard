@@ -4,6 +4,8 @@ import edu.wpi.first.shuffleboard.api.Populatable;
 import edu.wpi.first.shuffleboard.api.components.WidgetPropertySheet;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
+import edu.wpi.first.shuffleboard.api.sources.SourceType;
+import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
 import edu.wpi.first.shuffleboard.api.util.Debouncer;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
@@ -306,21 +308,23 @@ public class DashboardTabPane extends TabPane {
     }
 
     @Override
-    public boolean supports(DataSource<?> source) {
+    public boolean supports(String sourceId) {
+      SourceType type = SourceTypes.getDefault().typeForUri(sourceId);
       return !deferPopulation
           && isAutoPopulate()
-          && source.getDataType() != DataTypes.Map
-          && !NetworkTableUtils.isMetadata(source.getId())
-          && (source.getName().startsWith(getSourcePrefix()) || source.getId().startsWith(getSourcePrefix()));
+          && type.dataTypeForSource(DataTypes.getDefault(), sourceId) != DataTypes.Map
+          && !NetworkTableUtils.isMetadata(sourceId)
+          && (SourceTypes.getDefault().typeForUri(sourceId).removeProtocol(sourceId).startsWith(getSourcePrefix())
+          || sourceId.startsWith(getSourcePrefix()));
     }
 
     @Override
-    public boolean hasComponentFor(DataSource<?> source) {
+    public boolean hasComponentFor(String sourceId) {
       return getWidgetPane().getTiles().stream()
           .map(Tile::getContent)
           .flatMap(TypeUtils.castStream(Sourced.class))
-          .anyMatch(s -> s.getSources().contains(source)
-              || (s.getSources().stream().map(DataSource::getId).anyMatch(source.getId()::startsWith)
+          .anyMatch(s -> s.getSources().stream().map(DataSource::getId).anyMatch(sourceId::equals)
+              || (s.getSources().stream().map(DataSource::getId).anyMatch(sourceId::startsWith)
               && !(s instanceof ComponentContainer)));
     }
 
@@ -328,7 +332,7 @@ public class DashboardTabPane extends TabPane {
     public void addComponentFor(DataSource<?> source) {
       List<Populatable> targets = getWidgetPane().components()
           .flatMap(TypeUtils.castStream(Populatable.class))
-          .filter(p -> p.supports(source))
+          .filter(p -> p.supports(source.getId()))
           .collect(Collectors.toList());
 
       if (targets.isEmpty()) {

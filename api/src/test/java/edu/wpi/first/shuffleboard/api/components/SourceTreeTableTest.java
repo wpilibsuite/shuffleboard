@@ -1,6 +1,8 @@
 package edu.wpi.first.shuffleboard.api.components;
 
 
+import edu.wpi.first.shuffleboard.api.data.DataType;
+import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceEntry;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
@@ -49,6 +51,11 @@ public class SourceTreeTableTest extends ApplicationTest {
 
     public MockSourceType() {
       super("Test", false, "test://", __ -> null);
+    }
+
+    @Override
+    public DataType<?> dataTypeForSource(DataTypes registry, String sourceUri) {
+      return DataTypes.Unknown;
     }
 
     @Override

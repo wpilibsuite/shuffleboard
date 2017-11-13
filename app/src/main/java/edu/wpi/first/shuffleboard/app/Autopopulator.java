@@ -54,10 +54,8 @@ public class Autopopulator {
         // causing a ConcurrentModificationException
         // Since addTarget also populates the target, we don't need to worry about responding to those changes here
         List<Populatable> currentTargets = new ArrayList<>(targets);
-        change.getAddedSubList().stream()
-            .map(sourceTypes::forUri)
-            .filter(notCatchallType)
-            .forEach(source -> currentTargets.forEach(target -> target.addComponentIfPossible(source)));
+        change.getAddedSubList().forEach(id ->
+            currentTargets.forEach(target -> target.addComponentIfPossible(SourceTypes.getDefault(), id)));
       }
     }
   }
@@ -68,10 +66,7 @@ public class Autopopulator {
    * @param target the target to populate
    */
   public void populate(Populatable target) {
-    sourceTypes.allAvailableSourceUris().stream()
-        .map(sourceTypes::forUri)
-        .filter(notCatchallType)
-        .forEach(target::addComponentIfPossible);
+    sourceTypes.allAvailableSourceUris().forEach(uri -> target.addComponentIfPossible(SourceTypes.getDefault(), uri));
   }
 
   /**

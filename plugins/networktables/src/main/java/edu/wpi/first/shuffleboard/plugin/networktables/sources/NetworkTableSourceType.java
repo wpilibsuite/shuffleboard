@@ -1,5 +1,7 @@
 package edu.wpi.first.shuffleboard.plugin.networktables.sources;
 
+import edu.wpi.first.shuffleboard.api.data.DataType;
+import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.sources.SourceEntry;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.recording.TimestampedData;
@@ -100,6 +102,11 @@ public final class NetworkTableSourceType extends SourceType {
   @Override
   public SourceEntry createSourceEntryForUri(String uri) {
     return new NetworkTableSourceEntry(removeProtocol(uri), availableSources.get(uri));
+  }
+
+  @Override
+  public DataType<?> dataTypeForSource(DataTypes registry, String sourceUri) {
+    return NetworkTableUtils.dataTypeForEntry(sourceUri);
   }
 
   @Override

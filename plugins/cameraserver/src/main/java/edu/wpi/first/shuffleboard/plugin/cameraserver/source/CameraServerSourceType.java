@@ -1,6 +1,9 @@
 package edu.wpi.first.shuffleboard.plugin.cameraserver.source;
 
 import edu.wpi.first.networktables.NetworkTableInstance;
+
+import edu.wpi.first.shuffleboard.api.data.DataType;
+import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.sources.SourceEntry;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.recording.TimestampedData;
@@ -54,6 +57,11 @@ public final class CameraServerSourceType extends SourceType {
   @Override
   public SourceEntry createSourceEntryForUri(String uri) {
     return new CameraServerSourceEntry(new CameraServerData(removeProtocol(uri), null));
+  }
+
+  @Override
+  public DataType<?> dataTypeForSource(DataTypes registry, String sourceUri) {
+    return registry.forName("CameraServerData").orElse(DataTypes.Unknown);
   }
 
   @Override
