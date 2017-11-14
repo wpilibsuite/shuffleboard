@@ -23,6 +23,7 @@ import edu.wpi.first.shuffleboard.plugin.base.data.types.NumberType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.PIDControllerType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.PowerDistributionType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.RawByteType;
+import edu.wpi.first.shuffleboard.plugin.base.data.types.RobotPreferencesType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.RelayType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.SendableChooserType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.SpeedControllerType;
@@ -46,6 +47,7 @@ import edu.wpi.first.shuffleboard.plugin.base.widget.NumberBarWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.NumberSlider;
 import edu.wpi.first.shuffleboard.plugin.base.widget.PIDControllerWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.PowerDistributionPanelWidget;
+import edu.wpi.first.shuffleboard.plugin.base.widget.RobotPreferencesWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.RelayWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.SimpleDialWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.SpeedController;
@@ -79,6 +81,7 @@ public class BasePlugin extends Plugin {
         new AnalogInputType(),
         new PowerDistributionType(),
         new EncoderType(),
+        new RobotPreferencesType(),
         new SendableChooserType(),
         new SpeedControllerType(),
         new SubsystemType(),
@@ -105,6 +108,7 @@ public class BasePlugin extends Plugin {
         WidgetType.forAnnotatedWidget(PowerDistributionPanelWidget.class),
         WidgetType.forAnnotatedWidget(ComboBoxChooser.class),
         WidgetType.forAnnotatedWidget(EncoderWidget.class),
+        WidgetType.forAnnotatedWidget(RobotPreferencesWidget.class),
         WidgetType.forAnnotatedWidget(SpeedController.class),
         WidgetType.forAnnotatedWidget(CommandWidget.class),
         WidgetType.forAnnotatedWidget(ThreeAxisAccelerometerWidget.class),
@@ -140,6 +144,7 @@ public class BasePlugin extends Plugin {
         .put(new PowerDistributionType(), WidgetType.forAnnotatedWidget(PowerDistributionPanelWidget.class))
         .put(new SendableChooserType(), WidgetType.forAnnotatedWidget(ComboBoxChooser.class))
         .put(new EncoderType(), WidgetType.forAnnotatedWidget(EncoderWidget.class))
+        .put(new RobotPreferencesType(), WidgetType.forAnnotatedWidget(RobotPreferencesWidget.class))
         .put(new SpeedControllerType(), WidgetType.forAnnotatedWidget(SpeedController.class))
         .put(new CommandType(), WidgetType.forAnnotatedWidget(CommandWidget.class))
         .put(new ThreeAxisAccelerometerType(), WidgetType.forAnnotatedWidget(ThreeAxisAccelerometerWidget.class))
