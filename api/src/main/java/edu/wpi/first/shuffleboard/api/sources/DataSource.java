@@ -12,6 +12,44 @@ import javafx.beans.property.StringProperty;
  * to never update. This can be useful if a widget wants to disable user control while the source
  * can't handle it.
  *
+ * <p>Data sources have several major properties:
+ * <ul>
+ * <li>active</li>
+ * <li>name</li>
+ * <li>ID</li>
+ * <li>data</li>
+ * <li>data type</li>
+ * <li>type</li>
+ * <li>connectedness</li>
+ * </ul>
+ *
+ * <p>The <i>active</i> property describes whether or not the source is connected to the backing data source and can
+ * update at any time. An active source is always <i>connected</i>.
+ *
+ * <p>The <i>name</i> property is a unique identifier for the data backing the source. The name of the source also
+ * describes a <i>path</i> to the data and may be thought of like a filesystem structure. Forward slashes ({@code "/"})
+ * delimit the separate components. If there are multiple components, each one is expected to be its own valid source
+ * for that type of data. For example, a theoretical "file system" data source with the name {@code /home/usr/foo.txt}
+ * would have a "File Source" for the text file, along with a "Directory Source" for each of {@code /home/} and
+ * {@code /home/usr}.
+ *
+ * <p>The <i>ID</i> of a data source is simply its name encoded in a URI-like string, prefixed by a unique identifier
+ * string for its type. {@code "${protocol}://${name}"}, eg {@code "file:///home/usr/foo.txt} or
+ * {@code network_table:///SmartDashboard/}.
+ *
+ * <p>The <i>data type</i> of a source contains the <i>expected type of the data</i>. The <i>actual</i> data may not be
+ * of this type; in this case, the source is marked as <i>inactive</i> (but still <i>connected</i>) until the actual
+ * data has this type.
+ *
+ * <p>The <i>data</i> property contains the current data for the source. This may also be set by user-controllable
+ * widgets to manipulate the data.
+ *
+ * <p>The <i>type</i> of a data source is a
+ *
+ * <p><i>Connectedness</i> simply marks whether or not the source is connected to the actual data source. For example,
+ * sources whose data resides on a remote resource like a server are not connected if there is no network connection to
+ * that remote resource.
+ *
  * @param <T> the type of data provided
  */
 public interface DataSource<T> {

@@ -13,6 +13,23 @@ import java.util.Map;
  */
 public abstract class ComplexData<T extends ComplexData<T>> {
 
+  /**
+   * Creates a map containing all the individual data points composing this complex data object. For example, a data
+   * class looking like:
+   *
+   * <pre><code>
+   * public class Point extends ComplexData&lt;Point&gt; {
+   *   private final double x;
+   *   private final double y;
+   * }
+   * <code>
+   * </pre>
+   *
+   * should put the values of {@code x} and {@code y} into this map, with the keys {@code "x"} and {@code "y"},
+   * respectively. Note that these keys do not have to be the same as the field names, and may be completely arbitrary.
+   * But the keys <i>do</i> have to be the same as those used by the corresponding {@link ComplexDataType} to convert
+   * a {@code Map<String, Object>} to an instance of this class.
+   */
   public abstract Map<String, Object> asMap();
 
   /**
