@@ -87,10 +87,6 @@
     -fx-font-size: 11pt;
 }
 
-.tile .toggle-switch {
-    -fx-font-size: 12pt;
-}
-
 .tile:selected {
     -fx-effect: dropshadow(gaussian, -swatch-500, 6, 0.1, 0, 4);
 }
@@ -102,8 +98,8 @@
     -fx-font-size: 11pt;
 }
 
-.tile .property-sheet * {
-    /* TODO figure out exactly what needs to be set */
+.tile .scroll-pane, .tile .viewport,
+.tile .property-sheet .property-pane, .tile .property-sheet .tool-bar {
     -fx-background-color: transparent;
 }
 
@@ -112,13 +108,8 @@
     -fx-font-size: 12px;
 }
 
-
 .layout-label * {
     -fx-text-fill: #aaa;
-}
-
-.tile .scroll-pane, .tile .viewport {
-    -fx-background-color: transparent;
 }
 
 /*******************************************************************************
