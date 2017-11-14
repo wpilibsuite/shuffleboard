@@ -9,6 +9,7 @@ import edu.wpi.first.shuffleboard.api.util.GridPoint;
 import edu.wpi.first.shuffleboard.api.util.RoundingMode;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 import edu.wpi.first.shuffleboard.api.widget.Component;
+import edu.wpi.first.shuffleboard.api.widget.ComponentInstantiationException;
 import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.api.widget.Layout;
 import edu.wpi.first.shuffleboard.api.widget.LayoutType;
@@ -31,6 +32,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.WeakHashMap;
 import java.util.function.Function;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -106,11 +108,15 @@ public class WidgetPaneController {
         Optional<String> componentName = Components.getDefault().pickComponentNameFor(source.getDataType());
         Optional<DataSource<?>> dummySource = DummySource.forTypes(source.getDataType());
         if (componentName.isPresent() && dummySource.isPresent()) {
-          Components.getDefault().createComponent(componentName.get(), dummySource.get()).ifPresent(c -> {
-            pane.setHighlight(true);
-            pane.setHighlightPoint(point);
-            pane.setHighlightSize(pane.sizeOfWidget(c));
-          });
+          try {
+            Components.getDefault().createComponent(componentName.get(), dummySource.get()).ifPresent(c -> {
+              pane.setHighlight(true);
+              pane.setHighlightPoint(point);
+              pane.setHighlightSize(pane.sizeOfWidget(c));
+            });
+          } catch (ComponentInstantiationException e) {
+            log.log(Level.SEVERE, e.getMessage(), e);
+          }
         }
       }
 
@@ -138,13 +144,17 @@ public class WidgetPaneController {
 
       if (dragboard.hasContent(DataFormats.widgetType)) {
         String componentType = (String) dragboard.getContent(DataFormats.widgetType);
-        Components.getDefault().createComponent(componentType).ifPresent(c -> {
-          TileSize size = pane.sizeOfWidget(c);
-          if (pane.isOpen(point, size, _t -> false)) {
-            Tile<?> tile = pane.addComponentToTile(c);
-            moveTile(tile, point);
-          }
-        });
+        try {
+          Components.getDefault().createComponent(componentType).ifPresent(c -> {
+            TileSize size = pane.sizeOfWidget(c);
+            if (pane.isOpen(point, size, _t -> false)) {
+              Tile<?> tile = pane.addComponentToTile(c);
+              moveTile(tile, point);
+            }
+          });
+        } catch (ComponentInstantiationException e) {
+          log.log(Level.SEVERE, e.getMessage(), e);
+        }
       }
 
       cleanupWidgetDrag();
@@ -246,11 +256,15 @@ public class WidgetPaneController {
    * @param point  the point to place the widget for the source
    */
   private void dropSource(DataSource<?> source, GridPoint point) {
-    Components.getDefault().pickComponentNameFor(source.getDataType())
-           .flatMap(name -> Components.getDefault().createComponent(name, source))
-           .filter(widget -> pane.isOpen(point, pane.sizeOfWidget(widget), n -> widget == n))
-           .map(pane::addComponentToTile)
-           .ifPresent(tile -> pane.moveNode(tile, point));
+    try {
+      Components.getDefault().pickComponentNameFor(source.getDataType())
+          .flatMap(name -> Components.getDefault().createComponent(name, source))
+          .filter(widget -> pane.isOpen(point, pane.sizeOfWidget(widget), n -> widget == n))
+          .map(pane::addComponentToTile)
+          .ifPresent(tile -> pane.moveNode(tile, point));
+    } catch (ComponentInstantiationException e) {
+      log.log(Level.SEVERE, e.getMessage(), e);
+    }
   }
 
   /**
@@ -310,9 +324,13 @@ public class WidgetPaneController {
       if (dragboard.hasContent(DataFormats.widgetType) && tile instanceof LayoutTile) {
         String widgetType = (String) dragboard.getContent(DataFormats.widgetType);
 
-        Components.getDefault().createWidget(widgetType).ifPresent(widget -> {
-          ((LayoutTile) tile).getContent().addChild(widget);
-        });
+        try {
+          Components.getDefault().createWidget(widgetType).ifPresent(widget -> {
+            ((LayoutTile) tile).getContent().addChild(widget);
+          });
+        } catch (ComponentInstantiationException e) {
+          log.log(Level.SEVERE, e.getMessage(), e);
+        }
         event.consume();
 
         return;
@@ -323,11 +341,15 @@ public class WidgetPaneController {
 
         Layout container = ((LayoutTile) tile).getContent();
         DataSource<?> source = entry.get();
-        Components.getDefault().componentNamesForSource(entry.get())
-            .stream()
-            .findAny()
-            .flatMap(name -> Components.getDefault().createWidget(name, source))
-            .ifPresent(container::addChild);
+        try {
+          Components.getDefault().componentNamesForSource(entry.get())
+              .stream()
+              .findAny()
+              .flatMap(name -> Components.getDefault().createWidget(name, source))
+              .ifPresent(container::addChild);
+        } catch (ComponentInstantiationException e) {
+          log.log(Level.SEVERE, e.getMessage(), e);
+        }
         event.consume();
 
         return;
@@ -421,8 +443,12 @@ public class WidgetPaneController {
           } else {
             // only need to change if it's to another type
             changeItem.setOnAction(__ -> {
-              Components.getDefault().createWidget(name, widget.getSources())
-                  .ifPresent(tile::setContent);
+              try {
+                Components.getDefault().createWidget(name, widget.getSources())
+                    .ifPresent(tile::setContent);
+              } catch (ComponentInstantiationException e) {
+                log.log(Level.SEVERE, e.getMessage(), e);
+              }
             });
           }
           changeView.getItems().add(changeItem);

@@ -1,12 +1,14 @@
 package edu.wpi.first.shuffleboard.app.components;
 
 import edu.wpi.first.shuffleboard.api.sources.DummySource;
-import edu.wpi.first.shuffleboard.api.util.TypeUtils;
+import edu.wpi.first.shuffleboard.api.widget.ComponentInstantiationException;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 import edu.wpi.first.shuffleboard.api.widget.WidgetType;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleObjectProperty;
@@ -19,6 +21,9 @@ import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
 
 public class WidgetGallery extends TilePane {
+
+  private static final Logger log = Logger.getLogger(WidgetGallery.class.getName());
+
   /**
    * Creates a new WidgetGallery. This loads WidgetGallery.fxml and set up the constructor
    */
@@ -38,14 +43,15 @@ public class WidgetGallery extends TilePane {
    */
   public void setWidgets(Collection<WidgetType> widgets) {
     clear();
-    widgets.stream()
-            .map(WidgetType::get)
-            .flatMap(TypeUtils.castStream(Widget.class))
-            .peek(widget ->
-              DummySource.forTypes(widget.getDataTypes())
-                         .ifPresent(widget::addSource)
-            )
-            .forEach(this::addWidget);
+    for (WidgetType<?> widgetType : widgets) {
+      try {
+        Widget widget = widgetType.get();
+        DummySource.forTypes(widget.getDataTypes()).ifPresent(widget::addSource);
+        addWidget(widget);
+      } catch (ComponentInstantiationException e) {
+        log.log(Level.WARNING, "Could not add widget to gallery: '" + widgetType.getName() + "'", e);
+      }
+    }
   }
 
   private void addWidget(Widget widget) {

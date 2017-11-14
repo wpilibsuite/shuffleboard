@@ -2,6 +2,10 @@ package edu.wpi.first.shuffleboard.api.widget;
 
 import edu.wpi.first.shuffleboard.api.data.DataType;
 
+import com.google.common.collect.Iterables;
+
+import java.util.Set;
+
 import javafx.beans.property.Property;
 
 public interface SingleTypeWidget<T> extends Widget {
@@ -19,8 +23,25 @@ public interface SingleTypeWidget<T> extends Widget {
     return dataProperty().getValue();
   }
 
-  default DataType<T> getDataType() {
-    return getDataTypes().toArray(new DataType[1])[0];
+  /**
+   * Gets the single data type for this widget.
+   *
+   * @throws IllegalStateException if there isn't exactly one data type defined for this widget
+   */
+  @SuppressWarnings("unchecked")
+  default DataType<T> getDataType() throws IllegalStateException {
+    Set<DataType> dataTypes = getDataTypes();
+    if (dataTypes.isEmpty()) {
+      throw new IllegalStateException(
+          String.format(
+              "No data types defined for %s! Make sure the required data types are exported by the defining plugin",
+              getClass().getName()
+          )
+      );
+    } else if (dataTypes.size() > 1) {
+      throw new IllegalStateException("Multiple data types are defined for a SingleTypeWidget! " + dataTypes);
+    }
+    return Iterables.get(dataTypes, 0);
   }
 
   /**

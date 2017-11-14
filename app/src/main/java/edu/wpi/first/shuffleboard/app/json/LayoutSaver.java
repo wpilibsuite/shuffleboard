@@ -5,6 +5,7 @@ import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.Sources;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 import edu.wpi.first.shuffleboard.api.widget.Component;
+import edu.wpi.first.shuffleboard.api.widget.ComponentInstantiationException;
 import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.api.widget.Layout;
 import edu.wpi.first.shuffleboard.api.widget.Sourced;
@@ -50,10 +51,15 @@ public class LayoutSaver implements ElementTypeAdapter<Layout> {
   public Layout deserialize(JsonElement json, JsonDeserializationContext context) throws JsonParseException {
     JsonObject obj = json.getAsJsonObject();
     String name = obj.get("_type").getAsString();
-    JsonArray children = obj.get("_children").getAsJsonArray();
 
-    Layout layout = Components.getDefault().createComponent(name).flatMap(TypeUtils.optionalCast(Layout.class))
-        .orElseThrow(() -> new JsonParseException("Can't find layout name " + name));
+    Layout layout;
+    try {
+      layout = Components.getDefault().createComponent(name).flatMap(TypeUtils.optionalCast(Layout.class))
+          .orElseThrow(() -> new JsonParseException("Can't find layout name " + name));
+    } catch (ComponentInstantiationException e) {
+      throw new JsonParseException(e);
+    }
+    JsonArray children = obj.get("_children").getAsJsonArray();
 
     if (layout instanceof Sourced) {
       for (int i = 0; i > Integer.MIN_VALUE; i++) {

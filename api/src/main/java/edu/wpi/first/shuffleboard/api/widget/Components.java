@@ -126,8 +126,10 @@ public class Components extends Registry<ComponentType> {
    * @param source the data source for the widget to use
    *
    * @return an optional containing the created view, or an empty optional if no widget could be created
+   *
+   * @throws ComponentInstantiationException if a widget could not be created
    */
-  public <T> Optional<Widget> createWidget(String name, DataSource<T> source) {
+  public <T> Optional<Widget> createWidget(String name, DataSource<T> source) throws ComponentInstantiationException {
     Optional<Widget> widget = createWidget(name);
     widget.ifPresent(w -> w.addSource(source));
     return widget;
@@ -143,9 +145,11 @@ public class Components extends Registry<ComponentType> {
    *
    * @return an optional containing the created widget, or an empty optional if no widget could be created
    *
+   * @throws ComponentInstantiationException if a widget could not be created
    * @throws IncompatibleSourceException if the widget for the given name is incompatible with any of the given sources
    */
-  public Optional<Widget> createWidget(String name, Collection<DataSource> sources) throws IncompatibleSourceException {
+  public Optional<Widget> createWidget(String name, Collection<DataSource> sources)
+      throws ComponentInstantiationException, IncompatibleSourceException {
     Optional<Widget> widget = createWidget(name);
     widget.ifPresent(w -> sources.forEach(w::addSource));
     return widget;
@@ -153,8 +157,10 @@ public class Components extends Registry<ComponentType> {
 
   /**
    * Tries to create a widget from a known widget name, without an initial source.
+   *
+   * @throws ComponentInstantiationException if a widget could not be created
    */
-  public Optional<Widget> createWidget(String name) {
+  public Optional<Widget> createWidget(String name) throws ComponentInstantiationException {
     Optional<Widget> widget = typeFor(name).map(ComponentType::get).flatMap(TypeUtils.optionalCast(Widget.class));
     widget.ifPresent(w -> activeWidgets.put(w, w));
     return widget;
@@ -163,8 +169,10 @@ public class Components extends Registry<ComponentType> {
   /**
    * Tries to create an arbitrary component. Will delegate to createWidget if the given component
    * name is registered as a widget.
+   *
+   * @throws ComponentInstantiationException if a component could not be created
    */
-  public Optional<? extends Component> createComponent(String name) {
+  public Optional<? extends Component> createComponent(String name) throws ComponentInstantiationException {
     // Widgets need to be created using the createWidget function due to state
     Optional<Widget> widget = typeFor(name).filter(WidgetType.class::isInstance).flatMap(_w -> createWidget(name));
     if (widget.isPresent()) {
@@ -182,8 +190,11 @@ public class Components extends Registry<ComponentType> {
    * @param source the source for the created component to use, if the component accepts one
    *
    * @return an optional containing the created component, or empty if no component with the given name is registered
+   *
+   * @throws ComponentInstantiationException if a component could not be created
    */
-  public Optional<? extends Component> createComponent(String name, DataSource<?> source) {
+  public Optional<? extends Component> createComponent(String name, DataSource<?> source)
+      throws ComponentInstantiationException {
     return createComponent(name)
         .map(c -> {
           if (c instanceof Sourced) {

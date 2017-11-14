@@ -1,9 +1,10 @@
 package edu.wpi.first.shuffleboard.plugin.base.widget;
 
 import edu.wpi.first.shuffleboard.api.components.NumberField;
+import edu.wpi.first.shuffleboard.api.widget.AnnotatedWidget;
 import edu.wpi.first.shuffleboard.api.widget.Description;
 import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
-import edu.wpi.first.shuffleboard.api.widget.SimpleAnnotatedWidget;
+import edu.wpi.first.shuffleboard.api.widget.SingleSourceWidget;
 
 import org.fxmisc.easybind.EasyBind;
 
@@ -21,7 +22,7 @@ import javafx.scene.layout.Pane;
         String.class, Number.class, Boolean.class
     })
 @ParametrizedController("TextView.fxml")
-public class TextView extends SimpleAnnotatedWidget<Object> {
+public class TextView extends SingleSourceWidget implements AnnotatedWidget {
 
   @FXML
   private Pane root;
@@ -50,12 +51,12 @@ public class TextView extends SimpleAnnotatedWidget<Object> {
       if (getData() instanceof Boolean) {
         // TODO maybe disable boolean text entry entirely? No point in typing "true" or "false" every time
         // Especially since checkboxes and toggle buttons exist
-        setData(Boolean.valueOf(newText));
+        getSource().setData(Boolean.valueOf(newText));
       } else {
-        setData(newText);
+        getSource().setData(newText);
       }
     });
-    numberField.numberProperty().addListener((__, oldNumber, newNumber) -> setData(newNumber));
+    numberField.numberProperty().addListener((__, oldNumber, newNumber) -> getSource().setData(newNumber));
   }
 
   @Override

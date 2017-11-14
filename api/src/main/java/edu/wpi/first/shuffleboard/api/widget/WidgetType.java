@@ -2,6 +2,7 @@ package edu.wpi.first.shuffleboard.api.widget;
 
 import edu.wpi.first.shuffleboard.api.data.DataType;
 
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -20,16 +21,20 @@ public interface WidgetType<W extends Widget> extends ComponentType<W> {
    */
   static <T extends Widget> WidgetType<T> forAnnotatedWidget(Class<T> widgetClass) {
     Components.validateAnnotatedComponentClass(widgetClass);
+
     return new AbstractWidgetType<T>(widgetClass.getAnnotation(Description.class)) {
       @Override
-      public T get() {
-        return Components.viewFor(widgetClass).orElseGet(() -> {
-          try {
+      public T get() throws ComponentInstantiationException {
+        try {
+          Optional<T> view = Components.viewFor(widgetClass);
+          if (view.isPresent()) {
+            return view.get();
+          } else {
             return widgetClass.newInstance();
-          } catch (Exception e) {
-            throw new RuntimeException("The widget class could not be instantiated", e);
           }
-        });
+        } catch (ReflectiveOperationException | RuntimeException e) {
+          throw new ComponentInstantiationException(this, e);
+        }
       }
 
       @Override

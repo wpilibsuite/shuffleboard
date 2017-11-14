@@ -2,6 +2,7 @@ package edu.wpi.first.shuffleboard.app.json;
 
 import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
 import edu.wpi.first.shuffleboard.api.sources.Sources;
+import edu.wpi.first.shuffleboard.api.widget.ComponentInstantiationException;
 import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 
@@ -35,8 +36,13 @@ public class WidgetSaver implements ElementTypeAdapter<Widget> {
   public Widget deserialize(JsonElement json, JsonDeserializationContext context) throws JsonParseException {
     JsonObject obj = json.getAsJsonObject();
     String type = obj.get("_type").getAsString();
-    Widget widget = Components.getDefault().createWidget(type)
-            .orElseThrow(() -> new JsonParseException("No widget found for " + type));
+    Widget widget;
+    try {
+      widget = Components.getDefault().createWidget(type)
+          .orElseThrow(() -> new JsonParseException("No widget found for " + type));
+    } catch (ComponentInstantiationException e) {
+      throw new JsonParseException(e);
+    }
 
     for (int i = 0; i > Integer.MIN_VALUE; i++) {
       String prop = "_source" + i;
