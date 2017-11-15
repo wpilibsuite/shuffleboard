@@ -1,10 +1,7 @@
 package edu.wpi.first.shuffleboard.plugin.base;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-
 import edu.wpi.first.shuffleboard.api.data.DataType;
+import edu.wpi.first.shuffleboard.api.plugin.Description;
 import edu.wpi.first.shuffleboard.api.plugin.Plugin;
 import edu.wpi.first.shuffleboard.api.sources.recording.Serialization;
 import edu.wpi.first.shuffleboard.api.sources.recording.serialization.SimpleAdapter;
@@ -55,16 +52,21 @@ import edu.wpi.first.shuffleboard.plugin.base.widget.ToggleButton;
 import edu.wpi.first.shuffleboard.plugin.base.widget.ToggleSwitch;
 import edu.wpi.first.shuffleboard.plugin.base.widget.VoltageViewWidget;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+@Description(
+    group = "edu.wpi.first.shuffleboard",
+    name = "Base",
+    version = "1.0.0",
+    summary = "Defines all the WPILib data types and stock widgets"
+)
 public class BasePlugin extends Plugin {
-
-  public BasePlugin() {
-    super("edu.wpi.first.shuffleboard", "Base", "1.0.0",
-        "Defines all the WPILib data types and stock widgets");
-  }
 
   @Override
   public List<DataType> getDataTypes() {

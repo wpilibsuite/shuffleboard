@@ -2,6 +2,8 @@ package edu.wpi.first.shuffleboard.app.plugin;
 
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
+import edu.wpi.first.shuffleboard.api.plugin.Dependency;
+import edu.wpi.first.shuffleboard.api.plugin.Description;
 import edu.wpi.first.shuffleboard.api.plugin.Plugin;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
@@ -182,35 +184,26 @@ public class PluginLoaderTest {
 
   @Test
   public void testOrderPluginsNoDependencies() {
-    Plugin p1 = new MockPlugin();
-    Plugin p2 = new MockPlugin();
-    assertEquals(0, PluginLoader.comparePluginsByDependencyGraph(p1, p2));
-    assertEquals(0, PluginLoader.comparePluginsByDependencyGraph(p2, p1));
+    assertEquals(0, loader.comparePluginsByDependencyGraph(MockPlugin.class, NewerVersionPlugin.class));
+    assertEquals(0, loader.comparePluginsByDependencyGraph(NewerVersionPlugin.class, MockPlugin.class));
   }
 
   @Test
   public void testOrderPluginsByDependencies() {
-    Plugin p1 = new MockPlugin();
-    Plugin p2 = new DependentPlugin();
-    assertEquals(1, PluginLoader.comparePluginsByDependencyGraph(p2, p1));
-    assertEquals(-1, PluginLoader.comparePluginsByDependencyGraph(p1, p2));
+    assertEquals(1, loader.comparePluginsByDependencyGraph(DependentPlugin.class, MockPlugin.class));
+    assertEquals(-1, loader.comparePluginsByDependencyGraph(MockPlugin.class, DependentPlugin.class));
   }
 
   @Test
   public void testCyclicalDependencyThrows() {
-    // PluginA depends on PluginB
-    Plugin p1 = new CyclicalPluginA();
-
-    // PluginB depends on PluginA: cyclical dependency!
-    Plugin p2 = new CyclicalPluginB();
-
-    assertThrows(IllegalStateException.class, () -> PluginLoader.comparePluginsByDependencyGraph(p1, p2));
+    assertThrows(IllegalStateException.class,
+        () -> loader.comparePluginsByDependencyGraph(CyclicalPluginA.class, CyclicalPluginB.class));
   }
 
   @Test
   public void testSelfDependencyThrows() {
-    Plugin plugin = new SelfDependentPlugin();
-    assertThrows(IllegalStateException.class, () -> PluginLoader.comparePluginsByDependencyGraph(plugin, plugin));
+    assertThrows(IllegalStateException.class,
+        () -> loader.comparePluginsByDependencyGraph(SelfDependentPlugin.class, SelfDependentPlugin.class));
   }
 
   @Test
@@ -248,7 +241,8 @@ public class PluginLoaderTest {
   /**
    * A mock plugin for testing.
    */
-  public static class MockPlugin extends Plugin {
+  @Description(group = "test", name = "MockPlugin", version = "0.0.0", summary = "A plugin for testing")
+  public static final class MockPlugin extends Plugin {
 
     private static final DataType<Object> dataType = new DataType<Object>("Mock Data", Object.class) {
       @Override
@@ -283,10 +277,6 @@ public class PluginLoaderTest {
     private static final Theme theme = new Theme("Mock Theme");
     private static final SourceType sourceType = new SourceType("Mock Source", false, "mock://", null);
 
-    public MockPlugin() {
-      super("test", "Mock Plugin", "0.0.0", "A plugin for testing");
-    }
-
     @Override
     public List<Theme> getThemes() {
       return ImmutableList.of(theme);
@@ -313,51 +303,40 @@ public class PluginLoaderTest {
     }
   }
 
-  public static class NewerVersionPlugin extends Plugin {
-    public NewerVersionPlugin() {
-      super("test", "Mock Plugin", "9.9.9", "A newer version of the mock plugin");
-    }
+
+  @Description(group = "test", name = "MockPlugin", version = "9.9.9", summary = "A newer version of the mock plugin")
+  public static final class NewerVersionPlugin extends Plugin {
   }
 
   /**
    * A plugin that depends on another plugin.
    */
-  public static class DependentPlugin extends Plugin {
-    public DependentPlugin() {
-      super("test", "Dependent Plugin", "0.0.0", "");
-      addDependency("test:Mock Plugin:0.0.0");
-    }
+  @Description(group = "test", name = "Dependent Plugin", version = "0.0.0", summary = "")
+  @Dependency(group = "test", name = "MockPlugin", minVersion = "0.0.0")
+  public static final class DependentPlugin extends Plugin {
   }
 
   /**
    * A plugin that depends on another plugin, but requires a higher version than the one that gets loaded.
    */
+  @Description(group = "test", name = "DependentOnHigherVersion", version = "0.0.0", summary = "")
+  @Dependency(group = "test", name = "MockPlugin", minVersion = "999999.999999.999999")
   public static class DependentOnHigherVersion extends Plugin {
-    public DependentOnHigherVersion() {
-      super("test", "DependentOnHigherVersion", "0.0.0", "");
-      addDependency("test:Mock Plugin:9999999.999999.99999999");
-    }
   }
 
+  @Description(group = "test", name = "CyclicalPluginA", version = "0.0.0", summary = "")
+  @Dependency(group = "test", name = "CyclicalPluginB", minVersion = "0.0.0")
   private static class CyclicalPluginA extends Plugin {
-    public CyclicalPluginA() {
-      super("foo", "PluginA", "0.0.0", "");
-      addDependency("foo:PluginB:0.0.0");
-    }
   }
 
-  private static class CyclicalPluginB extends Plugin {
-    public CyclicalPluginB() {
-      super("foo", "PluginB", "0.0.0", "");
-      addDependency("foo:PluginA:0.0.0");
-    }
+  @Description(group = "test", name = "CyclicalPluginB", version = "0.0.0", summary = "")
+  @Dependency(group = "test", name = "CyclicalPluginA", minVersion = "0.0.0")
+  private static final class CyclicalPluginB extends Plugin {
   }
 
-  private static class SelfDependentPlugin extends Plugin {
-    public SelfDependentPlugin() {
-      super("foo", "SelfDependent", "0.0.0", "");
-      addDependency(getArtifact());
-    }
+  @Description(group = "test", name = "SelfDependentPlugin", version = "0.0.0", summary = "")
+  @Dependency(group = "test", name = "SelfDependentPlugin", minVersion = "0.0.0")
+  private static final class SelfDependentPlugin extends Plugin {
   }
 
 }

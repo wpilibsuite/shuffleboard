@@ -2,6 +2,9 @@ package edu.wpi.first.shuffleboard.app.plugin;
 
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
+import edu.wpi.first.shuffleboard.api.plugin.Dependencies;
+import edu.wpi.first.shuffleboard.api.plugin.Dependency;
+import edu.wpi.first.shuffleboard.api.plugin.Description;
 import edu.wpi.first.shuffleboard.api.plugin.Plugin;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
 import edu.wpi.first.shuffleboard.api.sources.recording.serialization.Serializers;
@@ -12,8 +15,8 @@ import edu.wpi.first.shuffleboard.api.widget.SingleSourceWidget;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 import edu.wpi.first.shuffleboard.app.sources.DestroyedSource;
 
+import com.cedarsoft.version.Version;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableSet;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,10 +29,14 @@ import java.nio.file.Path;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javafx.collections.FXCollections;
@@ -44,6 +51,7 @@ public class PluginLoader {
       new PluginLoader(DataTypes.getDefault(), SourceTypes.getDefault(), Components.getDefault(), Themes.getDefault());
 
   private final ObservableSet<Plugin> loadedPlugins = FXCollections.observableSet();
+  private final Set<Class<? extends Plugin>> knownPluginClasses = new HashSet<>();
   private final ObservableList<Plugin> knownPlugins = FXCollections.observableArrayList();
   private final DataTypes dataTypes;
   private final SourceTypes sourceTypes;
@@ -118,13 +126,18 @@ public class PluginLoader {
     };
     URLClassLoader classLoader = AccessController.doPrivileged(getClassLoader);
     try (JarFile jarFile = new JarFile(new File(jarUri))) {
-      jarFile.stream()
+      List<? extends Class<? extends Plugin>> pluginClasses = jarFile.stream()
           .filter(e -> e.getName().endsWith(".class"))
           .map(e -> e.getName().replace('/', '.'))
           .map(n -> n.substring(0, n.length() - 6)) // ".class".length() == 6
           .flatMap(className -> tryLoadClass(className, classLoader))
           .filter(Plugin.class::isAssignableFrom)
           .map(c -> (Class<? extends Plugin>) c)
+          .collect(Collectors.toList());
+      knownPluginClasses.addAll(pluginClasses);
+      pluginClasses.stream()
+          .sorted(Comparator.<Class<? extends Plugin>>comparingInt(p -> getDependencies(p).size())
+              .thenComparing(this::comparePluginsByDependencyGraph))
           .flatMap(c -> {
             try {
               return Stream.of(TypeUtils.tryInstantiate(c));
@@ -133,8 +146,6 @@ public class PluginLoader {
               return Stream.empty();
             }
           })
-          .sorted(Comparator.<Plugin>comparingInt(p -> p.getDependencies().size())
-              .thenComparing(PluginLoader::comparePluginsByDependencyGraph))
           .forEach(this::load);
     }
   }
@@ -148,14 +159,14 @@ public class PluginLoader {
    * @throws IllegalStateException if the two plugins depend on each other, creating a cyclical dependency
    */
   @VisibleForTesting
-  static int comparePluginsByDependencyGraph(Plugin p1, Plugin p2) {
-    if (p1.dependsOn(p2)) {
-      if (p2.dependsOn(p1)) {
+  int comparePluginsByDependencyGraph(Class<? extends Plugin> p1, Class<? extends Plugin> p2) {
+    if (dependsOn(p1, p2)) {
+      if (dependsOn(p2, p1)) {
         throw new IllegalStateException(
-            "Cyclical dependency detected! " + p1.fullIdString() + " <-> " + p2.fullIdString());
+            "Cyclical dependency detected! " + p1.getName() + " <-> " + p2.getName());
       }
       return 1;
-    } else if (p2.dependsOn(p1)) {
+    } else if (dependsOn(p2, p1)) {
       return -1;
     } else {
       // No dependencies
@@ -163,7 +174,7 @@ public class PluginLoader {
     }
   }
 
-  private Stream<Class<?>> tryLoadClass(String name, ClassLoader classLoader) {
+  private static Stream<Class<?>> tryLoadClass(String name, ClassLoader classLoader) {
     try {
       return Stream.of(Class.forName(name, false, classLoader));
     } catch (ClassNotFoundException e) {
@@ -205,6 +216,7 @@ public class PluginLoader {
         .ifPresent(oldPlugin -> {
           unload(oldPlugin);
           knownPlugins.remove(oldPlugin);
+          knownPluginClasses.remove(plugin.getClass());
         });
   }
 
@@ -266,9 +278,58 @@ public class PluginLoader {
     return true;
   }
 
+  private static Description getDescription(Class<? extends Plugin> pluginClass) {
+    return pluginClass.getAnnotation(Description.class);
+  }
+
+  private static List<Dependency> getDependencies(Class<? extends Plugin> pluginClass) {
+    Dependencies dependenciesAnnotation = pluginClass.getAnnotation(Dependencies.class);
+    Dependency[] dependencyAnnotations = pluginClass.getAnnotationsByType(Dependency.class);
+    return Stream.concat(
+        Stream.of(dependenciesAnnotation)
+            .filter(Objects::nonNull)
+            .map(Dependencies::value)
+            .flatMap(Stream::of),
+        Stream.of(dependencyAnnotations)
+    ).collect(Collectors.toList());
+  }
+
+  /**
+   * Checks if plugin <tt>A</tt> depends on plugin <tt>B</tt>, either directly or through transitive dependencies.
+   *
+   * @param pluginA the plugin to check
+   * @param pluginB the plugin to check as a possible dependency of plugin <tt>A</tt>
+   *
+   * @return true if plugin <tt>A</tt> depends on plugin <tt>B</tt>, either directly or through transitive dependencies
+   */
+  private boolean dependsOn(Class<? extends Plugin> pluginA, Class<? extends Plugin> pluginB) {
+    return isDirectDependency(pluginA, pluginB)
+        || knownPluginClasses.stream()
+        .filter(c -> isDirectDependency(pluginA, c))
+        .anyMatch(c -> dependsOn(c, pluginB));
+  }
+
+  /**
+   * Checks if a plugin is <i>directly dependent</i> on another.
+   *
+   * @param pluginA the plugin to check
+   * @param pluginB the plugin to check as a possible dependency of plugin <tt>A</tt>
+   *
+   * @return true if plugin <tt>A</tt> directly depends on plugin <tt>B</tt>, false if not
+   */
+  private static boolean isDirectDependency(Class<? extends Plugin> pluginA, Class<? extends Plugin> pluginB) {
+    Description description = getDescription(pluginB);
+    List<Dependency> dependencies = getDependencies(pluginA);
+    return dependencies.stream()
+        .filter(d -> d.group().equals(description.group()))
+        .filter(d -> d.name().equals(description.name()))
+        .map(d -> Version.parse(d.minVersion()))
+        .anyMatch(v -> v.sameOrGreaterThan(Version.parse(description.version())));
+  }
+
   /**
    * Checks if the given plugin can be loaded. A plugin is considered to be <i>loadable</i> if all plugins specified in
-   * its {@link Plugin#getDependencies() dependencies list} are loaded and have a version of at least the one specified
+   * its dependencies are loaded and have a version of at least the one specified
    * in the dependency. For example, a plugin that depends on {@code "com.acme:PerfectPlugin:4.2.0"} is loadable
    * if a plugin {@code "com.acme:PerfectPlugin:5.3.1"} is loaded, but is not loadable if a plugin
    * {@code "com.acme:PerfectPlugin:0.1.0"} is loaded. Plugins with no dependencies are always loadable.
@@ -279,11 +340,11 @@ public class PluginLoader {
    */
   public boolean canLoad(Plugin plugin) {
     return plugin != null
-        && plugin.getDependencies().stream()
+        && getDependencies(plugin.getClass()).stream()
         .allMatch(a ->
             loadedPlugins.stream()
-                .filter(p -> p.idString().equals(a.getIdString()))
-                .anyMatch(p -> p.getArtifact().getVersion().sameOrGreaterThan(a.getVersion()))
+                .filter(p -> p.getGroupId().equals(a.group()) && p.getName().equals(a.name()))
+                .anyMatch(p -> p.getArtifact().getVersion().sameOrGreaterThan(Version.parse(a.minVersion())))
         );
   }
 
@@ -309,9 +370,9 @@ public class PluginLoader {
       // It's not loaded, nothing to unload
       return false;
     }
-    // Unload any dependent plugins first
+    // Unload any plugins that depends on the one currently being unloaded
     knownPlugins.stream()
-        .filter(p -> p.dependsOn(plugin))
+        .filter(p -> dependsOn(p.getClass(), plugin.getClass()))
         .forEach(this::unload);
 
     log.info("Unloading plugin " + plugin.fullIdString());

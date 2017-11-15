@@ -5,6 +5,8 @@ import com.google.common.collect.ImmutableMap;
 
 import edu.wpi.cscore.CameraServerJNI;
 import edu.wpi.first.shuffleboard.api.data.DataType;
+import edu.wpi.first.shuffleboard.api.plugin.Dependency;
+import edu.wpi.first.shuffleboard.api.plugin.Description;
 import edu.wpi.first.shuffleboard.api.plugin.Plugin;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.recording.serialization.TypeAdapter;
@@ -21,19 +23,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
+@Description(
+    group = "edu.wpi.first.shuffleboard",
+    name = "CameraServer",
+    version = "1.0.0",
+    summary = "Provides sources and widgets for viewing CameraServer MJPEG streams"
+)
+@Dependency(
+    group = "edu.wpi.first.shuffleboard",
+    name = "NetworkTables",
+    minVersion = "1.0.0"
+)
 public class CameraServerPlugin extends Plugin {
 
   private static final Logger log = Logger.getLogger(CameraServerPlugin.class.getName());
-
-  @SuppressWarnings("JavadocMethod")
-  public CameraServerPlugin() {
-    super("edu.wpi.first.shuffleboard",
-        "CameraServer",
-        "1.0.0",
-        "Provides sources and widgets for viewing CameraServer MJPEG streams.");
-    // Depends on network tables to be able to discover camera streams
-    addDependency("edu.wpi.first.shuffleboard:NetworkTables:1.0.0");
-  }
 
   @Override
   public void onLoad() {

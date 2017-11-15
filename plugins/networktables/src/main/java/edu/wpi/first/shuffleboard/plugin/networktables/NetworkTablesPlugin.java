@@ -2,6 +2,7 @@ package edu.wpi.first.shuffleboard.plugin.networktables;
 
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
+import edu.wpi.first.shuffleboard.api.plugin.Description;
 import edu.wpi.first.shuffleboard.api.plugin.Plugin;
 import edu.wpi.first.shuffleboard.api.prefs.FlushableProperty;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
@@ -28,6 +29,12 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 
+@Description(
+    group = "edu.wpi.first.shuffleboard",
+    name = "NetworkTables",
+    version = "1.0.0",
+    summary = "Provides sources and widgets for NetworkTables"
+)
 public class NetworkTablesPlugin extends Plugin {
 
   private int recorderUid = -1;
@@ -62,7 +69,6 @@ public class NetworkTablesPlugin extends Plugin {
   };
 
   public NetworkTablesPlugin() {
-    super("edu.wpi.first.shuffleboard", "NetworkTables", "1.0.0", "Provides sources and widgets for NetworkTables");
     NetworkTableSourceType.setInstance(new NetworkTableSourceType(this));
   }
 

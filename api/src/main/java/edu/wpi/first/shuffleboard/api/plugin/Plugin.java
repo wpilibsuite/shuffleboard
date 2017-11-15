@@ -10,7 +10,6 @@ import edu.wpi.first.shuffleboard.api.widget.ComponentType;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -28,7 +27,19 @@ import javafx.beans.property.SimpleBooleanProperty;
  * encounter order, which is alphabetical by jar name. For example, if a jar file "my_plugins.jar" defines a plugin
  * with ID "foo.bar" and another jar file "more_plugins.jar" <i>also</i> defines a plugin with that ID, the plugin
  * from "more_plugins" will be loaded first, then unloaded and replaced with the one from "my_plugins.jar". For this
- * reason, plugin authors should be careful to use unique group IDs. We recommend Java's reverse-DNS naming scheme.</p>
+ * reason, plugin authors should be careful to use unique group IDs. We recommend Java's reverse-DNS naming scheme.
+ *
+ * <p>Plugins <i>must</i> define their properties (developer group ID, name, current version, and summary) with a
+ * {@link Description @Description} annotation. Defining it in an annotation rather than an instance or class method or
+ * field allows shuffleboard to get data about the plugin without having to load the class or create a new instance of
+ * it. This approach prevents {@link NoClassDefFoundError NoClassDefFoundErrors} and
+ * {@link NoSuchMethodError NoSuchMethodErrors} that can arise of a plugin depends on another, or on classes defined in
+ * another plugin jar, that has not been loaded or is not on the classpath.
+ *
+ * <p>For the same reasons, a plugin that depends on another <i>must</i> provide that information with a
+ * {@link Dependency @Dependency} or {@link Dependencies @Dependencies} annotation. The former is a <i>repeatable</i>
+ * annotation for which the latter is a wrapper; as such, it is recommended to use {@code @Dependency} annotations to
+ * increase readability.
  */
 public class Plugin {
 
@@ -38,58 +49,24 @@ public class Plugin {
   private final PluginArtifact artifact;
   private final String description;
   private final BooleanProperty loaded = new SimpleBooleanProperty(this, "loaded", false);
-  private final List<PluginArtifact> dependencies = new ArrayList<>();
 
   /**
-   * Creates a new plugin instance.
-   *
-   * @param groupId     the ID of the group developing the plugin (eg "edu.wpi.first")
-   * @param name        the name of the plugin
-   * @param version     the current version of the plugin. This must follow <a href="http://semver.org">Semantic Versioning</a>
-   * @param description a description of the plugin
+   * Creates a new plugin instance. The subclass <i>must</i> have a {@link Description @Description} annotation that
+   * defines the group ID, name, version, and summary of the plugin. If the plugin depends on another (eg the camera
+   * server plugin depends on the network tables one), that should be specified with a {@link Dependency @Dependency}
+   * annotation.
    */
-  protected Plugin(String groupId, String name, String version, String description) {
-    this.groupId = groupId;
-    this.name = name;
-    this.version = version;
-    this.artifact = new PluginArtifact(groupId, name, version);
-    this.description = description;
-  }
-
-  /**
-   * Adds a dependency on another plugin. If no plugin matching the artifact is loaded, this plugin will be prevented
-   * from being loaded.
-   *
-   * @param artifact the plugin artifact describing the plugin that this depends on
-   */
-  protected final void addDependency(PluginArtifact artifact) {
-    dependencies.add(artifact);
-  }
-
-  /**
-   * Adds a dependency on another plugin. If no matching plugin is loaded, this plugin will be prevented from being
-   * loaded.
-   *
-   * @param groupId the group ID of the plugin to add a dependency for
-   * @param name    the name of the plugin
-   * @param version the earliest supported plugin version
-   */
-  protected final void addDependency(String groupId, String name, String version) {
-    addDependency(new PluginArtifact(groupId, name, version));
-  }
-
-  /**
-   * Adds a dependency on a plugin using a gradle-style dependency string in the format
-   * {@code "{groupId}:{name}:{version}"}.
-   *
-   * @throws IllegalArgumentException if the string does not follow gradle-style dependency string formatting rules
-   */
-  protected final void addDependency(String depString) {
-    String[] parts = depString.split(":");
-    if (parts.length != 3) {
-      throw new IllegalArgumentException("The dependency string was not in the correct format");
+  protected Plugin() {
+    Description description = getClass().getAnnotation(Description.class);
+    if (description == null) {
+      throw new UnsupportedOperationException("Plugins MUST have a @Description annotation");
     }
-    addDependency(parts[0], parts[1], parts[2]);
+
+    this.groupId = description.group();
+    this.name = description.name();
+    this.version = description.version();
+    this.description = description.summary();
+    this.artifact = new PluginArtifact(this.groupId, this.name, this.version);
   }
 
   /**
@@ -108,8 +85,7 @@ public class Plugin {
   }
 
   /**
-   * Gets the version of this plugin. API consumers are strongly recommended to use
-   * <a href="http://semver.org">semantic versioning</a>, but any versioning scheme may be used.
+   * Gets the version of this plugin. This follows the <a href="http://semver.org">semantic versioning</a> scheme.
    */
   public final String getVersion() {
     return version;
@@ -139,23 +115,6 @@ public class Plugin {
    */
   public final String getDescription() {
     return description;
-  }
-
-  /**
-   * Gets a list of plugins that this plugin depends on. If matching plugins are not loaded, this plugin will not be
-   * able to be loaded.
-   */
-  public final List<PluginArtifact> getDependencies() {
-    return ImmutableList.copyOf(dependencies);
-  }
-
-  /**
-   * Checks if this plugin depends upon another. If that plugin is not loaded, this one will be unable to be loaded.
-   *
-   * @param plugin the plugin to check for a dependency on
-   */
-  public final boolean dependsOn(Plugin plugin) {
-    return getDependencies().stream().anyMatch(artifact -> artifact.getIdString().equals(plugin.idString()));
   }
 
   /**
