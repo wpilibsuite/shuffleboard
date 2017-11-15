@@ -15,6 +15,7 @@ import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.testplugins.BasicPlugin;
 import edu.wpi.first.shuffleboard.testplugins.DependentOnUnknownPlugin;
 
+import com.cedarsoft.version.Version;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
@@ -219,6 +220,50 @@ public class PluginLoaderTest {
   }
 
   @Test
+  public void testVersionCompatibilitySameMajor() {
+    Version lower = new Version(1, 0, 0);
+    Version higher = new Version(1, 1, 0);
+    assertAll(() ->
+        assertTrue(
+            PluginLoader.isCompatible(higher, lower),
+            "Version " + higher + " should be backward compatible with version " + lower
+        ), () ->
+        assertFalse(
+            PluginLoader.isCompatible(lower, higher),
+            "Version " + lower + " should not be backward compatible with version " + higher
+        ));
+  }
+
+  @Test
+  public void testVersionCompatibilityDifferentMajor() {
+    Version lower = new Version(1, 1, 0);
+    Version higher = new Version(lower.getMajor() + 1, 1, 0);
+    assertAll(() ->
+        assertFalse(
+            PluginLoader.isCompatible(higher, lower),
+            "Version " + higher + " should not be backward compatible with version " + lower
+        ), () ->
+        assertFalse(
+            PluginLoader.isCompatible(lower, higher),
+            "Version " + lower + " should not be backward compatible with version " + higher
+        ));
+  }
+
+  @Test
+  public void testVersionCompatibilitySameVersion() {
+    Version version = new Version(1, 0, 0);
+    Version same = new Version(version.getMajor(), version.getMinor(), version.getBuild());
+    assertTrue(
+        PluginLoader.isCompatible(version, same),
+        "Identical versions should always be compatible"
+    );
+    assertTrue(
+        PluginLoader.isCompatible(same, version),
+        "Identical versions should always be compatible"
+    );
+  }
+
+  @Test
   public void testUnloadDependencyUnloadsDependents() {
     Plugin dependency = new MockPlugin();
     Plugin dependent = new DependentPlugin();
@@ -302,7 +347,6 @@ public class PluginLoaderTest {
       return ImmutableList.of(sourceType);
     }
   }
-
 
   @Description(group = "test", name = "MockPlugin", version = "9.9.9", summary = "A newer version of the mock plugin")
   public static final class NewerVersionPlugin extends Plugin {

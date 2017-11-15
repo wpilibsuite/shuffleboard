@@ -278,10 +278,31 @@ public class PluginLoader {
     return true;
   }
 
-  private static Description getDescription(Class<? extends Plugin> pluginClass) {
-    return pluginClass.getAnnotation(Description.class);
+  /**
+   * Gets the description of a plugin.
+   *
+   * @param pluginClass the class to get the description of
+   *
+   * @return the description of a plugin
+   *
+   * @throws IllegalStateException if the plugin class does not have a {@code @Description} annotation
+   */
+  private static Description getDescription(Class<? extends Plugin> pluginClass) throws IllegalStateException {
+    if (pluginClass.isAnnotationPresent(Description.class)) {
+      return pluginClass.getAnnotation(Description.class);
+    } else {
+      throw new IllegalStateException("A plugin MUST have a @Description annotation");
+    }
   }
 
+  /**
+   * Gets all the <i>direct dependencies</i> of a plugin by extracting that data from any present
+   * {@link Dependencies @Dependencies} and {@link Dependency @Dependency} annotations on the class.
+   *
+   * @param pluginClass the plugin class to get the dependencies of
+   *
+   * @return a list of the direct dependencies of a plugin class
+   */
   private static List<Dependency> getDependencies(Class<? extends Plugin> pluginClass) {
     Dependencies dependenciesAnnotation = pluginClass.getAnnotation(Dependencies.class);
     Dependency[] dependencyAnnotations = pluginClass.getAnnotationsByType(Dependency.class);
@@ -324,7 +345,24 @@ public class PluginLoader {
         .filter(d -> d.group().equals(description.group()))
         .filter(d -> d.name().equals(description.name()))
         .map(d -> Version.parse(d.minVersion()))
-        .anyMatch(v -> v.sameOrGreaterThan(Version.parse(description.version())));
+        .anyMatch(v -> isCompatible(v, Version.parse(description.version())));
+  }
+
+  /**
+   * Checks if version <tt>A</tt> is a backwards-compatible with version <tt>B</tt>; that is, something that depends on
+   * version <tt>B</tt> will still function when version <tt>A</tt> is present. This assumes that the versioning scheme
+   * strictly follows semantic versioning guidelines and increments the major number whenever the API has a change that
+   * breaks backwards compatibility.
+   *
+   * @param versionA the newer version
+   * @param versionB the older version
+   *
+   * @return true if version <tt>A</tt> is backwards compatible with version <tt>B</tt>
+   */
+  @VisibleForTesting
+  static boolean isCompatible(Version versionA, Version versionB) {
+    return versionA.getMajor() == versionB.getMajor()
+        && versionA.sameOrGreaterThan(versionB);
   }
 
   /**
@@ -344,7 +382,12 @@ public class PluginLoader {
         .allMatch(a ->
             loadedPlugins.stream()
                 .filter(p -> p.getGroupId().equals(a.group()) && p.getName().equals(a.name()))
-                .anyMatch(p -> p.getArtifact().getVersion().sameOrGreaterThan(Version.parse(a.minVersion())))
+                .anyMatch(p ->
+                    isCompatible(
+                        p.getArtifact().getVersion(),
+                        Version.parse(a.minVersion())
+                    )
+                )
         );
   }
 
