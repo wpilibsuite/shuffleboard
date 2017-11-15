@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -280,7 +281,7 @@ public class PluginLoaderTest {
         return;
       }
     }
-    throw new AssertionError();
+    throw new AssertionError("Object " + obj + " is not a instance of any of: " + Arrays.toString(possibleTypes));
   }
 
   /**
