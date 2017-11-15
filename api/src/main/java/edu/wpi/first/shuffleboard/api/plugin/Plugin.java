@@ -33,8 +33,8 @@ import javafx.beans.property.SimpleBooleanProperty;
  * {@link Description @Description} annotation. Defining it in an annotation rather than an instance or class method or
  * field allows shuffleboard to get data about the plugin without having to load the class or create a new instance of
  * it. This approach prevents {@link NoClassDefFoundError NoClassDefFoundErrors} and
- * {@link NoSuchMethodError NoSuchMethodErrors} that can arise of a plugin depends on another, or on classes defined in
- * another plugin jar, that has not been loaded or is not on the classpath.
+ * {@link NoSuchMethodError NoSuchMethodErrors} that can arise if a plugin depends on another, or on classes defined in
+ * another plugin JAR, that has not been loaded or is not on the classpath.
  *
  * <p>For the same reasons, a plugin that depends on another <i>must</i> provide that information with a
  * {@link Dependency @Dependency} or {@link Dependencies @Dependencies} annotation. The former is a <i>repeatable</i>
