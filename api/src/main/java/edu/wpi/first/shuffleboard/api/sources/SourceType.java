@@ -1,5 +1,7 @@
 package edu.wpi.first.shuffleboard.api.sources;
 
+import edu.wpi.first.shuffleboard.api.data.DataType;
+import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.sources.recording.TimestampedData;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
 
@@ -9,7 +11,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 
-public class SourceType {
+public abstract class SourceType {
 
   private final String name;
   private final boolean isRecordable;
@@ -33,6 +35,17 @@ public class SourceType {
     this.protocol = protocol;
     this.sourceSupplier = sourceSupplier;
   }
+
+  /**
+   * Gets the data type of a source for a given URI. If no data type could be determined, returns an
+   * {@link edu.wpi.first.shuffleboard.api.data.types.UnknownType Unknown} type. If no source is known by the given URI,
+   * returns an {@link edu.wpi.first.shuffleboard.api.data.types.NoneType None} type.
+   *
+   * @param registry the registry of the currently known data types
+   * @param sourceUri the URI of the source to look up the data type for
+   * @return the data type for the
+   */
+  public abstract DataType<?> dataTypeForSource(DataTypes registry, String sourceUri);
 
   public final String getName() {
     return name;
