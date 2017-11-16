@@ -22,10 +22,35 @@ public class DestroyedSource<T> implements DataSource<T> {
 
   private final DataType dataType;
   private final String oldId;
-  private final SourceType sourceType;
   private final StringProperty name = new SimpleStringProperty(this, "name", null);
   private final ObjectProperty<T> data = new SimpleObjectProperty<>(this, "data", null);
   private final BooleanProperty active = new SimpleBooleanProperty(this, "active", false);
+
+  /**
+   * Creates a new destroyed source for the given data type and URI. This should be used to represent a saved data
+   * source whose data or type is unknown at the time it is loaded.
+   *
+   * @param dataType the data type that the restored source should provide
+   * @param uri      the URI of the real source corresponding to the created one
+   * @param <T>      the type of data in the source
+   */
+  public static <T> DestroyedSource<T> forUnknownData(DataType<T> dataType, String uri) {
+    return new DestroyedSource<>(dataType, uri, dataType.getDefaultValue());
+  }
+
+  /**
+   * Creates a new instance that can restore a data source.
+   *
+   * @param dataType the type of the data the destroyed source provides
+   * @param id       the ID of the destroyed source
+   * @param data     the data of the source when it was destroyed, or {@code null} if no data was present or known
+   */
+  public DestroyedSource(DataType<T> dataType, String id, T data) {
+    this.dataType = dataType;
+    this.oldId = id;
+    this.name.set(SourceTypes.getDefault().stripProtocol(id));
+    this.data.set(data);
+  }
 
   /**
    * Creates a new instance that can restore the given data source.
@@ -33,11 +58,12 @@ public class DestroyedSource<T> implements DataSource<T> {
    * @param destroyed the destroyed source that the new instance should be able to restore.
    */
   public DestroyedSource(DataSource<T> destroyed) {
-    dataType = destroyed.getDataType();
-    sourceType = destroyed.getType();
-    oldId = destroyed.getId();
-    name.set(destroyed.getName());
-    data.set(destroyed.getData());
+    this(destroyed.getDataType(), destroyed.getId(), destroyed.getData());
+    this.name.set(destroyed.getName());
+  }
+
+  private SourceType getSourceType() {
+    return SourceTypes.getDefault().typeForUri(oldId);
   }
 
   /**
@@ -48,6 +74,7 @@ public class DestroyedSource<T> implements DataSource<T> {
    */
   @SuppressWarnings("unchecked")
   public DataSource<T> restore() throws DataTypeChangedException, IllegalStateException {
+    SourceType sourceType = getSourceType();
     if (SourceTypes.getDefault().isRegistered(sourceType)) {
       DataSource<T> restored = (DataSource<T>) sourceType.forUri(oldId);
       if (!restored.getDataType().equals(dataType)) {
@@ -84,13 +111,13 @@ public class DestroyedSource<T> implements DataSource<T> {
   }
 
   @Override
-  public DataType getDataType() {
+  public DataType<T> getDataType() {
     return dataType;
   }
 
   @Override
   public SourceType getType() {
-    return sourceType;
+    return getSourceType();
   }
 
   @Override

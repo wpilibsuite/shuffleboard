@@ -1,7 +1,13 @@
 package edu.wpi.first.shuffleboard.api.widget;
 
+import edu.wpi.first.shuffleboard.api.data.DataType;
+import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
+
+import com.google.common.collect.ImmutableSet;
+
+import java.util.Set;
 
 import javafx.collections.ObservableList;
 
@@ -23,5 +29,12 @@ public interface Sourced {
    * Gets an observable list of the sources for this object.
    */
   ObservableList<DataSource> getSources();
+
+  /**
+   * Gets the allowable data types for sources. Defaults to {@link DataTypes#All}.
+   */
+  default Set<DataType> getDataTypes() {
+    return ImmutableSet.of(DataTypes.All);
+  }
 
 }

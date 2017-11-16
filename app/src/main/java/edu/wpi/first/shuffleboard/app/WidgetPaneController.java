@@ -1,14 +1,18 @@
 package edu.wpi.first.shuffleboard.app;
 
+import edu.wpi.first.shuffleboard.api.components.WidgetPropertySheet;
+import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
 import edu.wpi.first.shuffleboard.api.dnd.DataFormats;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.DummySource;
 import edu.wpi.first.shuffleboard.api.sources.SourceEntry;
+import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.GridPoint;
 import edu.wpi.first.shuffleboard.api.util.RoundingMode;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 import edu.wpi.first.shuffleboard.api.widget.Component;
+import edu.wpi.first.shuffleboard.api.widget.ComponentContainer;
 import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.api.widget.Layout;
 import edu.wpi.first.shuffleboard.api.widget.LayoutType;
@@ -19,10 +23,11 @@ import edu.wpi.first.shuffleboard.app.components.LayoutTile;
 import edu.wpi.first.shuffleboard.app.components.Tile;
 import edu.wpi.first.shuffleboard.app.components.TileLayout;
 import edu.wpi.first.shuffleboard.app.components.WidgetPane;
-import edu.wpi.first.shuffleboard.api.components.WidgetPropertySheet;
 import edu.wpi.first.shuffleboard.app.components.WidgetTile;
 import edu.wpi.first.shuffleboard.app.dnd.TileDragResizer;
 import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
+import edu.wpi.first.shuffleboard.app.sources.DataTypeChangedException;
+import edu.wpi.first.shuffleboard.app.sources.DestroyedSource;
 
 import org.fxmisc.easybind.EasyBind;
 
@@ -31,6 +36,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.WeakHashMap;
 import java.util.function.Function;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -196,6 +202,53 @@ public class WidgetPaneController {
               return layout.origin.row + layout.size.getHeight() > newCount;
             })
             .forEach(tile -> collapseTile(tile, oldCount - newCount, false));
+      }
+    });
+
+    // Handle restoring data sources after a widget is added from a save file before its source(s) are available
+    SourceTypes.getDefault().allAvailableSourceUris().addListener((ListChangeListener<String>) c -> {
+      while (c.next()) {
+        if (c.wasAdded()) {
+          // Restore sources for top-level Sourced objects
+          pane.getTiles().stream()
+              .map(Tile::getContent)
+              .flatMap(TypeUtils.castStream(Sourced.class))
+              .forEach(sourced -> {
+                List<DestroyedSource> toRestore = sourced.getSources().stream()
+                    .flatMap(TypeUtils.castStream(DestroyedSource.class))
+                    .filter(s -> c.getAddedSubList().contains(s.getId()))
+                    .collect(Collectors.toList());
+                for (DestroyedSource source : toRestore) {
+                  try {
+                    sourced.addSource(source.restore());
+                    sourced.getSources().remove(source); // removes the source only if it was successfully restored
+                  } catch (DataTypeChangedException | IncompatibleSourceException e) {
+                    log.log(Level.WARNING, "Could not add the restored source", e);
+                  }
+                }
+              });
+
+          // Restore sources for all nested Sourced objects
+          pane.getTiles().stream()
+              .map(Tile::getContent)
+              .flatMap(TypeUtils.castStream(ComponentContainer.class))
+              .flatMap(ComponentContainer::allComponents)
+              .flatMap(TypeUtils.castStream(Sourced.class))
+              .forEach(sourced -> {
+                List<DestroyedSource> toRestore = sourced.getSources().stream()
+                    .flatMap(TypeUtils.castStream(DestroyedSource.class))
+                    .filter(s -> c.getAddedSubList().contains(s.getId()))
+                    .collect(Collectors.toList());
+                for (DestroyedSource source : toRestore) {
+                  try {
+                    sourced.addSource(source.restore());
+                    sourced.getSources().remove(source); // removes the source only if it was successfully restored
+                  } catch (DataTypeChangedException | IncompatibleSourceException e) {
+                    log.log(Level.WARNING, "Could not add the restored source", e);
+                  }
+                }
+              });
+        }
       }
     });
   }

@@ -2,6 +2,7 @@ package edu.wpi.first.shuffleboard.plugin.base.layout;
 
 import edu.wpi.first.shuffleboard.api.Populatable;
 import edu.wpi.first.shuffleboard.api.components.EditableLabel;
+import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.util.AlphanumComparator;
@@ -23,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleStringProperty;
@@ -147,6 +149,13 @@ public class SubsystemLayout implements Layout, Populatable, Sourced {
     } else {
       throw new IncompatibleSourceException(ImmutableSet.of(new SubsystemType()), source.getDataType());
     }
+  }
+
+  @Override
+  public Set<DataType> getDataTypes() {
+    return ImmutableSet.of(
+        new SubsystemType()
+    );
   }
 
 }
