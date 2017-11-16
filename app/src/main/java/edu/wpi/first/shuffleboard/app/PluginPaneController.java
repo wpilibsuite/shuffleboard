@@ -61,7 +61,7 @@ public class PluginPaneController {
       }
     });
     nameColumn.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().idString()));
-    versionColumn.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().getVersion()));
+    versionColumn.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().getVersion().toString()));
     loadedColumn.setCellValueFactory(data -> {
       Plugin plugin = data.getValue();
       BooleanProperty prop = new SimpleBooleanProperty(plugin.isLoaded());
@@ -120,7 +120,7 @@ public class PluginPaneController {
     return "Plugin: " + plugin.getName()
         + "\nGroup ID: " + plugin.getGroupId()
         + "\nVersion: " + plugin.getVersion()
-        + "\n\n" + plugin.getDescription();
+        + "\n\n" + plugin.getSummary();
   }
 
   @FXML

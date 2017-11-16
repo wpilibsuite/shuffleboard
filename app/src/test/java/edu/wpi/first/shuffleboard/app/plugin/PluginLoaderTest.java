@@ -2,9 +2,9 @@ package edu.wpi.first.shuffleboard.app.plugin;
 
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
-import edu.wpi.first.shuffleboard.api.plugin.Dependency;
 import edu.wpi.first.shuffleboard.api.plugin.Description;
 import edu.wpi.first.shuffleboard.api.plugin.Plugin;
+import edu.wpi.first.shuffleboard.api.plugin.Requires;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
 import edu.wpi.first.shuffleboard.api.theme.Theme;
@@ -357,7 +357,7 @@ public class PluginLoaderTest {
    * A plugin that depends on another plugin.
    */
   @Description(group = "test", name = "Dependent Plugin", version = "0.0.0", summary = "")
-  @Dependency(group = "test", name = "MockPlugin", minVersion = "0.0.0")
+  @Requires(group = "test", name = "MockPlugin", minVersion = "0.0.0")
   public static final class DependentPlugin extends Plugin {
   }
 
@@ -365,22 +365,22 @@ public class PluginLoaderTest {
    * A plugin that depends on another plugin, but requires a higher version than the one that gets loaded.
    */
   @Description(group = "test", name = "DependentOnHigherVersion", version = "0.0.0", summary = "")
-  @Dependency(group = "test", name = "MockPlugin", minVersion = "999999.999999.999999")
+  @Requires(group = "test", name = "MockPlugin", minVersion = "999999.999999.999999")
   public static class DependentOnHigherVersion extends Plugin {
   }
 
   @Description(group = "test", name = "CyclicalPluginA", version = "0.0.0", summary = "")
-  @Dependency(group = "test", name = "CyclicalPluginB", minVersion = "0.0.0")
+  @Requires(group = "test", name = "CyclicalPluginB", minVersion = "0.0.0")
   private static class CyclicalPluginA extends Plugin {
   }
 
   @Description(group = "test", name = "CyclicalPluginB", version = "0.0.0", summary = "")
-  @Dependency(group = "test", name = "CyclicalPluginA", minVersion = "0.0.0")
+  @Requires(group = "test", name = "CyclicalPluginA", minVersion = "0.0.0")
   private static final class CyclicalPluginB extends Plugin {
   }
 
   @Description(group = "test", name = "SelfDependentPlugin", version = "0.0.0", summary = "")
-  @Dependency(group = "test", name = "SelfDependentPlugin", minVersion = "0.0.0")
+  @Requires(group = "test", name = "SelfDependentPlugin", minVersion = "0.0.0")
   private static final class SelfDependentPlugin extends Plugin {
   }
 

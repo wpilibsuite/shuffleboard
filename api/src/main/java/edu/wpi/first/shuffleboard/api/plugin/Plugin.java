@@ -7,6 +7,7 @@ import edu.wpi.first.shuffleboard.api.theme.Theme;
 import edu.wpi.first.shuffleboard.api.util.Storage;
 import edu.wpi.first.shuffleboard.api.widget.ComponentType;
 
+import com.cedarsoft.version.Version;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
@@ -37,23 +38,22 @@ import javafx.beans.property.SimpleBooleanProperty;
  * another plugin JAR, that has not been loaded or is not on the classpath.
  *
  * <p>For the same reasons, a plugin that depends on another <i>must</i> provide that information with a
- * {@link Dependency @Dependency} or {@link Dependencies @Dependencies} annotation. The former is a <i>repeatable</i>
- * annotation for which the latter is a wrapper; as such, it is recommended to use {@code @Dependency} annotations to
+ * {@link Requires @Requires} or {@link Requirements @Requirements} annotation. The former is a <i>repeatable</i>
+ * annotation for which the latter is a wrapper; as such, it is recommended to use {@code @Requires} annotations to
  * increase readability.
  */
 public class Plugin {
 
   private final String groupId;
   private final String name;
-  private final String version;
-  private final PluginArtifact artifact;
-  private final String description;
+  private final Version version;
+  private final String summary;
   private final BooleanProperty loaded = new SimpleBooleanProperty(this, "loaded", false);
 
   /**
    * Creates a new plugin instance. The subclass <i>must</i> have a {@link Description @Description} annotation that
    * defines the group ID, name, version, and summary of the plugin. If the plugin depends on another (eg the camera
-   * server plugin depends on the network tables one), that should be specified with a {@link Dependency @Dependency}
+   * server plugin depends on the network tables one), that should be specified with a {@link Requires @Requires}
    * annotation.
    */
   protected Plugin() {
@@ -64,9 +64,15 @@ public class Plugin {
 
     this.groupId = description.group();
     this.name = description.name();
-    this.version = description.version();
-    this.description = description.summary();
-    this.artifact = new PluginArtifact(this.groupId, this.name, this.version);
+    this.version = Version.parse(description.version());
+    this.summary = description.summary();
+
+    if (groupId.contains(":")) {
+      throw new IllegalStateException("A plugin's group ID cannot contain a colon (':') character - " + groupId);
+    }
+    if (name.contains(":")) {
+      throw new IllegalStateException("A plugin's name cannot contain a colon (':') character - " + name);
+    }
   }
 
   /**
@@ -87,19 +93,15 @@ public class Plugin {
   /**
    * Gets the version of this plugin. This follows the <a href="http://semver.org">semantic versioning</a> scheme.
    */
-  public final String getVersion() {
+  public final Version getVersion() {
     return version;
-  }
-
-  public PluginArtifact getArtifact() {
-    return artifact;
   }
 
   /**
    * Gets an ID string unique to this plugin in the format {@code "{groupId}:{name}"}.
    */
   public final String idString() {
-    return artifact.getIdString();
+    return groupId + ":" + name;
   }
 
   /**
@@ -107,14 +109,14 @@ public class Plugin {
    * "foo.bar:baz:1.0.0".
    */
   public final String fullIdString() {
-    return artifact.toGradleString();
+    return groupId + ":" + name + ":" + version;
   }
 
   /**
    * Gets a descriptive string describing what this plugin provides.
    */
-  public final String getDescription() {
-    return description;
+  public final String getSummary() {
+    return summary;
   }
 
   /**
@@ -211,7 +213,10 @@ public class Plugin {
     if (!obj.getClass().equals(this.getClass())) {
       return false;
     }
-    return ((Plugin) obj).getArtifact().equals(this.getArtifact());
+    Plugin that = (Plugin) obj;
+    return this.groupId.equals(that.groupId)
+        && this.name.equals(that.name)
+        && this.version.equals(that.version);
   }
 
   @Override

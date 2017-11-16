@@ -2,10 +2,10 @@ package edu.wpi.first.shuffleboard.app.plugin;
 
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
-import edu.wpi.first.shuffleboard.api.plugin.Dependencies;
-import edu.wpi.first.shuffleboard.api.plugin.Dependency;
 import edu.wpi.first.shuffleboard.api.plugin.Description;
 import edu.wpi.first.shuffleboard.api.plugin.Plugin;
+import edu.wpi.first.shuffleboard.api.plugin.Requirements;
+import edu.wpi.first.shuffleboard.api.plugin.Requires;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
 import edu.wpi.first.shuffleboard.api.sources.recording.serialization.Serializers;
 import edu.wpi.first.shuffleboard.api.theme.Themes;
@@ -111,7 +111,13 @@ public class PluginLoader {
   }
 
   /**
-   * Loads a plugin jar and loads all plugin classes within. Plugins will be loaded alphabetically by class name.
+   * Loads a plugin jar and loads all plugin classes within. Plugins will be loaded in the following order:
+   *
+   * <ol>
+   * <li>By the amount of dependencies</li>
+   * <li>By dependency graph; if one plugin requires another, the requirement will be loaded first</li>
+   * <li>By class name</li>
+   * </ol>
    *
    * @param jarUri a URI representing  jar file to load plugins from
    *
@@ -136,8 +142,9 @@ public class PluginLoader {
           .collect(Collectors.toList());
       knownPluginClasses.addAll(pluginClasses);
       pluginClasses.stream()
-          .sorted(Comparator.<Class<? extends Plugin>>comparingInt(p -> getDependencies(p).size())
-              .thenComparing(this::comparePluginsByDependencyGraph))
+          .sorted(Comparator.<Class<? extends Plugin>>comparingInt(p -> getRequirements(p).size())
+              .thenComparing(this::comparePluginsByDependencyGraph)
+              .thenComparing(Comparator.comparing(Class::getName)))
           .flatMap(c -> {
             try {
               return Stream.of(TypeUtils.tryInstantiate(c));
@@ -160,13 +167,13 @@ public class PluginLoader {
    */
   @VisibleForTesting
   int comparePluginsByDependencyGraph(Class<? extends Plugin> p1, Class<? extends Plugin> p2) {
-    if (dependsOn(p1, p2)) {
-      if (dependsOn(p2, p1)) {
+    if (requires(p1, p2)) {
+      if (requires(p2, p1)) {
         throw new IllegalStateException(
             "Cyclical dependency detected! " + p1.getName() + " <-> " + p2.getName());
       }
       return 1;
-    } else if (dependsOn(p2, p1)) {
+    } else if (requires(p2, p1)) {
       return -1;
     } else {
       // No dependencies
@@ -211,7 +218,7 @@ public class PluginLoader {
   private void unloadOldVersion(Plugin plugin) {
     loadedPlugins.stream()
         .filter(p -> p.idString().equals(plugin.idString()))
-        .filter(p -> !p.getArtifact().getVersion().equals(plugin.getArtifact().getVersion()))
+        .filter(p -> !p.getVersion().equals(plugin.getVersion()))
         .findFirst()
         .ifPresent(oldPlugin -> {
           unload(oldPlugin);
@@ -226,7 +233,7 @@ public class PluginLoader {
    * @param plugin the plugin to load
    *
    * @return true if the plugin was loaded, false if it wasn't. This could happen if the plugin were already loaded,
-   *         or if the plugin has unloaded dependencies.
+   *         or if the plugin requires other plugins that are not loaded.
    *
    * @throws IllegalArgumentException if a plugin already exists with the same ID
    */
@@ -239,9 +246,10 @@ public class PluginLoader {
     // Unload an already-loaded version of this plugin, if it exists
     // This allows us to load
     unloadOldVersion(plugin);
+    knownPluginClasses.add(plugin.getClass());
 
     if (!canLoad(plugin)) {
-      log.warning("Not all dependencies are present for " + plugin.getArtifact().toGradleString());
+      log.warning("Not all requirements are present for " + plugin.fullIdString());
       if (!knownPlugins.contains(plugin)) {
         knownPlugins.add(plugin);
       }
@@ -296,52 +304,51 @@ public class PluginLoader {
   }
 
   /**
-   * Gets all the <i>direct dependencies</i> of a plugin by extracting that data from any present
-   * {@link Dependencies @Dependencies} and {@link Dependency @Dependency} annotations on the class.
+   * Gets all the <i>direct requirements</i> of a plugin by extracting that data from any present
+   * {@link Requirements @Requirements} and {@link Requires @Requires} annotations on the class.
    *
    * @param pluginClass the plugin class to get the dependencies of
    *
-   * @return a list of the direct dependencies of a plugin class
+   * @return a list of the direct plugin requirements of a plugin class
    */
-  private static List<Dependency> getDependencies(Class<? extends Plugin> pluginClass) {
-    Dependencies dependenciesAnnotation = pluginClass.getAnnotation(Dependencies.class);
-    Dependency[] dependencyAnnotations = pluginClass.getAnnotationsByType(Dependency.class);
+  private static List<Requires> getRequirements(Class<? extends Plugin> pluginClass) {
+    Requirements requirements = pluginClass.getAnnotation(Requirements.class);
+    Requires[] requires = pluginClass.getAnnotationsByType(Requires.class);
     return Stream.concat(
-        Stream.of(dependenciesAnnotation)
+        Stream.of(requirements)
             .filter(Objects::nonNull)
-            .map(Dependencies::value)
+            .map(Requirements::value)
             .flatMap(Stream::of),
-        Stream.of(dependencyAnnotations)
+        Stream.of(requires)
     ).collect(Collectors.toList());
   }
 
   /**
-   * Checks if plugin <tt>A</tt> depends on plugin <tt>B</tt>, either directly or through transitive dependencies.
+   * Checks if plugin <tt>A</tt> requires plugin <tt>B</tt>, either directly or through transitive dependencies.
    *
    * @param pluginA the plugin to check
-   * @param pluginB the plugin to check as a possible dependency of plugin <tt>A</tt>
+   * @param pluginB the plugin to check as a possible requirement of plugin <tt>A</tt>
    *
-   * @return true if plugin <tt>A</tt> depends on plugin <tt>B</tt>, either directly or through transitive dependencies
+   * @return true if plugin <tt>A</tt> requires plugin <tt>B</tt>, either directly or through transitive dependencies
    */
-  private boolean dependsOn(Class<? extends Plugin> pluginA, Class<? extends Plugin> pluginB) {
-    return isDirectDependency(pluginA, pluginB)
+  private boolean requires(Class<? extends Plugin> pluginA, Class<? extends Plugin> pluginB) {
+    return isDirectRequirement(pluginA, pluginB)
         || knownPluginClasses.stream()
-        .filter(c -> isDirectDependency(pluginA, c))
-        .anyMatch(c -> dependsOn(c, pluginB));
+        .filter(c -> isDirectRequirement(pluginA, c))
+        .anyMatch(c -> requires(c, pluginB));
   }
 
   /**
-   * Checks if a plugin is <i>directly dependent</i> on another.
+   * Checks if a plugin <i>directly requires</i> on another.
    *
    * @param pluginA the plugin to check
-   * @param pluginB the plugin to check as a possible dependency of plugin <tt>A</tt>
+   * @param pluginB the plugin to check as a possible requirement of plugin <tt>A</tt>
    *
-   * @return true if plugin <tt>A</tt> directly depends on plugin <tt>B</tt>, false if not
+   * @return true if plugin <tt>A</tt> directly requires plugin <tt>B</tt>, false if not
    */
-  private static boolean isDirectDependency(Class<? extends Plugin> pluginA, Class<? extends Plugin> pluginB) {
+  private static boolean isDirectRequirement(Class<? extends Plugin> pluginA, Class<? extends Plugin> pluginB) {
     Description description = getDescription(pluginB);
-    List<Dependency> dependencies = getDependencies(pluginA);
-    return dependencies.stream()
+    return getRequirements(pluginA).stream()
         .filter(d -> d.group().equals(description.group()))
         .filter(d -> d.name().equals(description.name()))
         .map(d -> Version.parse(d.minVersion()))
@@ -367,10 +374,11 @@ public class PluginLoader {
 
   /**
    * Checks if the given plugin can be loaded. A plugin is considered to be <i>loadable</i> if all plugins specified in
-   * its dependencies are loaded and have a version of at least the one specified
-   * in the dependency. For example, a plugin that depends on {@code "com.acme:PerfectPlugin:4.2.0"} is loadable
-   * if a plugin {@code "com.acme:PerfectPlugin:5.3.1"} is loaded, but is not loadable if a plugin
-   * {@code "com.acme:PerfectPlugin:0.1.0"} is loaded. Plugins with no dependencies are always loadable.
+   * its requirements are loaded and have a version of at least the one specified in the dependency, with the same major
+   * version number. For example, a plugin that depends on {@code "com.acme:PerfectPlugin:4.2.0"} is loadable if a
+   * plugin {@code "com.acme:PerfectPlugin:4.3.1"} is loaded, but is not loadable if a plugin
+   * {@code "com.acme:PerfectPlugin:0.1.0"} or {@code "com.acme.PerfectPlugin:5.0.0} is loaded. Plugins with no
+   * requirements are always loadable.
    *
    * @param plugin the plugin to check
    *
@@ -378,13 +386,13 @@ public class PluginLoader {
    */
   public boolean canLoad(Plugin plugin) {
     return plugin != null
-        && getDependencies(plugin.getClass()).stream()
+        && getRequirements(plugin.getClass()).stream()
         .allMatch(a ->
             loadedPlugins.stream()
                 .filter(p -> p.getGroupId().equals(a.group()) && p.getName().equals(a.name()))
                 .anyMatch(p ->
                     isCompatible(
-                        p.getArtifact().getVersion(),
+                        p.getVersion(),
                         Version.parse(a.minVersion())
                     )
                 )
@@ -401,7 +409,8 @@ public class PluginLoader {
   }
 
   /**
-   * Unloads a plugin.
+   * Unloads a plugin. Any plugins that require the one being unloaded will also be unloaded before unloading the given
+   * one.
    *
    * @param plugin the plugin to unload
    *
@@ -415,7 +424,7 @@ public class PluginLoader {
     }
     // Unload any plugins that depends on the one currently being unloaded
     knownPlugins.stream()
-        .filter(p -> dependsOn(p.getClass(), plugin.getClass()))
+        .filter(p -> requires(p.getClass(), plugin.getClass()))
         .forEach(this::unload);
 
     log.info("Unloading plugin " + plugin.fullIdString());

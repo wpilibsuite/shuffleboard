@@ -7,7 +7,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Defines a dependency of a plugin. This allows plugins to declare their dependency on another plugin to provide
+ * Defines a requirement of a plugin. This allows plugins to declare their dependency on another plugin to provide
  * data types, sources, widgets, or an API that they depend on. A plugin with a dependency will not be allowed to be
  * loaded if there is no loaded plugin with the same group ID, name, and compatible version (for version compatibility
  * details, see {@link #minVersion()}).
@@ -18,8 +18,8 @@ import java.lang.annotation.Target;
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-@Repeatable(Dependencies.class)
-public @interface Dependency {
+@Repeatable(Requirements.class)
+public @interface Requires {
 
   /**
    * The group ID of the plugin being depended on.
