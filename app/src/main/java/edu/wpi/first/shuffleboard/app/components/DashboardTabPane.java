@@ -5,12 +5,11 @@ import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
-
 import java.util.function.Predicate;
 
 import javafx.collections.ListChangeListener;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 
 import static edu.wpi.first.shuffleboard.api.util.TypeUtils.optionalCast;
 

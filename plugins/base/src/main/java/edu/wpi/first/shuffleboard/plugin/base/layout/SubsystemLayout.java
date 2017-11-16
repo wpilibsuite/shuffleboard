@@ -106,21 +106,21 @@ public class SubsystemLayout implements Layout, Populatable, Sourced {
   }
 
   @Override
-  public boolean supports(DataSource<?> source) {
+  public boolean supports(String sourceId) {
     return getSource() != null
-        && getSource() != source
-        && source.getName().startsWith(getSource().getName())
-        && !NetworkTableUtils.isMetadata(source.getId());
+        && !getSource().getId().equals(sourceId)
+        && sourceId.startsWith(getSource().getId())
+        && !NetworkTableUtils.isMetadata(sourceId);
   }
 
   @Override
-  public boolean hasComponentFor(DataSource<?> source) {
+  public boolean hasComponentFor(String sourceId) {
     return components()
         .flatMap(TypeUtils.castStream(Sourced.class))
         .map(Sourced::getSources)
         .flatMap(List::stream)
         .map(DataSource::getId)
-        .anyMatch(source.getId()::startsWith);
+        .anyMatch(sourceId::startsWith);
   }
 
   @Override
