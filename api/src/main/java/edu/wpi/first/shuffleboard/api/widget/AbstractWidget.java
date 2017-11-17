@@ -29,6 +29,7 @@ public abstract class AbstractWidget implements Widget {
       } else {
         setTitle(getName() + " (" + sources.size() + " sources)");
       }
+      getView().setDisable(sources.stream().anyMatch(s -> !s.isConnected()));
     });
   }
 

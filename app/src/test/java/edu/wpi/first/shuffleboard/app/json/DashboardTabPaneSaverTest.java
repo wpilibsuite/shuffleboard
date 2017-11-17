@@ -1,6 +1,8 @@
 package edu.wpi.first.shuffleboard.app.json;
 
 import edu.wpi.first.networktables.NetworkTableInstance;
+
+import edu.wpi.first.shuffleboard.app.components.DashboardTab;
 import edu.wpi.first.shuffleboard.app.components.DashboardTabPane;
 import edu.wpi.first.shuffleboard.api.util.AsyncUtils;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
@@ -57,7 +59,7 @@ public class DashboardTabPaneSaverTest extends ApplicationTest {
 
     assertEquals(2 + 1, dashboard.getTabs().size()); // 1 for the adder tab
 
-    DashboardTabPane.DashboardTab firstTab = (DashboardTabPane.DashboardTab) dashboard.getTabs().get(0);
+    DashboardTab firstTab = (DashboardTab) dashboard.getTabs().get(0);
     assertEquals("First Tab", firstTab.getTitle());
     assertEquals(6, firstTab.getWidgetPane().getTiles().size());
   }

@@ -64,7 +64,7 @@ public interface DataSource<T> {
   /**
    * Gets the type of data that this source is providing.
    */
-  DataType getDataType();
+  DataType<T> getDataType();
 
   /**
    * Closes this data source and frees any used resources.

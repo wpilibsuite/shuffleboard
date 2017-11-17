@@ -4,6 +4,7 @@ import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
 import edu.wpi.first.shuffleboard.api.util.Storage;
 import edu.wpi.first.shuffleboard.api.util.Time;
 import edu.wpi.first.shuffleboard.app.plugin.PluginLoader;
+import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
 import edu.wpi.first.shuffleboard.plugin.base.BasePlugin;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.CameraServerPlugin;
 import edu.wpi.first.shuffleboard.plugin.networktables.NetworkTablesPlugin;
@@ -63,8 +64,12 @@ public class Shuffleboard extends Application {
     // Set up the application thread to log exceptions instead of using printStackTrace()
     // Must be called in start() because init() is run on the main thread, not the FX application thread
     Thread.currentThread().setUncaughtExceptionHandler(Shuffleboard::uncaughtException);
-    mainPane = FXMLLoader.load(MainWindowController.class.getResource("MainWindow.fxml"));
     onOtherAppStart = () -> Platform.runLater(primaryStage::toFront);
+
+    FXMLLoader loader = new FXMLLoader(MainWindowController.class.getResource("MainWindow.fxml"));
+    mainPane = loader.load();
+    final MainWindowController mainWindowController = loader.getController();
+
     primaryStage.setScene(new Scene(mainPane));
 
     PluginLoader.getDefault().load(new BasePlugin());
@@ -74,6 +79,11 @@ public class Shuffleboard extends Application {
     PluginLoader.getDefault().load(new CameraServerPlugin());
     PluginLoader.getDefault().load(new NetworkTablesPlugin());
     PluginLoader.getDefault().loadAllJarsFromDir(Storage.getPluginPath());
+
+    // Load the most recent save file after loading all plugins
+    if (AppPreferences.getInstance().isAutoLoadLastSaveFile()) {
+      mainWindowController.load(AppPreferences.getInstance().getSaveFile());
+    }
 
     primaryStage.setTitle("Shuffleboard");
     primaryStage.setMinWidth(640);
