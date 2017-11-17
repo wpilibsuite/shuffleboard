@@ -106,7 +106,7 @@ public final class NetworkTableSourceType extends SourceType {
 
   @Override
   public DataType<?> dataTypeForSource(DataTypes registry, String sourceUri) {
-    return NetworkTableUtils.dataTypeForEntry(sourceUri);
+    return NetworkTableUtils.dataTypeForEntry(removeProtocol(sourceUri));
   }
 
   @Override
