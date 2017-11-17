@@ -310,12 +310,12 @@ public class DashboardTabPane extends TabPane {
     @Override
     public boolean supports(String sourceId) {
       SourceType type = SourceTypes.getDefault().typeForUri(sourceId);
+      String name = NetworkTableUtils.normalizeKey(type.removeProtocol(sourceId), false);
       return !deferPopulation
           && isAutoPopulate()
           && type.dataTypeForSource(DataTypes.getDefault(), sourceId) != DataTypes.Map
           && !NetworkTableUtils.isMetadata(sourceId)
-          && (SourceTypes.getDefault().typeForUri(sourceId).removeProtocol(sourceId).startsWith(getSourcePrefix())
-          || sourceId.startsWith(getSourcePrefix()));
+          && (name.startsWith(getSourcePrefix()) || sourceId.startsWith(getSourcePrefix()));
     }
 
     @Override
