@@ -41,7 +41,7 @@ public class DestroyedSource<T> implements DataSource<T> {
    * @param uri            the URI of the real source corresponding to the created one
    */
   public static DestroyedSource<?> forUnknownData(Collection<DataType> allowableTypes, String uri) {
-    return new DestroyedSource<>(allowableTypes, uri, Iterables.get(allowableTypes, 0).getDefaultValue());
+    return new DestroyedSource<>(allowableTypes, uri, null);
   }
 
   /**
@@ -106,7 +106,12 @@ public class DestroyedSource<T> implements DataSource<T> {
       }
       restored.nameProperty().set(name.get());
       restored.activeProperty().set(true);
-      restored.setData(getData());
+      if (getData() == null) {
+        // No data was saved, set it to the default value for its type
+        restored.setData(restored.getDataType().getDefaultValue());
+      } else {
+        restored.setData(getData());
+      }
       return restored;
     } else {
       throw new IllegalStateException("The source type " + sourceType.getName() + " is not registered");

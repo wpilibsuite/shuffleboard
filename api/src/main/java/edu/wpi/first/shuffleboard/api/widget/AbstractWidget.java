@@ -1,10 +1,7 @@
 package edu.wpi.first.shuffleboard.api.widget;
 
 import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
-import edu.wpi.first.shuffleboard.api.sources.AbstractDataSource;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
-
-import org.fxmisc.easybind.EasyBind;
 
 import javafx.beans.InvalidationListener;
 import javafx.beans.property.Property;
