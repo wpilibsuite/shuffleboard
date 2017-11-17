@@ -32,7 +32,7 @@ public class CommandData extends ComplexData<CommandData> {
    */
   public CommandData(Map<String, Object> map) {
     this(
-        (String) map.getOrDefault("name", ""),
+        (String) map.getOrDefault(".name", ""),
         (Boolean) map.getOrDefault("running", false),
         (Boolean) map.getOrDefault("isParented", false)
     );
