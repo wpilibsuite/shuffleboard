@@ -29,10 +29,10 @@ public class WidgetTile extends Tile<Widget> {
   private final InvalidationListener dataSourceListChangeListener = __ -> {
     if (retained.get() != null && retained.get().stream().anyMatch(s -> s instanceof DestroyedSource)) {
       pseudoClassStateChanged(NO_SOURCE, true);
-      setDisable(true);
+      getContent().getView().setDisable(true);
     } else {
       pseudoClassStateChanged(NO_SOURCE, false);
-      setDisable(false);
+      getContent().getView().setDisable(false);
     }
   };
 
