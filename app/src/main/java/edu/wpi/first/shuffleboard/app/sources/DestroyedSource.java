@@ -5,6 +5,13 @@ import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
 
+import com.google.common.collect.Iterables;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.Set;
+
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.Property;
@@ -20,22 +27,40 @@ import javafx.beans.property.StringProperty;
  */
 public class DestroyedSource<T> implements DataSource<T> {
 
-  private final DataType dataType;
+  private final Set<DataType> possibleTypes;
   private final String oldId;
   private final StringProperty name = new SimpleStringProperty(this, "name", null);
   private final ObjectProperty<T> data = new SimpleObjectProperty<>(this, "data", null);
   private final BooleanProperty active = new SimpleBooleanProperty(this, "active", false);
 
   /**
-   * Creates a new destroyed source for the given data type and URI. This should be used to represent a saved data
+   * Creates a new destroyed source for the given data types and URI. This should be used to represent a saved data
    * source whose data or type is unknown at the time it is loaded.
    *
-   * @param dataType the data type that the restored source should provide
-   * @param uri      the URI of the real source corresponding to the created one
-   * @param <T>      the type of data in the source
+   * @param allowableTypes the possible data types that a restored source may be able to provide
+   * @param uri            the URI of the real source corresponding to the created one
    */
-  public static <T> DestroyedSource<T> forUnknownData(DataType<T> dataType, String uri) {
-    return new DestroyedSource<>(dataType, uri, dataType.getDefaultValue());
+  public static DestroyedSource<?> forUnknownData(Collection<DataType> allowableTypes, String uri) {
+    return new DestroyedSource<>(allowableTypes, uri, Iterables.get(allowableTypes, 0).getDefaultValue());
+  }
+
+  /**
+   * Creates a new instance that can restore a data source.
+   *
+   * @param possibleTypes the possible data types that can be restored
+   * @param id            the ID of the destroyed source
+   * @param data          the data of the source when it was destroyed, or {@code null} if no data was present or known
+   *
+   * @throws IllegalArgumentException if no possible types are specified
+   */
+  public DestroyedSource(Collection<DataType> possibleTypes, String id, T data) {
+    if (possibleTypes.isEmpty()) {
+      throw new IllegalArgumentException("There must be at least one possible data type");
+    }
+    this.possibleTypes = new LinkedHashSet<>(possibleTypes); // preserve order, when possible
+    this.oldId = id;
+    this.name.set(SourceTypes.getDefault().stripProtocol(id));
+    this.data.set(data);
   }
 
   /**
@@ -46,10 +71,7 @@ public class DestroyedSource<T> implements DataSource<T> {
    * @param data     the data of the source when it was destroyed, or {@code null} if no data was present or known
    */
   public DestroyedSource(DataType<T> dataType, String id, T data) {
-    this.dataType = dataType;
-    this.oldId = id;
-    this.name.set(SourceTypes.getDefault().stripProtocol(id));
-    this.data.set(data);
+    this(Collections.singleton(dataType), id, data);
   }
 
   /**
@@ -77,9 +99,10 @@ public class DestroyedSource<T> implements DataSource<T> {
     SourceType sourceType = getSourceType();
     if (SourceTypes.getDefault().isRegistered(sourceType)) {
       DataSource<T> restored = (DataSource<T>) sourceType.forUri(oldId);
-      if (!restored.getDataType().equals(dataType)) {
+      if (!possibleTypes.contains(restored.getDataType())) {
         throw new DataTypeChangedException(
-            "The new data type is " + restored.getDataType() + ", was expecting " + dataType);
+            "The new data type is " + restored.getDataType() + ", was expecting one of: "
+                + Iterables.toString(possibleTypes));
       }
       restored.nameProperty().set(name.get());
       restored.activeProperty().set(true);
@@ -111,8 +134,8 @@ public class DestroyedSource<T> implements DataSource<T> {
   }
 
   @Override
-  public DataType<T> getDataType() {
-    return dataType;
+  public DataType getDataType() {
+    return Iterables.get(possibleTypes, 0);
   }
 
   @Override
@@ -133,6 +156,11 @@ public class DestroyedSource<T> implements DataSource<T> {
   @Override
   public boolean isConnected() {
     return false;
+  }
+
+  @Override
+  public String toString() {
+    return "DestroyedSource(id=" + oldId + ", possibleTypes=" + possibleTypes + ")";
   }
 
 }

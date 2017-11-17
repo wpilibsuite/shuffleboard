@@ -1,7 +1,6 @@
 package edu.wpi.first.shuffleboard.app;
 
 import edu.wpi.first.shuffleboard.api.components.WidgetPropertySheet;
-import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
 import edu.wpi.first.shuffleboard.api.dnd.DataFormats;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.DummySource;
@@ -25,8 +24,8 @@ import edu.wpi.first.shuffleboard.app.components.TileLayout;
 import edu.wpi.first.shuffleboard.app.components.WidgetPane;
 import edu.wpi.first.shuffleboard.app.components.WidgetTile;
 import edu.wpi.first.shuffleboard.app.dnd.TileDragResizer;
+import edu.wpi.first.shuffleboard.app.json.SourcedRestorer;
 import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
-import edu.wpi.first.shuffleboard.app.sources.DataTypeChangedException;
 import edu.wpi.first.shuffleboard.app.sources.DestroyedSource;
 
 import org.fxmisc.easybind.EasyBind;
@@ -209,24 +208,15 @@ public class WidgetPaneController {
     SourceTypes.getDefault().allAvailableSourceUris().addListener((ListChangeListener<String>) c -> {
       while (c.next()) {
         if (c.wasAdded()) {
+          SourcedRestorer restorer = new SourcedRestorer();
           // Restore sources for top-level Sourced objects
           pane.getTiles().stream()
               .map(Tile::getContent)
               .flatMap(TypeUtils.castStream(Sourced.class))
-              .forEach(sourced -> {
-                List<DestroyedSource> toRestore = sourced.getSources().stream()
-                    .flatMap(TypeUtils.castStream(DestroyedSource.class))
-                    .filter(s -> c.getAddedSubList().contains(s.getId()))
-                    .collect(Collectors.toList());
-                for (DestroyedSource source : toRestore) {
-                  try {
-                    sourced.addSource(source.restore());
-                    sourced.getSources().remove(source); // removes the source only if it was successfully restored
-                  } catch (DataTypeChangedException | IncompatibleSourceException e) {
-                    log.log(Level.WARNING, "Could not add the restored source", e);
-                  }
-                }
-              });
+              .forEach(sourced -> restorer.restoreSourcesFor(
+                  sourced,
+                  c.getAddedSubList(),
+                  WidgetPaneController::destroyedSourceCouldNotBeRestored));
 
           // Restore sources for all nested Sourced objects
           pane.getTiles().stream()
@@ -234,20 +224,10 @@ public class WidgetPaneController {
               .flatMap(TypeUtils.castStream(ComponentContainer.class))
               .flatMap(ComponentContainer::allComponents)
               .flatMap(TypeUtils.castStream(Sourced.class))
-              .forEach(sourced -> {
-                List<DestroyedSource> toRestore = sourced.getSources().stream()
-                    .flatMap(TypeUtils.castStream(DestroyedSource.class))
-                    .filter(s -> c.getAddedSubList().contains(s.getId()))
-                    .collect(Collectors.toList());
-                for (DestroyedSource source : toRestore) {
-                  try {
-                    sourced.addSource(source.restore());
-                    sourced.getSources().remove(source); // removes the source only if it was successfully restored
-                  } catch (DataTypeChangedException | IncompatibleSourceException e) {
-                    log.log(Level.WARNING, "Could not add the restored source", e);
-                  }
-                }
-              });
+              .forEach(sourced -> restorer.restoreSourcesFor(
+                  sourced,
+                  c.getAddedSubList(),
+                  WidgetPaneController::destroyedSourceCouldNotBeRestored));
         }
       }
     });
@@ -574,6 +554,10 @@ public class WidgetPaneController {
     } else {
       return Optional.empty();
     }
+  }
+
+  private static void destroyedSourceCouldNotBeRestored(DestroyedSource source, Throwable error) {
+    log.log(Level.WARNING, "Could not restore source: " + source.getId(), error);
   }
 
 }
