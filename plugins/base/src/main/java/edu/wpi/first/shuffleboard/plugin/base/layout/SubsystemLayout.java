@@ -3,8 +3,10 @@ package edu.wpi.first.shuffleboard.plugin.base.layout;
 import edu.wpi.first.shuffleboard.api.Populatable;
 import edu.wpi.first.shuffleboard.api.components.EditableLabel;
 import edu.wpi.first.shuffleboard.api.data.DataType;
+import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
+import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
 import edu.wpi.first.shuffleboard.api.util.AlphanumComparator;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
@@ -109,9 +111,13 @@ public class SubsystemLayout implements Layout, Populatable, Sourced {
 
   @Override
   public boolean supports(String sourceId) {
+    DataType<?> dataType = SourceTypes.getDefault()
+        .typeForUri(sourceId)
+        .dataTypeForSource(DataTypes.getDefault(), sourceId);
     return getSource() != null
         && !getSource().getId().equals(sourceId)
         && sourceId.startsWith(getSource().getId())
+        && dataType != DataTypes.Map
         && !NetworkTableUtils.isMetadata(sourceId);
   }
 
