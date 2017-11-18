@@ -1,6 +1,10 @@
 package edu.wpi.first.shuffleboard.plugin.cameraserver.source;
 
+import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
+
+import edu.wpi.first.shuffleboard.api.data.DataType;
+import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.sources.SourceEntry;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.recording.TimestampedData;
@@ -30,8 +34,8 @@ public final class CameraServerSourceType extends SourceType {
           // 0 is "/", 1 is "/CameraPublisher", 2 is "/CameraPublisher/<name>"
           String name = NetworkTableUtils.simpleKey(hierarchy.get(2));
           String uri = toUri(name);
-          if (NetworkTableInstance.getDefault().getTable(name).getKeys().isEmpty()
-              && NetworkTableInstance.getDefault().getTable(name).getSubTables().isEmpty()) {
+          NetworkTable table = NetworkTableInstance.getDefault().getTable(hierarchy.get(2));
+          if (table.getKeys().isEmpty() && table.getSubTables().isEmpty()) {
             // No keys and no subtables, remove it
             availableUris.remove(uri);
             availableSources.remove(uri);
@@ -54,6 +58,11 @@ public final class CameraServerSourceType extends SourceType {
   @Override
   public SourceEntry createSourceEntryForUri(String uri) {
     return new CameraServerSourceEntry(new CameraServerData(removeProtocol(uri), null));
+  }
+
+  @Override
+  public DataType<?> dataTypeForSource(DataTypes registry, String sourceUri) {
+    return registry.forName("CameraServerData").orElse(DataTypes.Unknown);
   }
 
   @Override

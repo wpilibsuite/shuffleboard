@@ -22,10 +22,10 @@ public final class NetworkTableUtils {
    * The root network table.
    */
   public static final NetworkTableInstance inst = NetworkTableInstance.getDefault();
-  public static final NetworkTable rootTable = new NetworkTable(inst, "");
+  public static final NetworkTable rootTable = inst.getTable("");
 
-  private static final Pattern oldMetadataPattern = Pattern.compile("/~\\w+~($|/)");
-  private static final Pattern newMetadataPattern = Pattern.compile("/\\.");
+  private static final Pattern oldMetadataPattern = Pattern.compile("(^|/)~\\w+~($|/)");
+  private static final Pattern newMetadataPattern = Pattern.compile("(^|/)\\.");
 
   private NetworkTableUtils() {
     throw new UnsupportedOperationException("This is a utility class!");

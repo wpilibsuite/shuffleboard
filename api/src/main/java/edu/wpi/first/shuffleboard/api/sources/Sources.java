@@ -53,10 +53,6 @@ public class Sources extends Registry<DataSource> {
         .collect(Collectors.toList());
   }
 
-  public DataSource<?> forUri(String uri) {
-    return computeIfAbsent(uri, () -> SourceTypes.getDefault().forUri(uri));
-  }
-
   @SuppressWarnings("unchecked") //NOPMD multiple occurrences of string literal
   public <T> Optional<DataSource<T>> get(String id) {
     return Optional.ofNullable(sources.get(id));

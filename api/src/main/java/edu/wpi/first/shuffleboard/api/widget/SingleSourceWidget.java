@@ -14,15 +14,11 @@ public abstract class SingleSourceWidget extends AbstractWidget {
 
   protected final ObjectProperty<DataSource> source = new SimpleObjectProperty<>(this, "source", DataSource.none());
 
-  @SuppressWarnings("JavadocMethod")
-  public SingleSourceWidget() {
-    source.addListener(__ -> sources.setAll(getSource()));
-  }
-
   @Override
   public final void addSource(DataSource source) throws IncompatibleSourceException {
     if (getDataTypes().contains(source.getDataType())) {
       this.source.set(source);
+      this.sources.setAll(source);
     } else {
       throw new IncompatibleSourceException(getDataTypes(), source.getDataType());
     }

@@ -40,13 +40,22 @@ public final class PropertyUtils {
   public static <T, U> void bindBidirectionalWithConverter(
       Property<T> firstProperty,
       Property<U> secondProperty,
-      Function<T, U> t2uConverter,
-      Function<U, T> u2tConverter) {
+      Function<? super T, ? extends U> t2uConverter,
+      Function<? super U, ? extends T> u2tConverter) {
     firstProperty.setValue(u2tConverter.apply(secondProperty.getValue()));
-    firstProperty.addListener((__, old, newValue) ->
-        secondProperty.setValue(t2uConverter.apply(newValue)));
-    secondProperty.addListener((__, old, newValue) ->
-        firstProperty.setValue(u2tConverter.apply(newValue)));
+    secondProperty.setValue(t2uConverter.apply(firstProperty.getValue()));
+    firstProperty.addListener((__, old, newValue) -> {
+      U apply = t2uConverter.apply(newValue);
+      if (EqualityUtils.isDifferent(secondProperty.getValue(), apply)) {
+        secondProperty.setValue(t2uConverter.apply(newValue));
+      }
+    });
+    secondProperty.addListener((__, old, newValue) -> {
+      T apply = u2tConverter.apply(newValue);
+      if (EqualityUtils.isDifferent(firstProperty.getValue(), apply)) {
+        firstProperty.setValue(apply);
+      }
+    });
   }
 
   /**

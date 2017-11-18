@@ -12,7 +12,7 @@ public class DummySource<T> extends AbstractDataSource<T> {
   /**
    * Create a new static, unchanging source for the given data type and value.
    */
-  public DummySource(DataType dataType, T value) {
+  public DummySource(DataType<T> dataType, T value) {
     super(dataType);
     this.setActive(true);
     this.setName(dataType.getName());

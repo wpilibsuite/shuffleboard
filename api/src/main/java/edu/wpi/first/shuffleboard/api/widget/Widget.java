@@ -4,7 +4,6 @@ import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Stream;
 
 import javafx.beans.property.Property;
@@ -50,11 +49,6 @@ import javafx.collections.ObservableMap;
  *            {@link ObservableMap ObservableMap&lt;String, Object&gt;}.
  */
 public interface Widget extends Component, Sourced {
-
-  /**
-   * Gets an unmodifiable copy of this widgets supported data types.
-   */
-  Set<DataType> getDataTypes();
 
   /**
    * Gets the user-configurable properties for this widget.
