@@ -41,6 +41,8 @@ public class LayoutSaver implements ElementTypeAdapter<Layout> {
       }
     }
 
+    object.addProperty("_title", src.getTitle());
+
     Collection<Component> components = src.getChildren();
     JsonArray children = new JsonArray(components.size());
     components.forEach(c -> children.add(context.serialize(c, c.getClass())));
@@ -79,6 +81,11 @@ public class LayoutSaver implements ElementTypeAdapter<Layout> {
           break;
         }
       }
+    }
+
+    JsonElement title = obj.get("_title");
+    if (title != null) {
+      layout.setTitle(title.getAsString());
     }
 
     children.forEach(child -> {

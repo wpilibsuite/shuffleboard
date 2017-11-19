@@ -32,6 +32,7 @@ public class WidgetSaver implements ElementTypeAdapter<Widget> {
     for (int i = 0; i < src.getSources().size(); i++) {
       object.addProperty("_source" + i, src.getSources().get(i).getId());
     }
+    object.addProperty("_title", src.getTitle());
     for (Property p : src.getProperties()) {
       object.add(p.getName(), context.serialize(p.getValue()));
     }
@@ -63,6 +64,11 @@ public class WidgetSaver implements ElementTypeAdapter<Widget> {
       } else {
         break;
       }
+    }
+
+    JsonElement title = obj.get("_title");
+    if (title != null) {
+      widget.setTitle(title.getAsString());
     }
 
     for (Property p : widget.getProperties()) {

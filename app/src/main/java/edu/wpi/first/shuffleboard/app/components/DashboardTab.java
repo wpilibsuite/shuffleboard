@@ -260,7 +260,6 @@ public class DashboardTab extends Tab implements HandledTab, Populatable {
       Components.getDefault().defaultComponentNameFor(source.getDataType())
           .flatMap(s -> Components.getDefault().createComponent(s, source))
           .ifPresent(c -> {
-            c.setTitle(source.getName());
             getWidgetPane().addComponent(c);
             if (c instanceof Populatable) {
               Autopopulator.getDefault().addTarget((Populatable) c);
