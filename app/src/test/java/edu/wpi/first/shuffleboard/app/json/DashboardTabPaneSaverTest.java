@@ -1,66 +1,127 @@
 package edu.wpi.first.shuffleboard.app.json;
 
-import edu.wpi.first.networktables.NetworkTableInstance;
-
+import edu.wpi.first.shuffleboard.api.data.DataType;
+import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
+import edu.wpi.first.shuffleboard.api.sources.DataSource;
+import edu.wpi.first.shuffleboard.api.widget.Component;
+import edu.wpi.first.shuffleboard.api.widget.Components;
+import edu.wpi.first.shuffleboard.api.widget.Widget;
+import edu.wpi.first.shuffleboard.api.widget.WidgetType;
+import edu.wpi.first.shuffleboard.app.DashboardData;
 import edu.wpi.first.shuffleboard.app.components.DashboardTab;
 import edu.wpi.first.shuffleboard.app.components.DashboardTabPane;
-import edu.wpi.first.shuffleboard.api.util.AsyncUtils;
-import edu.wpi.first.shuffleboard.api.util.FxUtils;
-import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
+import edu.wpi.first.shuffleboard.app.components.Tile;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.testfx.framework.junit5.ApplicationTest;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
-import javafx.stage.Stage;
+import javafx.beans.property.Property;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.scene.layout.Pane;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@Disabled("Depends on network tables")
 public class DashboardTabPaneSaverTest extends ApplicationTest {
 
-  @Override
-  public void start(Stage stage) throws Exception {
-    // Just here so we can run on the FX thread
+  @BeforeAll
+  public static void setup() {
+    Components components = new Components();
+    Components.setDefault(components);
+    components.register(new DummyBooleanBoxType());
   }
 
-  @BeforeEach
-  public void setUp() {
-    NetworkTableUtils.shutdown();
-    NetworkTableInstance inst = NetworkTableInstance.getDefault();
-    inst.setUpdateRate(0.01);
-    AsyncUtils.setAsyncRunner(Runnable::run);
-    inst.getEntry("/LiveWindow/TestSystem/Ultrasonic/Value").setDouble(0.5);
-    inst.getEntry("/LiveWindow/TestSystem/Compass/Value").setDouble(0.5);
-    inst.getEntry("/LiveWindow/Elevator/p").setDouble(0.5);
-    inst.getEntry("/LiveWindow/Elevator/d").setDouble(0.5);
-    inst.getEntry("/LiveWindow/Elevator/f").setDouble(0.5);
-
-    inst.getEntry("/LiveWindow/~STATUS~/LW Enabled").setBoolean(true);
-    inst.getEntry("/LiveWindow/Elevator/enabled").setBoolean(false);
-    inst.waitForEntryListenerQueue(-1.0);
-  }
-
-  @AfterEach
-  public void tearDown() {
-    AsyncUtils.setAsyncRunner(FxUtils::runOnFxThread);
-    NetworkTableUtils.shutdown();
+  @AfterAll
+  public static void tearDown() {
+    Components.setDefault(new Components());
   }
 
   @Test
   public void testDeserialize() throws Exception {
     Reader reader = new InputStreamReader(getClass().getResourceAsStream("/smartdashboard.json"), "UTF-8");
-    DashboardTabPane dashboard = JsonBuilder.forSaveFile().fromJson(reader, DashboardTabPane.class);
+    DashboardData data = JsonBuilder.forSaveFile().fromJson(reader, DashboardData.class);
+    assertEquals(0.123456, data.getDividerPosition(), "Divider position was wrong");
+    DashboardTabPane dashboard = data.getTabPane();
 
-    assertEquals(2 + 1, dashboard.getTabs().size()); // 1 for the adder tab
+    assertEquals(2 + 1, dashboard.getTabs().size(), "There should be 2 dashboard tabs and 1 adder tab");
 
     DashboardTab firstTab = (DashboardTab) dashboard.getTabs().get(0);
-    assertEquals("First Tab", firstTab.getTitle());
-    assertEquals(6, firstTab.getWidgetPane().getTiles().size());
+    DashboardTab secondTab = (DashboardTab) dashboard.getTabs().get(1);
+    assertEquals("First Tab", firstTab.getTitle(), "Title of the first tab was wrong");
+    assertEquals("Second Tab", secondTab.getTitle(), "Title of the second tab was wrong");
+    assertFalse(firstTab.isAutoPopulate(), "The first tab should not be autopopulating");
+    assertTrue(secondTab.isAutoPopulate(), "The second tab should be autopopulating");
+    assertEquals("", firstTab.getSourcePrefix(), "The first tab should not have a source prefix");
+    assertEquals("foo", secondTab.getSourcePrefix(), "The second tab should autopopulate from 'foo'");
+    assertEquals(1, firstTab.getWidgetPane().getTiles().size(), "There should only be one tile");
+    Tile tile = firstTab.getWidgetPane().getTiles().get(0);
+    Component content = tile.getContent();
+    assertTrue(content instanceof DummyBooleanBox);
   }
+
+  private static class DummyBooleanBoxType implements WidgetType {
+    @Override
+    public Set<DataType> getDataTypes() {
+      return null;
+    }
+
+    @Override
+    public Class getType() {
+      return null;
+    }
+
+    @Override
+    public String getName() {
+      return "Boolean Box";
+    }
+
+    @Override
+    public Widget get() {
+      return new DummyBooleanBox();
+    }
+  }
+
+  private static class DummyBooleanBox implements Widget {
+
+    @Override
+    public List<Property<?>> getProperties() {
+      return new ArrayList<>();
+    }
+
+    @Override
+    public Pane getView() {
+      return null;
+    }
+
+    @Override
+    public Property<String> titleProperty() {
+      return null;
+    }
+
+    @Override
+    public String getName() {
+      return "Boolean Box";
+    }
+
+    @Override
+    public void addSource(DataSource source) throws IncompatibleSourceException {
+      // NOP
+    }
+
+    @Override
+    public ObservableList<DataSource> getSources() {
+      return FXCollections.observableArrayList();
+    }
+  }
+
 }
