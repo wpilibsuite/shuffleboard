@@ -16,6 +16,8 @@ import edu.wpi.first.shuffleboard.api.widget.Sourced;
 import edu.wpi.first.shuffleboard.app.Autopopulator;
 import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
 
+import edu.wpi.first.networktables.NetworkTable;
+
 import org.fxmisc.easybind.EasyBind;
 
 import java.time.Duration;
@@ -230,7 +232,7 @@ public class DashboardTab extends Tab implements HandledTab, Populatable {
   @Override
   public boolean supports(String sourceId) {
     SourceType type = SourceTypes.getDefault().typeForUri(sourceId);
-    String name = NetworkTableUtils.normalizeKey(type.removeProtocol(sourceId), false);
+    String name = NetworkTable.normalizeKey(type.removeProtocol(sourceId), false);
     return !deferPopulation
         && isAutoPopulate()
         && type.dataTypeForSource(DataTypes.getDefault(), sourceId) != DataTypes.Map
