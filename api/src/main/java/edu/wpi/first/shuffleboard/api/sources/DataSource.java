@@ -44,7 +44,8 @@ import javafx.beans.property.StringProperty;
  * <p>The <i>data</i> property contains the current data for the source. This may also be set by user-controllable
  * widgets to manipulate the data.
  *
- * <p>The <i>type</i> of a data source is a
+ * <p>The <i>type</i> of a data source defines how the source behaves and where its data comes from. More information
+ * can be found {@link SourceType here}.
  *
  * <p><i>Connectedness</i> simply marks whether or not the source is connected to the actual data source. For example,
  * sources whose data resides on a remote resource like a server are not connected if there is no network connection to
