@@ -5,7 +5,7 @@
 <?import javafx.geometry.Insets?>
 <StackPane xmlns="http://javafx.com/javafx"
            xmlns:fx="http://javafx.com/fxml"
-           fx:controller="edu.wpi.first.shuffleboard.plugin.base.widget.ToggleButton"
+           fx:controller="edu.wpi.first.shuffleboard.plugin.base.widget.ToggleButtonWidget"
            minWidth="40" minHeight="40"
            fx:id="root">
     <padding>

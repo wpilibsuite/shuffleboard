@@ -38,25 +38,25 @@ import edu.wpi.first.shuffleboard.plugin.base.recording.serialization.BooleanArr
 import edu.wpi.first.shuffleboard.plugin.base.recording.serialization.NumberArrayAdapter;
 import edu.wpi.first.shuffleboard.plugin.base.recording.serialization.StringAdapter;
 import edu.wpi.first.shuffleboard.plugin.base.recording.serialization.StringArrayAdapter;
-import edu.wpi.first.shuffleboard.plugin.base.widget.BooleanBox;
-import edu.wpi.first.shuffleboard.plugin.base.widget.ComboBoxChooser;
+import edu.wpi.first.shuffleboard.plugin.base.widget.BooleanBoxWidget;
+import edu.wpi.first.shuffleboard.plugin.base.widget.ComboBoxChooserWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.CommandWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.EncoderWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.GraphWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.GyroWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.NumberBarWidget;
-import edu.wpi.first.shuffleboard.plugin.base.widget.NumberSlider;
+import edu.wpi.first.shuffleboard.plugin.base.widget.NumberSliderWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.PIDCommandWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.PIDControllerWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.PowerDistributionPanelWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.RobotPreferencesWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.RelayWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.SimpleDialWidget;
-import edu.wpi.first.shuffleboard.plugin.base.widget.SpeedController;
-import edu.wpi.first.shuffleboard.plugin.base.widget.TextView;
+import edu.wpi.first.shuffleboard.plugin.base.widget.SpeedControllerWidget;
+import edu.wpi.first.shuffleboard.plugin.base.widget.TextViewWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.ThreeAxisAccelerometerWidget;
-import edu.wpi.first.shuffleboard.plugin.base.widget.ToggleButton;
-import edu.wpi.first.shuffleboard.plugin.base.widget.ToggleSwitch;
+import edu.wpi.first.shuffleboard.plugin.base.widget.ToggleButtonWidget;
+import edu.wpi.first.shuffleboard.plugin.base.widget.ToggleSwitchWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.VoltageViewWidget;
 
 import java.util.List;
@@ -99,20 +99,20 @@ public class BasePlugin extends Plugin {
   @Override
   public List<ComponentType> getComponents() {
     return ImmutableList.of(
-        WidgetType.forAnnotatedWidget(BooleanBox.class),
-        WidgetType.forAnnotatedWidget(ToggleButton.class),
-        WidgetType.forAnnotatedWidget(ToggleSwitch.class),
-        WidgetType.forAnnotatedWidget(NumberSlider.class),
+        WidgetType.forAnnotatedWidget(BooleanBoxWidget.class),
+        WidgetType.forAnnotatedWidget(ToggleButtonWidget.class),
+        WidgetType.forAnnotatedWidget(ToggleSwitchWidget.class),
+        WidgetType.forAnnotatedWidget(NumberSliderWidget.class),
         WidgetType.forAnnotatedWidget(NumberBarWidget.class),
         WidgetType.forAnnotatedWidget(SimpleDialWidget.class),
         WidgetType.forAnnotatedWidget(GraphWidget.class),
-        WidgetType.forAnnotatedWidget(TextView.class),
+        WidgetType.forAnnotatedWidget(TextViewWidget.class),
         WidgetType.forAnnotatedWidget(VoltageViewWidget.class),
         WidgetType.forAnnotatedWidget(PowerDistributionPanelWidget.class),
-        WidgetType.forAnnotatedWidget(ComboBoxChooser.class),
+        WidgetType.forAnnotatedWidget(ComboBoxChooserWidget.class),
         WidgetType.forAnnotatedWidget(EncoderWidget.class),
         WidgetType.forAnnotatedWidget(RobotPreferencesWidget.class),
-        WidgetType.forAnnotatedWidget(SpeedController.class),
+        WidgetType.forAnnotatedWidget(SpeedControllerWidget.class),
         WidgetType.forAnnotatedWidget(CommandWidget.class),
         WidgetType.forAnnotatedWidget(PIDCommandWidget.class),
         WidgetType.forAnnotatedWidget(ThreeAxisAccelerometerWidget.class),
@@ -141,15 +141,15 @@ public class BasePlugin extends Plugin {
   @Override
   public Map<DataType, ComponentType> getDefaultComponents() {
     return ImmutableMap.<DataType, ComponentType>builder()
-        .put(new BooleanType(), WidgetType.forAnnotatedWidget(BooleanBox.class))
-        .put(new NumberType(), WidgetType.forAnnotatedWidget(TextView.class))
-        .put(new StringType(), WidgetType.forAnnotatedWidget(TextView.class))
+        .put(new BooleanType(), WidgetType.forAnnotatedWidget(BooleanBoxWidget.class))
+        .put(new NumberType(), WidgetType.forAnnotatedWidget(TextViewWidget.class))
+        .put(new StringType(), WidgetType.forAnnotatedWidget(TextViewWidget.class))
         .put(new AnalogInputType(), WidgetType.forAnnotatedWidget(VoltageViewWidget.class))
         .put(new PowerDistributionType(), WidgetType.forAnnotatedWidget(PowerDistributionPanelWidget.class))
-        .put(new SendableChooserType(), WidgetType.forAnnotatedWidget(ComboBoxChooser.class))
+        .put(new SendableChooserType(), WidgetType.forAnnotatedWidget(ComboBoxChooserWidget.class))
         .put(new EncoderType(), WidgetType.forAnnotatedWidget(EncoderWidget.class))
         .put(new RobotPreferencesType(), WidgetType.forAnnotatedWidget(RobotPreferencesWidget.class))
-        .put(new SpeedControllerType(), WidgetType.forAnnotatedWidget(SpeedController.class))
+        .put(new SpeedControllerType(), WidgetType.forAnnotatedWidget(SpeedControllerWidget.class))
         .put(new CommandType(), WidgetType.forAnnotatedWidget(CommandWidget.class))
         .put(new PIDCommandType(), WidgetType.forAnnotatedWidget(PIDCommandWidget.class))
         .put(new ThreeAxisAccelerometerType(), WidgetType.forAnnotatedWidget(ThreeAxisAccelerometerWidget.class))

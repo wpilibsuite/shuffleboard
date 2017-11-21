@@ -11,8 +11,8 @@ import javafx.scene.layout.Pane;
 @Description(
     name = "Number Slider",
     dataTypes = Number.class)
-@ParametrizedController("NumberSlider.fxml")
-public class NumberSlider extends SimpleAnnotatedWidget<Number> {
+@ParametrizedController("NumberSliderWidget.fxml")
+public class NumberSliderWidget extends SimpleAnnotatedWidget<Number> {
 
   @FXML
   private Pane root;

@@ -13,24 +13,22 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.Property;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.Control;
 import javafx.scene.control.TextField;
 import javafx.util.StringConverter;
 
 /**
- * A property sheet for a specific widget.
+ * A version of {@link PropertySheet} that has better support for editing numbers (using {@link NumberField} and
+ * {@link IntegerField} for doubles and integers, respectively) and booleans (using {@link ToggleSwitch}), and themes.
  */
-public class WidgetPropertySheet extends PropertySheet {
+public class ExtendedPropertySheet extends PropertySheet {
 
   /**
    * Creates an empty property sheet.
    */
-  public WidgetPropertySheet() {
+  public ExtendedPropertySheet() {
     super();
     setModeSwitcherVisible(false);
     setSearchBoxVisible(false);
@@ -60,7 +58,7 @@ public class WidgetPropertySheet extends PropertySheet {
   /**
    * Creates a new property sheet containing items for each of the given properties.
    */
-  public WidgetPropertySheet(Collection<Property<?>> properties) {
+  public ExtendedPropertySheet(Collection<Property<?>> properties) {
     this();
     getItems().setAll(properties.stream()
         .map(property -> new PropertyItem<>(property))
@@ -75,18 +73,34 @@ public class WidgetPropertySheet extends PropertySheet {
     private final Property<T> property;
     private final String name;
 
+    /**
+     * Creates a new PropertyItem from the given property. The name of the item is generated from the name of the
+     * property by converting from <tt>camelCase</tt> to a natural-language <tt>Sentence case</tt> text. For example,
+     * a property with the name <tt>"fooBarBaz"</tt> will generate a name of <tt>"Foo bar baz"</tt>. If a name other
+     * than the property name is desired, or if generating a sentence-case string would be inappropriate, use
+     * {@link #PropertyItem(Property, String)} that lets the name be directly specified.
+     *
+     * @param property the property the item represents
+     */
     public PropertyItem(Property<T> property) {
-      this.property = property;
-      this.name = camelCaseToSentence(property.getName());
+      this(property, camelCaseToSentence(property.getName()));
     }
 
+    /**
+     * Creates a new PropertyItem from the given property and with the given name.
+     *
+     * @param property the property the item represents
+     * @param name     the name of the item to display in the property sheet
+     */
     public PropertyItem(Property<T> property, String name) {
       this.property = property;
       this.name = name;
     }
 
     /**
-     * Converts a "CamelCase" string to "Sentence case".
+     * Converts a "CamelCase" string to "Sentence case". This is implemented by replacing every upper-case character
+     * (except for the first one, if it is upper-case) with a space character (<tt>' '</tt>) and that character's
+     * lower-case representation.
      */
     private static String camelCaseToSentence(String camel) {
       if (camel == null) {
@@ -115,7 +129,7 @@ public class WidgetPropertySheet extends PropertySheet {
 
     @Override
     public String getCategory() {
-      return "Widget Properties";
+      return "Ungrouped";
     }
 
     @Override
@@ -133,8 +147,8 @@ public class WidgetPropertySheet extends PropertySheet {
       return property.getValue();
     }
 
-    @SuppressWarnings("unchecked")
     @Override
+    @SuppressWarnings("unchecked")
     public void setValue(Object value) {
       if (getType().isInstance(value)) {
         property.setValue((T) value);
@@ -152,22 +166,11 @@ public class WidgetPropertySheet extends PropertySheet {
 
   }
 
-
-  private abstract static class AbstractEditor<T, C extends Control> extends AbstractPropertyEditor<T, C> {
-
-    protected final BooleanProperty wait = new SimpleBooleanProperty(this, "wait", false);
-
-    public AbstractEditor(Item property, C control) {
-      super(property, control);
-    }
-
-  }
-
   /**
    * A property editor for numbers. We use this instead of the one bundled with ControlsFX because
    * their implementation is bad.
    */
-  private static class NumberPropertyEditor extends AbstractEditor<Double, NumberField> {
+  private static class NumberPropertyEditor extends AbstractPropertyEditor<Double, NumberField> {
 
     NumberPropertyEditor(Item item) {
       super(item, new NumberField(((Number) item.getValue()).doubleValue()));
@@ -185,7 +188,7 @@ public class WidgetPropertySheet extends PropertySheet {
 
   }
 
-  private static class IntegerPropertyEditor extends AbstractEditor<Integer, IntegerField> {
+  private static class IntegerPropertyEditor extends AbstractPropertyEditor<Integer, IntegerField> {
 
     IntegerPropertyEditor(Item item) {
       super(item, new IntegerField((Integer) item.getValue()));
@@ -203,7 +206,7 @@ public class WidgetPropertySheet extends PropertySheet {
   }
 
 
-  private static class TextPropertyEditor extends AbstractEditor<String, TextField> {
+  private static class TextPropertyEditor extends AbstractPropertyEditor<String, TextField> {
 
     TextPropertyEditor(Item item) {
       super(item, new TextField((String) item.getValue()));
@@ -221,7 +224,7 @@ public class WidgetPropertySheet extends PropertySheet {
 
   }
 
-  private static class ToggleSwitchEditor extends AbstractEditor<Boolean, ToggleSwitch> {
+  private static class ToggleSwitchEditor extends AbstractPropertyEditor<Boolean, ToggleSwitch> {
 
     ToggleSwitchEditor(Item item) {
       super(item, new ToggleSwitch());

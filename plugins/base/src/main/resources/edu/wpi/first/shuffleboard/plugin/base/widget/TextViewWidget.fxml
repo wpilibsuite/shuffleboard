@@ -7,7 +7,7 @@
 <?import edu.wpi.first.shuffleboard.api.components.NumberField?>
 <BorderPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
-            fx:controller="edu.wpi.first.shuffleboard.plugin.base.widget.TextView"
+            fx:controller="edu.wpi.first.shuffleboard.plugin.base.widget.TextViewWidget"
             fx:id="root">
     <center>
         <StackPane>

@@ -1,4 +1,4 @@
-package edu.wpi.first.shuffleboard.plugin.base.widget;
+package edu.wpi.first.shuffleboard.plugin.base.data;
 
 import com.google.common.collect.ImmutableMap;
 

@@ -22,8 +22,8 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 
 @Description(name = "Speed Controller", dataTypes = SpeedControllerType.class)
-@ParametrizedController("SpeedController.fxml")
-public class SpeedController extends SimpleAnnotatedWidget<SpeedControllerData> {
+@ParametrizedController("SpeedControllerWidget.fxml")
+public class SpeedControllerWidget extends SimpleAnnotatedWidget<SpeedControllerData> {
 
   private final BooleanProperty controllable = new SimpleBooleanProperty(this, "controllable", true);
 

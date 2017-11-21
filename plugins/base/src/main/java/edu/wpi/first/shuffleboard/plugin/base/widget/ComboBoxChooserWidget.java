@@ -13,8 +13,8 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.layout.Pane;
 
 @Description(name = "ComboBox Chooser", dataTypes = SendableChooserType.class)
-@ParametrizedController("ComboBoxChooser.fxml")
-public class ComboBoxChooser extends ComplexAnnotatedWidget<SendableChooserData> {
+@ParametrizedController("ComboBoxChooserWidget.fxml")
+public class ComboBoxChooserWidget extends ComplexAnnotatedWidget<SendableChooserData> {
 
   @FXML
   private Pane root;

@@ -16,8 +16,8 @@ import javafx.scene.paint.Color;
 @Description(
     name = "Boolean Box",
     dataTypes = Boolean.class)
-@ParametrizedController("BooleanBox.fxml")
-public class BooleanBox extends SimpleAnnotatedWidget<Boolean> {
+@ParametrizedController("BooleanBoxWidget.fxml")
+public class BooleanBoxWidget extends SimpleAnnotatedWidget<Boolean> {
 
   @FXML
   private Pane root;

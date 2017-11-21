@@ -18,20 +18,20 @@ import javafx.stage.Stage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class ComboBoxChooserTest extends AbstractWidgetTest {
+public class ComboBoxChooserWidgetTest extends AbstractWidgetTest {
 
-  private ComboBoxChooser widget;
+  private ComboBoxChooserWidget widget;
   private DataSource<SendableChooserData> source;
 
   @BeforeAll
   public static void register() {
-    setRequirements(ComboBoxChooser.class, new SendableChooserType());
+    setRequirements(ComboBoxChooserWidget.class, new SendableChooserType());
   }
 
   @Override
   public void start(Stage stage) throws Exception {
     source = DummySource.forType(new SendableChooserType());
-    widget = (ComboBoxChooser)
+    widget = (ComboBoxChooserWidget)
         Components.getDefault().createWidget("ComboBox Chooser", source).get();
 
     stage.setScene(new Scene(widget.getView()));

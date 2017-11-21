@@ -10,16 +10,17 @@ import org.fxmisc.easybind.EasyBind;
 import org.fxmisc.easybind.monadic.MonadicBinding;
 
 import javafx.fxml.FXML;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.Pane;
 
 @Description(name = "Toggle Button", dataTypes = Boolean.class)
-@ParametrizedController("ToggleButton.fxml")
-public class ToggleButton extends SimpleAnnotatedWidget<Boolean> {
+@ParametrizedController("ToggleButtonWidget.fxml")
+public class ToggleButtonWidget extends SimpleAnnotatedWidget<Boolean> {
 
   @FXML
   private Pane root;
   @FXML
-  private javafx.scene.control.ToggleButton button;
+  private ToggleButton button;
   private MonadicBinding<String> simpleSourceName; // NOPMD use a field to avoid GC
 
   @FXML

@@ -6,7 +6,7 @@
 <?import javafx.geometry.Insets?>
 <BorderPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
-            fx:controller="edu.wpi.first.shuffleboard.plugin.base.widget.NumberSlider"
+            fx:controller="edu.wpi.first.shuffleboard.plugin.base.widget.NumberSliderWidget"
             fx:id="root"
             prefHeight="128" prefWidth="256">
     <center>

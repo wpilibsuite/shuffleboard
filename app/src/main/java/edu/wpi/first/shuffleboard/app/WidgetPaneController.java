@@ -1,6 +1,6 @@
 package edu.wpi.first.shuffleboard.app;
 
-import edu.wpi.first.shuffleboard.api.components.WidgetPropertySheet;
+import edu.wpi.first.shuffleboard.api.components.ExtendedPropertySheet;
 import edu.wpi.first.shuffleboard.api.dnd.DataFormats;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.DummySource;
@@ -471,7 +471,7 @@ public class WidgetPaneController {
    */
   private MenuItem createPropertySheetMenu(WidgetTile tile) {
     return FxUtils.menuItem("Edit Properties", event -> {
-      WidgetPropertySheet propertySheet = new WidgetPropertySheet(tile.getContent().getProperties());
+      ExtendedPropertySheet propertySheet = new ExtendedPropertySheet(tile.getContent().getProperties());
       Dialog<ButtonType> dialog = new Dialog<>();
 
       dialog.setTitle("Edit widget properties");

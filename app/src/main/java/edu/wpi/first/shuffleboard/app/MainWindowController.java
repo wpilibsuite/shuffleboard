@@ -19,7 +19,7 @@ import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.app.components.DashboardTab;
 import edu.wpi.first.shuffleboard.app.components.DashboardTabPane;
 import edu.wpi.first.shuffleboard.app.components.WidgetGallery;
-import edu.wpi.first.shuffleboard.api.components.WidgetPropertySheet;
+import edu.wpi.first.shuffleboard.api.components.ExtendedPropertySheet;
 import edu.wpi.first.shuffleboard.app.json.JsonBuilder;
 import edu.wpi.first.shuffleboard.app.plugin.PluginLoader;
 import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
@@ -99,7 +99,7 @@ public class MainWindowController {
 
   private SourceEntry selectedEntry;
 
-  File currentFile = null;
+  private File currentFile = null;
 
   private final ObservableValue<List<String>> stylesheets
       = EasyBind.map(AppPreferences.getInstance().themeProperty(), Theme::getStyleSheets);
@@ -396,14 +396,14 @@ public class MainWindowController {
     TabPane tabs = new TabPane();
     tabs.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
 
-    tabs.getTabs().add(new Tab("Application", new WidgetPropertySheet(AppPreferences.getInstance().getProperties())));
+    tabs.getTabs().add(new Tab("Application", new ExtendedPropertySheet(AppPreferences.getInstance().getProperties())));
 
     for (Plugin plugin : PluginLoader.getDefault().getLoadedPlugins()) {
       if (plugin.getProperties().isEmpty()) {
         continue;
       }
       Tab tab = new Tab(plugin.getName());
-      tab.setContent(new WidgetPropertySheet(plugin.getProperties()));
+      tab.setContent(new ExtendedPropertySheet(plugin.getProperties()));
 
       tab.setDisable(DashboardMode.getCurrentMode() == DashboardMode.PLAYBACK);
       tabs.getTabs().add(tab);
@@ -421,9 +421,9 @@ public class MainWindowController {
     dialog.setResultConverter(button -> !button.getButtonData().isCancelButton());
     if (dialog.showAndWait().orElse(false)) {
       tabs.getTabs().stream()
-          .map(t -> (WidgetPropertySheet) t.getContent())
+          .map(t -> (ExtendedPropertySheet) t.getContent())
           .flatMap(p -> p.getItems().stream())
-          .flatMap(TypeUtils.castStream(WidgetPropertySheet.PropertyItem.class))
+          .flatMap(TypeUtils.castStream(ExtendedPropertySheet.PropertyItem.class))
           .map(i -> (Optional<ObservableValue>) i.getObservableValue())
           .flatMap(TypeUtils.optionalStream())
           .flatMap(TypeUtils.castStream(FlushableProperty.class))

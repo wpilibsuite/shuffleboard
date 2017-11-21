@@ -10,7 +10,7 @@
 <?import javafx.scene.layout.BorderPane?>
 <StackPane xmlns="http://javafx.com/javafx"
            xmlns:fx="http://javafx.com/fxml"
-           fx:controller="edu.wpi.first.shuffleboard.plugin.base.widget.SpeedController"
+           fx:controller="edu.wpi.first.shuffleboard.plugin.base.widget.SpeedControllerWidget"
            fx:id="root"
            prefHeight="128" prefWidth="256">
     <padding>

@@ -20,8 +20,8 @@ import javafx.scene.layout.Pane;
     dataTypes = {
         String.class, Number.class, Boolean.class
     })
-@ParametrizedController("TextView.fxml")
-public class TextView extends SimpleAnnotatedWidget<Object> {
+@ParametrizedController("TextViewWidget.fxml")
+public class TextViewWidget extends SimpleAnnotatedWidget<Object> {
 
   @FXML
   private Pane root;

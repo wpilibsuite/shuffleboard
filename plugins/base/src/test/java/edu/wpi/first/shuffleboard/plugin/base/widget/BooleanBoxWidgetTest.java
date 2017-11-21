@@ -17,18 +17,18 @@ import javafx.stage.Stage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class BooleanBoxTest extends AbstractWidgetTest {
+public class BooleanBoxWidgetTest extends AbstractWidgetTest {
 
-  private BooleanBox widget;
+  private BooleanBoxWidget widget;
 
   @BeforeAll
   public static void register() {
-    setRequirements(BooleanBox.class, new BooleanType());
+    setRequirements(BooleanBoxWidget.class, new BooleanType());
   }
 
   @Override
   public void start(Stage stage) throws Exception {
-    widget = (BooleanBox) Components.getDefault().createWidget("Boolean Box",
+    widget = (BooleanBoxWidget) Components.getDefault().createWidget("Boolean Box",
         DummySource.forTypes(new BooleanType()).get()).get();
     stage.setScene(new Scene(widget.getView()));
     stage.show();
