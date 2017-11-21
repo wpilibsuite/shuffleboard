@@ -94,9 +94,10 @@ public class Shuffleboard extends Application {
     primaryStage.setHeight(Screen.getPrimary().getVisualBounds().getHeight());
     primaryStage.setOnCloseRequest(closeEvent -> {
       Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+      alert.setTitle("Save layout");
       alert.getDialogPane().getScene().getStylesheets().setAll(mainPane.getStylesheets());
       alert.getButtonTypes().setAll(ButtonType.YES, ButtonType.NO, ButtonType.CANCEL);
-      alert.getDialogPane().setHeaderText("Save the current layout?");
+      alert.getDialogPane().setHeaderText("Save the current layout before closing?");
       alert.showAndWait().ifPresent(bt -> {
         if (bt == ButtonType.YES) {
           try {
