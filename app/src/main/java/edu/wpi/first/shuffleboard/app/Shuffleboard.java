@@ -28,6 +28,8 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.scene.layout.Pane;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
@@ -90,6 +92,25 @@ public class Shuffleboard extends Application {
     primaryStage.setMinHeight(480);
     primaryStage.setWidth(Screen.getPrimary().getVisualBounds().getWidth());
     primaryStage.setHeight(Screen.getPrimary().getVisualBounds().getHeight());
+    primaryStage.setOnCloseRequest(closeEvent -> {
+      Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+      alert.getDialogPane().getScene().getStylesheets().setAll(mainPane.getStylesheets());
+      alert.getButtonTypes().setAll(ButtonType.YES, ButtonType.NO, ButtonType.CANCEL);
+      alert.getDialogPane().setHeaderText("Save the current layout?");
+      alert.showAndWait().ifPresent(bt -> {
+        if (bt == ButtonType.YES) {
+          try {
+            mainWindowController.save();
+          } catch (IOException ex) {
+            logger.log(Level.WARNING, "Could not save the layout", ex);
+          }
+        } else if (bt == ButtonType.CANCEL) {
+          // cancel the close request by consuming the event
+          closeEvent.consume();
+        }
+        // Don't need to check for NO because it just lets the window close normally
+      });
+    });
     primaryStage.show();
     Time.setStartTime(Time.now());
   }
