@@ -318,10 +318,10 @@ public class MainWindowController {
   private void saveAs() throws IOException {
     FileChooser chooser = new FileChooser();
     chooser.getExtensionFilters().setAll(
-        new FileChooser.ExtensionFilter("SmartDashboard Save File (.json)", "*.json"));
+        new FileChooser.ExtensionFilter("Shuffleboard Save File (.json)", "*.json"));
     if (currentFile == null) {
       chooser.setInitialDirectory(Storage.getStorageDir());
-      chooser.setInitialFileName("smartdashboard.json");
+      chooser.setInitialFileName("shuffleboard.json");
     } else {
       chooser.setInitialDirectory(currentFile.getAbsoluteFile().getParentFile());
       chooser.setInitialFileName(currentFile.getName());
@@ -357,7 +357,7 @@ public class MainWindowController {
     FileChooser chooser = new FileChooser();
     chooser.setInitialDirectory(Storage.getStorageDir());
     chooser.getExtensionFilters().setAll(
-        new FileChooser.ExtensionFilter("SmartDashboard Save File (.json)", "*.json"));
+        new FileChooser.ExtensionFilter("Shuffleboard Save File (.json)", "*.json"));
 
     final File selected = chooser.showOpenDialog(root.getScene().getWindow());
     load(selected);

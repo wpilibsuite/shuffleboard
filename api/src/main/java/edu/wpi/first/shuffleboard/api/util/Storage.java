@@ -10,11 +10,14 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
+import java.util.logging.Logger;
 
 /**
  * Utilities for local file storage.
  */
 public final class Storage {
+
+  private static final Logger log = Logger.getLogger(Storage.class.getName());
 
   /**
    * The user home directory.
@@ -24,7 +27,7 @@ public final class Storage {
   /**
    * The root dashboard storage directory.
    */
-  private static final String STORAGE_DIR = USER_HOME + "/SmartDashboard";
+  private static final String STORAGE_DIR = USER_HOME + "/Shuffleboard";
 
   private static final String RECORDING_DIR = STORAGE_DIR + "/recordings";
 
@@ -44,6 +47,7 @@ public final class Storage {
   private static Path findOrCreate(String directory) throws IOException {
     Path path = Paths.get(directory);
     if (!Files.exists(path)) {
+      log.info("Creating directory " + path);
       Files.createDirectories(path);
     }
 
@@ -76,7 +80,7 @@ public final class Storage {
 
   /**
    * Generates the path to a recording file based on when a recording started. The generated path is in the format
-   * {@code /SmartDashboard/recordings/<date>/recording-<time>.sbr}, where {@code date} is the date formatted by the
+   * {@code /Shuffleboard/recordings/<date>/recording-<time>.sbr}, where {@code date} is the date formatted by the
    * ISO-8601 format, and {@code time} is a modified version that uses periods ({@code "."}) instead of colons because
    * Windows does not allow colon characters in file names.
    *
