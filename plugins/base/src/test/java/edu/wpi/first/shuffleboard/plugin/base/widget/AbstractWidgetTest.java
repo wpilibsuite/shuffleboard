@@ -16,7 +16,7 @@ public abstract class AbstractWidgetTest extends ApplicationTest {
 
     widgetRegistry.register(widgetClass);
     for (DataType dataType : dataTypes) {
-      dataTypeRegistry.register(dataType);
+      dataTypeRegistry.registerIfAbsent(dataType);
     }
 
     Components.setDefault(widgetRegistry);

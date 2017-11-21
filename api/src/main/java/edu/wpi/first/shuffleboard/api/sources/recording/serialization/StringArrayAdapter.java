@@ -1,16 +1,14 @@
-package edu.wpi.first.shuffleboard.plugin.base.recording.serialization;
+package edu.wpi.first.shuffleboard.api.sources.recording.serialization;
 
+import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.sources.recording.Serialization;
-import edu.wpi.first.shuffleboard.api.sources.recording.serialization.TypeAdapter;
-import edu.wpi.first.shuffleboard.plugin.base.data.types.StringArrayType;
-import edu.wpi.first.shuffleboard.plugin.base.data.types.StringType;
 
 import java.util.Arrays;
 
 public class StringArrayAdapter extends TypeAdapter<String[]> {
 
   public StringArrayAdapter() {
-    super(new StringArrayType());
+    super(DataTypes.StringArray);
   }
 
   @Override
@@ -41,7 +39,7 @@ public class StringArrayAdapter extends TypeAdapter<String[]> {
     cursor += Serialization.SIZE_OF_INT;
     String[] stringArray = new String[length];
     for (int i = 0; i < length; i++) {
-      String string = Serialization.decode(array, cursor, new StringType());
+      String string = Serialization.decode(array, cursor, DataTypes.String);
       stringArray[i] = string;
       cursor += Serialization.SIZE_OF_INT + string.length();
     }

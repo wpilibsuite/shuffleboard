@@ -1,17 +1,16 @@
-package edu.wpi.first.shuffleboard.plugin.base.recording.serialization;
+package edu.wpi.first.shuffleboard.api.sources.recording.serialization;
+
+import edu.wpi.first.shuffleboard.api.data.DataTypes;
+import edu.wpi.first.shuffleboard.api.sources.recording.Serialization;
 
 import com.google.common.primitives.Bytes;
-
-import edu.wpi.first.shuffleboard.api.sources.recording.Serialization;
-import edu.wpi.first.shuffleboard.api.sources.recording.serialization.TypeAdapter;
-import edu.wpi.first.shuffleboard.plugin.base.data.types.StringType;
 
 import java.io.UnsupportedEncodingException;
 
 public class StringAdapter extends TypeAdapter<String> {
 
   public StringAdapter() {
-    super(new StringType());
+    super(DataTypes.String);
   }
 
   @Override

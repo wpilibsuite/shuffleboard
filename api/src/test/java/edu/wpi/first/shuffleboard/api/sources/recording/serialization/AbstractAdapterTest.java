@@ -1,10 +1,8 @@
-package edu.wpi.first.shuffleboard.plugin.base.recording.serialization;
-
-import com.google.common.collect.ImmutableList;
+package edu.wpi.first.shuffleboard.api.sources.recording.serialization;
 
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
-import edu.wpi.first.shuffleboard.api.sources.recording.serialization.Serializers;
-import edu.wpi.first.shuffleboard.api.sources.recording.serialization.TypeAdapter;
+
+import com.google.common.collect.ImmutableList;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,8 +20,8 @@ public class AbstractAdapterTest<T> {
   @BeforeEach
   public final void registerAdapter() {
     DataTypes dataTypes = new DataTypes();
-    dataTypes.register(adapter.getDataType());
-    requirements.forEach(r -> dataTypes.register(r.getDataType()));
+    dataTypes.registerIfAbsent(adapter.getDataType());
+    requirements.forEach(r -> dataTypes.registerIfAbsent(r.getDataType()));
     DataTypes.setDefault(dataTypes);
     Serializers.add(adapter);
     requirements.forEach(Serializers::add);

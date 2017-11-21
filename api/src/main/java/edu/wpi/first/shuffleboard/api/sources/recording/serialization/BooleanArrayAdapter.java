@@ -1,13 +1,12 @@
-package edu.wpi.first.shuffleboard.plugin.base.recording.serialization;
+package edu.wpi.first.shuffleboard.api.sources.recording.serialization;
 
+import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.sources.recording.Serialization;
-import edu.wpi.first.shuffleboard.api.sources.recording.serialization.TypeAdapter;
-import edu.wpi.first.shuffleboard.plugin.base.data.types.BooleanArrayType;
 
 public class BooleanArrayAdapter extends TypeAdapter<boolean[]> {
 
   public BooleanArrayAdapter() {
-    super(new BooleanArrayType());
+    super(DataTypes.BooleanArray);
   }
 
   @Override

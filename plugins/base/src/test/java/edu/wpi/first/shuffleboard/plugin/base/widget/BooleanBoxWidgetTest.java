@@ -1,9 +1,9 @@
 package edu.wpi.first.shuffleboard.plugin.base.widget;
 
 
+import edu.wpi.first.shuffleboard.api.data.types.BooleanType;
 import edu.wpi.first.shuffleboard.api.sources.DummySource;
 import edu.wpi.first.shuffleboard.api.widget.Components;
-import edu.wpi.first.shuffleboard.plugin.base.data.types.BooleanType;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;

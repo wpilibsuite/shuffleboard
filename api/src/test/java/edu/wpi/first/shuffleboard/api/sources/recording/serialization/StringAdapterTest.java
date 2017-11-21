@@ -1,4 +1,4 @@
-package edu.wpi.first.shuffleboard.plugin.base.recording.serialization;
+package edu.wpi.first.shuffleboard.api.sources.recording.serialization;
 
 import org.junit.jupiter.api.Test;
 

@@ -1,43 +1,26 @@
 package edu.wpi.first.shuffleboard.plugin.base;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-
 import edu.wpi.first.shuffleboard.api.data.DataType;
+import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.plugin.Plugin;
-import edu.wpi.first.shuffleboard.api.sources.recording.Serialization;
-import edu.wpi.first.shuffleboard.api.sources.recording.serialization.SimpleAdapter;
-import edu.wpi.first.shuffleboard.api.sources.recording.serialization.TypeAdapter;
 import edu.wpi.first.shuffleboard.api.widget.ComponentType;
 import edu.wpi.first.shuffleboard.api.widget.LayoutClass;
 import edu.wpi.first.shuffleboard.api.widget.WidgetType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.AnalogInputType;
-import edu.wpi.first.shuffleboard.plugin.base.data.types.BooleanArrayType;
-import edu.wpi.first.shuffleboard.plugin.base.data.types.BooleanType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.CommandType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.EncoderType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.GyroType;
-import edu.wpi.first.shuffleboard.plugin.base.data.types.NumberArrayType;
-import edu.wpi.first.shuffleboard.plugin.base.data.types.NumberType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.PIDCommandType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.PIDControllerType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.PowerDistributionType;
-import edu.wpi.first.shuffleboard.plugin.base.data.types.RawByteType;
-import edu.wpi.first.shuffleboard.plugin.base.data.types.RobotPreferencesType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.RelayType;
+import edu.wpi.first.shuffleboard.plugin.base.data.types.RobotPreferencesType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.SendableChooserType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.SpeedControllerType;
-import edu.wpi.first.shuffleboard.plugin.base.data.types.StringArrayType;
-import edu.wpi.first.shuffleboard.plugin.base.data.types.StringType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.SubsystemType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.ThreeAxisAccelerometerType;
 import edu.wpi.first.shuffleboard.plugin.base.layout.ListLayout;
 import edu.wpi.first.shuffleboard.plugin.base.layout.SubsystemLayout;
-import edu.wpi.first.shuffleboard.plugin.base.recording.serialization.BooleanArrayAdapter;
-import edu.wpi.first.shuffleboard.plugin.base.recording.serialization.NumberArrayAdapter;
-import edu.wpi.first.shuffleboard.plugin.base.recording.serialization.StringAdapter;
-import edu.wpi.first.shuffleboard.plugin.base.recording.serialization.StringArrayAdapter;
 import edu.wpi.first.shuffleboard.plugin.base.widget.BooleanBoxWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.ComboBoxChooserWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.CommandWidget;
@@ -49,8 +32,8 @@ import edu.wpi.first.shuffleboard.plugin.base.widget.NumberSliderWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.PIDCommandWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.PIDControllerWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.PowerDistributionPanelWidget;
-import edu.wpi.first.shuffleboard.plugin.base.widget.RobotPreferencesWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.RelayWidget;
+import edu.wpi.first.shuffleboard.plugin.base.widget.RobotPreferencesWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.SimpleDialWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.SpeedControllerWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.TextViewWidget;
@@ -58,6 +41,10 @@ import edu.wpi.first.shuffleboard.plugin.base.widget.ThreeAxisAccelerometerWidge
 import edu.wpi.first.shuffleboard.plugin.base.widget.ToggleButtonWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.ToggleSwitchWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.VoltageViewWidget;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 import java.util.List;
 import java.util.Map;
@@ -73,13 +60,6 @@ public class BasePlugin extends Plugin {
   @Override
   public List<DataType> getDataTypes() {
     return ImmutableList.of(
-        new BooleanType(),
-        new NumberType(),
-        new StringType(),
-        new BooleanArrayType(),
-        new NumberArrayType(),
-        new StringArrayType(),
-        new RawByteType(),
         new AnalogInputType(),
         new PowerDistributionType(),
         new EncoderType(),
@@ -125,25 +105,11 @@ public class BasePlugin extends Plugin {
   }
 
   @Override
-  public List<TypeAdapter> getTypeAdapters() {
-    return ImmutableList.of(
-        new SimpleAdapter<>(new NumberType(),
-            n -> Serialization.toByteArray(n.doubleValue()), Serialization::readDouble, Serialization.SIZE_OF_DOUBLE),
-        new SimpleAdapter<>(new BooleanType(),
-            Serialization::toByteArray, Serialization::readBoolean, Serialization.SIZE_OF_BOOL),
-        new StringAdapter(),
-        new NumberArrayAdapter(),
-        new BooleanArrayAdapter(),
-        new StringArrayAdapter()
-    );
-  }
-
-  @Override
   public Map<DataType, ComponentType> getDefaultComponents() {
     return ImmutableMap.<DataType, ComponentType>builder()
-        .put(new BooleanType(), WidgetType.forAnnotatedWidget(BooleanBoxWidget.class))
-        .put(new NumberType(), WidgetType.forAnnotatedWidget(TextViewWidget.class))
-        .put(new StringType(), WidgetType.forAnnotatedWidget(TextViewWidget.class))
+        .put(DataTypes.Boolean, WidgetType.forAnnotatedWidget(BooleanBoxWidget.class))
+        .put(DataTypes.Number, WidgetType.forAnnotatedWidget(TextViewWidget.class))
+        .put(DataTypes.String, WidgetType.forAnnotatedWidget(TextViewWidget.class))
         .put(new AnalogInputType(), WidgetType.forAnnotatedWidget(VoltageViewWidget.class))
         .put(new PowerDistributionType(), WidgetType.forAnnotatedWidget(PowerDistributionPanelWidget.class))
         .put(new SendableChooserType(), WidgetType.forAnnotatedWidget(ComboBoxChooserWidget.class))
