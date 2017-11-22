@@ -17,6 +17,17 @@ To run shuffleboard use the command `./gradlew :app:run`.
 ### Requirements
 - [JDK 8](http://www.oracle.com/technetwork/java/javase/downloads/index.html)
 
+If you have both the JDK 9 and JDK 8 installed on your machine you may need to explicitly set your shell's enviroment variables before running Gradle.
+
+For Bash:
+```bash
+JAVA_HOME=`/usr/libexec/java_home -v 1.8`
+```
+For [Fish Shell](https://fishshell.com/):
+```
+setenv -gx JAVA_HOME (/usr/libexec/java_home -v 1.8)
+```
+
 ## Building
 
 To build the APIs and utility classes used in plugin creation, use the command `./gradlew :api:shadowJar`
