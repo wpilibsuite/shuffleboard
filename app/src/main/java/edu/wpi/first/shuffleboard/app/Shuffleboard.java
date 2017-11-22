@@ -93,6 +93,10 @@ public class Shuffleboard extends Application {
     primaryStage.setWidth(Screen.getPrimary().getVisualBounds().getWidth());
     primaryStage.setHeight(Screen.getPrimary().getVisualBounds().getHeight());
     primaryStage.setOnCloseRequest(closeEvent -> {
+      if (!AppPreferences.getInstance().isConfirmExit()) {
+        // Don't show the confirmation dialog, just exit
+        return;
+      }
       Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
       alert.setTitle("Save layout");
       alert.getDialogPane().getScene().getStylesheets().setAll(mainPane.getStylesheets());
