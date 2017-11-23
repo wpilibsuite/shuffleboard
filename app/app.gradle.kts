@@ -40,21 +40,16 @@ tasks.withType<Jar> {
 }
 
 /**
- * Copies the built jar(s) from the test_plugins project into the test resources directory.
- */
-val copyTestPlugins = task<Copy>("copyTestPlugins") {
-    description = "Copies the built jar(s) from the test_plugins project into the test resources directory"
-    dependsOn(project("test_plugins").tasks["jar"])
-    from("""${project("test_plugins").buildDir}/libs""")
-    into("src/test/resources")
-}
-
-/**
  * Make tests get the most recent version of the test plugin jar.
  */
 tasks.withType<Test> {
-    dependsOn(copyTestPlugins)
+    dependsOn(project("test_plugins").tasks["jar"])
 }
+
+/**
+ * Lets tests use the output of the test_plugins build.
+ */
+java.sourceSets["test"].resources.srcDirs += File(project("test_plugins").buildDir, "libs")
 
 /**
  * @return [edu.wpi.first.wpilib.versioning.WPILibVersioningPluginExtension.version] value or null

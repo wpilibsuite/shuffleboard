@@ -1,7 +1,7 @@
 include ":api"
 include ":app"
 include ":app:test_plugins"
-include "integ-test"
+include "integ_test"
 include ":plugins:base"
 include ":plugins:cameraserver"
 include ":plugins:networktables"
