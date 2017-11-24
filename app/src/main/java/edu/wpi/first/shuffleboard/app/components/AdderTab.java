@@ -7,6 +7,9 @@ import javafx.beans.property.StringProperty;
 import javafx.scene.control.Tab;
 import javafx.scene.input.MouseEvent;
 
+/**
+ * A tab that, when clicked, will add a new tab to the tab pane containing it.
+ */
 public class AdderTab extends Tab implements HandledTab {
   private final Property<Runnable> addTabCallback = new SimpleObjectProperty<>(this, "addTabCallback", () -> {});
   private final StringProperty title = new SimpleStringProperty("+");

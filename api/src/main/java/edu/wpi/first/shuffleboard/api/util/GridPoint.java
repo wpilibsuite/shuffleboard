@@ -15,6 +15,8 @@ public class GridPoint implements Serializable {
 
   /**
    * Creates a point at the given column and row indices.
+   *
+   * @throws IllegalArgumentException if either {@code col} or {@code row} is negative
    */
   public GridPoint(int col, int row) {
     checkArgument(col >= 0, "Column index must be non-negative, was " + col);

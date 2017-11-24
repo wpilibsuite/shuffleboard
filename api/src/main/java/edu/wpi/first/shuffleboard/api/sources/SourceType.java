@@ -11,6 +11,11 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 
+/**
+ * Represents the <i>type</i> of a data source and where the data for that source comes from. There may be arbitrarily
+ * many types of data sources for a single source type. For example, a theoretical "file system" type may have one
+ * implementation of {@link DataSource} for files, and another implementation for directories.
+ */
 public abstract class SourceType {
 
   private final String name;

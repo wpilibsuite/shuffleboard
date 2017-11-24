@@ -81,6 +81,16 @@ public final class GridImage {
     return image;
   }
 
+  /**
+   * Draws a filled rectangle with the given dimensions and color on an image.
+   *
+   * @param image the image to draw the rectangle on
+   * @param x     the x-coordinate of the top-left corner of the rectangle, in pixels
+   * @param y     the y-coordinate of the top-left corner of the rectangle, in pixels
+   * @param w     the width of the rectangle, in pixels
+   * @param h     the height of the rectangle, in pixels
+   * @param color the color of the rectangle
+   */
   private void fillRect(WritableImage image, int x, int y, int w, int h, Color color) {
     assert x >= 0 && x <= width;
     assert y >= 0 && y <= height;
