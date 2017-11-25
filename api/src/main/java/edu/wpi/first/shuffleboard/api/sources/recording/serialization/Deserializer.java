@@ -2,6 +2,11 @@ package edu.wpi.first.shuffleboard.api.sources.recording.serialization;
 
 import edu.wpi.first.shuffleboard.api.data.DataType;
 
+/**
+ * An interface for functions that can convert raw byte arrays of {@link Serializer serialized} data back to objects.
+ *
+ * @param <T> the type of data that can be deserialized
+ */
 public interface Deserializer<T> {
 
   /**

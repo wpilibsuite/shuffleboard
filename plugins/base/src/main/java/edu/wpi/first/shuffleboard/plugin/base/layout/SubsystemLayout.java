@@ -17,6 +17,8 @@ import edu.wpi.first.shuffleboard.plugin.base.data.types.SubsystemType;
 
 import com.google.common.collect.ImmutableSet;
 
+import edu.wpi.first.networktables.NetworkTable;
+
 import org.fxmisc.easybind.EasyBind;
 import org.fxmisc.easybind.Subscription;
 
@@ -82,7 +84,7 @@ public class SubsystemLayout implements Layout, Populatable, Sourced {
       final String sourceName = getSource().getName();
       if (child.getTitle().startsWith(sourceName)) {
         // Remove leading redundant information
-        child.setTitle(NetworkTableUtils.normalizeKey(child.getTitle().substring(sourceName.length()), false));
+        child.setTitle(NetworkTable.normalizeKey(child.getTitle().substring(sourceName.length()), false));
       }
     }
     if (children.isEmpty()) {

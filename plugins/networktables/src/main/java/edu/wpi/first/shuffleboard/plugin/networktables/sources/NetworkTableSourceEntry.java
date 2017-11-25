@@ -3,7 +3,8 @@ package edu.wpi.first.shuffleboard.plugin.networktables.sources;
 
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceEntry;
-import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
+
+import edu.wpi.first.networktables.NetworkTable;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -27,7 +28,7 @@ public final class NetworkTableSourceEntry implements SourceEntry {
    */
   public NetworkTableSourceEntry(String key, Object value) {
     this.key = key;
-    this.simpleKey = NetworkTableUtils.simpleKey(key);
+    this.simpleKey = NetworkTable.basenameKey(key);
     this.value = value;
     this.displayString = displayStringForValue(value);
   }

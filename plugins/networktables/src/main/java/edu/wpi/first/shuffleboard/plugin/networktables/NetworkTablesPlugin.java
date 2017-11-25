@@ -59,6 +59,7 @@ public class NetworkTablesPlugin extends Plugin {
       inst.setServer(value[0], port);
     }
     inst.startClient();
+    inst.startDSClient();
   };
 
   public NetworkTablesPlugin() {
@@ -88,6 +89,7 @@ public class NetworkTablesPlugin extends Plugin {
     }, 0xFF);
 
     inst.startClient();
+    inst.startDSClient();
     serverChangeListener.changed(null, null, serverId.get());
     serverId.addListener(serverChangeListener);
   }

@@ -18,8 +18,7 @@ import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
 /**
- * Contains the user preferences for the app. These preferences are user-specific and are saved
- * to the users home directory and are not contained in save files.
+ * Contains the user preferences for the app. These preferences are user-specific and are not contained in save files.
  */
 public final class AppPreferences {
 
@@ -28,6 +27,8 @@ public final class AppPreferences {
   private final Property<File> saveFile = new SimpleObjectProperty<>(this, "saveFile", null);
   private final BooleanProperty autoLoadLastSaveFile =
       new SimpleBooleanProperty(this, "automaticallyLoadLastSaveFile", true);
+  private final BooleanProperty confirmExit =
+      new SimpleBooleanProperty(this, "showConfirmationDialogWhenExiting", true);
 
   @VisibleForTesting
   static AppPreferences instance = new AppPreferences();
@@ -41,11 +42,13 @@ public final class AppPreferences {
     PreferencesUtils.read(defaultTileSize, preferences);
     PreferencesUtils.read(saveFile, preferences, File::new);
     PreferencesUtils.read(autoLoadLastSaveFile, preferences);
+    PreferencesUtils.read(confirmExit, preferences);
 
     theme.addListener(__ -> PreferencesUtils.save(theme, preferences, Theme::getName));
     defaultTileSize.addListener(__ -> PreferencesUtils.save(defaultTileSize, preferences));
     saveFile.addListener(__ -> PreferencesUtils.save(saveFile, preferences, File::getAbsolutePath));
     autoLoadLastSaveFile.addListener(__ -> PreferencesUtils.save(autoLoadLastSaveFile, preferences));
+    confirmExit.addListener(__ -> PreferencesUtils.save(confirmExit, preferences));
   }
 
   public static AppPreferences getInstance() {
@@ -59,7 +62,8 @@ public final class AppPreferences {
     return ImmutableList.of(
         theme,
         defaultTileSize,
-        autoLoadLastSaveFile
+        autoLoadLastSaveFile,
+        confirmExit
     );
   }
 
@@ -109,5 +113,17 @@ public final class AppPreferences {
 
   public void setAutoLoadLastSaveFile(boolean autoLoadLastSaveFile) {
     this.autoLoadLastSaveFile.set(autoLoadLastSaveFile);
+  }
+
+  public boolean isConfirmExit() {
+    return confirmExit.get();
+  }
+
+  public BooleanProperty confirmExitProperty() {
+    return confirmExit;
+  }
+
+  public void setConfirmExit(boolean confirmExit) {
+    this.confirmExit.set(confirmExit);
   }
 }
