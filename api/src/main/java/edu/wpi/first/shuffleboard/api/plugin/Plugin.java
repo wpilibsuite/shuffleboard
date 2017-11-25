@@ -55,23 +55,45 @@ public class Plugin {
    * defines the group ID, name, version, and summary of the plugin. If the plugin depends on another (eg the camera
    * server plugin depends on the network tables one), that should be specified with a {@link Requires @Requires}
    * annotation.
+   *
+   * @throws InvalidPluginDefinitionException if no {@code @Description} annotation is present, or if the
    */
   protected Plugin() {
+    validatePluginClass(getClass());
     Description description = getClass().getAnnotation(Description.class);
-    if (description == null) {
-      throw new UnsupportedOperationException("Plugins MUST have a @Description annotation");
-    }
 
     this.groupId = description.group();
     this.name = description.name();
     this.version = Version.parse(description.version());
     this.summary = description.summary();
+  }
 
-    if (groupId.contains(":")) {
-      throw new IllegalStateException("A plugin's group ID cannot contain a colon (':') character - " + groupId);
+  /**
+   * Validates that a plugin class has valid description and dependency annotations.
+   *
+   * @param pluginClass the plugin class to validate
+   *
+   * @throws InvalidPluginDefinitionException if the class has an invalid definition
+   */
+  public static void validatePluginClass(Class<? extends Plugin> pluginClass) {
+    Description description = pluginClass.getAnnotation(Description.class);
+    if (description == null) {
+      throw new InvalidPluginDefinitionException(
+          "The plugin class does not have a @Description annotation: " + pluginClass.getName());
     }
+    String group = description.group();
+    if (group.contains(":")) {
+      throw new InvalidPluginDefinitionException("The group ID cannot contain a colon (:) character: " + group);
+    }
+    String name = description.name();
     if (name.contains(":")) {
-      throw new IllegalStateException("A plugin's name cannot contain a colon (':') character - " + name);
+      throw new InvalidPluginDefinitionException("The plugin name cannot contain a colon (:) character: " + name);
+    }
+    String version = description.version();
+    try {
+      Version.parse(version);
+    } catch (IllegalArgumentException e) {
+      throw new InvalidPluginDefinitionException("The version string does not follow semantic versioning", e);
     }
   }
 

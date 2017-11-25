@@ -3,13 +3,13 @@ package edu.wpi.first.shuffleboard.app.plugin;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
 import edu.wpi.first.shuffleboard.api.plugin.Description;
+import edu.wpi.first.shuffleboard.api.plugin.InvalidPluginDefinitionException;
 import edu.wpi.first.shuffleboard.api.plugin.Plugin;
 import edu.wpi.first.shuffleboard.api.plugin.Requirements;
 import edu.wpi.first.shuffleboard.api.plugin.Requires;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
 import edu.wpi.first.shuffleboard.api.sources.recording.serialization.Serializers;
 import edu.wpi.first.shuffleboard.api.theme.Themes;
-import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.api.widget.SingleSourceWidget;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
@@ -139,21 +139,22 @@ public class PluginLoader {
           .flatMap(className -> tryLoadClass(className, classLoader))
           .filter(Plugin.class::isAssignableFrom)
           .map(c -> (Class<? extends Plugin>) c)
+          .filter(c -> {
+            try {
+              Plugin.validatePluginClass(c);
+              return true;
+            } catch (InvalidPluginDefinitionException e) {
+              log.log(Level.WARNING, "Invalid plugin class " + c.getName(), e);
+              return false;
+            }
+          })
           .collect(Collectors.toList());
       knownPluginClasses.addAll(pluginClasses);
       pluginClasses.stream()
           .sorted(Comparator.<Class<? extends Plugin>>comparingInt(p -> getRequirements(p).size())
               .thenComparing(this::comparePluginsByDependencyGraph)
               .thenComparing(Comparator.comparing(Class::getName)))
-          .flatMap(c -> {
-            try {
-              return Stream.of(TypeUtils.tryInstantiate(c));
-            } catch (ReflectiveOperationException e) {
-              log.log(Level.WARNING, "Plugin class could not be loaded: " + c.getName(), e);
-              return Stream.empty();
-            }
-          })
-          .forEach(this::load);
+          .forEach(this::loadPluginClass);
     }
   }
 
@@ -199,15 +200,16 @@ public class PluginLoader {
    *
    * @return true if the class is a plugin class and was successfully loaded; false otherwise
    */
-  public boolean loadPluginClass(Class<?> clazz) {
+  public boolean loadPluginClass(Class<? extends Plugin> clazz) {
     if (Plugin.class.isAssignableFrom(clazz) && !Modifier.isAbstract(clazz.getModifiers())) {
       try {
+        Plugin.validatePluginClass(clazz);
         if (Modifier.isPublic(clazz.getConstructor().getModifiers())) {
-          Plugin plugin = (Plugin) clazz.newInstance();
+          Plugin plugin = clazz.newInstance();
           load(plugin);
           return true;
         }
-      } catch (ReflectiveOperationException e) {
+      } catch (ReflectiveOperationException | InvalidPluginDefinitionException e) {
         log.log(Level.WARNING, "Could not load plugin class", e);
         return false;
       }
@@ -293,13 +295,15 @@ public class PluginLoader {
    *
    * @return the description of a plugin
    *
-   * @throws IllegalStateException if the plugin class does not have a {@code @Description} annotation
+   * @throws InvalidPluginDefinitionException if the plugin class does not have a {@code @Description} annotation
    */
-  private static Description getDescription(Class<? extends Plugin> pluginClass) throws IllegalStateException {
+  private static Description getDescription(Class<? extends Plugin> pluginClass)
+      throws InvalidPluginDefinitionException {
     if (pluginClass.isAnnotationPresent(Description.class)) {
       return pluginClass.getAnnotation(Description.class);
     } else {
-      throw new IllegalStateException("A plugin MUST have a @Description annotation");
+      // Shouldn't happen; the plugin should have been validated earlier
+      throw new InvalidPluginDefinitionException("A plugin MUST have a @Description annotation");
     }
   }
 

@@ -18,12 +18,12 @@ import java.lang.annotation.Target;
 public @interface Description {
 
   /**
-   * The group ID of the plugin.
+   * The group ID of the plugin. This cannot contain a colon ({@code ':'}) character.
    */
   String group();
 
   /**
-   * The name of the plugin.
+   * The name of the plugin. This cannot contain a colon ({@code ':'}) character.
    */
   String name();
 

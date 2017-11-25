@@ -8,7 +8,7 @@ public class PluginTest {
 
   @Test
   public void testNewPluginWithoutDescriptionThrows() {
-    assertThrows(UnsupportedOperationException.class, Plugin::new,
+    assertThrows(InvalidPluginDefinitionException.class, Plugin::new,
         "Creating a new plugin without a @Description annotation should throw an exception");
   }
 
