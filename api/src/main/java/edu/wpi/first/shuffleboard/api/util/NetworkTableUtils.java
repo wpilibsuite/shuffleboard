@@ -183,29 +183,6 @@ public final class NetworkTableUtils {
   }
 
   /**
-   * Sets ntcore to server mode.
-   *
-   * @param port the port on the local machine to run the ntcore server on
-   */
-  public static void setServer(int port) {
-    NetworkTableInstance inst = NetworkTableInstance.getDefault();
-    shutdown(inst);
-    inst.startServer("networktables.ini", "", port);
-  }
-
-  /**
-   * Sets ntcore to client mode.
-   *
-   * @param serverIp   the ip of the server to connect to, eg "127.0.0.1" or "localhost"
-   * @param serverPort the port of the server to connect to. This is normally 1735.
-   */
-  public static void setClient(String serverIp, int serverPort) {
-    NetworkTableInstance inst = NetworkTableInstance.getDefault();
-    shutdown(inst);
-    inst.startClient(serverIp, serverPort);
-  }
-
-  /**
    * Concatenates multiple keys.
    *
    * @param key1 the first key
