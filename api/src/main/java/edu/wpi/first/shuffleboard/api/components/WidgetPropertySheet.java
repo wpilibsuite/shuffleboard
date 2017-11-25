@@ -60,10 +60,10 @@ public class WidgetPropertySheet extends PropertySheet {
   /**
    * Creates a new property sheet containing items for each of the given properties.
    */
-  public WidgetPropertySheet(Collection<Property<?>> properties) {
+  public WidgetPropertySheet(Collection<? extends Property<?>> properties) {
     this();
     getItems().setAll(properties.stream()
-        .map(property -> new PropertyItem<>(property))
+        .map(PropertyItem::new)
         .collect(Collectors.toList()));
   }
 

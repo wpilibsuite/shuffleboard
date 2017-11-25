@@ -397,12 +397,9 @@ public class WidgetPaneController {
       if (changeMenus.getItems().size() > 1) {
         menu.getItems().addAll(changeMenus, new SeparatorMenuItem());
       }
-
-      //Only add the properties menu item if the widget has properties
-      if (!((WidgetTile)tile).getContent().getProperties().isEmpty()) {
-        menu.getItems().add(createPropertySheetMenu((WidgetTile) tile));
-      }
     }
+
+    menu.getItems().add(createPropertySheetMenu(tile));
 
     return menu;
   }
@@ -469,9 +466,15 @@ public class WidgetPaneController {
    * @param tile the tile to pull properties from
    * @return     the edit property menu
    */
-  private MenuItem createPropertySheetMenu(WidgetTile tile) {
+  private MenuItem createPropertySheetMenu(Tile tile) {
     return FxUtils.menuItem("Edit Properties", event -> {
-      WidgetPropertySheet propertySheet = new WidgetPropertySheet(tile.getContent().getProperties());
+      WidgetPropertySheet propertySheet = new WidgetPropertySheet();
+      propertySheet.getItems().add(new WidgetPropertySheet.PropertyItem<>(tile.getContent().titleProperty()));
+      if (tile.getContent() instanceof Widget) {
+        ((Widget) tile.getContent()).getProperties().stream()
+            .map(WidgetPropertySheet.PropertyItem::new)
+            .forEachOrdered(propertySheet.getItems()::add);
+      }
       Dialog<ButtonType> dialog = new Dialog<>();
 
       dialog.setTitle("Edit widget properties");
