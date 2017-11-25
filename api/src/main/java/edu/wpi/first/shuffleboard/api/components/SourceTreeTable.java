@@ -4,7 +4,8 @@ import edu.wpi.first.shuffleboard.api.sources.SourceEntry;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.util.AlphanumComparator;
 import edu.wpi.first.shuffleboard.api.util.EqualityUtils;
-import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
+
+import edu.wpi.first.networktables.NetworkTable;
 
 import java.util.Comparator;
 import java.util.List;
@@ -84,7 +85,7 @@ public class SourceTreeTable<S extends SourceEntry, V> extends TreeTableView<S> 
   private void makeBranches(S entry, boolean deleted) {
     final SourceType sourceType = getSourceType();
     String name = entry.getName();
-    List<String> hierarchy = NetworkTableUtils.getHierarchy(name);
+    List<String> hierarchy = NetworkTable.getHierarchy(name);
     TreeItem<S> current = getRoot();
     TreeItem<S> parent = current;
     boolean structureChanged = false;
