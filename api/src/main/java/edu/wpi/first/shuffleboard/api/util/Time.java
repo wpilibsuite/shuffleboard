@@ -3,6 +3,10 @@ package edu.wpi.first.shuffleboard.api.util;
 import javafx.beans.property.LongProperty;
 import javafx.beans.property.SimpleLongProperty;
 
+/**
+ * Utility class for working with the current time. Useful for widgets that display historical data and need to know
+ * when that data appeared.
+ */
 public final class Time {
 
   private static final LongProperty startTime = new SimpleLongProperty(Time.class, "startTime", 0);

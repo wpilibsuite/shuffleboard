@@ -321,7 +321,12 @@ public class PluginLoaderTest {
     };
 
     private static final Theme theme = new Theme("Mock Theme");
-    private static final SourceType sourceType = new SourceType("Mock Source", false, "mock://", null);
+    private static final SourceType sourceType = new SourceType("Mock Source", false, "mock://", null) {
+      @Override
+      public DataType<?> dataTypeForSource(DataTypes registry, String sourceUri) {
+        return DataTypes.None;
+      }
+    };
 
     @Override
     public List<Theme> getThemes() {

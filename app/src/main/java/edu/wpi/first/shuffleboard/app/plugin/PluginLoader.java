@@ -13,6 +13,7 @@ import edu.wpi.first.shuffleboard.api.theme.Themes;
 import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.api.widget.SingleSourceWidget;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
+import edu.wpi.first.shuffleboard.app.sources.DataTypeChangedException;
 import edu.wpi.first.shuffleboard.app.sources.DestroyedSource;
 
 import com.cedarsoft.version.Version;
@@ -406,9 +407,9 @@ public class PluginLoader {
   private void tryRestoreSource(Widget widget, DestroyedSource destroyedSource) {
     try {
       widget.addSource(destroyedSource.restore());
-    } catch (IncompatibleSourceException e) {
-      log.fine("Could not set the restored source of " + widget
-          + ". The plugin defining its data type was probably unloaded.");
+    } catch (IncompatibleSourceException | DataTypeChangedException e) {
+      log.log(Level.WARNING, "Could not set the restored source of " + widget
+          + ". The plugin defining its data type was probably unloaded.", e);
     }
   }
 

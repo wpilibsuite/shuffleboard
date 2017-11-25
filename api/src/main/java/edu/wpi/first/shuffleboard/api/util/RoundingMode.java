@@ -1,5 +1,8 @@
 package edu.wpi.first.shuffleboard.api.util;
 
+/**
+ * Specifies a <i>rounding behavior</i> for mathematical operations.
+ */
 @FunctionalInterface
 public interface RoundingMode {
 

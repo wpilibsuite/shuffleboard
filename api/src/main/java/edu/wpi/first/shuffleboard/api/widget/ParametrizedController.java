@@ -14,7 +14,8 @@ import java.lang.annotation.Target;
 public @interface ParametrizedController {
 
   /**
-   * The path to the FXML file for the widget with this annotation.
+   * The path to the FXML file for the widget with this annotation. This can be either an <i>absolute</i> path or a
+   * <i>relative</i> path to the class on which the annotation is placed.
    */
   String value();
 

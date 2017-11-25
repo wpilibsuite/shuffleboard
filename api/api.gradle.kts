@@ -9,7 +9,7 @@ Public API for writing plugins for shuffleboard.
 dependencies {
     api(group = "com.google.guava", name = "guava", version = "21.0")
     api(group = "org.fxmisc.easybind", name = "easybind", version = "1.0.3")
-    api(group = "org.controlsfx", name = "controlsfx", version = "8.40.11")
+    api(group = "org.controlsfx", name = "controlsfx", version = "8.40.14")
     api(group = "de.codecentric.centerdevice", name = "javafxsvg", version = "1.2.1")
     api(group = "edu.wpi.first.ntcore", name = "ntcore-java", version = "4.+")
     api(group = "eu.hansolo", name = "Medusa", version = "7.9") // Note the capital 'M' -- lowercase is a much older version!

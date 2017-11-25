@@ -26,6 +26,9 @@ import javafx.collections.ObservableList;
 
 @AnnotatedTypeAdapter(forType = Layout.class)
 public class LayoutSaver implements ElementTypeAdapter<Layout> {
+
+  private final SourcedRestorer sourcedRestorer = new SourcedRestorer();
+
   @Override
   public JsonElement serialize(Layout src, JsonSerializationContext context) {
     JsonObject object = new JsonObject();
@@ -56,13 +59,21 @@ public class LayoutSaver implements ElementTypeAdapter<Layout> {
         .orElseThrow(() -> new JsonParseException("Can't find layout name " + name));
 
     if (layout instanceof Sourced) {
+      Sourced sourcedLayout = (Sourced) layout;
       for (int i = 0; i > Integer.MIN_VALUE; i++) {
         String prop = "_source" + i;
         if (obj.has(prop)) {
+          String uri = obj.get(prop).getAsString();
+          Optional<? extends DataSource<?>> source = Sources.getDefault().get(uri);
           try {
-            ((Sourced) layout).addSource(Sources.getDefault().forUri(obj.get(prop).getAsString()));
+            if (source.isPresent()) {
+              sourcedLayout.addSource(source.get());
+            } else {
+              sourcedRestorer.addDestroyedSourcesForAllDataTypes(sourcedLayout, uri);
+            }
           } catch (IncompatibleSourceException e) {
             Logger.getLogger(getClass().getName()).log(Level.WARNING, "Couldn't load source", e);
+            sourcedRestorer.addDestroyedSourcesForAllDataTypes(sourcedLayout, uri);
           }
         } else {
           break;

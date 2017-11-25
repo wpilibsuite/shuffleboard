@@ -1,7 +1,8 @@
 package edu.wpi.first.shuffleboard.api.sources;
 
-import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.api.util.Registry;
+
+import edu.wpi.first.networktables.NetworkTable;
 
 import java.util.HashMap;
 import java.util.List;
@@ -53,10 +54,6 @@ public class Sources extends Registry<DataSource> {
         .collect(Collectors.toList());
   }
 
-  public DataSource<?> forUri(String uri) {
-    return computeIfAbsent(uri, () -> SourceTypes.getDefault().forUri(uri));
-  }
-
   @SuppressWarnings("unchecked") //NOPMD multiple occurrences of string literal
   public <T> Optional<DataSource<T>> get(String id) {
     return Optional.ofNullable(sources.get(id));
@@ -68,7 +65,7 @@ public class Sources extends Registry<DataSource> {
   }
 
   public Stream<DataSource<?>> hierarchy(DataSource<?> source) {
-    return NetworkTableUtils.getHierarchy(source.getName()).stream()
+    return NetworkTable.getHierarchy(source.getName()).stream()
         .map(n -> source.getType().forUri(source.getType().toUri(n)));
   }
 

@@ -1,30 +1,36 @@
 package edu.wpi.first.shuffleboard.app.json;
 
+import edu.wpi.first.shuffleboard.app.components.DashboardTab;
+import edu.wpi.first.shuffleboard.app.components.DashboardTabPane;
+import edu.wpi.first.shuffleboard.app.components.WidgetPane;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonSerializationContext;
-import edu.wpi.first.shuffleboard.app.components.DashboardTabPane;
-import edu.wpi.first.shuffleboard.app.components.WidgetPane;
-import javafx.scene.control.Tab;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import javafx.scene.control.Tab;
+
 @AnnotatedTypeAdapter(forType = DashboardTabPane.class)
 public class DashboardTabPaneSaver implements ElementTypeAdapter<DashboardTabPane> {
+
   @Override
   public JsonElement serialize(DashboardTabPane src, JsonSerializationContext context) {
     JsonArray tabs = new JsonArray();
 
     for (Tab t : src.getTabs()) {
-      if (t instanceof DashboardTabPane.DashboardTab) {
-        DashboardTabPane.DashboardTab tab = (DashboardTabPane.DashboardTab) t;
+      if (t instanceof DashboardTab) {
+        DashboardTab tab = (DashboardTab) t;
 
         JsonObject object = new JsonObject();
         object.addProperty("title", tab.getTitle());
+        object.addProperty("autoPopulate", tab.isAutoPopulate());
+        object.addProperty("autoPopulatePrefix", tab.getSourcePrefix());
         object.add("widgetPane", context.serialize(tab.getWidgetPane()));
 
         tabs.add(object);
@@ -40,9 +46,12 @@ public class DashboardTabPaneSaver implements ElementTypeAdapter<DashboardTabPan
     List<Tab> tabs = new ArrayList<>(jsonTabs.size());
 
     for (JsonElement i : json.getAsJsonArray()) {
-      String title = i.getAsJsonObject().get("title").getAsString();
-      DashboardTabPane.DashboardTab tab = new DashboardTabPane.DashboardTab(title);
-      tab.setWidgetPane(context.deserialize(i.getAsJsonObject().get("widgetPane"), WidgetPane.class));
+      JsonObject obj = i.getAsJsonObject();
+      String title = obj.get("title").getAsString();
+      DashboardTab tab = new DashboardTab(title);
+      tab.setWidgetPane(context.deserialize(obj.get("widgetPane"), WidgetPane.class));
+      tab.setSourcePrefix(obj.get("autoPopulatePrefix").getAsString());
+      tab.setAutoPopulate(obj.get("autoPopulate").getAsBoolean());
       tabs.add(tab);
     }
 
