@@ -8,6 +8,7 @@
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="edu.wpi.first.shuffleboard.plugin.base.widget.NumberSliderWidget"
             fx:id="root"
+            minWidth="64" minHeight="64"
             prefHeight="128" prefWidth="256">
     <center>
         <StackPane>

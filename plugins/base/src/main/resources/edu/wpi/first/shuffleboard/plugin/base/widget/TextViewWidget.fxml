@@ -8,6 +8,7 @@
 <BorderPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="edu.wpi.first.shuffleboard.plugin.base.widget.TextViewWidget"
+            minWidth="64" minHeight="64"
             fx:id="root">
     <center>
         <StackPane>

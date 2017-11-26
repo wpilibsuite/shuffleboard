@@ -5,6 +5,7 @@
 <StackPane xmlns="http://javafx.com/javafx"
            xmlns:fx="http://javafx.com/fxml"
            fx:controller="edu.wpi.first.shuffleboard.plugin.base.widget.ComboBoxChooserWidget"
-           fx:id="root">
+           fx:id="root"
+           minWidth="64" minHeight="64">
     <ComboBox fx:id="comboBox"/>
 </StackPane>
