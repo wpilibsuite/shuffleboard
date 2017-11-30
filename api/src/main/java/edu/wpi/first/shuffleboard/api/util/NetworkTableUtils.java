@@ -7,10 +7,7 @@ import edu.wpi.first.networktables.EntryListenerFlags;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.NetworkTableValue;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
@@ -25,77 +22,11 @@ public final class NetworkTableUtils {
   public static final NetworkTableInstance inst = NetworkTableInstance.getDefault();
   public static final NetworkTable rootTable = inst.getTable("");
 
-  private static final Pattern oldMetadataPattern = Pattern.compile("/~\\w+~($|/)");
-  private static final Pattern newMetadataPattern = Pattern.compile("/\\.");
+  private static final Pattern oldMetadataPattern = Pattern.compile("(^|/)~\\w+~($|/)");
+  private static final Pattern newMetadataPattern = Pattern.compile("(^|/)\\.");
 
   private NetworkTableUtils() {
     throw new UnsupportedOperationException("This is a utility class!");
-  }
-
-  /**
-   * Gets the simple representation of a key. For example, "/foo/bar" becomes "bar".
-   */
-  public static String simpleKey(String key) {
-    if (!key.contains("/")) {
-      return key;
-    }
-    return key.substring(key.lastIndexOf('/') + 1);
-  }
-
-  /**
-   * Normalizes an network table key to contain no consecutive slashes and optionally start
-   * with a leading slash. For example:
-   *
-   * <pre><code>
-   * normalizeKey("/foo/bar", true)  == "/foo/bar"
-   * normalizeKey("foo/bar", true)   == "/foo/bar"
-   * normalizeKey("/foo/bar", false) == "foo/bar"
-   * normalizeKey("foo//bar", false) == "foo/bar"
-   * </code></pre>
-   *
-   * @param key              the key to normalize
-   * @param withLeadingSlash whether or not the normalized key should begin with a leading slash
-   */
-  public static String normalizeKey(String key, boolean withLeadingSlash) {
-    String normalized = '/' + key;
-    normalized = normalized.replaceAll("/{2,}", "/");
-
-    if (!withLeadingSlash && normalized.charAt(0) == '/') {
-      // remove leading slash, if present
-      normalized = normalized.substring(1);
-    }
-    return normalized;
-  }
-
-  /**
-   * Normalizes a network table key to start with exactly one leading slash ("/") and contain no
-   * consecutive slashes. For example, {@code "//foo/bar/"} becomes {@code "/foo/bar/"} and
-   * {@code "///a/b/c"} becomes {@code "/a/b/c"}.
-   *
-   * <p>This is equivalent to {@code normalizeKey(key, true)}
-   */
-  public static String normalizeKey(String key) {
-    return normalizeKey(key, true);
-  }
-
-  /**
-   * Gets a list of the names of all the super tables of a given key. For example, the key "/foo/bar/baz"
-   * has a hierarchy of "/", "/foo", "/foo/bar", and "/foo/bar/baz".
-   */
-  public static List<String> getHierarchy(String key) {
-    final String normal = normalizeKey(key, true);
-    List<String> hierarchy = new ArrayList<>();
-    hierarchy.add("/");
-    for (int i = 1; i < normal.length(); i++) {
-      if (normal.charAt(i) == NetworkTable.PATH_SEPARATOR) {
-        hierarchy.add(normal.substring(0, i));
-      } else if (!normal.substring(i, normal.length()).contains("/")) {
-        // Now it's the full key
-        hierarchy.add(normal);
-        break;
-      }
-    }
-    return hierarchy;
   }
 
   /**
@@ -137,7 +68,7 @@ public final class NetworkTableUtils {
    * @return the data type most closely associated with the given key
    */
   public static Optional<DataType> dataTypeForEntry(String key) {
-    String normalKey = normalizeKey(key, false);
+    String normalKey = NetworkTable.normalizeKey(key, false);
     if (normalKey.isEmpty() || "/".equals(normalKey)) {
       return Optional.of(DataTypes.Map);
     }
@@ -184,29 +115,6 @@ public final class NetworkTableUtils {
   }
 
   /**
-   * Sets ntcore to server mode.
-   *
-   * @param port the port on the local machine to run the ntcore server on
-   */
-  public static void setServer(int port) {
-    NetworkTableInstance inst = NetworkTableInstance.getDefault();
-    shutdown(inst);
-    inst.startServer("networktables.ini", "", port);
-  }
-
-  /**
-   * Sets ntcore to client mode.
-   *
-   * @param serverIp   the ip of the server to connect to, eg "127.0.0.1" or "localhost"
-   * @param serverPort the port of the server to connect to. This is normally 1735.
-   */
-  public static void setClient(String serverIp, int serverPort) {
-    NetworkTableInstance inst = NetworkTableInstance.getDefault();
-    shutdown(inst);
-    inst.startClient(serverIp, serverPort);
-  }
-
-  /**
    * Concatenates multiple keys.
    *
    * @param key1 the first key
@@ -218,40 +126,6 @@ public final class NetworkTableUtils {
     for (String s : more) {
       builder.append('/').append(s);
     }
-    return normalizeKey(builder.toString(), true);
-  }
-
-  /**
-   * Determines the type of the value object and calls the corresponding NetworkTableEntry set
-   * method.
-   *
-   * @param entry the entry to modify
-   * @param value the value to which to set the entry
-   */
-  public static <T> void setEntryValue(NetworkTableEntry entry, T value) throws IllegalArgumentException {
-    if (value instanceof Boolean) {
-      entry.setBoolean((Boolean)value);
-    } else if (value instanceof Number) {
-      entry.setDouble(((Number)value).doubleValue());
-    } else if (value instanceof String) {
-      entry.setString((String)value);
-    } else if (value instanceof byte[]) {
-      entry.setRaw((byte[])value);
-    } else if (value instanceof boolean[]) {
-      entry.setBooleanArray((boolean[])value);
-    } else if (value instanceof double[]) {
-      entry.setNumberArray((Number[])value);
-    } else if (value instanceof Boolean[]) {
-      entry.setBooleanArray((Boolean[])value);
-    } else if (value instanceof Number[]) {
-      entry.setNumberArray((Number[])value);
-    } else if (value instanceof String[]) {
-      entry.setStringArray((String[])value);
-    } else if (value instanceof NetworkTableValue) {
-      entry.setValue((NetworkTableValue)value);
-    } else {
-      throw new IllegalArgumentException("Value of type " + value.getClass().getName()
-        + " cannot be put into a table");
-    }
+    return NetworkTable.normalizeKey(builder.toString(), true);
   }
 }

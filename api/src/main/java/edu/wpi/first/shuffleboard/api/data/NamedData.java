@@ -4,6 +4,11 @@ import edu.wpi.first.shuffleboard.api.util.Maps;
 
 import java.util.Map;
 
+/**
+ * Data that only contains a name and value.
+ *
+ * @param <T> the type of the value
+ */
 public abstract class NamedData<T> extends ComplexData<NamedData<T>> {
 
   private final String name;

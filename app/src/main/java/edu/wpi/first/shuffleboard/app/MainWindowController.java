@@ -1,13 +1,11 @@
 package edu.wpi.first.shuffleboard.app;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
-import com.google.common.io.Files;
-
 import edu.wpi.first.shuffleboard.api.DashboardMode;
 import edu.wpi.first.shuffleboard.api.components.SourceTreeTable;
+import edu.wpi.first.shuffleboard.api.components.WidgetPropertySheet;
 import edu.wpi.first.shuffleboard.api.dnd.DataFormats;
 import edu.wpi.first.shuffleboard.api.plugin.Plugin;
+import edu.wpi.first.shuffleboard.api.prefs.FlushableProperty;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceEntry;
 import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
@@ -17,14 +15,17 @@ import edu.wpi.first.shuffleboard.api.util.Storage;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 import edu.wpi.first.shuffleboard.api.widget.ComponentInstantiationException;
 import edu.wpi.first.shuffleboard.api.widget.Components;
+import edu.wpi.first.shuffleboard.app.components.DashboardTab;
 import edu.wpi.first.shuffleboard.app.components.DashboardTabPane;
 import edu.wpi.first.shuffleboard.app.components.WidgetGallery;
-import edu.wpi.first.shuffleboard.app.components.WidgetPropertySheet;
 import edu.wpi.first.shuffleboard.app.json.JsonBuilder;
 import edu.wpi.first.shuffleboard.app.plugin.PluginLoader;
 import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
-import edu.wpi.first.shuffleboard.api.prefs.FlushableProperty;
 import edu.wpi.first.shuffleboard.app.sources.recording.Playback;
+
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
+import com.google.common.io.Files;
 
 import org.fxmisc.easybind.EasyBind;
 
@@ -68,6 +69,8 @@ import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import javafx.stage.Window;
+import javafx.stage.WindowEvent;
 
 import static edu.wpi.first.shuffleboard.api.components.SourceTreeTable.alphabetical;
 import static edu.wpi.first.shuffleboard.api.components.SourceTreeTable.branchesFirst;
@@ -233,9 +236,9 @@ public class MainWindowController {
     sourcesAccordion.getPanes().removeAll(sourcePanes.removeAll(plugin));
     // Remove widgets
     dashboard.getTabs().stream()
-        .filter(tab -> tab instanceof DashboardTabPane.DashboardTab)
-        .map(tab -> (DashboardTabPane.DashboardTab) tab)
-        .map(DashboardTabPane.DashboardTab::getWidgetPane)
+        .filter(tab -> tab instanceof DashboardTab)
+        .map(tab -> (DashboardTab) tab)
+        .map(DashboardTab::getWidgetPane)
         .forEach(pane ->
           pane.getTiles().stream()
               .filter(tile -> plugin.getComponents().stream()
@@ -291,14 +294,22 @@ public class MainWindowController {
   public void setDashboard(DashboardTabPane dashboard) {
     dashboard.setId("dashboard");
     centerSplitPane.getItems().remove(this.dashboard);
+    this.dashboard.getTabs().clear(); // Lets tabs get cleaned up (e.g. cancelling deferred autopopulation calls)
     this.dashboard = dashboard;
     centerSplitPane.getItems().add(dashboard);
   }
 
+  /**
+   * Closes from interacting with the "Close" menu item.
+   */
   @FXML
   public void close() {
     log.info("Exiting app");
-    System.exit(0);
+
+    // Attempt to close the main window. This lets window closing handlers run. Calling System.exit() or Platform.exit()
+    // will more-or-less immediately terminate the application without calling these handlers.
+    Window window = root.getScene().getWindow();
+    window.fireEvent(new WindowEvent(window, WindowEvent.WINDOW_CLOSE_REQUEST));
   }
 
   /**
@@ -348,6 +359,7 @@ public class MainWindowController {
     }
 
     currentFile = selected;
+    AppPreferences.getInstance().setSaveFile(currentFile);
   }
 
 
@@ -362,13 +374,20 @@ public class MainWindowController {
         new FileChooser.ExtensionFilter("SmartDashboard Save File (.json)", "*.json"));
 
     final File selected = chooser.showOpenDialog(root.getScene().getWindow());
+    load(selected);
+  }
 
-    if (selected == null) {
+  /**
+   * Loads a saved dashboard layout.
+   *
+   * @param saveFile the save file to load
+   */
+  public void load(File saveFile) {
+    if (saveFile == null) {
       return;
     }
-
     try {
-      Reader reader = Files.newReader(selected, Charset.forName("UTF-8"));
+      Reader reader = Files.newReader(saveFile, Charset.forName("UTF-8"));
 
       DashboardData dashboardData = JsonBuilder.forSaveFile().fromJson(reader, DashboardData.class);
       setDashboard(dashboardData.getTabPane());
@@ -378,7 +397,8 @@ public class MainWindowController {
       return;
     }
 
-    currentFile = selected;
+    currentFile = saveFile;
+    AppPreferences.getInstance().setSaveFile(currentFile);
   }
 
   /**
@@ -457,14 +477,14 @@ public class MainWindowController {
   @FXML
   private void showCurrentTabPrefs() {
     Tab currentTab = dashboard.getSelectionModel().getSelectedItem();
-    if (currentTab instanceof DashboardTabPane.DashboardTab) {
-      ((DashboardTabPane.DashboardTab) currentTab).showPrefsDialog();
+    if (currentTab instanceof DashboardTab) {
+      ((DashboardTab) currentTab).showPrefsDialog();
     }
   }
 
   @FXML
   private void newTab() {
-    DashboardTabPane.DashboardTab newTab = dashboard.addNewTab();
+    DashboardTab newTab = dashboard.addNewTab();
     dashboard.getSelectionModel().select(newTab);
   }
 

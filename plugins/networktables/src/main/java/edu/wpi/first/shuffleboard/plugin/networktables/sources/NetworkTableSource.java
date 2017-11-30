@@ -9,6 +9,7 @@ import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.util.AsyncUtils;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 
+import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 
 import java.util.HashMap;
@@ -41,7 +42,7 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
    */
   protected NetworkTableSource(String fullTableKey, DataType<T> dataType) {
     super(dataType);
-    this.fullTableKey = NetworkTableUtils.normalizeKey(fullTableKey, true);
+    this.fullTableKey = NetworkTable.normalizeKey(fullTableKey, true);
     setName(fullTableKey);
   }
 
@@ -110,7 +111,7 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
    */
   @SuppressWarnings("unchecked")
   public static DataSource<?> forKey(String fullTableKey) {
-    String key = NetworkTableUtils.normalizeKey(fullTableKey, false);
+    String key = NetworkTable.normalizeKey(fullTableKey, false);
     final String uri = NetworkTableSourceType.getInstance().toUri(key);
     if (NetworkTableUtils.rootTable.containsKey(key)) {
       // Key-value pair

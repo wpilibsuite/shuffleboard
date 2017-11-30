@@ -1,5 +1,7 @@
 package edu.wpi.first.shuffleboard.plugin.networktables.sources;
 
+import edu.wpi.first.shuffleboard.api.data.DataType;
+import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.sources.SourceEntry;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.recording.TimestampedData;
@@ -7,6 +9,7 @@ import edu.wpi.first.shuffleboard.api.util.AsyncUtils;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.plugin.networktables.NetworkTablesPlugin;
 
+import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 
@@ -32,7 +35,7 @@ public final class NetworkTableSourceType extends SourceType {
     inst.addEntryListener("", (event) -> {
       AsyncUtils.runAsync(() -> {
         final boolean delete = NetworkTableUtils.isDelete(event.flags);
-        List<String> hierarchy = NetworkTableUtils.getHierarchy(event.name);
+        List<String> hierarchy = NetworkTable.getHierarchy(event.name);
         for (int i = 0; i < hierarchy.size(); i++) {
           String uri = toUri(hierarchy.get(i));
           if (i == hierarchy.size() - 1) {
@@ -68,7 +71,7 @@ public final class NetworkTableSourceType extends SourceType {
     super.read(recordedData);
     final String fullKey = removeProtocol(recordedData.getSourceId());
     NetworkTableEntry entry = NetworkTableInstance.getDefault().getEntry(fullKey);
-    NetworkTableUtils.setEntryValue(entry, recordedData.getData());
+    entry.setValue(recordedData.getData());
   }
 
   @Override
@@ -103,8 +106,13 @@ public final class NetworkTableSourceType extends SourceType {
   }
 
   @Override
+  public DataType<?> dataTypeForSource(DataTypes registry, String sourceUri) {
+    return NetworkTableUtils.dataTypeForEntry(removeProtocol(sourceUri));
+  }
+
+  @Override
   public String toUri(String sourceName) {
-    return super.toUri(NetworkTableUtils.normalizeKey(sourceName));
+    return super.toUri(NetworkTable.normalizeKey(sourceName));
   }
 
 }

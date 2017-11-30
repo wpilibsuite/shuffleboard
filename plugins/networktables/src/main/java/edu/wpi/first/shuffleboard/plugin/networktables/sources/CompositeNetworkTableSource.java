@@ -36,13 +36,13 @@ public class CompositeNetworkTableSource<D extends ComplexData<D>> extends Netwo
   public CompositeNetworkTableSource(String tableName, ComplexDataType<D> dataType) {
     super(tableName, dataType);
     this.dataType = dataType;
-    String path = NetworkTableUtils.normalizeKey(tableName, false);
+    String path = NetworkTable.normalizeKey(tableName, false);
     NetworkTable table = NetworkTableInstance.getDefault().getTable(path);
     setData(dataType.getDefaultValue());
 
     setTableListener((key, value, flags) -> {
       boolean delete = NetworkTableUtils.isDelete(flags);
-      String relativeKey = NetworkTableUtils.normalizeKey(key.substring(path.length() + 1), false);
+      String relativeKey = NetworkTable.normalizeKey(key.substring(path.length() + 1), false);
       if (delete) {
         backingMap.remove(relativeKey);
       } else {
@@ -62,7 +62,7 @@ public class CompositeNetworkTableSource<D extends ComplexData<D>> extends Netwo
       backingMap.putAll(diff);
       if (isConnected()) {
         for (Map.Entry<String, Object> elem : diff.entrySet()) {
-          NetworkTableUtils.setEntryValue(table.getEntry(elem.getKey()), elem.getValue());
+          table.getEntry(elem.getKey()).setValue(elem.getValue());
         }
       }
     });

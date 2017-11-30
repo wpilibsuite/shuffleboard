@@ -1,7 +1,5 @@
-package edu.wpi.first.shuffleboard.app.components;
+package edu.wpi.first.shuffleboard.api.components;
 
-import edu.wpi.first.shuffleboard.api.components.IntegerField;
-import edu.wpi.first.shuffleboard.api.components.NumberField;
 import edu.wpi.first.shuffleboard.api.theme.Theme;
 import edu.wpi.first.shuffleboard.api.theme.Themes;
 
@@ -11,7 +9,7 @@ import org.controlsfx.property.editor.AbstractPropertyEditor;
 import org.controlsfx.property.editor.DefaultPropertyEditorFactory;
 import org.controlsfx.property.editor.PropertyEditor;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -19,7 +17,6 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Control;
 import javafx.scene.control.TextField;
@@ -31,12 +28,10 @@ import javafx.util.StringConverter;
 public class WidgetPropertySheet extends PropertySheet {
 
   /**
-   * Creates a new property sheet for the given widget.
+   * Creates an empty property sheet.
    */
-  public WidgetPropertySheet(List<Property<?>> properties) {
-    super(properties.stream()
-        .map(property -> new PropertyItem<>(property))
-        .collect(Collectors.toCollection(FXCollections::observableArrayList)));
+  public WidgetPropertySheet() {
+    super();
     setModeSwitcherVisible(false);
     setSearchBoxVisible(false);
     setPropertyEditorFactory(new DefaultPropertyEditorFactory() {
@@ -60,6 +55,16 @@ public class WidgetPropertySheet extends PropertySheet {
         return super.call(item);
       }
     });
+  }
+
+  /**
+   * Creates a new property sheet containing items for each of the given properties.
+   */
+  public WidgetPropertySheet(Collection<Property<?>> properties) {
+    this();
+    getItems().setAll(properties.stream()
+        .map(property -> new PropertyItem<>(property))
+        .collect(Collectors.toList()));
   }
 
   /**
