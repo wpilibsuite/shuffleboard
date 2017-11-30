@@ -8,6 +8,9 @@ import java.util.Objects;
 
 import static java.util.Objects.requireNonNull;
 
+/**
+ * Represents how a tile is laid out. Contains the origin point as well as the size of the tile.
+ */
 public final class TileLayout {
 
   public final GridPoint origin;

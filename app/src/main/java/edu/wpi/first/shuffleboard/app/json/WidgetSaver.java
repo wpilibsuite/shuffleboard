@@ -1,6 +1,7 @@
 package edu.wpi.first.shuffleboard.app.json;
 
 import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
+import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.Sources;
 import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
@@ -11,6 +12,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonSerializationContext;
 
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -18,6 +20,11 @@ import javafx.beans.property.Property;
 
 @AnnotatedTypeAdapter(forType = Widget.class)
 public class WidgetSaver implements ElementTypeAdapter<Widget> {
+
+  private static final Logger log = Logger.getLogger(WidgetSaver.class.getName());
+
+  private final SourcedRestorer sourcedRestorer = new SourcedRestorer();
+
   @Override
   public JsonElement serialize(Widget src, JsonSerializationContext context) {
     JsonObject object = new JsonObject();
@@ -41,10 +48,17 @@ public class WidgetSaver implements ElementTypeAdapter<Widget> {
     for (int i = 0; i > Integer.MIN_VALUE; i++) {
       String prop = "_source" + i;
       if (obj.has(prop)) {
+        String uri = obj.get(prop).getAsString();
+        Optional<? extends DataSource<?>> source = Sources.getDefault().get(uri);
         try {
-          widget.addSource(Sources.getDefault().forUri(obj.get(prop).getAsString()));
+          if (source.isPresent()) {
+            widget.addSource(source.get());
+          } else {
+            sourcedRestorer.addDestroyedSourcesForAllDataTypes(widget, uri);
+          }
         } catch (IncompatibleSourceException e) {
-          Logger.getLogger(getClass().getName()).log(Level.WARNING, "Couldn't load source", e);
+          log.log(Level.WARNING, "Couldn't load source, adding destroyed source(s) instead", e);
+          sourcedRestorer.addDestroyedSourcesForAllDataTypes(widget, uri);
         }
       } else {
         break;

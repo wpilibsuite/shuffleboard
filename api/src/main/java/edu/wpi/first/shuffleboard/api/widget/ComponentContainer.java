@@ -1,5 +1,7 @@
 package edu.wpi.first.shuffleboard.api.widget;
 
+import edu.wpi.first.shuffleboard.api.util.TypeUtils;
+
 import java.util.stream.Stream;
 
 /**
@@ -18,5 +20,17 @@ public interface ComponentContainer {
    * Gets a stream of all the first-level components in this container.
    */
   Stream<Component> components();
+
+  /**
+   * Gets a stream of all the components in this container.
+   */
+  default Stream<Component> allComponents() {
+    return Stream.concat(
+        components(),
+        components()
+            .flatMap(TypeUtils.castStream(ComponentContainer.class))
+            .flatMap(ComponentContainer::allComponents)
+    );
+  }
 
 }

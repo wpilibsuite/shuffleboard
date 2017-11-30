@@ -2,6 +2,7 @@ package edu.wpi.first.shuffleboard.plugin.cameraserver.source;
 
 import edu.wpi.cscore.CvSink;
 import edu.wpi.cscore.HttpCamera;
+import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.NetworkTableType;
@@ -35,8 +36,9 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
 
   private static final Map<String, CameraServerSource> sources = new HashMap<>();
 
-  private static final NetworkTableEntry streams
-      = NetworkTableInstance.getDefault().getEntry("/CameraPublisher/streams");
+  private final NetworkTable cameraPublisherTable = NetworkTableInstance.getDefault().getTable("/CameraPublisher");
+  private final NetworkTableEntry streams;
+  private static final String STREAMS_KEY = "streams";
   private static final String[] emptyStringArray = new String[0];
   private HttpCamera camera;
   private final CvSink videoSink;
@@ -58,6 +60,7 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
     setName(name);
     videoSink = new CvSink(name + "-videosink");
 
+    streams = cameraPublisherTable.getSubTable(name).getEntry(STREAMS_KEY);
     String[] streamUrls = removeCameraProtocols(streams.getStringArray(emptyStringArray));
     if (streamUrls.length > 0) {
       camera = new HttpCamera(name, streamUrls);

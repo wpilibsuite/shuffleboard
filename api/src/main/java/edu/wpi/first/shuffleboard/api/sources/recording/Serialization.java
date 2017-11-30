@@ -1,11 +1,11 @@
 package edu.wpi.first.shuffleboard.api.sources.recording;
 
-import com.google.common.primitives.Bytes;
-
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.sources.recording.serialization.Serializers;
 import edu.wpi.first.shuffleboard.api.sources.recording.serialization.TypeAdapter;
+
+import com.google.common.primitives.Bytes;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -26,13 +26,35 @@ public final class Serialization {
 
   private static final Logger log = Logger.getLogger(Serialization.class.getName());
 
+  /**
+   * A magic number that is always the first entry in a recording file. This helps check (but does not guarantee) that
+   * a loaded file is a valid recording file.
+   */
   public static final int MAGIC_NUMBER = 0xFEEDBAC4;
 
+  /**
+   * The size of a serialized {@code byte}, in bytes.
+   */
   public static final int SIZE_OF_BYTE = 1;
+  /**
+   * The size of a serialized {@code boolean}, in bytes.
+   */
   public static final int SIZE_OF_BOOL = 1;
+  /**
+   * The size of a serialized {@code short}, in bytes.
+   */
   public static final int SIZE_OF_SHORT = 2;
+  /**
+   * The size of a serialized {@code int}, in bytes.
+   */
   public static final int SIZE_OF_INT = 4;
+  /**
+   * The size of a serialized {@code short}, in bytes.
+   */
   public static final int SIZE_OF_LONG = 8;
+  /**
+   * The size of a serialized {@code double}, in bytes.
+   */
   public static final int SIZE_OF_DOUBLE = 8;
 
   private Serialization() {
@@ -281,12 +303,26 @@ public final class Serialization {
     return useSerializer(String[].class, s -> s.serialize(array));
   }
 
+  /**
+   * Creates a new array with the same contents as {@code raw} in the range {@code (start, end]}. Note: the two arrays
+   * are <i>distinct</i>; modifying one will <i>not</i> modify the other.
+   *
+   * @param raw   the array to get a subarray from
+   * @param start the starting index, inclusive, of the subarray in the original
+   * @param end   the final index, exclusive, of the subarray in the original
+   *
+   * @return a new array with the same contents as {@code raw} in the range {@code (start, end]}
+   *
+   * @deprecated use {@link Arrays#copyOfRange(byte[], int, int)} instead
+   */
+  @Deprecated
   public static byte[] subArray(byte[] raw, int start, int end) {
     return Arrays.copyOfRange(raw, start, end);
   }
 
   /**
-   * Puts {@code src} into {@code dst} at the given position.
+   * Puts {@code src} into {@code dst} at the given position. This is a shortcut for
+   * {@code System.arraycopy(src, 0, dst, pos, stc.length)}.
    *
    * @param dst the array to be copied into
    * @param src the array to copy

@@ -23,9 +23,9 @@ public abstract class AbstractDataSource<T> implements DataSource<T> {
   protected final BooleanProperty active = new SimpleBooleanProperty(this, "active", false);
   protected final Property<T> data = new AsyncProperty<>(this, "data", null);
   protected final BooleanProperty connected = new SimpleBooleanProperty(this, "connected", false);
-  protected final DataType dataType;
+  protected final DataType<T> dataType;
 
-  protected AbstractDataSource(DataType dataType) {
+  protected AbstractDataSource(DataType<T> dataType) {
     this.dataType = requireNonNull(dataType, "dataType");
   }
 
@@ -53,7 +53,7 @@ public abstract class AbstractDataSource<T> implements DataSource<T> {
   }
 
   @Override
-  public DataType getDataType() {
+  public DataType<T> getDataType() {
     return dataType;
   }
 

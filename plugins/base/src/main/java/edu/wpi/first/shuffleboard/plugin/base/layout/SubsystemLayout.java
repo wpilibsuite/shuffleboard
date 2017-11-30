@@ -3,6 +3,7 @@ package edu.wpi.first.shuffleboard.plugin.base.layout;
 import edu.wpi.first.shuffleboard.api.Populatable;
 import edu.wpi.first.shuffleboard.api.components.ActionList;
 import edu.wpi.first.shuffleboard.api.components.EditableLabel;
+import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.util.AlphanumComparator;
@@ -17,6 +18,8 @@ import edu.wpi.first.shuffleboard.plugin.base.data.types.SubsystemType;
 
 import com.google.common.collect.ImmutableSet;
 
+import edu.wpi.first.networktables.NetworkTable;
+
 import org.fxmisc.easybind.EasyBind;
 import org.fxmisc.easybind.Subscription;
 
@@ -26,6 +29,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.WeakHashMap;
 import java.util.stream.Stream;
+import java.util.Set;
 
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleStringProperty;
@@ -107,7 +111,7 @@ public class SubsystemLayout implements Layout, Populatable, Sourced {
       final String sourceName = getSource().getName();
       if (child.getTitle().startsWith(sourceName)) {
         // Remove leading redundant information
-        child.setTitle(NetworkTableUtils.normalizeKey(child.getTitle().substring(sourceName.length()), false));
+        child.setTitle(NetworkTable.normalizeKey(child.getTitle().substring(sourceName.length()), false));
       }
     }
     if (children.isEmpty()) {
@@ -136,21 +140,21 @@ public class SubsystemLayout implements Layout, Populatable, Sourced {
   }
 
   @Override
-  public boolean supports(DataSource<?> source) {
+  public boolean supports(String sourceId) {
     return getSource() != null
-        && getSource() != source
-        && source.getName().startsWith(getSource().getName())
-        && !NetworkTableUtils.isMetadata(source.getId());
+        && !getSource().getId().equals(sourceId)
+        && sourceId.startsWith(getSource().getId())
+        && !NetworkTableUtils.isMetadata(sourceId);
   }
 
   @Override
-  public boolean hasComponentFor(DataSource<?> source) {
+  public boolean hasComponentFor(String sourceId) {
     return Stream.concat(components(), hidden.stream())
         .flatMap(TypeUtils.castStream(Sourced.class))
         .map(Sourced::getSources)
         .flatMap(List::stream)
         .map(DataSource::getId)
-        .anyMatch(source.getId()::startsWith);
+        .anyMatch(sourceId::startsWith);
   }
 
   @Override
@@ -177,6 +181,13 @@ public class SubsystemLayout implements Layout, Populatable, Sourced {
     } else {
       throw new IncompatibleSourceException(ImmutableSet.of(new SubsystemType()), source.getDataType());
     }
+  }
+
+  @Override
+  public Set<DataType> getDataTypes() {
+    return ImmutableSet.of(
+        new SubsystemType()
+    );
   }
 
 }
