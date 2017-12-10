@@ -28,6 +28,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 /**
  * A pane that represents components as tiles in a grid.
  */
+@SuppressWarnings("PMD.GodClass") // This is not even close to being a god class
 @DefaultProperty("children")
 public class TilePane extends GridPane {
 
