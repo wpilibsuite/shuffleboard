@@ -16,8 +16,10 @@ import edu.wpi.first.shuffleboard.plugin.base.data.types.AnalogInputType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.BooleanArrayType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.BooleanType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.CommandType;
+import edu.wpi.first.shuffleboard.plugin.base.data.types.DifferentialDriveType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.EncoderType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.GyroType;
+import edu.wpi.first.shuffleboard.plugin.base.data.types.MecanumDriveType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.NumberArrayType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.NumberType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.PIDCommandType;
@@ -44,6 +46,7 @@ import edu.wpi.first.shuffleboard.plugin.base.widget.CommandWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.EncoderWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.GraphWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.GyroWidget;
+import edu.wpi.first.shuffleboard.plugin.base.widget.MecanumDriveWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.NumberBarWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.NumberSlider;
 import edu.wpi.first.shuffleboard.plugin.base.widget.PIDCommandWidget;
@@ -92,7 +95,9 @@ public class BasePlugin extends Plugin {
         new ThreeAxisAccelerometerType(),
         new PIDCommandType(),
         new GyroType(),
-        new RelayType()
+        new RelayType(),
+        MecanumDriveType.Instance,
+        DifferentialDriveType.Instance
     );
   }
 
@@ -119,6 +124,7 @@ public class BasePlugin extends Plugin {
         WidgetType.forAnnotatedWidget(PIDControllerWidget.class),
         WidgetType.forAnnotatedWidget(GyroWidget.class),
         WidgetType.forAnnotatedWidget(RelayWidget.class),
+        WidgetType.forAnnotatedWidget(MecanumDriveWidget.class),
         new LayoutClass<>("List Layout", ListLayout.class),
         createSubsystemLayoutType()
     );
@@ -156,6 +162,7 @@ public class BasePlugin extends Plugin {
         .put(new PIDControllerType(), WidgetType.forAnnotatedWidget(PIDControllerWidget.class))
         .put(new GyroType(), WidgetType.forAnnotatedWidget(GyroWidget.class))
         .put(new RelayType(), WidgetType.forAnnotatedWidget(RelayWidget.class))
+        .put(MecanumDriveType.Instance, WidgetType.forAnnotatedWidget(MecanumDriveWidget.class))
         .put(new SubsystemType(), createSubsystemLayoutType())
         .build();
   }

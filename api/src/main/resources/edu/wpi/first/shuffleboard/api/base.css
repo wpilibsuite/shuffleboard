@@ -243,3 +243,23 @@
 .dialog-pane .header-panel .label {
     -fx-text-fill: white;
 }
+
+/*******************************************************************************
+ *                                                                             *
+ * Drive bases                                                                 *
+ *                                                                             *
+ ******************************************************************************/
+.robot-drive {
+    -fx-stroke: none;
+    -fx-fill: #333;
+}
+
+.robot-direction-vector {
+    -fx-stroke: -swatch-400;
+    -fx-stroke-width: 3pt;
+}
+
+.robot-moment-arc {
+    -fx-stroke-width: 2pt;
+    -fx-fill: -swatch-500;
+}
