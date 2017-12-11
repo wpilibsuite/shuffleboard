@@ -4,12 +4,15 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.shuffleboard.api.data.ComplexData;
 import edu.wpi.first.shuffleboard.api.data.ComplexDataType;
+import edu.wpi.first.shuffleboard.api.data.IncompleteDataException;
 import edu.wpi.first.shuffleboard.api.sources.Sources;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A network table source for composite data, ie data stored in multiple key-value pairs or nested
@@ -19,6 +22,8 @@ import java.util.Objects;
  * under a certain nested namespace.
  */
 public class CompositeNetworkTableSource<D extends ComplexData<D>> extends NetworkTableSource<D> {
+
+  private static final Logger log = Logger.getLogger(CompositeNetworkTableSource.class.getName());
 
   private final Map<String, Object> backingMap = new HashMap<>();
   private final ComplexDataType<D> dataType;
@@ -47,7 +52,11 @@ public class CompositeNetworkTableSource<D extends ComplexData<D>> extends Netwo
         backingMap.put(relativeKey, value);
       }
       setActive(Objects.equals(NetworkTableUtils.dataTypeForEntry(fullTableKey), dataType));
-      setData(dataType.fromMap(backingMap));
+      try {
+        setData(dataType.fromMap(backingMap));
+      } catch (IncompleteDataException e) {
+        log.log(Level.WARNING, "Incomplete data for type " + dataType.getName(), e);
+      }
     });
 
     data.addListener((__, oldData, newData) -> {
