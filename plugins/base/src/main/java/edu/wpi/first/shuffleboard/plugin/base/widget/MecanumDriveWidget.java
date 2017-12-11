@@ -1,17 +1,31 @@
 package edu.wpi.first.shuffleboard.plugin.base.widget;
 
+import edu.wpi.first.shuffleboard.api.sources.DataSource;
+import edu.wpi.first.shuffleboard.api.sources.SubSource;
+import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.api.widget.Description;
 import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 import edu.wpi.first.shuffleboard.api.widget.SimpleAnnotatedWidget;
 import edu.wpi.first.shuffleboard.plugin.base.data.MecanumDriveData;
+import edu.wpi.first.shuffleboard.plugin.base.data.SpeedControllerData;
+import edu.wpi.first.shuffleboard.plugin.base.data.types.SpeedControllerType;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.sun.javafx.geom.Vec2d;
+
+import org.fxmisc.easybind.EasyBind;
+import org.fxmisc.easybind.monadic.MonadicBinding;
+
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.ToDoubleFunction;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.fxml.FXML;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Arc;
 import javafx.scene.shape.ArcType;
@@ -19,6 +33,9 @@ import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
 
+/**
+ * Widget for viewing and controlling a mecanum drive base.
+ */
 @Description(name = "Mecanum Drivebase", dataTypes = MecanumDriveData.class)
 @ParametrizedController("MecanumDriveWidget.fxml")
 public final class MecanumDriveWidget extends SimpleAnnotatedWidget<MecanumDriveData> {
@@ -26,9 +43,24 @@ public final class MecanumDriveWidget extends SimpleAnnotatedWidget<MecanumDrive
   @FXML
   private Pane root;
   @FXML
+  private VBox leftControls;
+  @FXML
+  private StackPane driveView;
+  @FXML
+  private VBox rightControls;
+  @FXML
   private Pane vectorPane;
 
   private final BooleanProperty showForceVectors = new SimpleBooleanProperty(this, "showForceVectors", true);
+
+  private final SpeedController fl = Components.viewFor(SpeedController.class).get();
+  private final SpeedController fr = Components.viewFor(SpeedController.class).get();
+  private final SpeedController rl = Components.viewFor(SpeedController.class).get();
+  private final SpeedController rr = Components.viewFor(SpeedController.class).get();
+  private MonadicBinding<DataSource<SpeedControllerData>> frontLeftMotorSource;  //NOPMD could be local variable
+  private MonadicBinding<DataSource<SpeedControllerData>> frontRightMotorSource; //NOPMD could be local variable
+  private MonadicBinding<DataSource<SpeedControllerData>> rearLeftMotorSource;   //NOPMD could be local variable
+  private MonadicBinding<DataSource<SpeedControllerData>> rearRightMotorSource;  //NOPMD could be local variable
 
   /**
    * Marks the positions of mecanum wheels on a drive base. This is used to determine the orientation to draw a wheel.
@@ -44,6 +76,39 @@ public final class MecanumDriveWidget extends SimpleAnnotatedWidget<MecanumDrive
 
   @FXML
   private void initialize() {
+    frontLeftMotorSource = EasyBind.monadic(typedSourceProperty())
+        .map(s -> sourceFor(s,
+            "Front Left Motor",
+            MecanumDriveData::getFrontLeftSpeed,
+            MecanumDriveData::withFrontLeftSpeed))
+        .orElse(DataSource.none());
+    frontRightMotorSource = EasyBind.monadic(typedSourceProperty())
+        .map(s -> sourceFor(s,
+            "Front Right Motor",
+            MecanumDriveData::getFrontRightSpeed,
+            MecanumDriveData::withFrontRightSpeed))
+        .orElse(DataSource.none());
+    rearLeftMotorSource = EasyBind.monadic(typedSourceProperty())
+        .map(s -> sourceFor(s,
+            "Rear Left Motor",
+            MecanumDriveData::getRearLeftSpeed,
+            MecanumDriveData::withRearLeftSpeed))
+        .orElse(DataSource.none());
+    rearRightMotorSource = EasyBind.monadic(typedSourceProperty())
+        .map(s -> sourceFor(s,
+            "Rear Right Motor",
+            MecanumDriveData::getRearRightSpeed,
+            MecanumDriveData::withRearRightSpeed))
+        .orElse(DataSource.none());
+
+    fl.sourceProperty().bind(frontLeftMotorSource);
+    fr.sourceProperty().bind(frontRightMotorSource);
+    rl.sourceProperty().bind(rearLeftMotorSource);
+    rr.sourceProperty().bind(rearRightMotorSource);
+
+    leftControls.getChildren().addAll(fl.getView(), rl.getView());
+    rightControls.getChildren().addAll(fr.getView(), rr.getView());
+
     dataOrDefault.addListener((__, prev, cur) -> {
       Vec2d direction = cur.getDirection();
       double moment = cur.getMoment();
@@ -65,10 +130,35 @@ public final class MecanumDriveWidget extends SimpleAnnotatedWidget<MecanumDrive
       }
     });
 
-    root.getChildren().add(0, generateMecanumDriveBase(30, 80, 150, 200));
+    driveView.getChildren().add(0, generateMecanumDriveBase(30, 80, 150, 200));
     exportProperties(showForceVectors);
   }
 
+  /**
+   * Creates a subsource for a specific motor in a mecanum drive.
+   *
+   * @param mecanumSource the source of the mecanum drive data
+   * @param motor         the name of the motor
+   * @param getter        the getter (eg {@code MecanumDriveData::getFrontLeftSpeed})
+   * @param setter        the setter (eg {@code MecanumDriveData::withFrontLeftSpeed})
+   */
+  private DataSource<SpeedControllerData> sourceFor(DataSource<MecanumDriveData> mecanumSource,
+                                                    String motor,
+                                                    ToDoubleFunction<MecanumDriveData> getter,
+                                                    BiFunction<MecanumDriveData, Double, MecanumDriveData> setter) {
+    Function<MecanumDriveData, SpeedControllerData> from =
+        d -> new SpeedControllerData(motor, d == null ? 0 : getter.applyAsDouble(d));
+    Function<SpeedControllerData, MecanumDriveData> to =
+        d -> setter.apply(mecanumSource.getData(), d == null ? 0.0 : d.getValue());
+    return new SubSource<>(new SpeedControllerType(), mecanumSource, to, from);
+  }
+
+  /**
+   * Draws the direction and moment vectors.
+   *
+   * @param direction the direction of the drive base
+   * @param moment    the turning moment of the drive base
+   */
   private void drawForceVectors(Vec2d direction, double moment) {
     vectorPane.getChildren().clear();
     if (moment != 0) {

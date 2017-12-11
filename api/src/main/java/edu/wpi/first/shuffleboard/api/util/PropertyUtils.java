@@ -42,8 +42,8 @@ public final class PropertyUtils {
       Property<U> secondProperty,
       Function<? super T, ? extends U> t2uConverter,
       Function<? super U, ? extends T> u2tConverter) {
-    firstProperty.setValue(u2tConverter.apply(secondProperty.getValue()));
-    secondProperty.setValue(t2uConverter.apply(firstProperty.getValue()));
+    firstProperty.setValue(secondProperty.getValue() == null ? null : u2tConverter.apply(secondProperty.getValue()));
+    secondProperty.setValue(firstProperty.getValue() == null ? null : t2uConverter.apply(firstProperty.getValue()));
     firstProperty.addListener((__, old, newValue) -> {
       U apply = t2uConverter.apply(newValue);
       if (EqualityUtils.isDifferent(secondProperty.getValue(), apply)) {
