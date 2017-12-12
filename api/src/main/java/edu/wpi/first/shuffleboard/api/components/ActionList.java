@@ -13,6 +13,16 @@ import javafx.scene.Node;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 
+/**
+ * <p>A class meant to represent abstract "actions" that can be taken by a user for a given context.</p>
+ *
+ * <p>The most common use-case is currently to add ActionList Suppliers to the scene graph, so that all
+ * nodes under the mouse cursor can add actions to a right-click event.</p>
+ *
+ * <p>The name of an ActionList should be descriptive, as it will be displayed to the user, and reasonably
+ * unique within its context--ActionLists with the same name should be combined by the consumer into
+ * a single Menu.</p>
+ */
 public class ActionList {
   private static Object ACTION_LIST_KEY = new Object();
 

@@ -41,7 +41,7 @@ public class ListLayout implements Layout {
   private WeakHashMap<Component, Pane> panes = new WeakHashMap<>();
 
   @FXML
-  private void initialize() {
+  protected void initialize() {
     retained = EasyBind.listBind(container.getChildren(), EasyBind.map(widgets, this::paneFor));
   }
 
@@ -63,36 +63,36 @@ public class ListLayout implements Layout {
   }
 
   private ActionList actionsForComponent(Component component) {
-    ActionList al = ActionList.withName(component.getTitle());
-    int i = widgets.indexOf(component);
+    ActionList actions = ActionList.withName(component.getTitle());
+    int index = widgets.indexOf(component);
 
-    if (i > 0) {
-      al.addAction("Move up", () -> {
-        widgets.remove(i);
-        widgets.add(i - 1, component);
+    actions.addAction("Remove from list", () -> {
+      widgets.remove(index);
+    });
+
+    if (index > 0) {
+      actions.addAction("Move up", () -> {
+        widgets.remove(index);
+        widgets.add(index - 1, component);
       });
-      al.addAction("Send to top", () -> {
-        widgets.remove(i);
+      actions.addAction("Send to top", () -> {
+        widgets.remove(index);
         widgets.add(0, component);
       });
     }
 
-    if (i < widgets.size() - 1) {
-      al.addAction("Move down", () -> {
-        widgets.remove(i);
-        widgets.add(i + 1, component);
+    if (index < widgets.size() - 1) {
+      actions.addAction("Move down", () -> {
+        widgets.remove(index);
+        widgets.add(index + 1, component);
       });
-      al.addAction("Send to bottom", () -> {
-        widgets.remove(i);
+      actions.addAction("Send to bottom", () -> {
+        widgets.remove(index);
         widgets.add(component);
       });
     }
 
-    al.addAction("Remove from list", () -> {
-      widgets.remove(i);
-    });
-
-    return al;
+    return actions;
   }
 
   @Override
