@@ -1,0 +1,76 @@
+package edu.wpi.first.shuffleboard.plugin.base.widget;
+
+import edu.wpi.first.shuffleboard.api.sources.DataSource;
+import edu.wpi.first.shuffleboard.api.sources.SubSource;
+import edu.wpi.first.shuffleboard.api.widget.SimpleAnnotatedWidget;
+import edu.wpi.first.shuffleboard.plugin.base.data.SpeedControllerData;
+import edu.wpi.first.shuffleboard.plugin.base.data.types.SpeedControllerType;
+
+import java.util.Collection;
+import java.util.function.BiFunction;
+import java.util.function.ToDoubleFunction;
+
+import javafx.scene.shape.Shape;
+
+/**
+ * An abstract class defining several shared methods for drive base widgets.
+ */
+public abstract class AbstractDriveWidget<T> extends SimpleAnnotatedWidget<T> {
+
+  /**
+   * Creates a subsource for a specific motor in a drive base.
+   *
+   * @param source the source for the drive base data
+   * @param motor  the motor name (eg "Left Motor" or "Right Motor")
+   * @param getter the getter (eg {@code DifferentialDriveData::getLeftSpeed})
+   * @param setter the setter (eg {@code DifferentialDriveData::withLeftSpeed})
+   */
+  protected DataSource<SpeedControllerData> motorSource(DataSource<T> source,
+                                                        String motorName,
+                                                        ToDoubleFunction<T> getter,
+                                                        BiFunction<T, Double, T> setter) {
+    return new SubSource<>(
+        new SpeedControllerType(),
+        source,
+        d -> setter.apply(dataOrDefault.get(), d == null ? 0.0 : d.getValue()),
+        d -> new SpeedControllerData(motorName, d == null ? 0.0 : getter.applyAsDouble(d))
+    );
+  }
+
+  /**
+   * Performs a union of an arbitrary amount of shapes.
+   *
+   * @param shapes the shapes to union
+   *
+   * @return the shape resulting from doing a union of the given shapes
+   */
+  protected static Shape union(Collection<? extends Shape> shapes) {
+    return union(shapes.toArray(new Shape[shapes.size()]));
+  }
+
+  /**
+   * Performs a union of an arbitrary amount of shapes.
+   *
+   * @param shapes the shapes to union
+   *
+   * @return the shape resulting from doing a union of the given shapes
+   */
+  protected static Shape union(Shape... shapes) {
+    switch (shapes.length) {
+      case 0:
+        throw new IllegalArgumentException("No shapes to union");
+      case 1:
+        return shapes[0];
+      case 2:
+        return Shape.union(shapes[0], shapes[1]);
+      default:
+        Shape union = shapes[0];
+        for (int i = 1; i < shapes.length; i++) {
+          Shape shape = shapes[i];
+          union = Shape.union(union, shape);
+        }
+        return union;
+    }
+  }
+
+}

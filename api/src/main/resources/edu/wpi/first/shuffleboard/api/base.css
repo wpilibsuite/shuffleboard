@@ -256,10 +256,10 @@
 
 .robot-direction-vector {
     -fx-stroke: -swatch-400;
-    -fx-stroke-width: 3pt;
+    -fx-fill: -fx-stroke;
+    -fx-stroke-width: 2pt;
 }
 
 .robot-moment-arc {
-    -fx-stroke-width: 2pt;
     -fx-fill: -swatch-500;
 }

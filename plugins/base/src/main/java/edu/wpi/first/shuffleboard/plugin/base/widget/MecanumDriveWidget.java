@@ -1,24 +1,16 @@
 package edu.wpi.first.shuffleboard.plugin.base.widget;
 
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
-import edu.wpi.first.shuffleboard.api.sources.SubSource;
 import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.api.widget.Description;
 import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
-import edu.wpi.first.shuffleboard.api.widget.SimpleAnnotatedWidget;
 import edu.wpi.first.shuffleboard.plugin.base.data.MecanumDriveData;
 import edu.wpi.first.shuffleboard.plugin.base.data.SpeedControllerData;
-import edu.wpi.first.shuffleboard.plugin.base.data.types.SpeedControllerType;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.sun.javafx.geom.Vec2d;
 
 import org.fxmisc.easybind.EasyBind;
 import org.fxmisc.easybind.monadic.MonadicBinding;
-
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.function.ToDoubleFunction;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -38,7 +30,7 @@ import javafx.scene.shape.Shape;
  */
 @Description(name = "Mecanum Drivebase", dataTypes = MecanumDriveData.class)
 @ParametrizedController("MecanumDriveWidget.fxml")
-public final class MecanumDriveWidget extends SimpleAnnotatedWidget<MecanumDriveData> {
+public final class MecanumDriveWidget extends AbstractDriveWidget<MecanumDriveData> {
 
   @FXML
   private Pane root;
@@ -77,25 +69,25 @@ public final class MecanumDriveWidget extends SimpleAnnotatedWidget<MecanumDrive
   @FXML
   private void initialize() {
     frontLeftMotorSource = EasyBind.monadic(typedSourceProperty())
-        .map(s -> sourceFor(s,
+        .map(s -> motorSource(s,
             "Front Left Motor",
             MecanumDriveData::getFrontLeftSpeed,
             MecanumDriveData::withFrontLeftSpeed))
         .orElse(DataSource.none());
     frontRightMotorSource = EasyBind.monadic(typedSourceProperty())
-        .map(s -> sourceFor(s,
+        .map(s -> motorSource(s,
             "Front Right Motor",
             MecanumDriveData::getFrontRightSpeed,
             MecanumDriveData::withFrontRightSpeed))
         .orElse(DataSource.none());
     rearLeftMotorSource = EasyBind.monadic(typedSourceProperty())
-        .map(s -> sourceFor(s,
+        .map(s -> motorSource(s,
             "Rear Left Motor",
             MecanumDriveData::getRearLeftSpeed,
             MecanumDriveData::withRearLeftSpeed))
         .orElse(DataSource.none());
     rearRightMotorSource = EasyBind.monadic(typedSourceProperty())
-        .map(s -> sourceFor(s,
+        .map(s -> motorSource(s,
             "Rear Right Motor",
             MecanumDriveData::getRearRightSpeed,
             MecanumDriveData::withRearRightSpeed))
@@ -112,10 +104,6 @@ public final class MecanumDriveWidget extends SimpleAnnotatedWidget<MecanumDrive
     dataOrDefault.addListener((__, prev, cur) -> {
       Vec2d direction = cur.getDirection();
       double moment = cur.getMoment();
-      System.out.println("Data:      " + cur);
-      System.out.println("Direction: " + direction);
-      System.out.println("Moment:    " + moment);
-      System.out.println("Turn:      " + cur.getTurn());
       if (showForceVectors.get()) {
         drawForceVectors(direction, moment);
       }
@@ -132,25 +120,6 @@ public final class MecanumDriveWidget extends SimpleAnnotatedWidget<MecanumDrive
 
     driveView.getChildren().add(0, generateMecanumDriveBase(30, 80, 150, 200));
     exportProperties(showForceVectors);
-  }
-
-  /**
-   * Creates a subsource for a specific motor in a mecanum drive.
-   *
-   * @param mecanumSource the source of the mecanum drive data
-   * @param motor         the name of the motor
-   * @param getter        the getter (eg {@code MecanumDriveData::getFrontLeftSpeed})
-   * @param setter        the setter (eg {@code MecanumDriveData::withFrontLeftSpeed})
-   */
-  private DataSource<SpeedControllerData> sourceFor(DataSource<MecanumDriveData> mecanumSource,
-                                                    String motor,
-                                                    ToDoubleFunction<MecanumDriveData> getter,
-                                                    BiFunction<MecanumDriveData, Double, MecanumDriveData> setter) {
-    Function<MecanumDriveData, SpeedControllerData> from =
-        d -> new SpeedControllerData(motor, d == null ? 0 : getter.applyAsDouble(d));
-    Function<SpeedControllerData, MecanumDriveData> to =
-        d -> setter.apply(mecanumSource.getData(), d == null ? 0.0 : d.getValue());
-    return new SubSource<>(new SpeedControllerType(), mecanumSource, to, from);
   }
 
   /**
@@ -274,32 +243,6 @@ public final class MecanumDriveWidget extends SimpleAnnotatedWidget<MecanumDrive
     }
     result.getStyleClass().addAll("wheel", "mecanum-wheel");
     return result;
-  }
-
-  /**
-   * Performs a union of an arbitrary amount of shapes.
-   *
-   * @param shapes the shapes to union
-   *
-   * @return the shape resulting from doing a union of the given shapes
-   */
-  @VisibleForTesting
-  static Shape union(Shape... shapes) {
-    switch (shapes.length) {
-      case 0:
-        throw new IllegalArgumentException("No shapes to union");
-      case 1:
-        return shapes[0];
-      case 2:
-        return Shape.union(shapes[0], shapes[1]);
-      default:
-        Shape union = shapes[0];
-        for (int i = 1; i < shapes.length; i++) {
-          Shape shape = shapes[i];
-          union = Shape.union(union, shape);
-        }
-        return union;
-    }
   }
 
 }

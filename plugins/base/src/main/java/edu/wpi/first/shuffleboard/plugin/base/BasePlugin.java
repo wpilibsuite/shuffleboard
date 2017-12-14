@@ -43,6 +43,7 @@ import edu.wpi.first.shuffleboard.plugin.base.recording.serialization.StringArra
 import edu.wpi.first.shuffleboard.plugin.base.widget.BooleanBox;
 import edu.wpi.first.shuffleboard.plugin.base.widget.ComboBoxChooser;
 import edu.wpi.first.shuffleboard.plugin.base.widget.CommandWidget;
+import edu.wpi.first.shuffleboard.plugin.base.widget.DifferentialDriveWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.EncoderWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.GraphWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.GyroWidget;
@@ -124,6 +125,7 @@ public class BasePlugin extends Plugin {
         WidgetType.forAnnotatedWidget(PIDControllerWidget.class),
         WidgetType.forAnnotatedWidget(GyroWidget.class),
         WidgetType.forAnnotatedWidget(RelayWidget.class),
+        WidgetType.forAnnotatedWidget(DifferentialDriveWidget.class),
         WidgetType.forAnnotatedWidget(MecanumDriveWidget.class),
         new LayoutClass<>("List Layout", ListLayout.class),
         createSubsystemLayoutType()
@@ -162,6 +164,7 @@ public class BasePlugin extends Plugin {
         .put(new PIDControllerType(), WidgetType.forAnnotatedWidget(PIDControllerWidget.class))
         .put(new GyroType(), WidgetType.forAnnotatedWidget(GyroWidget.class))
         .put(new RelayType(), WidgetType.forAnnotatedWidget(RelayWidget.class))
+        .put(DifferentialDriveType.Instance, WidgetType.forAnnotatedWidget(DifferentialDriveWidget.class))
         .put(MecanumDriveType.Instance, WidgetType.forAnnotatedWidget(MecanumDriveWidget.class))
         .put(new SubsystemType(), createSubsystemLayoutType())
         .build();

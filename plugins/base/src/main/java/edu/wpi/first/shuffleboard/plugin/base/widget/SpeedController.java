@@ -1,7 +1,5 @@
 package edu.wpi.first.shuffleboard.plugin.base.widget;
 
-import com.google.common.primitives.Doubles;
-
 import edu.wpi.first.shuffleboard.api.LiveWindow;
 import edu.wpi.first.shuffleboard.api.components.LinearIndicator;
 import edu.wpi.first.shuffleboard.api.components.NumberField;
@@ -11,12 +9,17 @@ import edu.wpi.first.shuffleboard.api.widget.SimpleAnnotatedWidget;
 import edu.wpi.first.shuffleboard.plugin.base.data.SpeedControllerData;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.SpeedControllerType;
 
+import com.google.common.primitives.Doubles;
+
 import org.fxmisc.easybind.EasyBind;
 
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.Property;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXML;
+import javafx.geometry.Orientation;
 import javafx.scene.control.Slider;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
@@ -45,6 +48,9 @@ public class SpeedController extends SimpleAnnotatedWidget<SpeedControllerData> 
     setData(new SpeedControllerData(getData().getName(), value));
   };
 
+  private final Property<Orientation> orientation =
+      new SimpleObjectProperty<>(this, "orientation", Orientation.HORIZONTAL);
+
   @FXML
   private void initialize() {
     controllable.set(LiveWindow.isEnabled());
@@ -57,12 +63,14 @@ public class SpeedController extends SimpleAnnotatedWidget<SpeedControllerData> 
 
     control.valueProperty().addListener(numberUpdateListener);
     valueField.numberProperty().addListener(numberUpdateListener);
-    dataProperty().addListener((__, prev, cur) -> {
+    dataOrDefault.addListener((__, prev, cur) -> {
       control.setValue(cur.getValue());
       valueField.setNumber(cur.getValue());
     });
+    control.orientationProperty().bind(orientation);
+    view.orientationProperty().bind(orientation);
 
-    exportProperties(controllable);
+    exportProperties(controllable, orientation);
   }
 
   @Override
@@ -73,6 +81,18 @@ public class SpeedController extends SimpleAnnotatedWidget<SpeedControllerData> 
   @FXML
   private void zero() {
     control.setValue(0); // listeners will take care of the rest
+  }
+
+  public Orientation getOrientation() {
+    return orientation.getValue();
+  }
+
+  public Property<Orientation> orientationProperty() {
+    return orientation;
+  }
+
+  public void setOrientation(Orientation orientation) {
+    this.orientation.setValue(orientation);
   }
 
 }
