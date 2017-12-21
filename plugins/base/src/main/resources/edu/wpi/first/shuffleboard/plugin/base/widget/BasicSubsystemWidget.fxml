@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.geometry.Insets?>
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="edu.wpi.first.shuffleboard.plugin.base.widget.BasicSubsystemWidget"
+      fx:id="root"
+      spacing="4"
+      minHeight="70" minWidth="180">
+    <padding>
+        <Insets topRightBottomLeft="4"/>
+    </padding>
+    <Label fx:id="defaultCommandLabel"/>
+    <Label fx:id="currentCommandLabel"/>
+</VBox>
