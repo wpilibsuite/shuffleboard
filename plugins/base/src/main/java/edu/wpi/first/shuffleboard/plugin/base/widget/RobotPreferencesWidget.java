@@ -1,6 +1,6 @@
 package edu.wpi.first.shuffleboard.plugin.base.widget;
 
-import edu.wpi.first.shuffleboard.api.components.WidgetPropertySheet;
+import edu.wpi.first.shuffleboard.api.components.ExtendedPropertySheet;
 import edu.wpi.first.shuffleboard.api.util.AlphanumComparator;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.api.widget.Description;
@@ -64,7 +64,7 @@ public class RobotPreferencesWidget extends SimpleAnnotatedWidget<RobotPreferenc
 
     wrapperProperties.addListener((MapChangeListener<String, ObjectProperty<? super Object>>) change -> {
       if (change.wasAdded()) {
-        propertySheet.getItems().add(new WidgetPropertySheet.PropertyItem<>(change.getValueAdded(), change.getKey()));
+        propertySheet.getItems().add(new ExtendedPropertySheet.PropertyItem<>(change.getValueAdded(), change.getKey()));
       } else if (change.wasRemoved()) {
         propertySheet.getItems().removeIf(i -> i.getName().equals(change.getKey()));
       }

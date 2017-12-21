@@ -28,6 +28,8 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.scene.layout.Pane;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
@@ -90,12 +92,36 @@ public class Shuffleboard extends Application {
     primaryStage.setMinHeight(480);
     primaryStage.setWidth(Screen.getPrimary().getVisualBounds().getWidth());
     primaryStage.setHeight(Screen.getPrimary().getVisualBounds().getHeight());
+    primaryStage.setOnCloseRequest(closeEvent -> {
+      if (!AppPreferences.getInstance().isConfirmExit()) {
+        // Don't show the confirmation dialog, just exit
+        return;
+      }
+      Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+      alert.setTitle("Save layout");
+      alert.getDialogPane().getScene().getStylesheets().setAll(mainPane.getStylesheets());
+      alert.getButtonTypes().setAll(ButtonType.YES, ButtonType.NO, ButtonType.CANCEL);
+      alert.getDialogPane().setHeaderText("Save the current layout before closing?");
+      alert.showAndWait().ifPresent(bt -> {
+        if (bt == ButtonType.YES) {
+          try {
+            mainWindowController.save();
+          } catch (IOException ex) {
+            logger.log(Level.WARNING, "Could not save the layout", ex);
+          }
+        } else if (bt == ButtonType.CANCEL) {
+          // cancel the close request by consuming the event
+          closeEvent.consume();
+        }
+        // Don't need to check for NO because it just lets the window close normally
+      });
+    });
     primaryStage.show();
     Time.setStartTime(Time.now());
   }
 
   /**
-   * Sets up loggers to print to stdout (rather than stderr) and log to ~/SmartDashboard/shuffleboard.log
+   * Sets up loggers to print to stdout (rather than stderr) and log to ~/Shuffleboard/shuffleboard.log
    */
   private void setupLoggers() throws IOException {
     //Set up the global level logger. This handles IO for all loggers.

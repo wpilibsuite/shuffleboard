@@ -7,11 +7,10 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import javafx.beans.property.Property;
-import javafx.collections.ObservableMap;
 
 /**
- * A widget is a UI element that displays data from a {@link DataSource} and has the ability to
- * modify that data. It is up to the widget implementation to modify the backing data; some sources
+ * A widget is a UI element that displays data from {@link DataSource data sources} and has the ability to
+ * modify that data. It is up to the widget implementation to modify the backing data; some widgets
  * (for example, a graph widget) may be read-only. Simple widgets can display singular data points
  * (eg some text, a number, a boolean value, etc); composite widgets display complex data like
  * subsystems or sensors.
@@ -23,9 +22,9 @@ import javafx.collections.ObservableMap;
  *
  * <p>Widgets have a few important properties:
  * <ul>
- * <li>Name</li>
- * <li>Collection of supported data types</li>
- * <li>A data source</li>
+ * <li>A name</li>
+ * <li>Supported data types</li>
+ * <li>Data source(s)</li>
  * <li>A view</li>
  * </ul>
  *
@@ -41,12 +40,6 @@ import javafx.collections.ObservableMap;
  *
  * <p>The data source provides an easy way for a widget to get information about the data it
  * handles. More information about data sources can be found {@link DataSource here}.
- *
- * <p>A widget has a single method {@link #getView()} that returns a JavaFX pane that contains all
- * the UI components that display information about the widget.
- *
- * @param <T> the type of data the widget supports. For composite widgets, this is always
- *            {@link ObservableMap ObservableMap&lt;String, Object&gt;}.
  */
 public interface Widget extends Component, Sourced {
 
