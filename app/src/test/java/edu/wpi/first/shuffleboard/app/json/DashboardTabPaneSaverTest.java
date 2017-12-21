@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Set;
 
 import javafx.beans.property.Property;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.layout.Pane;
@@ -54,7 +55,7 @@ public class DashboardTabPaneSaverTest extends ApplicationTest {
   // with the classpath introspection utilities in Guava. Travis, Appveyor, and local (Window 10 x64) testing all work
   // as expected so it's most likely something weird with Jenkins (as of 2017-11-20)
   public void testDeserialize() throws Exception {
-    Reader reader = new InputStreamReader(getClass().getResourceAsStream("/smartdashboard.json"), "UTF-8");
+    Reader reader = new InputStreamReader(getClass().getResourceAsStream("/test.json"), "UTF-8");
     DashboardData data = JsonBuilder.forSaveFile().fromJson(reader, DashboardData.class);
     assertEquals(0.123456, data.getDividerPosition(), "Divider position was wrong");
     DashboardTabPane dashboard = data.getTabPane();
@@ -75,15 +76,15 @@ public class DashboardTabPaneSaverTest extends ApplicationTest {
     assertTrue(content instanceof DummyBooleanBox);
   }
 
-  private static class DummyBooleanBoxType implements WidgetType {
+  private static class DummyBooleanBoxType implements WidgetType<DummyBooleanBox> {
     @Override
     public Set<DataType> getDataTypes() {
       return null;
     }
 
     @Override
-    public Class getType() {
-      return null;
+    public Class<DummyBooleanBox> getType() {
+      return DummyBooleanBox.class;
     }
 
     @Override
@@ -92,7 +93,7 @@ public class DashboardTabPaneSaverTest extends ApplicationTest {
     }
 
     @Override
-    public Widget get() {
+    public DummyBooleanBox get() {
       return new DummyBooleanBox();
     }
   }
@@ -106,12 +107,12 @@ public class DashboardTabPaneSaverTest extends ApplicationTest {
 
     @Override
     public Pane getView() {
-      return null;
+      return new Pane();
     }
 
     @Override
     public Property<String> titleProperty() {
-      return null;
+      return new SimpleStringProperty();
     }
 
     @Override

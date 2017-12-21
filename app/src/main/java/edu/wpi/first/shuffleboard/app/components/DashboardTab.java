@@ -1,7 +1,7 @@
 package edu.wpi.first.shuffleboard.app.components;
 
 import edu.wpi.first.shuffleboard.api.Populatable;
-import edu.wpi.first.shuffleboard.api.components.WidgetPropertySheet;
+import edu.wpi.first.shuffleboard.api.components.ExtendedPropertySheet;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
@@ -15,6 +15,8 @@ import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.api.widget.Sourced;
 import edu.wpi.first.shuffleboard.app.Autopopulator;
 import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
+
+import edu.wpi.first.networktables.NetworkTable;
 
 import org.fxmisc.easybind.EasyBind;
 
@@ -118,7 +120,7 @@ public class DashboardTab extends Tab implements HandledTab, Populatable {
     // Use a dummy property here to prevent a call to populate() on every keystroke in the editor (!)
     StringProperty dummySourcePrefix
         = new SimpleStringProperty(sourcePrefix.getBean(), sourcePrefix.getName(), sourcePrefix.getValue());
-    WidgetPropertySheet propertySheet = new WidgetPropertySheet(
+    ExtendedPropertySheet propertySheet = new ExtendedPropertySheet(
         Arrays.asList(
             this.title,
             this.autoPopulate,
@@ -127,8 +129,8 @@ public class DashboardTab extends Tab implements HandledTab, Populatable {
             getWidgetPane().showGridProperty()
         ));
     propertySheet.getItems().addAll(
-        new WidgetPropertySheet.PropertyItem<>(getWidgetPane().hgapProperty(), "Horizontal spacing"),
-        new WidgetPropertySheet.PropertyItem<>(getWidgetPane().vgapProperty(), "Vertical spacing")
+        new ExtendedPropertySheet.PropertyItem<>(getWidgetPane().hgapProperty(), "Horizontal spacing"),
+        new ExtendedPropertySheet.PropertyItem<>(getWidgetPane().vgapProperty(), "Vertical spacing")
     );
     Dialog<ButtonType> dialog = new Dialog<>();
     dialog.getDialogPane().getStylesheets().setAll(AppPreferences.getInstance().getTheme().getStyleSheets());
@@ -230,7 +232,7 @@ public class DashboardTab extends Tab implements HandledTab, Populatable {
   @Override
   public boolean supports(String sourceId) {
     SourceType type = SourceTypes.getDefault().typeForUri(sourceId);
-    String name = NetworkTableUtils.normalizeKey(type.removeProtocol(sourceId), false);
+    String name = NetworkTable.normalizeKey(type.removeProtocol(sourceId), false);
     return !deferPopulation
         && isAutoPopulate()
         && type.dataTypeForSource(DataTypes.getDefault(), sourceId) != DataTypes.Map

@@ -3,8 +3,10 @@ package edu.wpi.first.shuffleboard.plugin.base.layout;
 import edu.wpi.first.shuffleboard.api.Populatable;
 import edu.wpi.first.shuffleboard.api.components.EditableLabel;
 import edu.wpi.first.shuffleboard.api.data.DataType;
+import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
+import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
 import edu.wpi.first.shuffleboard.api.util.AlphanumComparator;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
@@ -16,6 +18,8 @@ import edu.wpi.first.shuffleboard.api.widget.Sourced;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.SubsystemType;
 
 import com.google.common.collect.ImmutableSet;
+
+import edu.wpi.first.networktables.NetworkTable;
 
 import org.fxmisc.easybind.EasyBind;
 import org.fxmisc.easybind.Subscription;
@@ -33,6 +37,8 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
+import javafx.scene.control.Label;
+import javafx.scene.control.OverrunStyle;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
@@ -63,6 +69,7 @@ public class SubsystemLayout implements Layout, Populatable, Sourced {
     pane.getStyleClass().add("layout-stack");
     EditableLabel label = new EditableLabel(component.titleProperty());
     label.getStyleClass().add("layout-label");
+    ((Label) label.lookup(".label")).setTextOverrun(OverrunStyle.LEADING_ELLIPSIS);
     BorderPane.setAlignment(label, Pos.TOP_LEFT);
     pane.setBottom(label);
     return pane;
@@ -79,7 +86,7 @@ public class SubsystemLayout implements Layout, Populatable, Sourced {
       final String sourceName = getSource().getName();
       if (child.getTitle().startsWith(sourceName)) {
         // Remove leading redundant information
-        child.setTitle(NetworkTableUtils.normalizeKey(child.getTitle().substring(sourceName.length()), false));
+        child.setTitle(NetworkTable.normalizeKey(child.getTitle().substring(sourceName.length()), false));
       }
     }
     if (children.isEmpty()) {
@@ -109,9 +116,13 @@ public class SubsystemLayout implements Layout, Populatable, Sourced {
 
   @Override
   public boolean supports(String sourceId) {
+    DataType<?> dataType = SourceTypes.getDefault()
+        .typeForUri(sourceId)
+        .dataTypeForSource(DataTypes.getDefault(), sourceId);
     return getSource() != null
         && !getSource().getId().equals(sourceId)
         && sourceId.startsWith(getSource().getId())
+        && dataType != DataTypes.Map
         && !NetworkTableUtils.isMetadata(sourceId);
   }
 

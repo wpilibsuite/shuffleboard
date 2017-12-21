@@ -30,9 +30,9 @@ public final class CameraServerSourceType extends SourceType {
     super("CameraServer", false, "camera_server://", CameraServerSource::forName);
     NetworkTableInstance.getDefault().addEntryListener("/CameraPublisher", entryNotification ->
         Platform.runLater(() -> {
-          List<String> hierarchy = NetworkTableUtils.getHierarchy(entryNotification.name);
+          List<String> hierarchy = NetworkTable.getHierarchy(entryNotification.name);
           // 0 is "/", 1 is "/CameraPublisher", 2 is "/CameraPublisher/<name>"
-          String name = NetworkTableUtils.simpleKey(hierarchy.get(2));
+          String name = NetworkTable.basenameKey(hierarchy.get(2));
           String uri = toUri(name);
           NetworkTable table = NetworkTableInstance.getDefault().getTable(hierarchy.get(2));
           if (table.getKeys().isEmpty() && table.getSubTables().isEmpty()) {

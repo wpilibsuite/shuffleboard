@@ -6,6 +6,11 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.ToIntFunction;
 
+/**
+ * A type adapter whose {@link #serialize} and {@link #deserialize} methods are delegated to {@link Function functions}.
+ *
+ * @param <T> the type of data that can be serialized and deserialized by this adapter
+ */
 public class DelegatedAdapter<T> extends TypeAdapter<T> {
 
   private final Function<? super T, byte[]> serializer;
@@ -18,7 +23,7 @@ public class DelegatedAdapter<T> extends TypeAdapter<T> {
    * @param dataType     the type of the data to serialize/deserialize
    * @param serializer   the function to use to serialize data objects to raw bytes
    * @param deserializer the function to use to deserialize raw bytes to data objects
-   * @param sizer        the function to use to determine the {@link #getSerializedSize(Object) serialized sizes}
+   * @param sizer        the function to use to determine the {@link #getSerializedSize serialized sizes}
    *                     of data objects
    */
   public DelegatedAdapter(DataType<T> dataType,

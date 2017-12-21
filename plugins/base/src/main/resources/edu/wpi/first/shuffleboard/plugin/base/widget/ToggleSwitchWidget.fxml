@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import org.controlsfx.control.ToggleSwitch?>
+<?import javafx.scene.layout.StackPane?>
+<StackPane xmlns="http://javafx.com/javafx"
+           xmlns:fx="http://javafx.com/fxml"
+           fx:controller="edu.wpi.first.shuffleboard.plugin.base.widget.ToggleSwitchWidget"
+           fx:id="root"
+           minHeight="32" minWidth="32">
+    <!-- Use a nested stack pane to center the toggle switch -->
+    <StackPane StackPane.alignment="CENTER" maxHeight="0" maxWidth="0">
+        <ToggleSwitch fx:id="toggleSwitch"/>
+    </StackPane>
+</StackPane>

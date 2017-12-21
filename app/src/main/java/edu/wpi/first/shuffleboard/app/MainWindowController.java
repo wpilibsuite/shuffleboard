@@ -1,13 +1,11 @@
 package edu.wpi.first.shuffleboard.app;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
-import com.google.common.io.Files;
-
 import edu.wpi.first.shuffleboard.api.DashboardMode;
+import edu.wpi.first.shuffleboard.api.components.ExtendedPropertySheet;
 import edu.wpi.first.shuffleboard.api.components.SourceTreeTable;
 import edu.wpi.first.shuffleboard.api.dnd.DataFormats;
 import edu.wpi.first.shuffleboard.api.plugin.Plugin;
+import edu.wpi.first.shuffleboard.api.prefs.FlushableProperty;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceEntry;
 import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
@@ -19,12 +17,14 @@ import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.app.components.DashboardTab;
 import edu.wpi.first.shuffleboard.app.components.DashboardTabPane;
 import edu.wpi.first.shuffleboard.app.components.WidgetGallery;
-import edu.wpi.first.shuffleboard.api.components.WidgetPropertySheet;
 import edu.wpi.first.shuffleboard.app.json.JsonBuilder;
 import edu.wpi.first.shuffleboard.app.plugin.PluginLoader;
 import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
-import edu.wpi.first.shuffleboard.api.prefs.FlushableProperty;
 import edu.wpi.first.shuffleboard.app.sources.recording.Playback;
+
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
+import com.google.common.io.Files;
 
 import org.fxmisc.easybind.EasyBind;
 
@@ -68,6 +68,8 @@ import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import javafx.stage.Window;
+import javafx.stage.WindowEvent;
 
 import static edu.wpi.first.shuffleboard.api.components.SourceTreeTable.alphabetical;
 import static edu.wpi.first.shuffleboard.api.components.SourceTreeTable.branchesFirst;
@@ -99,7 +101,7 @@ public class MainWindowController {
 
   private SourceEntry selectedEntry;
 
-  File currentFile = null;
+  private File currentFile = null;
 
   private final ObservableValue<List<String>> stylesheets
       = EasyBind.map(AppPreferences.getInstance().themeProperty(), Theme::getStyleSheets);
@@ -292,10 +294,17 @@ public class MainWindowController {
     centerSplitPane.getItems().add(dashboard);
   }
 
+  /**
+   * Closes from interacting with the "Close" menu item.
+   */
   @FXML
   public void close() {
     log.info("Exiting app");
-    System.exit(0);
+
+    // Attempt to close the main window. This lets window closing handlers run. Calling System.exit() or Platform.exit()
+    // will more-or-less immediately terminate the application without calling these handlers.
+    Window window = root.getScene().getWindow();
+    window.fireEvent(new WindowEvent(window, WindowEvent.WINDOW_CLOSE_REQUEST));
   }
 
   /**
@@ -318,10 +327,10 @@ public class MainWindowController {
   private void saveAs() throws IOException {
     FileChooser chooser = new FileChooser();
     chooser.getExtensionFilters().setAll(
-        new FileChooser.ExtensionFilter("SmartDashboard Save File (.json)", "*.json"));
+        new FileChooser.ExtensionFilter("Shuffleboard Save File (.json)", "*.json"));
     if (currentFile == null) {
       chooser.setInitialDirectory(Storage.getStorageDir());
-      chooser.setInitialFileName("smartdashboard.json");
+      chooser.setInitialFileName("shuffleboard.json");
     } else {
       chooser.setInitialDirectory(currentFile.getAbsoluteFile().getParentFile());
       chooser.setInitialFileName(currentFile.getName());
@@ -357,7 +366,7 @@ public class MainWindowController {
     FileChooser chooser = new FileChooser();
     chooser.setInitialDirectory(Storage.getStorageDir());
     chooser.getExtensionFilters().setAll(
-        new FileChooser.ExtensionFilter("SmartDashboard Save File (.json)", "*.json"));
+        new FileChooser.ExtensionFilter("Shuffleboard Save File (.json)", "*.json"));
 
     final File selected = chooser.showOpenDialog(root.getScene().getWindow());
     load(selected);
@@ -396,14 +405,14 @@ public class MainWindowController {
     TabPane tabs = new TabPane();
     tabs.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
 
-    tabs.getTabs().add(new Tab("Application", new WidgetPropertySheet(AppPreferences.getInstance().getProperties())));
+    tabs.getTabs().add(new Tab("Application", new ExtendedPropertySheet(AppPreferences.getInstance().getProperties())));
 
     for (Plugin plugin : PluginLoader.getDefault().getLoadedPlugins()) {
       if (plugin.getProperties().isEmpty()) {
         continue;
       }
       Tab tab = new Tab(plugin.getName());
-      tab.setContent(new WidgetPropertySheet(plugin.getProperties()));
+      tab.setContent(new ExtendedPropertySheet(plugin.getProperties()));
 
       tab.setDisable(DashboardMode.getCurrentMode() == DashboardMode.PLAYBACK);
       tabs.getTabs().add(tab);
@@ -421,9 +430,9 @@ public class MainWindowController {
     dialog.setResultConverter(button -> !button.getButtonData().isCancelButton());
     if (dialog.showAndWait().orElse(false)) {
       tabs.getTabs().stream()
-          .map(t -> (WidgetPropertySheet) t.getContent())
+          .map(t -> (ExtendedPropertySheet) t.getContent())
           .flatMap(p -> p.getItems().stream())
-          .flatMap(TypeUtils.castStream(WidgetPropertySheet.PropertyItem.class))
+          .flatMap(TypeUtils.castStream(ExtendedPropertySheet.PropertyItem.class))
           .map(i -> (Optional<ObservableValue>) i.getObservableValue())
           .flatMap(TypeUtils.optionalStream())
           .flatMap(TypeUtils.castStream(FlushableProperty.class))

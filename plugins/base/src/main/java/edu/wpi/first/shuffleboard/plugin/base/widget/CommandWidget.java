@@ -3,6 +3,7 @@ package edu.wpi.first.shuffleboard.plugin.base.widget;
 import edu.wpi.first.shuffleboard.api.widget.Description;
 import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 import edu.wpi.first.shuffleboard.api.widget.SimpleAnnotatedWidget;
+import edu.wpi.first.shuffleboard.plugin.base.data.CommandData;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import edu.wpi.first.shuffleboard.api.components.WidgetPropertySheet?>
+<?import edu.wpi.first.shuffleboard.api.components.ExtendedPropertySheet?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.geometry.Insets?>
 <StackPane xmlns="http://javafx.com/javafx"
@@ -11,5 +11,5 @@
     <padding>
         <Insets topRightBottomLeft="4"/>
     </padding>
-    <WidgetPropertySheet fx:id="propertySheet" searchBoxVisible="true"/>
+    <ExtendedPropertySheet fx:id="propertySheet" searchBoxVisible="true"/>
 </StackPane>

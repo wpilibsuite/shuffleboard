@@ -3,7 +3,9 @@ package edu.wpi.first.shuffleboard.api.data.types;
 import edu.wpi.first.shuffleboard.api.data.SimpleDataType;
 
 /**
- * Represents an "unknown" data type; that is, data is present, but the type could not be determined.
+ * A catchall data type that is used when the type of data is unknown. This differs from {@link NoneType} in that this
+ * class is for data that is present but whose type is indeterminate, while {@code NoneType} represents the type of
+ * data that is not present at all.
  */
 public class UnknownType extends SimpleDataType<Object> {
 
