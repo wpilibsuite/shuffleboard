@@ -2,7 +2,6 @@ package edu.wpi.first.shuffleboard.plugin.base.data;
 
 import edu.wpi.first.shuffleboard.api.data.ComplexData;
 import edu.wpi.first.shuffleboard.api.util.Maps;
-import edu.wpi.first.shuffleboard.plugin.base.widget.CommandData;
 
 import java.util.Map;
 

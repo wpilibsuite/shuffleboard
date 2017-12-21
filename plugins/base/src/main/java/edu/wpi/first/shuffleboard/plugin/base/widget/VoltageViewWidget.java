@@ -9,7 +9,7 @@ import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 import edu.wpi.first.shuffleboard.api.widget.SingleSourceWidget;
 import edu.wpi.first.shuffleboard.plugin.base.data.AnalogInputData;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.AnalogInputType;
-import edu.wpi.first.shuffleboard.plugin.base.data.types.NumberType;
+import edu.wpi.first.shuffleboard.api.data.types.NumberType;
 
 import org.fxmisc.easybind.EasyBind;
 
