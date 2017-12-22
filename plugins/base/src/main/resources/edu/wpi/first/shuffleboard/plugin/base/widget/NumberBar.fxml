@@ -9,7 +9,7 @@
            xmlns:fx="http://javafx.com/fxml"
            fx:controller="edu.wpi.first.shuffleboard.plugin.base.widget.NumberBarWidget"
            fx:id="root"
-           prefWidth="128" prefHeight="128" minHeight="32">
+           prefWidth="128" prefHeight="128" minWidth="32" minHeight="32">
     <padding>
         <Insets topRightBottomLeft="8"/>
     </padding>

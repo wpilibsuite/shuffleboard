@@ -1,5 +1,7 @@
 package edu.wpi.first.shuffleboard.api.widget;
 
+import edu.wpi.first.shuffleboard.api.sources.DataSource;
+
 import org.fxmisc.easybind.monadic.MonadicBinding;
 import org.fxmisc.easybind.monadic.PropertyBinding;
 

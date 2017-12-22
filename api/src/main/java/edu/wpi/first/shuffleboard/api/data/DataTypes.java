@@ -1,14 +1,23 @@
 package edu.wpi.first.shuffleboard.api.data;
 
 import edu.wpi.first.shuffleboard.api.data.types.AllType;
+import edu.wpi.first.shuffleboard.api.data.types.BooleanArrayType;
+import edu.wpi.first.shuffleboard.api.data.types.BooleanType;
 import edu.wpi.first.shuffleboard.api.data.types.MapType;
 import edu.wpi.first.shuffleboard.api.data.types.NoneType;
+import edu.wpi.first.shuffleboard.api.data.types.NumberArrayType;
+import edu.wpi.first.shuffleboard.api.data.types.NumberType;
+import edu.wpi.first.shuffleboard.api.data.types.RawByteType;
+import edu.wpi.first.shuffleboard.api.data.types.StringArrayType;
+import edu.wpi.first.shuffleboard.api.data.types.StringType;
 import edu.wpi.first.shuffleboard.api.data.types.UnknownType;
 import edu.wpi.first.shuffleboard.api.util.Registry;
 import edu.wpi.first.shuffleboard.api.util.TestUtils;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableCollection;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.primitives.Primitives;
 
 import java.util.Arrays;
@@ -25,16 +34,90 @@ import java.util.stream.Stream;
 
 import static java.util.Objects.requireNonNull;
 
+/**
+ * Registry of data types in shuffleboard. This class also provides data types for various "wildcard" types, as well as
+ * types for primitive and arrays of primitive data. These types are always registered and may not be unregistered.
+ */
 public class DataTypes extends Registry<DataType> {
 
   // TODO replace with DI eg Guice
   private static DataTypes defaultInstance = null;
 
   // Catchall or wildcard types
+  /**
+   * Represents the type of "null" or non-present data. Differs from {@link UnknownType} in that <i>no</i> data is
+   * present for this type, while data <i>is</i> present but of an unknown type for the latter.
+   */
   public static final DataType None = new NoneType();
+
+  /**
+   * Represents the type of <i>all</i> data; a widget that can accept this data type can accept data of <i>any</i>
+   * type.
+   */
   public static final DataType All = new AllType();
+
+  /**
+   * Represents an "unknown" data type; that is, data is present, but the type could not be determined.
+   */
   public static final DataType Unknown = new UnknownType();
+
   public static final ComplexDataType<MapData> Map = new MapType();
+
+  // Primitive types
+  /**
+   * The type corresponding to <i>boolean</i> data.
+   */
+  public static final DataType<Boolean> Boolean = new BooleanType();
+
+  /**
+   * The type corresponding to a boolean array (<tt>boolean[]</tt>).
+   */
+  public static final DataType<boolean[]> BooleanArray = new BooleanArrayType();
+
+  /**
+   * The type corresponding to <i>numeric</i> data.
+   */
+  public static final DataType<Number> Number = new NumberType();
+
+  /**
+   * The type corresponding to an array of numeric data (<tt>double[]</tt>). Note that number arrays <i>must</i> be
+   * implemented as <tt>double[]</tt> in order to be represented by this type.
+   */
+  public static final DataType<double[]> NumberArray = new NumberArrayType();
+
+  /**
+   * The type corresponding to text data.
+   */
+  public static final DataType<String> String = new StringType();
+
+  /**
+   * The type corresponding to an array of strings (<tt>String[]</tt>).
+   */
+  public static final DataType<String[]> StringArray = new StringArrayType();
+
+  /**
+   * The type corresponding to an array of raw bytes (<tt>byte[]</tt>).
+   */
+  public static final DataType<byte[]> ByteArray = new RawByteType();
+
+  /**
+   * The default data types. None of these may be unregistered.
+   */
+  private static final ImmutableCollection<DataType<?>> defaultTypes = ImmutableSet.of(
+      // catchall
+      None,
+      All,
+      Unknown,
+      Map,
+      // primitives
+      Boolean,
+      BooleanArray,
+      Number,
+      NumberArray,
+      String,
+      StringArray,
+      ByteArray
+  );
 
   private final Map<String, DataType> dataTypes = new TreeMap<>();
 
@@ -53,14 +136,11 @@ public class DataTypes extends Registry<DataType> {
   }
 
   /**
-   * Creates a new data type registry. The registry will initially contain {@link #None}, {@link #All},
-   * {@link #Unknown}, and {@link #Map}, none of why may be unregistered.
+   * Creates a new data type registry. The registry will initially contain the default data types, none of which may be
+   * unregistered.
    */
   public DataTypes() {
-    register(None);
-    register(All);
-    register(Unknown);
-    register(Map);
+    registerAll(defaultTypes);
   }
 
   /**
@@ -92,6 +172,10 @@ public class DataTypes extends Registry<DataType> {
 
   @Override
   public void unregister(DataType dataType) {
+    requireNonNull(dataType, "dataType");
+    if (defaultTypes.contains(dataType)) {
+      throw new IllegalArgumentException("A default data type cannot be unregistered: '" + dataType + "'");
+    }
     dataTypes.remove(dataType.getName());
     typeCache.remove(dataType.getJavaClass());
     removeItem(dataType);
