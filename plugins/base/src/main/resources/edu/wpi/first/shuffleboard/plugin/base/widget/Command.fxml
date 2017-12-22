@@ -8,6 +8,7 @@
       fx:controller="edu.wpi.first.shuffleboard.plugin.base.widget.CommandWidget"
       fx:id="root"
       spacing="8"
+      minWidth="128" minHeight="64"
       alignment="CENTER">
     <padding>
         <Insets topRightBottomLeft="8"/>

@@ -7,6 +7,7 @@ import edu.wpi.first.shuffleboard.api.widget.ComponentType;
 import edu.wpi.first.shuffleboard.api.widget.LayoutClass;
 import edu.wpi.first.shuffleboard.api.widget.WidgetType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.AnalogInputType;
+import edu.wpi.first.shuffleboard.plugin.base.data.types.BasicSubsystemType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.CommandType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.EncoderType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.GyroType;
@@ -21,6 +22,7 @@ import edu.wpi.first.shuffleboard.plugin.base.data.types.SubsystemType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.ThreeAxisAccelerometerType;
 import edu.wpi.first.shuffleboard.plugin.base.layout.ListLayout;
 import edu.wpi.first.shuffleboard.plugin.base.layout.SubsystemLayout;
+import edu.wpi.first.shuffleboard.plugin.base.widget.BasicSubsystemWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.BooleanBoxWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.ComboBoxChooserWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.CommandWidget;
@@ -67,6 +69,7 @@ public class BasePlugin extends Plugin {
         new SendableChooserType(),
         new SpeedControllerType(),
         new SubsystemType(),
+        BasicSubsystemType.Instance,
         new CommandType(),
         new PIDControllerType(),
         new ThreeAxisAccelerometerType(),
@@ -94,6 +97,7 @@ public class BasePlugin extends Plugin {
         WidgetType.forAnnotatedWidget(RobotPreferencesWidget.class),
         WidgetType.forAnnotatedWidget(SpeedControllerWidget.class),
         WidgetType.forAnnotatedWidget(CommandWidget.class),
+        WidgetType.forAnnotatedWidget(BasicSubsystemWidget.class),
         WidgetType.forAnnotatedWidget(PIDCommandWidget.class),
         WidgetType.forAnnotatedWidget(ThreeAxisAccelerometerWidget.class),
         WidgetType.forAnnotatedWidget(PIDControllerWidget.class),
@@ -123,6 +127,7 @@ public class BasePlugin extends Plugin {
         .put(new GyroType(), WidgetType.forAnnotatedWidget(GyroWidget.class))
         .put(new RelayType(), WidgetType.forAnnotatedWidget(RelayWidget.class))
         .put(new SubsystemType(), createSubsystemLayoutType())
+        .put(BasicSubsystemType.Instance, WidgetType.forAnnotatedWidget(BasicSubsystemWidget.class))
         .build();
   }
 
