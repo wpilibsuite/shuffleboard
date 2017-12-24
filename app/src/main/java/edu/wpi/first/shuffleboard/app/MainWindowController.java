@@ -40,6 +40,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import javafx.application.Platform;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -386,7 +387,9 @@ public class MainWindowController {
 
       DashboardData dashboardData = JsonBuilder.forSaveFile().fromJson(reader, DashboardData.class);
       setDashboard(dashboardData.getTabPane());
-      centerSplitPane.setDividerPositions(dashboardData.getDividerPosition());
+      Platform.runLater(() -> {
+        centerSplitPane.setDividerPositions(dashboardData.getDividerPosition());
+      });
     } catch (Exception e) {
       log.log(Level.WARNING, "Couldn't load", e);
       return;
