@@ -82,6 +82,7 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
             String[] urls = removeCameraProtocols(entryNotification.value.getStringArray());
             if (camera == null) {
               camera = new HttpCamera(name, urls);
+              videoSink.setSource(camera);
             } else if (EqualityUtils.isDifferent(camera.getUrls(), urls)) {
               camera.setUrls(urls);
             }
