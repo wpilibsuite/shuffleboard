@@ -1,9 +1,9 @@
 package edu.wpi.first.shuffleboard.app.components;
 
-import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
 import edu.wpi.first.shuffleboard.api.util.GridPoint;
 import edu.wpi.first.shuffleboard.api.util.RoundingMode;
 import edu.wpi.first.shuffleboard.api.widget.TileSize;
+import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
 
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
@@ -28,12 +28,13 @@ import static com.google.common.base.Preconditions.checkArgument;
 /**
  * A pane that represents components as tiles in a grid.
  */
+@SuppressWarnings("PMD.GodClass") // This is not even close to being a god class
 @DefaultProperty("children")
 public class TilePane extends GridPane {
 
   private static final int DEFAULT_COL_COUNT = 1;
   private static final int DEFAULT_ROW_COUNT = 1;
-  private static final double MIN_TILE_SIZE = 64; // pixels
+  private static final double MIN_TILE_SIZE = 32; // pixels
 
   private final ObjectProperty<Integer> numColumns =
       new SimpleObjectProperty<>(this, "numColumns", 0);
@@ -78,6 +79,17 @@ public class TilePane extends GridPane {
 
     setNumColumns(numColumns);
     setNumRows(numRows);
+
+    // Make sure the tile size is always at least the minimum allowable
+    tileSize.addListener((__, oldSize, newSize) -> {
+      if (newSize.doubleValue() < MIN_TILE_SIZE) {
+        if (oldSize.doubleValue() < MIN_TILE_SIZE) {
+          setTileSize(MIN_TILE_SIZE);
+        } else {
+          setTileSize(oldSize.doubleValue());
+        }
+      }
+    });
   }
 
   private ColumnConstraints createColumnConstraint() {
@@ -409,6 +421,9 @@ public class TilePane extends GridPane {
     return false;
   }
 
+  /**
+   * Gets the layout of a tile in this tile pane.
+   */
   public TileLayout getTileLayout(Tile<?> tile) {
     return new TileLayout(new GridPoint(getColumnIndex(tile), getRowIndex(tile)), tile.getSize());
   }

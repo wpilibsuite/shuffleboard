@@ -1,6 +1,6 @@
 package edu.wpi.first.shuffleboard.app;
 
-import edu.wpi.first.shuffleboard.api.components.WidgetPropertySheet;
+import edu.wpi.first.shuffleboard.api.components.ExtendedPropertySheet;
 import edu.wpi.first.shuffleboard.api.dnd.DataFormats;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.DummySource;
@@ -70,6 +70,13 @@ public class WidgetPaneController {
 
   private final Map<Node, Boolean> tilesAlreadySetup = new WeakHashMap<>();
 
+  /**
+   * Memoizes the size of a tile that would be added when dropping a source or widget. Memoizing prevents calling
+   * potentially expensive component initialization code every time the mouse moves when previewing the location of a
+   * tile for a source or widget.
+   */
+  private TileSize tilePreviewSize = null;
+
   @FXML
   private void initialize() {
 
@@ -90,11 +97,12 @@ public class WidgetPaneController {
     pane.setOnDragOver(event -> {
       event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
       GridPoint point = pane.pointAt(event.getX(), event.getY());
-      boolean isWidget = event.getDragboard().hasContent(DataFormats.widgetTile);
+      boolean isWidgetTile = event.getDragboard().hasContent(DataFormats.widgetTile);
       boolean isSource = event.getDragboard().hasContent(DataFormats.source);
+      boolean isWidget = event.getDragboard().hasContent(DataFormats.widgetType);
 
       // preview the location of the widget if one is being dragged
-      if (isWidget) {
+      if (isWidgetTile) {
         pane.setHighlight(true);
         pane.setHighlightPoint(point);
         DataFormats.WidgetData data = (DataFormats.WidgetData) event.getDragboard().getContent(DataFormats.widgetTile);
@@ -111,11 +119,37 @@ public class WidgetPaneController {
         Optional<String> componentName = Components.getDefault().pickComponentNameFor(source.getDataType());
         Optional<DataSource<?>> dummySource = DummySource.forTypes(source.getDataType());
         if (componentName.isPresent() && dummySource.isPresent()) {
-          Components.getDefault().createComponent(componentName.get(), dummySource.get()).ifPresent(c -> {
+          if (tilePreviewSize == null) {
+            Components.getDefault().createComponent(componentName.get(), dummySource.get())
+                .map(pane::sizeOfWidget)
+                .ifPresent(size -> tilePreviewSize = size);
+          }
+          if (tilePreviewSize == null) {
+            pane.setHighlight(false);
+          } else {
             pane.setHighlight(true);
             pane.setHighlightPoint(point);
-            pane.setHighlightSize(pane.sizeOfWidget(c));
-          });
+            pane.setHighlightSize(tilePreviewSize);
+          }
+        }
+      } else if (isWidget) {
+        if (!pane.isOpen(point, new TileSize(1, 1), n -> false)) {
+          // Dragged a widget onto a tile, can't drop
+          pane.setHighlight(false);
+          return;
+        }
+        String componentType = (String) event.getDragboard().getContent(DataFormats.widgetType);
+        if (tilePreviewSize == null) {
+          Components.getDefault().createComponent(componentType)
+              .map(pane::sizeOfWidget)
+              .ifPresent(size -> tilePreviewSize = size);
+        }
+        if (tilePreviewSize == null) {
+          pane.setHighlight(false);
+        } else {
+          pane.setHighlight(true);
+          pane.setHighlightPoint(point);
+          pane.setHighlightSize(tilePreviewSize);
         }
       }
 
@@ -130,17 +164,20 @@ public class WidgetPaneController {
     pane.setOnDragDropped(event -> {
       Dragboard dragboard = event.getDragboard();
       GridPoint point = pane.pointAt(event.getX(), event.getY());
+      // Dropping a source from the sources tree
       if (dragboard.hasContent(DataFormats.source)) {
         SourceEntry entry = (SourceEntry) dragboard.getContent(DataFormats.source);
         dropSource(entry.get(), point);
       }
 
+      // Dropping a tile onto the pane after moving it around
       if (dragboard.hasContent(DataFormats.widgetTile)) {
         DataFormats.WidgetData data = (DataFormats.WidgetData) dragboard.getContent(DataFormats.widgetTile);
         pane.tileMatching(tile -> tile.getId().equals(data.getId()))
             .ifPresent(tile -> moveTile(tile, point.subtract(data.getDragPoint())));
       }
 
+      // Dropping a widget from the gallery
       if (dragboard.hasContent(DataFormats.widgetType)) {
         String componentType = (String) dragboard.getContent(DataFormats.widgetType);
         Components.getDefault().createComponent(componentType).ifPresent(c -> {
@@ -153,6 +190,7 @@ public class WidgetPaneController {
       }
 
       cleanupWidgetDrag();
+      tilePreviewSize = null;
       event.consume();
     });
 
@@ -316,6 +354,7 @@ public class WidgetPaneController {
 
     tile.setOnDragDropped(event -> {
       Dragboard dragboard = event.getDragboard();
+      // Dragging a source onto a tile
       if (dragboard.hasContent(DataFormats.source) && tile.getContent() instanceof Sourced) {
         SourceEntry entry = (SourceEntry) dragboard.getContent(DataFormats.source);
         ((Sourced) tile.getContent()).addSource(entry.get());
@@ -324,6 +363,7 @@ public class WidgetPaneController {
         return;
       }
 
+      // Moving a layout tile around
       if (dragboard.hasContent(DataFormats.widgetTile) && tile instanceof LayoutTile) {
         DataFormats.WidgetData data = (DataFormats.WidgetData) event.getDragboard().getContent(DataFormats.widgetTile);
 
@@ -340,6 +380,7 @@ public class WidgetPaneController {
         return;
       }
 
+      // Dragging a widget from the gallery
       if (dragboard.hasContent(DataFormats.widgetType) && tile instanceof LayoutTile) {
         String widgetType = (String) dragboard.getContent(DataFormats.widgetType);
 
@@ -351,6 +392,7 @@ public class WidgetPaneController {
         return;
       }
 
+      // Dragging a source from the sources tree
       if (dragboard.hasContent(DataFormats.source) && tile instanceof LayoutTile) {
         SourceEntry entry = (SourceEntry) dragboard.getContent(DataFormats.source);
 
@@ -471,7 +513,7 @@ public class WidgetPaneController {
    */
   private MenuItem createPropertySheetMenu(WidgetTile tile) {
     return FxUtils.menuItem("Edit Properties", event -> {
-      WidgetPropertySheet propertySheet = new WidgetPropertySheet(tile.getContent().getProperties());
+      ExtendedPropertySheet propertySheet = new ExtendedPropertySheet(tile.getContent().getProperties());
       Dialog<ButtonType> dialog = new Dialog<>();
 
       dialog.setTitle("Edit widget properties");
