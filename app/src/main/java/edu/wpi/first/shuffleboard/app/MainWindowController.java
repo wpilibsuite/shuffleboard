@@ -13,6 +13,7 @@ import edu.wpi.first.shuffleboard.api.theme.Theme;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.Storage;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
+import edu.wpi.first.shuffleboard.api.widget.ComponentInstantiationException;
 import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.app.components.DashboardTab;
 import edu.wpi.first.shuffleboard.app.components.DashboardTabPane;
@@ -78,7 +79,7 @@ import static edu.wpi.first.shuffleboard.api.components.SourceTreeTable.branches
 /**
  * Controller for the main UI window.
  */
-@SuppressWarnings("PMD.GodClass") // TODO refactor this class
+@SuppressWarnings("PMD.GodClass") // TODO refactor
 public class MainWindowController {
 
   private static final Logger log = Logger.getLogger(MainWindowController.class.getName());
@@ -277,8 +278,12 @@ public class MainWindowController {
   private MenuItem createShowAsMenuItem(String componentName, DataSource<?> source) {
     MenuItem menuItem = new MenuItem("Show as: " + componentName);
     menuItem.setOnAction(action -> {
-      Components.getDefault().createComponent(componentName, source)
-          .ifPresent(dashboard::addComponentToActivePane);
+      try {
+        Components.getDefault().createComponent(componentName, source)
+            .ifPresent(dashboard::addComponentToActivePane);
+      } catch (ComponentInstantiationException e) {
+        log.log(Level.SEVERE, e.getMessage(), e);
+      }
     });
     return menuItem;
   }

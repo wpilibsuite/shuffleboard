@@ -1,7 +1,6 @@
 package edu.wpi.first.shuffleboard.api.widget;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.Optional;
 
 /**
  * A helper class for creating ComponentTypes from Layout classes and a name.
@@ -22,15 +21,17 @@ public class LayoutClass<T extends Layout> implements LayoutType {
   }
 
   @Override
-  public Layout get() {
-    return Components.viewFor(layoutClass).orElseGet(() -> {
-      try {
+  public Layout get() throws ComponentInstantiationException {
+    try {
+      Optional<T> type = Components.viewFor(layoutClass);
+      if (type.isPresent()) {
+        return type.get();
+      } else {
         return layoutClass.newInstance();
-      } catch (InstantiationException | IllegalAccessException e) {
-        Logger.getLogger("LayoutClass").log(Level.WARNING, "error creating widget", e);
-        return null;
       }
-    });
+    } catch (InstantiationException | IllegalAccessException | RuntimeException e) {
+      throw new ComponentInstantiationException(this, e);
+    }
   }
 
   @Override

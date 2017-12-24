@@ -1,14 +1,16 @@
 package edu.wpi.first.shuffleboard.plugin.networktables.sources;
 
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.shuffleboard.api.data.ComplexDataType;
 import edu.wpi.first.shuffleboard.api.data.DataType;
+import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.sources.AbstractDataSource;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.util.AsyncUtils;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
+
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -36,11 +38,8 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
    * (for composite sources).
    *
    * @param fullTableKey the full path
+   * @param dataType the data type of the source
    */
-  protected NetworkTableSource(String fullTableKey) {
-    this(fullTableKey, NetworkTableUtils.dataTypeForEntry(fullTableKey));
-  }
-
   protected NetworkTableSource(String fullTableKey, DataType<T> dataType) {
     super(dataType);
     this.fullTableKey = NetworkTable.normalizeKey(fullTableKey, true);
@@ -116,14 +115,19 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
     final String uri = NetworkTableSourceType.getInstance().toUri(key);
     if (NetworkTableUtils.rootTable.containsKey(key)) {
       // Key-value pair
-      return sources.computeIfAbsent(uri, __ ->
-          new SingleKeyNetworkTableSource<>(NetworkTableUtils.rootTable, key,
-              NetworkTableUtils.dataTypeForEntry(key)));
+      Optional<DataType> dataType = NetworkTableUtils.dataTypeForEntry(key);
+      if (dataType.isPresent()) {
+        return sources.computeIfAbsent(uri, __ ->
+            new SingleKeyNetworkTableSource<>(NetworkTableUtils.rootTable, key, dataType.get()));
+      } else {
+        return DataSource.none();
+      }
     }
     if (NetworkTableUtils.rootTable.containsSubTable(key) || key.isEmpty()) {
       // Composite
+      DataType dataType = NetworkTableUtils.dataTypeForEntry(key).orElse(DataTypes.Map);
       return sources.computeIfAbsent(uri, __ ->
-          new CompositeNetworkTableSource(key, (ComplexDataType) NetworkTableUtils.dataTypeForEntry(key)));
+          new CompositeNetworkTableSource(key, (ComplexDataType) dataType));
     }
     return DataSource.none();
   }

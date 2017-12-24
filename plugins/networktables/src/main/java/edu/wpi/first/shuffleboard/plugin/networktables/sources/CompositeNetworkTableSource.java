@@ -4,12 +4,14 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.shuffleboard.api.data.ComplexData;
 import edu.wpi.first.shuffleboard.api.data.ComplexDataType;
+import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.sources.Sources;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * A network table source for composite data, ie data stored in multiple key-value pairs or nested
@@ -46,7 +48,8 @@ public class CompositeNetworkTableSource<D extends ComplexData<D>> extends Netwo
       } else {
         backingMap.put(relativeKey, value);
       }
-      setActive(Objects.equals(NetworkTableUtils.dataTypeForEntry(fullTableKey), dataType));
+      Optional<DataType> type = NetworkTableUtils.dataTypeForEntry(fullTableKey);
+      setActive(type.map(t -> Objects.equals(t, dataType)).orElse(false));
       setData(dataType.fromMap(backingMap));
     });
 

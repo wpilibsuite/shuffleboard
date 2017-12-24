@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -205,13 +206,21 @@ public class DataTypes extends Registry<DataType> {
       if (naive.isPresent()) {
         return naive;
       } else {
-        // Check Java class hierarchy
-        Comparator<Class<?>> classComparator = closestTo(type);
-        // This stream MUST be sequential to work correctly
-        return dataTypes.values().stream()
+        final List<DataType> types = dataTypes.values().stream()
             .filter(t -> t != All)
-            .sorted((t1, t2) -> classComparator.reversed().compare(t1.getJavaClass(), t2.getJavaClass()))
-            .findFirst();
+            .filter(t -> t.getJavaClass() != null)
+            .collect(Collectors.toList());
+
+        if (types.stream().noneMatch(t -> distance(t.getJavaClass(), type) != Integer.MAX_VALUE)) {
+          return Optional.empty();
+        } else {
+          // Check Java class hierarchy
+          Comparator<Class<?>> classComparator = closestTo(type);
+          // This stream MUST be sequential to work correctly
+          return types.stream()
+              .sorted((t1, t2) -> classComparator.reversed().compare(t1.getJavaClass(), t2.getJavaClass()))
+              .findFirst();
+        }
       }
     });
   }
@@ -328,7 +337,7 @@ public class DataTypes extends Registry<DataType> {
   }
 
   public static boolean isCompatible(DataType type, Collection<? extends DataType> types) {
-    return All.equals(type) || types.contains(All) || types.contains(type);
+    return !None.equals(type) && (All.equals(type) || types.contains(All) || types.contains(type));
   }
 
 }

@@ -8,6 +8,7 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 /**
@@ -66,25 +67,25 @@ public final class NetworkTableUtils {
    *
    * @return the data type most closely associated with the given key
    */
-  public static DataType dataTypeForEntry(String key) {
+  public static Optional<DataType> dataTypeForEntry(String key) {
     String normalKey = NetworkTable.normalizeKey(key, false);
     if (normalKey.isEmpty() || "/".equals(normalKey)) {
-      return DataTypes.Map;
+      return Optional.of(DataTypes.Map);
     }
     if (rootTable.containsKey(normalKey)) {
-      return DataTypes.getDefault().forJavaType(rootTable.getEntry(normalKey).getValue().getValue().getClass()).get();
+      return (Optional) DataTypes.getDefault().forJavaType(
+          rootTable.getEntry(normalKey).getValue().getValue().getClass());
     }
     if (rootTable.containsSubTable(normalKey)) {
       NetworkTable table = rootTable.getSubTable(normalKey);
       String type = table.getEntry("~TYPE~").getString(table.getEntry(".type").getString(null));
       if (type == null) {
-        return DataTypes.Map;
+        return Optional.of(DataTypes.Map);
       } else {
-        return DataTypes.getDefault().forName(type)
-            .orElse(DataTypes.Map);
+        return DataTypes.getDefault().forName(type);
       }
     }
-    return null;
+    return Optional.empty();
   }
 
   /**

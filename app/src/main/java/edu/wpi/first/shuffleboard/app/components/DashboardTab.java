@@ -11,6 +11,7 @@ import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 import edu.wpi.first.shuffleboard.api.widget.ComponentContainer;
+import edu.wpi.first.shuffleboard.api.widget.ComponentInstantiationException;
 import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.api.widget.Sourced;
 import edu.wpi.first.shuffleboard.app.Autopopulator;
@@ -23,6 +24,8 @@ import org.fxmisc.easybind.EasyBind;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import javafx.beans.property.BooleanProperty;
@@ -40,6 +43,8 @@ import javafx.scene.control.Tab;
 import javafx.scene.layout.BorderPane;
 
 public class DashboardTab extends Tab implements HandledTab, Populatable {
+
+  private static final Logger log = Logger.getLogger(DashboardTab.class.getName());
 
   private final ObjectProperty<WidgetPane> widgetPane = new SimpleObjectProperty<>(this, "widgetPane");
   private final StringProperty title = new SimpleStringProperty(this, "title", "");
@@ -259,15 +264,19 @@ public class DashboardTab extends Tab implements HandledTab, Populatable {
 
     if (targets.isEmpty()) {
       // No nested components capable of adding a component for the source, add it to the root widget pane
-      Components.getDefault().defaultComponentNameFor(source.getDataType())
-          .flatMap(s -> Components.getDefault().createComponent(s, source))
-          .ifPresent(c -> {
-            c.setTitle(source.getName());
-            getWidgetPane().addComponent(c);
-            if (c instanceof Populatable) {
-              Autopopulator.getDefault().addTarget((Populatable) c);
-            }
-          });
+      try {
+        Components.getDefault().defaultComponentNameFor(source.getDataType())
+            .flatMap(s -> Components.getDefault().createComponent(s, source))
+            .ifPresent(c -> {
+              c.setTitle(source.getName());
+              getWidgetPane().addComponent(c);
+              if (c instanceof Populatable) {
+                Autopopulator.getDefault().addTarget((Populatable) c);
+              }
+            });
+      } catch (ComponentInstantiationException e) {
+        log.log(Level.WARNING, "Could not add component for source " + source.getId(), e);
+      }
     } else {
       // Add a component everywhere possible
       targets.forEach(t -> t.addComponentIfPossible(source));
