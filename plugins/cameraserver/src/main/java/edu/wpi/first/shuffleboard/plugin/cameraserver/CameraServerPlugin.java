@@ -1,11 +1,9 @@
 package edu.wpi.first.shuffleboard.plugin.cameraserver;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-
-import edu.wpi.cscore.CameraServerJNI;
 import edu.wpi.first.shuffleboard.api.data.DataType;
+import edu.wpi.first.shuffleboard.api.plugin.Description;
 import edu.wpi.first.shuffleboard.api.plugin.Plugin;
+import edu.wpi.first.shuffleboard.api.plugin.Requires;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.recording.serialization.TypeAdapter;
 import edu.wpi.first.shuffleboard.api.widget.ComponentType;
@@ -15,23 +13,27 @@ import edu.wpi.first.shuffleboard.plugin.cameraserver.recording.serialization.Ca
 import edu.wpi.first.shuffleboard.plugin.cameraserver.source.CameraServerSourceType;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.widget.CameraServerWidget;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+
+import edu.wpi.cscore.CameraServerJNI;
+
 import org.opencv.core.Core;
 
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
+@Description(
+    group = "edu.wpi.first.shuffleboard",
+    name = "CameraServer",
+    version = "1.0.0",
+    summary = "Provides sources and widgets for viewing CameraServer MJPEG streams"
+)
+@Requires(group = "edu.wpi.first.shuffleboard", name = "NetworkTables", minVersion = "1.0.0")
 public class CameraServerPlugin extends Plugin {
 
   private static final Logger log = Logger.getLogger(CameraServerPlugin.class.getName());
-
-  @SuppressWarnings("JavadocMethod")
-  public CameraServerPlugin() {
-    super("edu.wpi.first.shuffleboard",
-        "CameraServer",
-        "1.0.0",
-        "Provides sources and widgets for viewing CameraServer MJPEG streams.");
-  }
 
   @Override
   public void onLoad() {

@@ -78,8 +78,8 @@ public class Shuffleboard extends Application {
 
     Recorder.getInstance().start();
 
-    PluginLoader.getDefault().load(new CameraServerPlugin());
     PluginLoader.getDefault().load(new NetworkTablesPlugin());
+    PluginLoader.getDefault().load(new CameraServerPlugin());
     PluginLoader.getDefault().loadAllJarsFromDir(Storage.getPluginPath());
 
     // Load the most recent save file after loading all plugins
