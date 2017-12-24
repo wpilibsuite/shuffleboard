@@ -22,15 +22,31 @@ public abstract class AbstractWidget implements Widget {
 
   private final ObservableList<Property<?>> properties = FXCollections.observableArrayList();
 
+  /**
+   * Only set the title when the sources change if it hasn't been set externally (eg by a user or an enclosing layout).
+   */
+  private boolean useGeneratedTitle = true;
+
   protected AbstractWidget() {
     sources.addListener((InvalidationListener) __ -> {
-      if (sources.size() == 1) {
-        setTitle(sources.get(0).getName());
-      } else {
-        setTitle(getName() + " (" + sources.size() + " sources)");
+      if (getTitle().isEmpty()) {
+        useGeneratedTitle = true;
+      }
+      if (useGeneratedTitle) {
+        if (sources.size() == 1) {
+          title.set(sources.get(0).getName());
+        } else {
+          title.set(getName() + " (" + sources.size() + " sources)");
+        }
       }
       getView().setDisable(sources.stream().anyMatch(s -> !s.isConnected()));
     });
+  }
+
+  @Override
+  public void setTitle(String title) {
+    Widget.super.setTitle(title);
+    useGeneratedTitle = title == null || title.isEmpty();
   }
 
   /**
