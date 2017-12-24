@@ -5,7 +5,6 @@ import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
 import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
 
 import javafx.scene.image.Image;
 import javafx.scene.image.PixelFormat;
@@ -23,7 +22,6 @@ import static org.opencv.imgproc.Imgproc.INTER_CUBIC;
  */
 public final class ImageConverter {
 
-  private static final PixelFormat<IntBuffer> argbPixelFormat = PixelFormat.getIntArgbInstance();
   private WritableImage image;
   private byte[] data;
   private ByteBuffer buffer;
