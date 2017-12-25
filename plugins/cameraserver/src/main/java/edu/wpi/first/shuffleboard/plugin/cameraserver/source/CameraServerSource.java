@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.plugin.cameraserver.source;
 
+import edu.wpi.cscore.CameraServerJNI;
 import edu.wpi.cscore.CvSink;
 import edu.wpi.cscore.HttpCamera;
 import edu.wpi.first.networktables.NetworkTable;
@@ -40,6 +41,7 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
   private final NetworkTableEntry streams;
   private static final String STREAMS_KEY = "streams";
   private static final String[] emptyStringArray = new String[0];
+  private final int eventListenerId;
   private HttpCamera camera;
   private final CvSink videoSink;
   private final Mat imageStorage = new Mat();
@@ -59,17 +61,38 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
     super(CameraServerDataType.INSTANCE);
     setName(name);
     videoSink = new CvSink(name + "-videosink");
+    eventListenerId = CameraServerJNI.addListener(e -> {
+      if (e.name.equals(name)) {
+        switch (e.kind) {
+          case kSourceConnected:
+            setConnected(true);
+            break;
+          case kSourceDisconnected:
+            setConnected(false);
+            break;
+          default:
+            // don't care
+            break;
+        }
+      }
+    }, 0xFF, true);
 
     streams = cameraPublisherTable.getSubTable(name).getEntry(STREAMS_KEY);
     String[] streamUrls = removeCameraProtocols(streams.getStringArray(emptyStringArray));
     if (streamUrls.length > 0) {
       camera = new HttpCamera(name, streamUrls);
       videoSink.setSource(camera);
+      videoSink.setEnabled(true);
     }
 
+    connected.addListener((__, was, is) -> {
+      if (!is) {
+        // Only listen to changes in the streams when there's a connection
+        streams.removeListener(streamsListener);
+      }
+    });
+
     enabledListener = (__, was, is) -> {
-      // Disable the stream when not active or not connected to save on bandwidth
-      videoSink.setEnabled(is);
       if (is) {
         data.addListener(recordingListener);
         frameFuture = frameGrabberService.submit(this::grabForever);
@@ -82,6 +105,7 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
             String[] urls = removeCameraProtocols(entryNotification.value.getStringArray());
             if (camera == null) {
               camera = new HttpCamera(name, urls);
+              videoSink.setSource(camera);
             } else if (EqualityUtils.isDifferent(camera.getUrls(), urls)) {
               camera.setUrls(urls);
             }
@@ -91,13 +115,11 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
       } else {
         data.removeListener(recordingListener);
         cancelFrameGrabber();
-        streams.removeListener(streamsListener);
       }
     };
     enabled.addListener(enabledListener);
 
     setActive(camera != null && camera.getUrls().length > 0);
-    setConnected(true);
   }
 
   private void cancelFrameGrabber() {
@@ -180,6 +202,7 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
   public void close() {
     streams.removeListener(streamsListener);
     enabled.removeListener(enabledListener);
+    CameraServerJNI.removeListener(eventListenerId);
     cancelFrameGrabber();
     sources.remove(getName());
   }
