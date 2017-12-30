@@ -10,6 +10,8 @@ import edu.wpi.first.shuffleboard.plugin.base.data.SpeedControllerData;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 import org.fxmisc.easybind.EasyBind;
 import org.fxmisc.easybind.monadic.MonadicBinding;
 
@@ -28,7 +30,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
-import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
 
@@ -171,7 +172,13 @@ public final class DifferentialDriveWidget extends AbstractDriveWidget<Different
     return driveBase;
   }
 
+  @SuppressFBWarnings(value = "DLS_DEAD_LOCAL_STORE", justification = "FindBugs is bugged on final local variables")
   private Shape drawMotionVector(double left, double right) {
+    // Barely moving, or not moving at all. Curved arrows look weird at low radii, so show an X instead
+    if (Math.abs(left) <= 0.05 && Math.abs(right) <= 0.05) {
+      return generateX(25);
+    }
+
     // Max radius is half of the narrowest dimension, minus padding to avoid clipping with the frame
     final double maxRadius = Math.min(FRAME_WIDTH, FRAME_HEIGHT) / 2 - 8;
     final double arrowheadSize = 8;
@@ -180,11 +187,10 @@ public final class DifferentialDriveWidget extends AbstractDriveWidget<Different
       // Using a threshold instead of a simpler `if(left == right)` avoids edge cases where left and right are very
       // close, which can cause floating-point issues with extremely large radii (on the order of 1E15 pixels)
       // and extremely small arc lengths (on the order of 1E-15 degrees)
-      if (left == 0) {
-        return generateX(25);
-      } else {
-        return generateStraightArrow(left, maxRadius, arrowheadSize);
-      }
+      Shape arrow =
+          CurvedArrow.createStraight(Math.abs(left * maxRadius), -Math.signum(left) * Math.PI / 2, 0, arrowheadSize);
+      arrow.getStyleClass().add("robot-direction-vector");
+      return arrow;
     }
     // Moving in an arc
 
@@ -223,41 +229,6 @@ public final class DifferentialDriveWidget extends AbstractDriveWidget<Different
       }
     }
 
-    arrow.getStyleClass().add("robot-direction-vector");
-    return arrow;
-  }
-
-  /**
-   * Generates an X-shape.
-   *
-   * @param w the width of the X to generate
-   */
-  private static Shape generateX(double w) {
-    final double halfW = w / 2;
-    Line lineA = new Line(-halfW, -halfW, halfW, halfW);
-    Line lineB = new Line(-halfW, halfW, halfW, -halfW);
-    Shape x = union(lineA, lineB);
-    x.getStyleClass().add("robot-direction-vector");
-    return x;
-  }
-
-  /**
-   * Generates an arrow along the Y-axis.
-   *
-   * @param speed         the speed of the robot, in the range {@code (-1, 1)}
-   * @param maxLength     the maximum length of the arrow
-   * @param arrowheadSize the length of the arrowhead
-   */
-  private static Shape generateStraightArrow(double speed, double maxLength, double arrowheadSize) {
-    final double halfSize = arrowheadSize / 2;
-    // -speed because positive Y-values are DOWN, while the robot is oriented such that
-    // positive Y-values for robot motion are shown as UP (towards the top of the screen)
-    Line line = new Line(0, 0, 0, -speed * maxLength);
-    Shape arrowHead = new Polygon(-arrowheadSize / 2, 0, 0, -Math.signum(speed) * arrowheadSize, halfSize, 0);
-    arrowHead.setFill(Color.WHITE);
-    arrowHead.setStroke(Color.WHITE);
-    arrowHead.setTranslateY(line.getEndY());
-    Shape arrow = union(line, arrowHead);
     arrow.getStyleClass().add("robot-direction-vector");
     return arrow;
   }

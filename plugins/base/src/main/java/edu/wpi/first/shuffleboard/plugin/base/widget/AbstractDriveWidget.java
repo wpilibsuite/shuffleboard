@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.function.BiFunction;
 import java.util.function.ToDoubleFunction;
 
+import javafx.scene.shape.Line;
 import javafx.scene.shape.Shape;
 
 /**
@@ -20,10 +21,10 @@ public abstract class AbstractDriveWidget<T> extends SimpleAnnotatedWidget<T> {
   /**
    * Creates a subsource for a specific motor in a drive base.
    *
-   * @param source the source for the drive base data
-   * @param motor  the motor name (eg "Left Motor" or "Right Motor")
-   * @param getter the getter (eg {@code DifferentialDriveData::getLeftSpeed})
-   * @param setter the setter (eg {@code DifferentialDriveData::withLeftSpeed})
+   * @param source    the source for the drive base data
+   * @param motorName the motor name (eg "Left Motor" or "Right Motor")
+   * @param getter    the getter (eg {@code DifferentialDriveData::getLeftSpeed})
+   * @param setter    the setter (eg {@code DifferentialDriveData::withLeftSpeed})
    */
   protected DataSource<SpeedControllerData> motorSource(DataSource<T> source,
                                                         String motorName,
@@ -35,6 +36,20 @@ public abstract class AbstractDriveWidget<T> extends SimpleAnnotatedWidget<T> {
         d -> setter.apply(dataOrDefault.get(), d == null ? 0.0 : d.getValue()),
         d -> new SpeedControllerData(motorName, d == null ? 0.0 : getter.applyAsDouble(d))
     );
+  }
+
+  /**
+   * Generates an X-shape centered at <tt>(0, 0)</tt>.
+   *
+   * @param width the width of the X to generate
+   */
+  protected static Shape generateX(double width) {
+    final double halfW = width / 2;
+    Line lineA = new Line(-halfW, -halfW, halfW, halfW);
+    Line lineB = new Line(-halfW, halfW, halfW, -halfW);
+    Shape x = union(lineA, lineB);
+    x.getStyleClass().add("robot-direction-vector");
+    return x;
   }
 
   /**
@@ -62,12 +77,22 @@ public abstract class AbstractDriveWidget<T> extends SimpleAnnotatedWidget<T> {
       case 1:
         return shapes[0];
       case 2:
-        return Shape.union(shapes[0], shapes[1]);
+        if (shapes[0] == null) {
+          return shapes[1];
+        } else if (shapes[1] == null) {
+          return shapes[0];
+        } else {
+          return Shape.union(shapes[0], shapes[1]);
+        }
       default:
         Shape union = shapes[0];
         for (int i = 1; i < shapes.length; i++) {
           Shape shape = shapes[i];
-          union = Shape.union(union, shape);
+          if (union == null) {
+            union = shape;
+          } else if (shape != null) {
+            union = Shape.union(union, shape);
+          }
         }
         return union;
     }

@@ -2,9 +2,9 @@ package edu.wpi.first.shuffleboard.plugin.base.data;
 
 import edu.wpi.first.shuffleboard.api.data.ComplexData;
 import edu.wpi.first.shuffleboard.api.util.Maps;
+import edu.wpi.first.shuffleboard.api.util.Vector2D;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.sun.javafx.geom.Vec2d;
 
 import java.util.Map;
 import java.util.Objects;
@@ -24,7 +24,7 @@ public final class MecanumDriveData extends ComplexData<MecanumDriveData> {
   private final double rearLeftSpeed;
   private final double rearRightSpeed;
   private final double moment;
-  private final Vec2d direction;
+  private final Vector2D direction;
   private final double turn;
 
   /**
@@ -101,7 +101,7 @@ public final class MecanumDriveData extends ComplexData<MecanumDriveData> {
    * Gets a vector describing the direction of movement of the drive base. This vector is derived from the motor speeds
    * and has a magnitude in the range <tt>(-1, 1)</tt>.
    */
-  public Vec2d getDirection() {
+  public Vector2D getDirection() {
     return direction;
   }
 
@@ -137,8 +137,8 @@ public final class MecanumDriveData extends ComplexData<MecanumDriveData> {
    * <tt>(-1, 1)</tt>.
    */
   @VisibleForTesting
-  static Vec2d calculateDirectionVector(double fl, double fr, double rl, double rr) {
-    return new Vec2d(
+  static Vector2D calculateDirectionVector(double fl, double fr, double rl, double rr) {
+    return new Vector2D(
         (fl - fr - rl + rr) / 4,
         (fl + fr + rl + rr) / 4
     );

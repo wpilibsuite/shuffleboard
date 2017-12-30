@@ -281,7 +281,3 @@
 .robot-drive {
     -fx-fill: #666;
 }
-
-.robot-moment-arc {
-    -fx-fill: -swatch-100;
-}

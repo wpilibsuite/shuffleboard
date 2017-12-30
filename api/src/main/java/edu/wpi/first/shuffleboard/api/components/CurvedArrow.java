@@ -3,6 +3,7 @@ package edu.wpi.first.shuffleboard.api.components;
 import javafx.geometry.Point2D;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Arc;
+import javafx.scene.shape.Line;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Shape;
 
@@ -15,6 +16,22 @@ public final class CurvedArrow {
 
   private CurvedArrow() {
     throw new UnsupportedOperationException("This is a utility class!");
+  }
+
+  /**
+   * Creates a straight arrow, which is just a curved arrow with an infinite radius.
+   *
+   * @param length   the length of the arrow
+   * @param angle    the angle of the arrow, in radians
+   * @param xOffset  how much to offset the arrow along the X-axis
+   * @param headSize the length of the head of the arrow
+   */
+  public static Shape createStraight(double length, double angle, double xOffset, double headSize) {
+    double x = Math.cos(angle) * length;
+    double y = Math.sin(angle) * length;
+    Line body = new Line(xOffset, 0, x + xOffset, y);
+    Shape head = straightHead(angle, headSize, xOffset, length);
+    return Shape.union(body, head);
   }
 
   /**
@@ -41,9 +58,13 @@ public final class CurvedArrow {
     if (headSize < 0) {
       throw new IllegalArgumentException("The size of the arrowhead cannot be negative. Given: " + headSize);
     }
+    if (radius == Double.POSITIVE_INFINITY) {
+      // infinite radius = straight
+      return createStraight(length, startAngle, xOffset, headSize);
+    }
     return Shape.union(
         makeBody(startAngle, radius, length, xOffset),
-        makeHead(startAngle, headSize, radius, xOffset, length)
+        curvedHead(startAngle, headSize, radius, xOffset, length)
     );
   }
 
@@ -94,14 +115,38 @@ public final class CurvedArrow {
   }
 
   /**
-   * Generates the head of the arrow.
+   * Generates the head of a straight arrow.
+   */
+  private static Triangle straightHead(double startAngle, double size, double xOffset, double bodyLength) {
+    final double base = size / 2;
+
+    // Unit vector to the end of the shaft
+    double ux = Math.cos(startAngle);
+    double uy = Math.sin(startAngle);
+
+    // Unit vector to the center of the base of the head
+    double bx = Math.cos(startAngle + Math.PI / 2) * base; // ==  Math.sin(startAngle)
+    double by = Math.sin(startAngle + Math.PI / 2) * base; // == -Math.cos(startAngle)
+
+    Point2D basePoint1 = new Point2D(ux * bodyLength - bx + xOffset, uy * bodyLength - by);
+    Point2D basePoint2 = new Point2D(ux * bodyLength + bx + xOffset, uy * bodyLength + by);
+    Point2D tip = new Point2D(ux * (size + bodyLength) + xOffset, uy * (size + bodyLength));
+    return new Triangle(basePoint1, basePoint2, tip);
+  }
+
+  /**
+   * Generates the head of a curved arrow.
    *
    * @param startAngle the starting angle of the arc, in radians
    * @param size       the length of the arrow head
    * @param arcRadius  the radius of the arc of the arrow
    * @param arcLength  the length of the arc of the arrow
    */
-  private static Triangle makeHead(double startAngle, double size, double arcRadius, double xOffset, double arcLength) {
+  private static Triangle curvedHead(double startAngle,
+                                     double size,
+                                     double arcRadius,
+                                     double xOffset,
+                                     double arcLength) {
     // Half the length of the triangle
     final double base = size / 2;
 
