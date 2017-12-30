@@ -58,4 +58,20 @@ public final class TypeUtils {
   public static <T> Function<Optional<T>, Stream<T>> optionalStream() {
     return value -> value.map(Stream::of).orElseGet(Stream::empty);
   }
+
+  /**
+   * Tries to create a new instance of {@code T} using a public no-arg ("default") constructor.
+   *
+   * @param type the type to create a new instance of
+   * @param <T>  the type of the object to be created
+   *
+   * @return a new instance of {@code T} created with a constructor matching the given arguments
+   *
+   * @throws IllegalAccessException if the constructor matching the given arguments is not public
+   * @throws InstantiationException if the class is abstract
+   */
+  public static <T> T tryInstantiate(Class<T> type) throws IllegalAccessException, InstantiationException {
+    return type.newInstance();
+  }
+
 }

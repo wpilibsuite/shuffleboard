@@ -17,6 +17,8 @@ import org.testfx.framework.junit5.ApplicationTest;
 
 import java.util.stream.Stream;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 /**
  * Tests all widgets with all possible data types to make sure they all
  */
@@ -40,6 +42,13 @@ public class AllWidgetSanityTest extends ApplicationTest {
   public void testCreateWidget(WidgetType<?> widgetType, DataType<?> dataType) {
     Widget widget = widgetType.get();
     widget.addSource(DummySource.forType(dataType));
+  }
+
+  @ParameterizedTest
+  @MethodSource("createWidgetMap")
+  public void testNonNullView(WidgetType<?> widgetType, DataType<?> dataType) {
+    Widget widget = widgetType.get();
+    assertNotNull(widget.getView(), "No view for " + widgetType.getName());
   }
 
   private static Stream<Arguments> createWidgetMap() {

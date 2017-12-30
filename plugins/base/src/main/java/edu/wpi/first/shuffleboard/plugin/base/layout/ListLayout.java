@@ -17,6 +17,8 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
+import javafx.scene.control.Label;
+import javafx.scene.control.OverrunStyle;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
@@ -47,6 +49,7 @@ public class ListLayout implements Layout {
     pane.getStyleClass().add("layout-stack");
     EditableLabel label = new EditableLabel(widget.titleProperty());
     label.getStyleClass().add("layout-label");
+    ((Label) label.lookup(".label")).setTextOverrun(OverrunStyle.LEADING_ELLIPSIS);
     BorderPane.setAlignment(label, Pos.TOP_LEFT);
     pane.setBottom(label);
     return pane;

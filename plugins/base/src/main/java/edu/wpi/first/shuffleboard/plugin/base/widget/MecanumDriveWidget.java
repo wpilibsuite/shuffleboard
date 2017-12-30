@@ -44,10 +44,10 @@ public final class MecanumDriveWidget extends AbstractDriveWidget<MecanumDriveDa
   private final BooleanProperty showForceVectors = new SimpleBooleanProperty(this, "showForceVectors", true);
   private static final int vectorRadius = 60;
 
-  private final SpeedController fl = Components.viewFor(SpeedController.class).get();
-  private final SpeedController fr = Components.viewFor(SpeedController.class).get();
-  private final SpeedController rl = Components.viewFor(SpeedController.class).get();
-  private final SpeedController rr = Components.viewFor(SpeedController.class).get();
+  private final SpeedControllerWidget fl = Components.viewFor(SpeedControllerWidget.class).get();
+  private final SpeedControllerWidget fr = Components.viewFor(SpeedControllerWidget.class).get();
+  private final SpeedControllerWidget rl = Components.viewFor(SpeedControllerWidget.class).get();
+  private final SpeedControllerWidget rr = Components.viewFor(SpeedControllerWidget.class).get();
   private MonadicBinding<DataSource<SpeedControllerData>> frontLeftMotorSource;  //NOPMD could be local variable
   private MonadicBinding<DataSource<SpeedControllerData>> frontRightMotorSource; //NOPMD could be local variable
   private MonadicBinding<DataSource<SpeedControllerData>> rearLeftMotorSource;   //NOPMD could be local variable

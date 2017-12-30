@@ -44,8 +44,8 @@ public final class DifferentialDriveWidget extends AbstractDriveWidget<Different
   @FXML
   private Pane vectorPane;
 
-  private final SpeedController leftController = Components.viewFor(SpeedController.class).get();
-  private final SpeedController rightController = Components.viewFor(SpeedController.class).get();
+  private final SpeedControllerWidget leftController = Components.viewFor(SpeedControllerWidget.class).get();
+  private final SpeedControllerWidget rightController = Components.viewFor(SpeedControllerWidget.class).get();
   private MonadicBinding<DataSource<SpeedControllerData>> leftMotorSource;  //NOPMD could be local variable
   private MonadicBinding<DataSource<SpeedControllerData>> rightMotorSource; //NOPMD could be local variable
 

@@ -37,6 +37,8 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
+import javafx.scene.control.Label;
+import javafx.scene.control.OverrunStyle;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
@@ -67,6 +69,7 @@ public class SubsystemLayout implements Layout, Populatable, Sourced {
     pane.getStyleClass().add("layout-stack");
     EditableLabel label = new EditableLabel(component.titleProperty());
     label.getStyleClass().add("layout-label");
+    ((Label) label.lookup(".label")).setTextOverrun(OverrunStyle.LEADING_ELLIPSIS);
     BorderPane.setAlignment(label, Pos.TOP_LEFT);
     pane.setBottom(label);
     return pane;
@@ -152,8 +155,11 @@ public class SubsystemLayout implements Layout, Populatable, Sourced {
   @Override
   public void addSource(DataSource source) throws IncompatibleSourceException {
     if (source.getDataType() instanceof SubsystemType) {
+      DataSource<?> currentSource = getSource();
       getSources().setAll(source);
-      setTitle(source.getName());
+      if (currentSource == null || getTitle().equals(currentSource.getName())) {
+        setTitle(source.getName());
+      }
     } else {
       throw new IncompatibleSourceException(ImmutableSet.of(new SubsystemType()), source.getDataType());
     }

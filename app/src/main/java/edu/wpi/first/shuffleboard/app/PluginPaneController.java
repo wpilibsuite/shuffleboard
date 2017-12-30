@@ -1,6 +1,7 @@
 package edu.wpi.first.shuffleboard.app;
 
 import edu.wpi.first.shuffleboard.api.plugin.Plugin;
+import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 import edu.wpi.first.shuffleboard.app.plugin.PluginLoader;
 
 import org.fxmisc.easybind.EasyBind;
@@ -12,9 +13,12 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
+import javafx.collections.SetChangeListener;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
@@ -56,21 +60,49 @@ public class PluginPaneController {
         root.getScene().getWindow().hide();
       }
     });
-    nameColumn.setCellValueFactory(param -> new ReadOnlyStringWrapper(param.getValue().idString()));
-    versionColumn.setCellValueFactory(param -> new ReadOnlyStringWrapper(param.getValue().getVersion()));
-    loadedColumn.setCellValueFactory(param -> {
-      Plugin plugin = param.getValue();
-      SimpleBooleanProperty prop = new SimpleBooleanProperty(true);
+    nameColumn.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().idString()));
+    versionColumn.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().getVersion().toString()));
+    loadedColumn.setCellValueFactory(data -> {
+      Plugin plugin = data.getValue();
+      BooleanProperty prop = new SimpleBooleanProperty(plugin.isLoaded());
+      PluginLoader.getDefault().getLoadedPlugins().addListener((SetChangeListener<Plugin>) change -> {
+        if (change.wasRemoved()) {
+          Plugin unloaded = change.getElementRemoved();
+          if (unloaded.equals(plugin)) {
+            prop.setValue(false);
+          }
+        }
+      });
       prop.addListener((__, was, is) -> {
         if (was) {
           PluginLoader.getDefault().unload(plugin);
         } else {
           PluginLoader.getDefault().load(plugin);
         }
+        // Force update the checkboxes to make sure they're disabled when their plugin can't be loaded
+        pluginTable.lookupAll(".check-box-table-cell").stream()
+            .flatMap(TypeUtils.castStream(CheckBoxTableCell.class))
+            .filter(c -> c.getTableColumn() == loadedColumn)
+            .filter(c -> !c.isEmpty())
+            .forEach(c -> c.updateItem(c.getItem(), c.isEmpty()));
       });
       return prop;
     });
-    loadedColumn.setCellFactory(param -> new CheckBoxTableCell<>()); //TODO use toggle switches
+    //TODO use toggle switches?
+    loadedColumn.setCellFactory(column -> new CheckBoxTableCell<Plugin, Boolean>() {
+
+      @Override
+      public void updateItem(Boolean item, boolean empty) {
+        super.updateItem(item, empty);
+        int index = getIndex();
+        ObservableList<Plugin> items = getTableView().getItems();
+        if (!empty && index >= 0 && index < items.size()) {
+          Plugin plugin = items.get(index);
+          setEditable(PluginLoader.getDefault().canLoad(plugin));
+        }
+      }
+
+    });
     pluginTable.setItems(PluginLoader.getDefault().getKnownPlugins());
     pluginTable.getItems().addListener((ListChangeListener<Plugin>) c -> {
       if (pluginTable.getSelectionModel().getSelectedItem() == null) {
@@ -88,7 +120,7 @@ public class PluginPaneController {
     return "Plugin: " + plugin.getName()
         + "\nGroup ID: " + plugin.getGroupId()
         + "\nVersion: " + plugin.getVersion()
-        + "\n\n" + plugin.getDescription();
+        + "\n\n" + plugin.getSummary();
   }
 
   @FXML
