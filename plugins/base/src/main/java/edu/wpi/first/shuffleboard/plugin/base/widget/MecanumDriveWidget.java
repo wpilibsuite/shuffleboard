@@ -97,6 +97,8 @@ public final class MecanumDriveWidget extends AbstractDriveWidget<MecanumDriveDa
     rl.sourceProperty().bind(rearLeftMotorSource);
     rr.sourceProperty().bind(rearRightMotorSource);
 
+    overrideWidgetSize(fl, fr, rl, rr);
+
     leftControls.getChildren().addAll(fl.getView(), rl.getView());
     rightControls.getChildren().addAll(fr.getView(), rr.getView());
 

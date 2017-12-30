@@ -3,13 +3,16 @@ package edu.wpi.first.shuffleboard.plugin.base.widget;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SubSource;
 import edu.wpi.first.shuffleboard.api.widget.SimpleAnnotatedWidget;
+import edu.wpi.first.shuffleboard.api.widget.Widget;
 import edu.wpi.first.shuffleboard.plugin.base.data.SpeedControllerData;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.SpeedControllerType;
 
 import java.util.Collection;
 import java.util.function.BiFunction;
 import java.util.function.ToDoubleFunction;
+import java.util.stream.Stream;
 
+import javafx.scene.layout.Region;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Shape;
 
@@ -17,6 +20,18 @@ import javafx.scene.shape.Shape;
  * An abstract class defining several shared methods for drive base widgets.
  */
 public abstract class AbstractDriveWidget<T> extends SimpleAnnotatedWidget<T> {
+
+  /**
+   * Overrides the intrinsic minimum dimensions of some widgets. This is useful for sane resizing of
+   */
+  protected static void overrideWidgetSize(Widget... widgets) {
+    Stream.of(widgets)
+        .map(Widget::getView)
+        .forEach(v -> {
+          v.setMinWidth(Region.USE_COMPUTED_SIZE);
+          v.setMinHeight(Region.USE_COMPUTED_SIZE);
+        });
+  }
 
   /**
    * Creates a subsource for a specific motor in a drive base.

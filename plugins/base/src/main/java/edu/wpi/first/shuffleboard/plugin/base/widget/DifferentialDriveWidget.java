@@ -67,6 +67,8 @@ public final class DifferentialDriveWidget extends AbstractDriveWidget<Different
             motorSource(s, "Right Motor", DifferentialDriveData::getRightSpeed, DifferentialDriveData::withRightSpeed))
         .orElse(DataSource.none());
 
+    overrideWidgetSize(leftController, rightController);
+
     leftController.setOrientation(Orientation.VERTICAL);
     rightController.setOrientation(Orientation.VERTICAL);
 
