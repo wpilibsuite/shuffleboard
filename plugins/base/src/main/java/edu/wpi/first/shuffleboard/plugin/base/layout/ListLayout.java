@@ -3,7 +3,9 @@ package edu.wpi.first.shuffleboard.plugin.base.layout;
 import edu.wpi.first.shuffleboard.api.components.ActionList;
 import edu.wpi.first.shuffleboard.api.components.EditableLabel;
 import edu.wpi.first.shuffleboard.api.components.ExtendedPropertySheet;
+import edu.wpi.first.shuffleboard.api.util.ListUtils;
 import edu.wpi.first.shuffleboard.api.widget.Component;
+import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.api.widget.Layout;
 import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
@@ -12,6 +14,7 @@ import org.fxmisc.easybind.EasyBind;
 import org.fxmisc.easybind.Subscription;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.WeakHashMap;
 import java.util.stream.Collectors;
 
@@ -91,6 +94,7 @@ public class ListLayout implements Layout {
         dialog.setResultConverter(button -> button);
         dialog.showAndWait();
       });
+      actions.addNested(createChangeMenusForWidget(widget));
     }
 
     actions.addAction("Remove from list", () -> {
@@ -120,6 +124,36 @@ public class ListLayout implements Layout {
     }
 
     return actions;
+  }
+
+  /**
+   * Creates all the menus needed for changing a widget to a different type.
+   */
+  private ActionList createChangeMenusForWidget(Widget widget) {
+    ActionList list = ActionList.withName("Show as...");
+
+    widget.getSources().stream()
+        .map(s -> Components.getDefault().componentNamesForSource(s))
+        .flatMap(List::stream)
+        .sorted()
+        .distinct()
+        .forEach(name -> list.addAction(
+            name,
+            name.equals(widget.getName()) ? new Label("✓") : null,
+            () -> {
+              // no need to change it if it's already the same type
+              if (!name.equals(widget.getName())) {
+                Components.getDefault()
+                    .createWidget(name, widget.getSources())
+                    .ifPresent(w -> {
+                      w.setTitle(widget.getTitle());
+                      ListUtils.replaceIn(widgets)
+                          .replace(widget)
+                          .with(w);
+                    });
+              }
+            }));
+    return list;
   }
 
   @Override
