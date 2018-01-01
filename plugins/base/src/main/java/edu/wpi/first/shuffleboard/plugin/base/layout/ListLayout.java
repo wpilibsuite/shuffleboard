@@ -2,15 +2,18 @@ package edu.wpi.first.shuffleboard.plugin.base.layout;
 
 import edu.wpi.first.shuffleboard.api.components.ActionList;
 import edu.wpi.first.shuffleboard.api.components.EditableLabel;
+import edu.wpi.first.shuffleboard.api.components.ExtendedPropertySheet;
 import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.Layout;
 import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
+import edu.wpi.first.shuffleboard.api.widget.Widget;
 
 import org.fxmisc.easybind.EasyBind;
 import org.fxmisc.easybind.Subscription;
 
 import java.util.Collection;
 import java.util.WeakHashMap;
+import java.util.stream.Collectors;
 
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleStringProperty;
@@ -19,6 +22,8 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.OverrunStyle;
 import javafx.scene.layout.BorderPane;
@@ -68,6 +73,25 @@ public class ListLayout implements Layout {
   private ActionList actionsForComponent(Component component) {
     ActionList actions = ActionList.withName(component.getTitle());
     int index = widgets.indexOf(component);
+
+    if (component instanceof Widget) {
+      Widget widget = (Widget) component;
+      actions.addAction("Edit properties", () -> {
+        ExtendedPropertySheet propertySheet = new ExtendedPropertySheet();
+        propertySheet.getItems().add(new ExtendedPropertySheet.PropertyItem<>(widget.titleProperty()));
+        propertySheet.getItems().addAll(
+            widget.getProperties().stream()
+                .map(ExtendedPropertySheet.PropertyItem::new)
+                .collect(Collectors.toList()));
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("Edit properties");
+        dialog.getDialogPane().getStylesheets().setAll(root.getScene().getRoot().getStylesheets());
+        dialog.getDialogPane().setContent(new BorderPane(propertySheet));
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CLOSE);
+        dialog.setResultConverter(button -> button);
+        dialog.showAndWait();
+      });
+    }
 
     actions.addAction("Remove from list", () -> {
       widgets.remove(index);
