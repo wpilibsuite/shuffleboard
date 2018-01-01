@@ -78,8 +78,8 @@ public class Shuffleboard extends Application {
 
     Recorder.getInstance().start();
 
-    PluginLoader.getDefault().load(new CameraServerPlugin());
     PluginLoader.getDefault().load(new NetworkTablesPlugin());
+    PluginLoader.getDefault().load(new CameraServerPlugin());
     PluginLoader.getDefault().loadAllJarsFromDir(Storage.getPluginPath());
 
     // Load the most recent save file after loading all plugins
@@ -121,7 +121,7 @@ public class Shuffleboard extends Application {
   }
 
   /**
-   * Sets up loggers to print to stdout (rather than stderr) and log to ~/SmartDashboard/shuffleboard.log
+   * Sets up loggers to print to stdout (rather than stderr) and log to ~/Shuffleboard/shuffleboard.log
    */
   private void setupLoggers() throws IOException {
     //Set up the global level logger. This handles IO for all loggers.

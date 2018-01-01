@@ -13,6 +13,7 @@ import edu.wpi.first.shuffleboard.api.widget.ComponentContainer;
 import edu.wpi.first.shuffleboard.api.widget.TileSize;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 import edu.wpi.first.shuffleboard.app.dnd.DragUtils;
+import edu.wpi.first.shuffleboard.app.dnd.ResizeUtils;
 
 import org.fxmisc.easybind.EasyBind;
 
@@ -56,9 +57,9 @@ public class WidgetPane extends TilePane implements ComponentContainer {
   private final BooleanProperty highlight
       = new SimpleBooleanProperty(this, "highlight", false);
   private final Property<GridPoint> highlightPoint
-      = new SimpleObjectProperty<>(this, "highlightPoint", null);
+      = new SimpleObjectProperty<>(this, "highlightPoint", new GridPoint(0, 0));
   private final Property<TileSize> highlightSize
-      = new SimpleObjectProperty<>(this, "highlightSize", null);
+      = new SimpleObjectProperty<>(this, "highlightSize", new TileSize(1, 1));
   private final BooleanProperty showGrid
       = new SimpleBooleanProperty(this, "showGrid", true);
   private final IntegerProperty gridLineBorderThickness
@@ -115,7 +116,7 @@ public class WidgetPane extends TilePane implements ComponentContainer {
       moveNode(gridHighlight, point);
       gridHighlight.pseudoClassStateChanged(
           PseudoClass.getPseudoClass("colliding"),
-          !isOpen(point, getHighlightSize(), DragUtils.isDraggedWidget));
+          !isOpen(point, getHighlightSize(), DragUtils.isDraggedWidget.or(ResizeUtils.isResizedTile)));
     });
 
     // Resize the highlighter then when the size changes
@@ -127,7 +128,7 @@ public class WidgetPane extends TilePane implements ComponentContainer {
       setSize(gridHighlight, size);
       gridHighlight.pseudoClassStateChanged(
           PseudoClass.getPseudoClass("colliding"),
-          !isOpen(getHighlightPoint(), size, DragUtils.isDraggedWidget));
+          !isOpen(getHighlightPoint(), size, DragUtils.isDraggedWidget.or(ResizeUtils.isResizedTile)));
     });
 
     tileSizeProperty().addListener((__, prev, cur) -> resizeTiles());

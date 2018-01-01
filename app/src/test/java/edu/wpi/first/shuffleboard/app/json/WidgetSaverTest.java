@@ -35,7 +35,7 @@ public class WidgetSaverTest extends ApplicationTest {
 
     @Override
     public Pane getView() {
-      return null;
+      return new Pane();
     }
 
   }

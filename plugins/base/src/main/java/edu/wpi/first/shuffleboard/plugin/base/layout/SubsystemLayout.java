@@ -67,8 +67,11 @@ public class SubsystemLayout extends ListLayout implements Populatable, Sourced 
   @Override
   public void addSource(DataSource source) throws IncompatibleSourceException {
     if (source.getDataType() instanceof SubsystemType) {
+      DataSource<?> currentSource = getSource();
       getSources().setAll(source);
-      setTitle(source.getName());
+      if (currentSource == null || getTitle().equals(currentSource.getName())) {
+        setTitle(source.getName());
+      }
     } else {
       throw new IncompatibleSourceException(ImmutableSet.of(new SubsystemType()), source.getDataType());
     }

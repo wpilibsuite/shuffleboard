@@ -46,7 +46,7 @@ public interface Widget extends Component, Sourced {
   /**
    * Gets the user-configurable properties for this widget.
    */
-  List<Property<?>> getProperties();
+  List<? extends Property<?>> getProperties();
 
   @Override
   default Stream<Widget> allWidgets() {

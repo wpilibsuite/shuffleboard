@@ -45,7 +45,7 @@ public class DashboardTabPaneSaver implements ElementTypeAdapter<DashboardTabPan
     JsonArray jsonTabs = json.getAsJsonArray();
     List<Tab> tabs = new ArrayList<>(jsonTabs.size());
 
-    for (JsonElement i : json.getAsJsonArray()) {
+    for (JsonElement i : jsonTabs) {
       JsonObject obj = i.getAsJsonObject();
       String title = obj.get("title").getAsString();
       DashboardTab tab = new DashboardTab(title);

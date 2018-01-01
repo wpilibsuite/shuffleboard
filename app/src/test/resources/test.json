@@ -1,0 +1,39 @@
+{
+  "dividerPosition": 0.123456,
+  "tabPane": [
+    {
+      "title": "First Tab",
+      "autoPopulate": false,
+      "autoPopulatePrefix": "",
+      "widgetPane": {
+        "gridSize": 64.0,
+        "hgap": 32.0,
+        "vgap": 32.0,
+        "tiles": {
+          "4,5": {
+            "size": [
+              2,
+              2
+            ],
+            "content": {
+              "_type": "Boolean Box",
+              "_source0": "example://Boolean",
+              "colorWhenTrue": "#7CFC00FF",
+              "colorWhenFalse": "#8B0000FF"
+            }
+          }}
+      }
+    },
+    {
+      "title": "Second Tab",
+      "autoPopulate": true,
+      "autoPopulatePrefix": "foo",
+      "widgetPane": {
+        "gridSize": 128.0,
+        "hgap": 16.0,
+        "vgap": 16.0,
+        "tiles": {}
+      }
+    }
+  ]
+}

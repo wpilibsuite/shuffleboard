@@ -1,15 +1,10 @@
 package edu.wpi.first.shuffleboard.plugin.cameraserver.recording.serialization;
 
-import com.google.common.primitives.UnsignedBytes;
-
 import org.opencv.core.Mat;
-import org.opencv.core.MatOfByte;
 import org.opencv.core.Size;
-import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
 import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
 
 import javafx.scene.image.Image;
 import javafx.scene.image.PixelFormat;
@@ -17,6 +12,8 @@ import javafx.scene.image.WritableImage;
 
 import static org.opencv.core.CvType.CV_8S;
 import static org.opencv.core.CvType.CV_8U;
+import static org.opencv.imgproc.Imgproc.COLOR_BGR2RGB;
+import static org.opencv.imgproc.Imgproc.COLOR_GRAY2RGB;
 import static org.opencv.imgproc.Imgproc.INTER_CUBIC;
 
 /**
@@ -25,10 +22,9 @@ import static org.opencv.imgproc.Imgproc.INTER_CUBIC;
  */
 public final class ImageConverter {
 
-  private static final PixelFormat<IntBuffer> argbPixelFormat = PixelFormat.getIntArgbInstance();
   private WritableImage image;
-  private IntBuffer pixels;
-  private final MatOfByte imageBuffer = new MatOfByte();
+  private byte[] data;
+  private ByteBuffer buffer;
 
   /**
    * Convert a BGR-formatted OpenCV {@link Mat} into a JavaFX {@link Image}. JavaFX understands ARGB
@@ -55,17 +51,16 @@ public final class ImageConverter {
       return null;
     }
 
-    Mat toRender;
+    Mat toRender = new Mat();
     if (mat.rows() > desiredHeight) {
       // Scale the image down
-      toRender = new Mat();
       Imgproc.resize(
           mat, toRender,
           new Size((int) (((double) mat.cols() * desiredHeight) / mat.rows()), desiredHeight),
           0, 0, INTER_CUBIC
       );
     } else {
-      toRender = mat;
+      mat.copyTo(toRender);
     }
 
     final int width = toRender.cols();
@@ -76,46 +71,26 @@ public final class ImageConverter {
     // dimensions and a buffer big enough to hold all of the pixels in the image.
     if (image == null || image.getWidth() != width || image.getHeight() != height) {
       image = new WritableImage(width, height);
-      pixels = IntBuffer.allocate(width * height);
+      data = new byte[width * height * channels];
+      buffer = ByteBuffer.wrap(data);
     }
 
-    // Copy the data from the image into a MatOfByte so we can extract the raw byte information
-    Imgcodecs.imencode(".bmp", toRender, imageBuffer);
-
-    final ByteBuffer buffer = ByteBuffer.wrap(imageBuffer.toArray());
-    final int stride = buffer.capacity() / height;
-
-    // Convert the data from the Mat into ARGB data that we can put into a JavaFX WritableImage
+    // Convert BGR to RGB so it can be rendered  easily
     switch (channels) {
       case 1:
-        // 1 channel - convert grayscale to ARGB
-        for (int y = 0; y < height; y++) {
-          for (int x = 0; x < width; x++) {
-            final int value = UnsignedBytes.toInt(buffer.get(stride * y + channels * x));
-            pixels.put(width * (height - y - 1) + x, (0xff << 24) | (value << 16) | (value << 8) | value);
-          }
-        }
-
+        Imgproc.cvtColor(toRender, toRender, COLOR_GRAY2RGB);
         break;
-
       case 3:
-        // 3 channels - convert BGR to RGBA
-        for (int y = 0; y < height; y++) {
-          for (int x = 0; x < width; x++) {
-            final int b = UnsignedBytes.toInt(buffer.get(stride * y + channels * x));
-            final int g = UnsignedBytes.toInt(buffer.get(stride * y + channels * x + 1));
-            final int r = UnsignedBytes.toInt(buffer.get(stride * y + channels * x + 2));
-            pixels.put(width * (height - y - 1) + x, (0xff << 24) | (r << 16) | (g << 8) | b);
-          }
-        }
-
+        Imgproc.cvtColor(toRender, toRender, COLOR_BGR2RGB);
         break;
       default:
-        throw new UnsupportedOperationException("Only 1 or 3 channel images can be shown, tried "
-            + "to show a " + channels + " channel image");
+        throw new UnsupportedOperationException("Only 1 or 3-channel images are supported");
     }
 
-    image.getPixelWriter().setPixels(0, 0, width, height, argbPixelFormat, pixels, width);
+    // Grab the image data
+    toRender.get(0, 0, data);
+
+    image.getPixelWriter().setPixels(0, 0, width, height, PixelFormat.getByteRgbInstance(), buffer, width * channels);
 
     return image;
   }
