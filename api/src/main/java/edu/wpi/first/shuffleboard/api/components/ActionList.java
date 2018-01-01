@@ -68,6 +68,19 @@ public class ActionList {
     return menu;
   }
 
+  /**
+   * Adds another action list to this one, placing each of its actions in a separate sub-menu.
+   *
+   * <p>For example, adding an action list "C" with actions named "C1" and "C2" to another action list with actions
+   * "A" and "B" would look something like this:
+   * <pre>
+   *   - A
+   *   - B
+   *   - C
+   *     - C1
+   *     - C2
+   * </pre></p>
+   */
   public ActionList addNested(ActionList al) {
     actions.add(al::asMenu);
     return this;
@@ -77,6 +90,11 @@ public class ActionList {
     return name;
   }
 
+  /**
+   * Creates an empty action list with the given name.
+   *
+   * @param name the name of the new action list
+   */
   public static ActionList withName(String name) {
     return new ActionList(name);
   }
