@@ -45,7 +45,7 @@ public class ListLayout implements Layout {
   private final StringProperty title = new SimpleStringProperty(this, "title", "List");
   private Subscription retained; //NOPMD field due to GC
 
-  private WeakHashMap<Component, Pane> panes = new WeakHashMap<>();
+  private final WeakHashMap<Component, Pane> panes = new WeakHashMap<>();
 
   @FXML
   protected void initialize() {
