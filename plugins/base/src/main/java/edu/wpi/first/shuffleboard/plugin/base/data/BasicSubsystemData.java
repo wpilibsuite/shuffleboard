@@ -35,19 +35,19 @@ public final class BasicSubsystemData extends ComplexData<BasicSubsystemData> {
    * Creates a new data object from a map.
    */
   public BasicSubsystemData(Map<String, Object> map) {
-    this((Boolean) map.getOrDefault("hasDefault", false),
-        (String) map.getOrDefault("default", ""),
-        (Boolean) map.getOrDefault("hasCommand", false),
-        (String) map.getOrDefault("command", ""));
+    this((Boolean) map.getOrDefault(".hasDefault", false),
+        (String) map.getOrDefault(".default", ""),
+        (Boolean) map.getOrDefault(".hasCommand", false),
+        (String) map.getOrDefault(".command", ""));
   }
 
   @Override
   public Map<String, Object> asMap() {
     return Maps.<String, Object>builder()
-        .put("hasDefault", hasDefaultCommand)
-        .put("default", defaultCommandName)
-        .put("hasCommand", hasCommand)
-        .put("command", currentCommandName)
+        .put(".hasDefault", hasDefaultCommand)
+        .put(".default", defaultCommandName)
+        .put(".hasCommand", hasCommand)
+        .put(".command", currentCommandName)
         .build();
   }
 
