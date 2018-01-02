@@ -35,7 +35,7 @@ public class ActionList {
   }
 
   public boolean hasItems() {
-    return actions.isEmpty();
+    return !actions.isEmpty();
   }
 
   public ActionList addAction(String name, Runnable r) {
