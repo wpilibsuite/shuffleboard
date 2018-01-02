@@ -13,7 +13,6 @@ import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.ComponentContainer;
 import edu.wpi.first.shuffleboard.api.widget.Components;
-import edu.wpi.first.shuffleboard.api.widget.Layout;
 import edu.wpi.first.shuffleboard.api.widget.Sourced;
 import edu.wpi.first.shuffleboard.app.Autopopulator;
 import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
@@ -248,8 +247,12 @@ public class DashboardTab extends Tab implements HandledTab, Populatable {
     List<Component> topLevelComponents = getWidgetPane().getTiles().stream()
         .map(Tile::getContent)
         .collect(Collectors.toList());
-    Predicate<Sourced> isSameSource = s -> s.getSources().stream().map(DataSource::getId).anyMatch(sourceId::equals);
-    Predicate<Sourced> isSubSource = s -> s.getSources().stream().map(i -> i.getId() + "/").anyMatch(sourceId::startsWith);
+    Predicate<Sourced> isSameSource = s -> s.getSources().stream()
+        .map(DataSource::getId)
+        .anyMatch(sourceId::equals);
+    Predicate<Sourced> isSubSource = s -> s.getSources().stream()
+        .map(i -> i.getId() + "/")
+        .anyMatch(sourceId::startsWith);
     Predicate<Sourced> isNotContainer = s -> !(s instanceof ComponentContainer);
     Predicate<Sourced> hasComponent = isSameSource.or(isSubSource.and(isNotContainer));
     return topLevelComponents.stream()
