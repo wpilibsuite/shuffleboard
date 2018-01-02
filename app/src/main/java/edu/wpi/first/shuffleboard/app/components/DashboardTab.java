@@ -10,8 +10,10 @@ import edu.wpi.first.shuffleboard.api.util.Debouncer;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
+import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.ComponentContainer;
 import edu.wpi.first.shuffleboard.api.widget.Components;
+import edu.wpi.first.shuffleboard.api.widget.Layout;
 import edu.wpi.first.shuffleboard.api.widget.Sourced;
 import edu.wpi.first.shuffleboard.app.Autopopulator;
 import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
@@ -23,6 +25,7 @@ import org.fxmisc.easybind.EasyBind;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import javafx.beans.property.BooleanProperty;
@@ -242,12 +245,21 @@ public class DashboardTab extends Tab implements HandledTab, Populatable {
 
   @Override
   public boolean hasComponentFor(String sourceId) {
-    return getWidgetPane().getTiles().stream()
+    List<Component> topLevelComponents = getWidgetPane().getTiles().stream()
         .map(Tile::getContent)
+        .collect(Collectors.toList());
+    Predicate<Sourced> isSameSource = s -> s.getSources().stream().map(DataSource::getId).anyMatch(sourceId::equals);
+    Predicate<Sourced> isSubSource = s -> s.getSources().stream().map(i -> i.getId() + "/").anyMatch(sourceId::startsWith);
+    Predicate<Sourced> isNotContainer = s -> !(s instanceof ComponentContainer);
+    Predicate<Sourced> hasComponent = isSameSource.or(isSubSource.and(isNotContainer));
+    return topLevelComponents.stream()
         .flatMap(TypeUtils.castStream(Sourced.class))
-        .anyMatch(s -> s.getSources().stream().map(DataSource::getId).anyMatch(sourceId::equals)
-            || (s.getSources().stream().map(DataSource::getId).anyMatch(sourceId::startsWith)
-            && !(s instanceof ComponentContainer)));
+        .anyMatch(hasComponent)
+        || topLevelComponents.stream()
+        .flatMap(TypeUtils.castStream(ComponentContainer.class))
+        .flatMap(ComponentContainer::allComponents)
+        .flatMap(TypeUtils.castStream(Sourced.class))
+        .anyMatch(hasComponent);
   }
 
   @Override
