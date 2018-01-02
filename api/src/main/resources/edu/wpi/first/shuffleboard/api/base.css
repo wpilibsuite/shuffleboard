@@ -103,15 +103,6 @@
     -fx-background-color: transparent;
 }
 
-.layout-label {
-    -fx-padding: 0 12px 5px 12px;
-    -fx-font-size: 12px;
-}
-
-.layout-label * {
-    -fx-text-fill: #aaa;
-}
-
 /*******************************************************************************
  *                                                                             *
  * Layouts                                                                     *
@@ -121,6 +112,15 @@
     -fx-background-color: rgba(0, 0, 0, 0.005);
     -fx-border-width: 1;
     -fx-border-color: -swatch-100;
+}
+
+.layout-label {
+    -fx-padding: 0 12px 5px 12px;
+    -fx-font-size: 12px;
+}
+
+.layout-label * {
+    -fx-text-fill: #333;
 }
 
 /*******************************************************************************
