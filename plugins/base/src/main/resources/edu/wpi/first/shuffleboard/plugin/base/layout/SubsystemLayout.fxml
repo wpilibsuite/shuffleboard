@@ -10,7 +10,7 @@
            styleClass="layout-root"
            prefHeight="512" prefWidth="256">
     <ScrollPane fitToWidth="true" fitToHeight="true" styleClass="layout-scroll">
-        <VBox fx:id="container" styleClass="layout-container">
+        <VBox fx:id="container" styleClass="layout-container" spacing="2">
 
         </VBox>
     </ScrollPane>
