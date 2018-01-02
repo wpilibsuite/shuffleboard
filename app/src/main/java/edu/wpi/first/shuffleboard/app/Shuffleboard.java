@@ -84,7 +84,9 @@ public class Shuffleboard extends Application {
 
     // Load the most recent save file after loading all plugins
     if (AppPreferences.getInstance().isAutoLoadLastSaveFile()) {
-      mainWindowController.load(AppPreferences.getInstance().getSaveFile());
+      Platform.runLater(() -> {
+        mainWindowController.load(AppPreferences.getInstance().getSaveFile());
+      });
     }
 
     primaryStage.setTitle("Shuffleboard");
