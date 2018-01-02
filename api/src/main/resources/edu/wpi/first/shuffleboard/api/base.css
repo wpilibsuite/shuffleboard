@@ -254,3 +254,38 @@
 .dialog-pane .header-panel .label {
     -fx-text-fill: white;
 }
+
+/*******************************************************************************
+ *                                                                             *
+ * Footer                                                                      *
+ *                                                                             *
+ ******************************************************************************/
+.footer {
+    -fx-background-color: -swatch-gray;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Playback controls                                                           *
+ *                                                                             *
+ ******************************************************************************/
+.playback-controls .button {
+    -fx-background-radius: 1;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Connection labels                                                           *
+ *                                                                             *
+ ******************************************************************************/
+.connection-indicator-area {
+    -fx-background-color: transparent;
+}
+
+.connection-indicator:connected {
+    -fx-text-fill: green;
+}
+
+.connection-indicator:disconnected {
+    -fx-text-fill: red;
+}

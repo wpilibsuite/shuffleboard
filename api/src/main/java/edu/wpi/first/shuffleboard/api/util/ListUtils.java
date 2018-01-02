@@ -1,9 +1,16 @@
 package edu.wpi.first.shuffleboard.api.util;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.stream.Collector;
 
 /**
  * Utility class for working with lists.
@@ -12,6 +19,28 @@ public final class ListUtils {
 
   private ListUtils() {
     throw new UnsupportedOperationException("This is a utility class!");
+  }
+
+  public static <T> Collector<T, ?, List<T>> joining(Supplier<? extends T> separator) {
+    return joining(() -> null, separator, () -> null);
+  }
+
+  /**
+   * Creates a collector for interleaving items with a constant separator item, along with prepending and appending
+   * items to bookend the resulting list. If one of the suppliers gives a {@code null} result, no element will be added
+   * for that part of the collection. For example, if {@code prefix} supplies {@code null}, then no element will be
+   * prepended to the list, as opposed to prepending {@code null}.
+   *
+   * <p>Each supplier must return <i>consistent</i>, <i>equivalent</i> values. For example, {@code prefix} cannot
+   * return {@code null} on one invocation and {@code "foo"} on another.
+   */
+  public static <T> Collector<T, ?, List<T>> joining(Supplier<? extends T> prefix,
+                                                     Supplier<? extends T> separator,
+                                                     Supplier<? extends T> suffix) {
+    Objects.requireNonNull(prefix, "prefix");
+    Objects.requireNonNull(separator, "separator");
+    Objects.requireNonNull(suffix, "suffix");
+    return new JoiningCollector<>(prefix, separator, suffix);
   }
 
   /**
@@ -124,4 +153,73 @@ public final class ListUtils {
 
   }
 
+  private static class JoiningCollector<T> implements Collector<T, List<T>, List<T>> {
+
+    private final Supplier<? extends T> prefix;
+    private final Supplier<? extends T> separator;
+    private final Supplier<? extends T> suffix;
+
+    public JoiningCollector(Supplier<? extends T> prefix,
+                            Supplier<? extends T> separator,
+                            Supplier<? extends T> suffix) {
+      this.prefix = prefix;
+      this.separator = separator;
+      this.suffix = suffix;
+    }
+
+    @Override
+    public Supplier<List<T>> supplier() {
+      return () -> {
+        List<T> list = new ArrayList<>();
+        T pre = prefix.get();
+        if (pre != null) {
+          list.add(pre);
+        }
+        return list;
+      };
+    }
+
+    @Override
+    public BiConsumer<List<T>, T> accumulator() {
+      return (list, element) -> {
+        if (list.isEmpty() || (list.size() == 1 && prefix.get() != null)) {
+          // If no elements: prefix is guaranteed null, so don't add a separator first
+          // If 1 element:   if prefix is not null, then the only element is the prefix, so don't add a separator
+          list.add(element);
+        } else {
+          T sep = separator.get();
+          if (sep != null) {
+            list.add(sep);
+          }
+          list.add(element);
+        }
+      };
+    }
+
+    @Override
+    public BinaryOperator<List<T>> combiner() {
+      return (a, b) -> {
+        a.addAll(b);
+        return a;
+      };
+    }
+
+    @Override
+    public Function<List<T>, List<T>> finisher() {
+      return list -> {
+        T suf = suffix.get();
+        if (suf != null) {
+          list.add(suf);
+        }
+        return list;
+      };
+    }
+
+    @Override
+    public Set<Characteristics> characteristics() {
+      // An ordered, serial collector with a nontrivial finisher function, so no characteristic applies
+      return Collections.emptySet();
+    }
+
+  }
 }

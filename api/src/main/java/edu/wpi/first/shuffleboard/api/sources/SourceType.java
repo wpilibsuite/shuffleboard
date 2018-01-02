@@ -5,8 +5,12 @@ import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.sources.recording.TimestampedData;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
 
+import java.util.Objects;
 import java.util.function.Function;
 
+import javafx.beans.property.Property;
+import javafx.beans.property.ReadOnlyProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
@@ -22,6 +26,8 @@ public abstract class SourceType {
   private final boolean isRecordable;
   private final String protocol;
   private final Function<String, DataSource> sourceSupplier;
+  private final Property<ConnectionStatus> connectionStatus =
+      new SimpleObjectProperty<>(this, "connectionStatus", ConnectionStatus.Nil);
 
   /**
    * Creates a new source type.
@@ -46,8 +52,9 @@ public abstract class SourceType {
    * {@link edu.wpi.first.shuffleboard.api.data.types.UnknownType Unknown} type. If no source is known by the given URI,
    * returns an {@link edu.wpi.first.shuffleboard.api.data.types.NoneType None} type.
    *
-   * @param registry the registry of the currently known data types
+   * @param registry  the registry of the currently known data types
    * @param sourceUri the URI of the source to look up the data type for
+   *
    * @return the data type for the
    */
   public abstract DataType<?> dataTypeForSource(DataTypes registry, String sourceUri);
@@ -120,6 +127,28 @@ public abstract class SourceType {
   }
 
   /**
+   * Sets the connection status of this source type.
+   *
+   * @param connectionStatus the new connection status. This cannot be {@code null}.
+   *
+   * @throws NullPointerException if {@code connectionStatus} is {@code null}
+   */
+  protected final void setConnectionStatus(ConnectionStatus connectionStatus) {
+    this.connectionStatus.setValue(Objects.requireNonNull(connectionStatus, "connectionStatus"));
+  }
+
+  public final ReadOnlyProperty<ConnectionStatus> connectionStatusProperty() {
+    return connectionStatus;
+  }
+
+  /**
+   * Gets the connection status of this source type.
+   */
+  public final ConnectionStatus getConnectionStatus() {
+    return connectionStatus.getValue();
+  }
+
+  /**
    * Connects sources of this type to the backing source interface.
    */
   public void connect() { // NOPMD empty method body
@@ -130,8 +159,8 @@ public abstract class SourceType {
    * Disconnects sources of this type from the backing source interface. Sources may still be modified by users, but
    * changes made when in this state should not affect the source interface.
    */
-  public void disconnect() { // NOPMD empty method body
-    // Up to subclasses to implement
+  public void disconnect() {
+    setConnectionStatus(new ConnectionStatus(getConnectionStatus().getHost(), false));
   }
 
   /**

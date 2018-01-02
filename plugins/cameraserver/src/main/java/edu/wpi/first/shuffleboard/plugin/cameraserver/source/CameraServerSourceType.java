@@ -7,6 +7,7 @@ import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.sources.SourceEntry;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
+import edu.wpi.first.shuffleboard.api.sources.UiHints;
 import edu.wpi.first.shuffleboard.api.sources.recording.TimestampedData;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.data.CameraServerData;
@@ -18,6 +19,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 
+@UiHints(showConnectionIndicator = false) // same host as NetworkTables plugin, so no need to duplicate that information
 public final class CameraServerSourceType extends SourceType {
 
   public static final CameraServerSourceType INSTANCE = new CameraServerSourceType();
