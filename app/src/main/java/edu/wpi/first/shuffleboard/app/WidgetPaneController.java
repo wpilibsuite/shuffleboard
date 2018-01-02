@@ -528,7 +528,10 @@ public class WidgetPaneController {
               if (!name.equals(widget.getName())) {
                 Components.getDefault()
                     .createWidget(name, widget.getSources())
-                    .ifPresent(tile::setContent);
+                    .ifPresent(newWidget -> {
+                      newWidget.setTitle(widget.getTitle());
+                      tile.setContent(newWidget);
+                    });
               }
             }));
     return list;
