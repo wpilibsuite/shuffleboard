@@ -1,5 +1,7 @@
 package edu.wpi.first.shuffleboard.app.components;
 
+import com.google.common.collect.ImmutableList;
+
 import edu.wpi.first.shuffleboard.api.css.SimpleColorCssMetaData;
 import edu.wpi.first.shuffleboard.api.css.SimpleCssMetaData;
 import edu.wpi.first.shuffleboard.api.util.GridImage;
@@ -12,8 +14,6 @@ import edu.wpi.first.shuffleboard.api.widget.TileSize;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 import edu.wpi.first.shuffleboard.app.dnd.DragUtils;
 import edu.wpi.first.shuffleboard.app.dnd.ResizeUtils;
-
-import com.google.common.collect.ImmutableList;
 
 import org.fxmisc.easybind.EasyBind;
 
@@ -101,6 +101,7 @@ public class WidgetPane extends TilePane implements ComponentContainer {
       if (highlight) {
         getChildren().add(gridHighlight);
         gridHighlight.toFront();
+        gridHighlight.setMouseTransparent(true);
       } else {
         getChildren().remove(gridHighlight);
       }
