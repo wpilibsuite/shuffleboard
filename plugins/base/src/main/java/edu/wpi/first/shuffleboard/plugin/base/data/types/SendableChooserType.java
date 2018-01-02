@@ -7,9 +7,11 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.function.Function;
 
-public class SendableChooserType extends ComplexDataType<SendableChooserData> {
+public final class SendableChooserType extends ComplexDataType<SendableChooserData> {
 
-  public SendableChooserType() {
+  public static final SendableChooserType Instance = new SendableChooserType();
+
+  private SendableChooserType() {
     super("String Chooser", SendableChooserData.class);
   }
 

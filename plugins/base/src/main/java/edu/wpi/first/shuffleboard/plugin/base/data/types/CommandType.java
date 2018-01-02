@@ -6,9 +6,11 @@ import edu.wpi.first.shuffleboard.plugin.base.data.CommandData;
 import java.util.Map;
 import java.util.function.Function;
 
-public class CommandType extends ComplexDataType<CommandData> {
+public final class CommandType extends ComplexDataType<CommandData> {
 
-  public CommandType() {
+  public static final CommandType Instance = new CommandType();
+
+  private CommandType() {
     super("Command", CommandData.class);
   }
 

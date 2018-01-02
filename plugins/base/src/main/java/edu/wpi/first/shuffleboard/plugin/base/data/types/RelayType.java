@@ -6,9 +6,11 @@ import edu.wpi.first.shuffleboard.plugin.base.data.RelayData;
 import java.util.Map;
 import java.util.function.Function;
 
-public class RelayType extends ComplexDataType<RelayData> {
+public final class RelayType extends ComplexDataType<RelayData> {
 
-  public RelayType() {
+  public static final RelayType Instance = new RelayType();
+
+  private RelayType() {
     super("Relay", RelayData.class);
   }
 

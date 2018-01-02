@@ -8,7 +8,9 @@ import java.util.function.Function;
 
 public final class GyroType extends ComplexDataType<GyroData> {
 
-  public GyroType() {
+  public static final GyroType Instance = new GyroType();
+
+  private GyroType() {
     super("Gyro", GyroData.class);
   }
 

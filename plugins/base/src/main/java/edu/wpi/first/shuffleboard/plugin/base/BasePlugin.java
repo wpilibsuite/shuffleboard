@@ -64,20 +64,20 @@ public class BasePlugin extends Plugin {
   @Override
   public List<DataType> getDataTypes() {
     return ImmutableList.of(
-        new AnalogInputType(),
-        new PowerDistributionType(),
-        new EncoderType(),
-        new RobotPreferencesType(),
-        new SendableChooserType(),
-        new SpeedControllerType(),
-        new SubsystemType(),
+        AnalogInputType.Instance,
+        PowerDistributionType.Instance,
+        EncoderType.Instance,
+        RobotPreferencesType.Instance,
+        SendableChooserType.Instance,
+        SpeedControllerType.Instance,
+        SubsystemType.Instance,
         BasicSubsystemType.Instance,
-        new CommandType(),
-        new PIDControllerType(),
-        new ThreeAxisAccelerometerType(),
-        new PIDCommandType(),
-        new GyroType(),
-        new RelayType()
+        CommandType.Instance,
+        PIDControllerType.Instance,
+        ThreeAxisAccelerometerType.Instance,
+        PIDCommandType.Instance,
+        GyroType.Instance,
+        RelayType.Instance
     );
   }
 
@@ -116,19 +116,19 @@ public class BasePlugin extends Plugin {
         .put(DataTypes.Boolean, WidgetType.forAnnotatedWidget(BooleanBoxWidget.class))
         .put(DataTypes.Number, WidgetType.forAnnotatedWidget(TextViewWidget.class))
         .put(DataTypes.String, WidgetType.forAnnotatedWidget(TextViewWidget.class))
-        .put(new AnalogInputType(), WidgetType.forAnnotatedWidget(VoltageViewWidget.class))
-        .put(new PowerDistributionType(), WidgetType.forAnnotatedWidget(PowerDistributionPanelWidget.class))
-        .put(new SendableChooserType(), WidgetType.forAnnotatedWidget(ComboBoxChooserWidget.class))
-        .put(new EncoderType(), WidgetType.forAnnotatedWidget(EncoderWidget.class))
-        .put(new RobotPreferencesType(), WidgetType.forAnnotatedWidget(RobotPreferencesWidget.class))
-        .put(new SpeedControllerType(), WidgetType.forAnnotatedWidget(SpeedControllerWidget.class))
-        .put(new CommandType(), WidgetType.forAnnotatedWidget(CommandWidget.class))
-        .put(new PIDCommandType(), WidgetType.forAnnotatedWidget(PIDCommandWidget.class))
-        .put(new ThreeAxisAccelerometerType(), WidgetType.forAnnotatedWidget(ThreeAxisAccelerometerWidget.class))
-        .put(new PIDControllerType(), WidgetType.forAnnotatedWidget(PIDControllerWidget.class))
-        .put(new GyroType(), WidgetType.forAnnotatedWidget(GyroWidget.class))
-        .put(new RelayType(), WidgetType.forAnnotatedWidget(RelayWidget.class))
-        .put(new SubsystemType(), createSubsystemLayoutType())
+        .put(AnalogInputType.Instance, WidgetType.forAnnotatedWidget(VoltageViewWidget.class))
+        .put(PowerDistributionType.Instance, WidgetType.forAnnotatedWidget(PowerDistributionPanelWidget.class))
+        .put(SendableChooserType.Instance, WidgetType.forAnnotatedWidget(ComboBoxChooserWidget.class))
+        .put(EncoderType.Instance, WidgetType.forAnnotatedWidget(EncoderWidget.class))
+        .put(RobotPreferencesType.Instance, WidgetType.forAnnotatedWidget(RobotPreferencesWidget.class))
+        .put(SpeedControllerType.Instance, WidgetType.forAnnotatedWidget(SpeedControllerWidget.class))
+        .put(CommandType.Instance, WidgetType.forAnnotatedWidget(CommandWidget.class))
+        .put(PIDCommandType.Instance, WidgetType.forAnnotatedWidget(PIDCommandWidget.class))
+        .put(ThreeAxisAccelerometerType.Instance, WidgetType.forAnnotatedWidget(ThreeAxisAccelerometerWidget.class))
+        .put(PIDControllerType.Instance, WidgetType.forAnnotatedWidget(PIDControllerWidget.class))
+        .put(GyroType.Instance, WidgetType.forAnnotatedWidget(GyroWidget.class))
+        .put(RelayType.Instance, WidgetType.forAnnotatedWidget(RelayWidget.class))
+        .put(SubsystemType.Instance, createSubsystemLayoutType())
         .put(BasicSubsystemType.Instance, WidgetType.forAnnotatedWidget(BasicSubsystemWidget.class))
         .build();
   }
@@ -137,7 +137,7 @@ public class BasePlugin extends Plugin {
     return new LayoutClass<SubsystemLayout>("Subsystem Layout", SubsystemLayout.class) {
       @Override
       public Set<DataType> getDataTypes() {
-        return ImmutableSet.of(new SubsystemType());
+        return ImmutableSet.of(SubsystemType.Instance);
       }
     };
   }
