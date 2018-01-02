@@ -10,5 +10,5 @@
     <padding>
         <Insets top="8" right="16" bottom="8" left="16"/>
     </padding>
-    <LinearIndicator fx:id="indicator" styleClass="voltage-view" min="-12" max="12" showTickLabels="true" showTickMarks="true"/>
+    <LinearIndicator fx:id="indicator" styleClass="voltage-view" min="0" max="5" showTickLabels="true" showTickMarks="true"/>
 </StackPane>
