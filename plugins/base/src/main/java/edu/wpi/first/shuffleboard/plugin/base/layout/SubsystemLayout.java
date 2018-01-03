@@ -8,6 +8,7 @@ import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
+import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 import edu.wpi.first.shuffleboard.api.widget.Sourced;
@@ -53,6 +54,20 @@ public class SubsystemLayout extends ListLayout implements Populatable, Sourced 
     Components.getDefault().defaultComponentNameFor(source.getDataType())
         .flatMap(name -> Components.getDefault().createComponent(name, source))
         .ifPresent(this::addChild);
+  }
+
+  @Override
+  public void addChild(Component child) {
+    super.addChild(child);
+    // Remove redundant source name information. If a subsystem is named "Elevator", anything
+    // underneath named "Elevator/Foo" would show the "Elevator" bit again, even though it's redundant.
+    if (getSource() != null) {
+      String sourceName = getSource().getName();
+      String prefix = sourceName.endsWith("/") ? sourceName : sourceName + "/";
+      if (child.getTitle().startsWith(prefix)) {
+        child.setTitle(child.getTitle().substring(prefix.length()));
+      }
+    }
   }
 
   DataSource<?> getSource() {
