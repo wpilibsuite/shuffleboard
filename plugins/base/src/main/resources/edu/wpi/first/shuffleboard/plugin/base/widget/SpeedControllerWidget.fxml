@@ -22,7 +22,7 @@
     </StackPane>
     <BorderPane fx:id="controlPane">
         <center>
-            <Slider fx:id="control" min="-1" max="1" showTickLabels="true" showTickMarks="true" majorTickUnit="0.5"/>
+            <Slider fx:id="control" min="-1" max="1" blockIncrement="0.125" showTickLabels="true" showTickMarks="true" majorTickUnit="0.5"/>
         </center>
         <bottom>
             <HBox alignment="CENTER" spacing="8" maxWidth="Infinity">

@@ -27,6 +27,7 @@ public abstract class AbstractDataSource<T> implements DataSource<T> {
 
   protected AbstractDataSource(DataType<T> dataType) {
     this.dataType = requireNonNull(dataType, "dataType");
+    this.data.setValue(dataType.getDefaultValue());
   }
 
   @Override

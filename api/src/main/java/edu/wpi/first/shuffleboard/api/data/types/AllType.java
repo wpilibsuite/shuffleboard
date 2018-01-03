@@ -8,13 +8,15 @@ import edu.wpi.first.shuffleboard.api.data.SimpleDataType;
  */
 public class AllType extends SimpleDataType<Object> {
 
+  private final Object defaultValue = new Object();
+
   public AllType() {
     super("All", Object.class);
   }
 
   @Override
   public Object getDefaultValue() {
-    return new Object();
+    return defaultValue;
   }
 
 }

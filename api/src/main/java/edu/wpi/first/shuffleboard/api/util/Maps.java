@@ -2,6 +2,7 @@ package edu.wpi.first.shuffleboard.api.util;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.function.Function;
 
 /**
@@ -59,6 +60,23 @@ public final class Maps {
     }
   }
 
+  /**
+   * Gets the element mapped to {@code K} in a map, casting it as needed.
+   *
+   * @param map the map to get an element from
+   * @param key the key the element should be mapped to
+   * @param <K> the type of keys in the map
+   * @param <T> the type of the value to return
+   *
+   * @throws NoSuchElementException if the key is not in the map
+   */
+  public static <K, T> T get(Map<? super K, ?> map, K key) throws NoSuchElementException {
+    if (map.containsKey(key)) {
+      return (T) map.get(key);
+    } else {
+      throw new NoSuchElementException("No such key: " + key);
+    }
+  }
 
   /**
    * A builder class for maps.
