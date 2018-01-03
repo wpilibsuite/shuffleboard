@@ -354,12 +354,8 @@ public class WidgetPaneController {
         if (changeMenus.hasItems()) {
           widgetPaneActions.addNested(changeMenus);
         }
-
-        // Only add the properties menu item if the widget has properties
-        if (!widgetTile.getContent().getProperties().isEmpty()) {
-          widgetPaneActions.addAction("Edit Properties",
-              () -> showPropertySheet(widgetTile));
-        }
+        widgetPaneActions.addAction("Edit Properties",
+            () -> showPropertySheet(widgetTile));
       }
       return widgetPaneActions;
     });
