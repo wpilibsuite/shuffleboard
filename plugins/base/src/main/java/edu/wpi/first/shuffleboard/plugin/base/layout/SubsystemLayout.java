@@ -63,8 +63,9 @@ public class SubsystemLayout extends ListLayout implements Populatable, Sourced 
     // underneath named "Elevator/Foo" would show the "Elevator" bit again, even though it's redundant.
     if (getSource() != null) {
       String sourceName = getSource().getName();
-      if (child.getTitle().startsWith(sourceName + "/")) {
-        child.setTitle(child.getTitle().substring(sourceName.length() + 1));
+      String prefix = sourceName.endsWith("/") ? sourceName : sourceName + "/";
+      if (child.getTitle().startsWith(prefix)) {
+        child.setTitle(child.getTitle().substring(prefix.length()));
       }
     }
   }
