@@ -8,7 +8,6 @@ import edu.wpi.first.shuffleboard.plugin.base.data.CommandData;
 import org.fxmisc.easybind.EasyBind;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.Pane;
 
