@@ -37,16 +37,16 @@ public class NetworkTableTreeWidget extends SimpleAnnotatedWidget<MapData> {
       sort(root);
       return true;
     });
-    dataProperty().addListener((__, oldData, newData) -> {
+    dataOrDefault.addListener((__, oldData, newData) -> {
       final Map<String, Object> newMap = newData.asMap();
       // Remove deleted keys
       if (oldData != null) {
         oldData.asMap().entrySet().stream()
             .filter(e -> !newMap.containsKey(e.getKey()))
-            .forEach(e -> tree.updateEntry(new NetworkTableSourceEntry(e.getKey(), e.getValue())));
+            .forEach(e -> tree.removeEntry(new NetworkTableSourceEntry(e.getKey(), e.getValue())));
       }
 
-      newData.changesFrom(oldData).forEach((key, value) -> tree.removeEntry(new NetworkTableSourceEntry(key, value)));
+      newData.changesFrom(oldData).forEach((key, value) -> tree.updateEntry(new NetworkTableSourceEntry(key, value)));
     });
   }
 
