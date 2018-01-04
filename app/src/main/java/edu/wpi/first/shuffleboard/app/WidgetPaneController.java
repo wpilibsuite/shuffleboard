@@ -31,6 +31,7 @@ import edu.wpi.first.shuffleboard.app.sources.DestroyedSource;
 
 import org.fxmisc.easybind.EasyBind;
 
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -269,7 +270,35 @@ public class WidgetPaneController {
                   sourced,
                   c.getAddedSubList(),
                   WidgetPaneController::destroyedSourceCouldNotBeRestored));
+        } else if (c.wasRemoved()) {
+          // Replace all removed sources with DestroyedSources
+          pane.getTiles().stream()
+              .map(Tile::getContent)
+              .flatMap(Component::allWidgets)
+              .flatMap(TypeUtils.castStream(Sourced.class))
+              .forEach(s -> replaceWithDestroyedSource(s, c.getRemoved()));
         }
+      }
+    });
+  }
+
+  /**
+   * Replaces removed sources with destroyed versions that can be restored later if they become
+   * available again.
+   *
+   * @param removedUris the URIs of the sources that were removed and should be replaced
+   */
+  private void replaceWithDestroyedSource(Sourced sourced, Collection<? extends String> removedUris) {
+    sourced.getSources().replaceAll(source -> {
+      if (!(source instanceof DestroyedSource)) {
+        if (removedUris.contains(source.getId())) {
+          // Source is no longer available, replace with a destroyed source
+          return DestroyedSource.forUnknownData(sourced.getDataTypes(), source.getId());
+        } else {
+          return source;
+        }
+      } else {
+        return source;
       }
     });
   }
