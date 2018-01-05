@@ -1,12 +1,17 @@
 package edu.wpi.first.shuffleboard.app.sources.recording;
 
 import edu.wpi.first.shuffleboard.api.DashboardMode;
+import edu.wpi.first.shuffleboard.api.properties.AtomicBooleanProperty;
+import edu.wpi.first.shuffleboard.api.properties.AtomicIntegerProperty;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
 import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
 import edu.wpi.first.shuffleboard.api.sources.recording.Recording;
 import edu.wpi.first.shuffleboard.api.sources.recording.Serialization;
 import edu.wpi.first.shuffleboard.api.sources.recording.TimestampedData;
+import edu.wpi.first.shuffleboard.api.util.ThreadUtils;
+
+import com.google.common.util.concurrent.Futures;
 
 import edu.wpi.first.networktables.NetworkTableInstance;
 
@@ -16,15 +21,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.Property;
 import javafx.beans.property.ReadOnlyProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
 /**
@@ -37,21 +41,20 @@ import javafx.beans.property.SimpleObjectProperty;
 @SuppressWarnings("PMD.GodClass") // Seriously? It's not _that_ complicated
 public final class Playback {
 
-  private static final Logger log = Logger.getLogger(Playback.class.getName());
-
   private final Recording recording;
   private final List<TimestampedData> data;
   private final int numFrames;
   private final int maxFrameNum;
-  private Thread autoRunner;
   private volatile boolean started = false;
-  private volatile int frameDelta = 1;
-  private volatile int lastFrameDelta = 0;
-  private volatile TimestampedData currentFrame;
-  private final Object sleepLock = new Object();
-  private final BooleanProperty paused = new SimpleBooleanProperty(this, "paused", true);
-  private final IntegerProperty frame = new SimpleIntegerProperty(this, "frame", 0);
-  private final BooleanProperty looping = new SimpleBooleanProperty(this, "looping", true);
+
+  // Using atomic properties because they get updated from the executor thread
+  private final BooleanProperty paused = new AtomicBooleanProperty(this, "paused", true);
+  private final IntegerProperty frame = new AtomicIntegerProperty(this, "frame", 0);
+  private final BooleanProperty looping = new AtomicBooleanProperty(this, "looping", true);
+
+  private final ScheduledExecutorService autoRunnerExecutor = ThreadUtils.newDaemonScheduledExecutorService();
+  private volatile Future<Integer> nextFrameFuture = Futures.immediateFuture(-1);
+  private volatile TimestampedData currentFrame = null;
 
   private static final Property<Playback> currentPlayback = new SimpleObjectProperty<>(Playback.class, "current", null);
 
@@ -100,45 +103,52 @@ public final class Playback {
     frame.addListener((__, prev, cur) -> {
       int lastFrame = prev.intValue();
       int newFrame = cur.intValue();
-      lastFrameDelta = frameDelta;
-      frameDelta = Math.abs(lastFrame - newFrame);
+      if (newFrame - lastFrame != 1 && !(newFrame == 0 && lastFrame == maxFrameNum)) {
+        pause();
+      }
       currentFrame = data.get(newFrame);
-      Set<String> remainingSources = new HashSet<>(recording.getSourceIds());
       if (newFrame > lastFrame) {
-        // forward
-        for (int i = newFrame; i >= lastFrame && !remainingSources.isEmpty(); i--) {
-          final TimestampedData data = this.data.get(i);
-          if (remainingSources.contains(data.getSourceId())) {
-            set(data);
-            remainingSources.remove(data.getSourceId());
-          }
-        }
+        forward(newFrame, lastFrame);
       } else {
-        // backward
-        for (int i = newFrame; i <= lastFrame && !remainingSources.isEmpty(); i++) {
-          final TimestampedData data = this.data.get(i);
-          if (remainingSources.contains(data.getSourceId())) {
-            set(data);
-            remainingSources.remove(data.getSourceId());
-          }
-        }
+        backward(newFrame, lastFrame);
       }
     });
     paused.addListener((__, wasPaused, isPaused) -> {
-      if (!isPaused) {
-        wakeAutoRunner();
+      if (isPaused) {
+        nextFrameFuture.cancel(true);
+      } else {
+        nextFrameFuture = autoRunnerExecutor.submit(() -> moveToNextFrame(getFrame()));
       }
     });
     looping.addListener((__, wasLooping, isLooping) -> {
-      if (isLooping) {
-        wakeAutoRunner();
+      if (isLooping && !isPaused()) {
+        int frame = getFrame();
+        if (frame == maxFrameNum) {
+          nextFrameFuture = autoRunnerExecutor.submit(() -> moveToNextFrame(maxFrameNum));
+        }
       }
     });
   }
 
-  private void wakeAutoRunner() {
-    synchronized (sleepLock) {
-      sleepLock.notifyAll();
+  private void forward(int lastFrame, int newFrame) {
+    Set<String> remainingSources = new HashSet<>(recording.getSourceIds());
+    for (int i = newFrame; i >= lastFrame && !remainingSources.isEmpty(); i--) {
+      final TimestampedData data = this.data.get(i);
+      if (remainingSources.contains(data.getSourceId())) {
+        set(data);
+        remainingSources.remove(data.getSourceId());
+      }
+    }
+  }
+
+  private void backward(int lastFrame, int newFrame) {
+    Set<String> remainingSources = new HashSet<>(recording.getSourceIds());
+    for (int i = newFrame; i <= lastFrame && !remainingSources.isEmpty(); i++) {
+      final TimestampedData data = this.data.get(i);
+      if (remainingSources.contains(data.getSourceId())) {
+        set(data);
+        remainingSources.remove(data.getSourceId());
+      }
     }
   }
 
@@ -153,51 +163,51 @@ public final class Playback {
     DashboardMode.setCurrentMode(DashboardMode.PLAYBACK);
     unpause();
     SourceTypes.getDefault().getItems().forEach(SourceType::disconnect);
-    autoRunner = new Thread(() -> {
-      TimestampedData previous;
-      TimestampedData current = null;
-      int currentFrame = 0;
-      while (!Thread.interrupted()) {
-        previous = currentFrame == 0 ? null : current;
-        current = data.get(currentFrame);
-        currentFrame = (getFrame() + 1) % numFrames;
-
-        // Sleep only if we're not paused and the frames are consecutive.
-        // If the frames are not consecutive, it means that the frame was manually moved by a user and we would delay
-        // when we shouldn't
-        if (!isPaused() && previous != null && lastFrameDelta <= 1) {
-          try {
-            Thread.sleep(current.getTimestamp() - previous.getTimestamp());
-          } catch (InterruptedException e) {
-            log.log(Level.WARNING, "Autorunner thread interrupted between frames", e);
-            autoRunner.interrupt();
-            return;
-          }
-        }
-        // May have been paused while sleeping, so check after wake to make sure
-        if (!isPaused()) {
-          setFrame(currentFrame);
-        }
-
-        // Halt this thread if playback is paused, or if the end is reached and we're not looping
-        if (shouldNotPlayNextFrame()) {
-          synchronized (sleepLock) {
-            while (shouldNotPlayNextFrame()) {
-              try {
-                sleepLock.wait();
-              } catch (InterruptedException e) {
-                log.log(Level.WARNING, "Autorunner thread interrupted while paused", e);
-                autoRunner.interrupt();
-                return;
-              }
-            }
-          }
-        }
-      }
-    }, "PlaybackThread");
-    autoRunner.setDaemon(true);
-    autoRunner.start();
+    nextFrameFuture = autoRunnerExecutor.submit(() -> moveToNextFrame(0));
     started = true;
+  }
+
+  /**
+   * Moves to the frame after the given one. If the given frame is the last frame, it will move to the first one if
+   * {@link #looping} is enabled.
+   */
+  private int moveToNextFrame(int currentFrameNum) {
+    return moveFrame(currentFrameNum, (currentFrameNum + 1) % numFrames);
+  }
+
+  /**
+   * Moves to the next frame, then schedules itself to be run again after the next frame delay. This pseudo-recursive
+   * chaining can be stopped by calling {@code nextFrameFuture.cancel(true)} at any time, usually by setting the
+   * {@link #paused} property to {@code false}.
+   *
+   * <p>If {@code nextFrame} is the last frame and {@link #looping} is enabled, the next run will move to the first
+   * frame after no delay. If looping is not enabled, the chain will stop and must be restarted by calling this method
+   * again.
+   *
+   * @param currentFrameNum the current frame
+   * @param nextFrameNum    the next frame to be loaded
+   *
+   * @return the next frame number
+   */
+  private int moveFrame(int currentFrameNum, int nextFrameNum) {
+    if (shouldNotPlayNextFrame()) {
+      nextFrameFuture = Futures.immediateFuture(-1);
+      return currentFrameNum;
+    }
+    TimestampedData currentFrame = data.get(currentFrameNum);
+    TimestampedData nextFrame = data.get(nextFrameNum);
+    setFrame(nextFrameNum);
+    boolean consecutive = currentFrameNum == nextFrameNum - 1;
+    if (consecutive) {
+      // Do a wait to make the data be set at the same rate it was when it was recorded
+      long frameTime = nextFrame.getTimestamp() - currentFrame.getTimestamp();
+      nextFrameFuture = autoRunnerExecutor.schedule(
+          () -> moveToNextFrame(nextFrameNum), frameTime, TimeUnit.MILLISECONDS);
+    } else {
+      // Frame was changed manually by the user, no sleeps
+      nextFrameFuture = autoRunnerExecutor.submit(() -> moveToNextFrame(nextFrameNum));
+    }
+    return nextFrameNum;
   }
 
   private boolean shouldNotPlayNextFrame() {
@@ -219,7 +229,7 @@ public final class Playback {
       // This playback was never started, so there's no point in stopping it
       return;
     }
-    autoRunner.interrupt();
+    nextFrameFuture.cancel(true);
     currentPlayback.setValue(null);
     NetworkTableInstance inst = NetworkTableInstance.getDefault();
     inst.deleteAllEntries();
