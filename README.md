@@ -12,16 +12,19 @@ subprojects that the main app depends on to provide data types, widgets, and dat
 
 ## Running
 
-To run shuffleboard use the command `./gradlew :app:run`.
+Shuffleboard is installed by the WPILib Eclipse Plugins. It can be launched from the WPILib menu in Eclipse.
+It can also be run manually `java -jar c:\users\\<username\>wpilib\tools\Shuffleboard.jar`
 
 ### Requirements
-- [JDK 8](http://www.oracle.com/technetwork/java/javase/downloads/index.html)
+- [JRE 8](http://www.oracle.com/technetwork/java/javase/downloads/jre8-downloads-2133155.html). Java 8u40 or greater is required. Java 9 is not supported.
 
 ## Building
+
+To run shuffleboard use the command `./gradlew :app:run`.
 
 To build the APIs and utility classes used in plugin creation, use the command `./gradlew :api:shadowJar`
 
 To build the Shuffleboard application, use the command `./gradlew :app:shadowJar`
 
 ### Requirements
-- [JDK 8](http://www.oracle.com/technetwork/java/javase/downloads/index.html)
+- [JDK 8](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html). JDK 8u40 or or greater is required. Java 9 is not supported.
