@@ -1,10 +1,12 @@
 package edu.wpi.first.shuffleboard.app.components;
 
+import edu.wpi.first.shuffleboard.api.tab.TabInfo;
 import edu.wpi.first.shuffleboard.api.util.Debouncer;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 
+import java.util.Collection;
 import java.util.function.Predicate;
 
 import javafx.collections.ListChangeListener;
@@ -23,6 +25,10 @@ public class DashboardTabPane extends TabPane {
    */
   public DashboardTabPane() {
     this((Tab[]) null);
+  }
+
+  public DashboardTabPane(Collection<TabInfo> tabInfo) {
+    this(tabInfo.stream().map(DashboardTab::new).toArray(DashboardTab[]::new));
   }
 
   /**

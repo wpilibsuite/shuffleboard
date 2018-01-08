@@ -3,11 +3,8 @@ package edu.wpi.first.shuffleboard.app;
 import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
 import edu.wpi.first.shuffleboard.api.util.Storage;
 import edu.wpi.first.shuffleboard.api.util.Time;
-import edu.wpi.first.shuffleboard.app.components.DashboardTab;
-import edu.wpi.first.shuffleboard.app.components.DashboardTabPane;
 import edu.wpi.first.shuffleboard.app.plugin.PluginLoader;
 import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
-import edu.wpi.first.shuffleboard.app.tab.TabInfoRegistry;
 import edu.wpi.first.shuffleboard.plugin.base.BasePlugin;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.CameraServerPlugin;
 import edu.wpi.first.shuffleboard.plugin.networktables.NetworkTablesPlugin;
@@ -89,15 +86,8 @@ public class Shuffleboard extends Application {
     Platform.runLater(() -> {
       if (AppPreferences.getInstance().isAutoLoadLastSaveFile()) {
         mainWindowController.load(AppPreferences.getInstance().getSaveFile());
-      } else if (TabInfoRegistry.getDefault().getItems().isEmpty()) {
-        // No plugins define default tabs, so we need to add at least one tab to make the dashboard usable at startup
-        mainWindowController.setDashboard(new DashboardTabPane(new DashboardTab("Tab 1")));
       } else {
-        DashboardTab[] tabs = TabInfoRegistry.getDefault().getItems()
-            .stream()
-            .map(DashboardTab::new)
-            .toArray(DashboardTab[]::new);
-        mainWindowController.setDashboard(new DashboardTabPane(tabs));
+        mainWindowController.newLayout();
       }
     });
 
