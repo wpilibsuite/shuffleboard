@@ -3,6 +3,7 @@ package edu.wpi.first.shuffleboard.app;
 import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
 import edu.wpi.first.shuffleboard.api.util.Storage;
 import edu.wpi.first.shuffleboard.api.util.Time;
+import edu.wpi.first.shuffleboard.app.components.DashboardTabPane;
 import edu.wpi.first.shuffleboard.app.plugin.PluginLoader;
 import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
 import edu.wpi.first.shuffleboard.plugin.base.BasePlugin;
@@ -82,12 +83,14 @@ public class Shuffleboard extends Application {
     PluginLoader.getDefault().load(new CameraServerPlugin());
     PluginLoader.getDefault().loadAllJarsFromDir(Storage.getPluginPath());
 
-    // Load the most recent save file after loading all plugins
-    if (AppPreferences.getInstance().isAutoLoadLastSaveFile()) {
-      Platform.runLater(() -> {
+    // Setup the dashboard tabs after all plugins are loaded
+    Platform.runLater(() -> {
+      if (AppPreferences.getInstance().isAutoLoadLastSaveFile()) {
         mainWindowController.load(AppPreferences.getInstance().getSaveFile());
-      });
-    }
+      } else {
+        mainWindowController.setDashboard(DashboardTabPane.createDefaultFrcPane());
+      }
+    });
 
     primaryStage.setTitle("Shuffleboard");
     primaryStage.setMinWidth(640);
