@@ -6,6 +6,7 @@ import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
+import edu.wpi.first.shuffleboard.api.tab.TabInfo;
 import edu.wpi.first.shuffleboard.api.util.Debouncer;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
@@ -113,6 +114,15 @@ public class DashboardTab extends Tab implements HandledTab, Populatable {
     MenuItem prefItem = FxUtils.menuItem("Preferences", __ -> showPrefsDialog());
     prefItem.setStyle("-fx-text-fill: black;");
     setContextMenu(new ContextMenu(prefItem));
+  }
+
+  /**
+   * Creates a new tab from a tab info object.
+   */
+  public DashboardTab(TabInfo tabInfo) {
+    this(tabInfo.getName());
+    setSourcePrefix(tabInfo.getSourcePrefix());
+    setAutoPopulate(tabInfo.isAutoPopulate());
   }
 
   /**

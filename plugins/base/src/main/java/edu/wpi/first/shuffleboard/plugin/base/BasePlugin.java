@@ -4,6 +4,7 @@ import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.plugin.Description;
 import edu.wpi.first.shuffleboard.api.plugin.Plugin;
+import edu.wpi.first.shuffleboard.api.tab.TabInfo;
 import edu.wpi.first.shuffleboard.api.widget.ComponentType;
 import edu.wpi.first.shuffleboard.api.widget.LayoutClass;
 import edu.wpi.first.shuffleboard.api.widget.WidgetType;
@@ -150,6 +151,14 @@ public class BasePlugin extends Plugin {
         return ImmutableSet.of(new SubsystemType());
       }
     };
+  }
+
+  @Override
+  public List<TabInfo> getDefaultTabInfo() {
+    return ImmutableList.of(
+        TabInfo.builder().name("SmartDashboard").autoPopulate().sourcePrefix("SmartDashboard/").build(),
+        TabInfo.builder().name("LiveWindow").autoPopulate().sourcePrefix("LiveWindow/").build()
+    );
   }
 
 }

@@ -18,31 +18,11 @@ import static edu.wpi.first.shuffleboard.api.util.TypeUtils.optionalCast;
  */
 public class DashboardTabPane extends TabPane {
 
+  /**
+   * Creates a dashboard with no tabs.
+   */
   public DashboardTabPane() {
-  }
-
-  /**
-   * Creates a dashboard tab that will auto populate for the given source prefix.
-   *
-   * @param name         the name of the tab
-   * @param sourcePrefix the prefixes to sources to populate the tab with
-   */
-  public static DashboardTab createAutoPopulateTab(String name, String sourcePrefix) {
-    DashboardTab tab = new DashboardTab(name);
-    tab.setAutoPopulate(true);
-    tab.setSourcePrefix(sourcePrefix);
-    return tab;
-  }
-
-  /**
-   * Creates a dashboard tab pane with two autopopulating tabs for FRC use: "SmartDashboard" and "LiveWindow".
-   */
-  // TODO move this to the FRC plugin. This doesn't belong here
-  public static DashboardTabPane createDefaultFrcPane() {
-    return new DashboardTabPane(
-        createAutoPopulateTab("SmartDashboard", "SmartDashboard/"),
-        createAutoPopulateTab("LiveWindow", "LiveWindow/")
-    );
+    this((Tab[]) null);
   }
 
   /**
