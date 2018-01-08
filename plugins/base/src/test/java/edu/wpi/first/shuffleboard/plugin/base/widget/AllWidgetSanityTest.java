@@ -3,6 +3,8 @@ package edu.wpi.first.shuffleboard.plugin.base.widget;
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.sources.DummySource;
+import edu.wpi.first.shuffleboard.api.util.AsyncUtils;
+import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 import edu.wpi.first.shuffleboard.api.widget.WidgetType;
@@ -28,6 +30,7 @@ public class AllWidgetSanityTest extends ApplicationTest {
 
   @BeforeAll
   public static void setup() {
+    AsyncUtils.setAsyncRunner(Runnable::run);
     DataTypes.setDefault(new DataTypes());
     plugin.getDataTypes().forEach(DataTypes.getDefault()::register);
   }
@@ -35,6 +38,7 @@ public class AllWidgetSanityTest extends ApplicationTest {
   @AfterAll
   public static void tearDown() {
     DataTypes.setDefault(new DataTypes());
+    AsyncUtils.setAsyncRunner(FxUtils::runOnFxThread);
   }
 
   @ParameterizedTest

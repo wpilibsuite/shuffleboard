@@ -10,6 +10,7 @@ import edu.wpi.first.shuffleboard.api.util.Debouncer;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
+import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.ComponentContainer;
 import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.api.widget.Sourced;
@@ -23,6 +24,7 @@ import org.fxmisc.easybind.EasyBind;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import javafx.beans.property.BooleanProperty;
@@ -242,12 +244,25 @@ public class DashboardTab extends Tab implements HandledTab, Populatable {
 
   @Override
   public boolean hasComponentFor(String sourceId) {
-    return getWidgetPane().getTiles().stream()
+    List<Component> topLevelComponents = getWidgetPane().getTiles().stream()
         .map(Tile::getContent)
+        .collect(Collectors.toList());
+    Predicate<Sourced> isSameSource = s -> s.getSources().stream()
+        .map(DataSource::getId)
+        .anyMatch(sourceId::equals);
+    Predicate<Sourced> isSubSource = s -> s.getSources().stream()
+        .map(i -> i.getId() + "/")
+        .anyMatch(sourceId::startsWith);
+    Predicate<Sourced> isNotContainer = s -> !(s instanceof ComponentContainer);
+    Predicate<Sourced> hasComponent = isSameSource.or(isSubSource.and(isNotContainer));
+    return topLevelComponents.stream()
         .flatMap(TypeUtils.castStream(Sourced.class))
-        .anyMatch(s -> s.getSources().stream().map(DataSource::getId).anyMatch(sourceId::equals)
-            || (s.getSources().stream().map(DataSource::getId).anyMatch(sourceId::startsWith)
-            && !(s instanceof ComponentContainer)));
+        .anyMatch(hasComponent)
+        || topLevelComponents.stream()
+        .flatMap(TypeUtils.castStream(ComponentContainer.class))
+        .flatMap(ComponentContainer::allComponents)
+        .flatMap(TypeUtils.castStream(Sourced.class))
+        .anyMatch(hasComponent);
   }
 
   @Override
@@ -262,6 +277,12 @@ public class DashboardTab extends Tab implements HandledTab, Populatable {
       Components.getDefault().defaultComponentNameFor(source.getDataType())
           .flatMap(s -> Components.getDefault().createComponent(s, source))
           .ifPresent(c -> {
+            // Remove redundant source name information from the title, if necessary
+            String sourcePrefix = getSourcePrefix();
+            sourcePrefix = sourcePrefix.endsWith("/") ? sourcePrefix : sourcePrefix + "/";
+            if (!"/".equals(sourcePrefix) && c.getTitle().startsWith(sourcePrefix)) {
+              c.setTitle(c.getTitle().substring(sourcePrefix.length()));
+            }
             getWidgetPane().addComponent(c);
             if (c instanceof Populatable) {
               Autopopulator.getDefault().addTarget((Populatable) c);

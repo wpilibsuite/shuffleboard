@@ -23,9 +23,15 @@ public abstract class ComplexDataType<T extends ComplexData> extends DataType<T>
    * Creates a new data object from the given map.
    *
    * @param map the map of values to create the data from
+   *
+   * @throws IncompleteDataException if the map does not have all the variables needed to create a data object
    */
-  public T fromMap(Map<String, Object> map) {
-    return fromMap().apply(map);
+  public T fromMap(Map<String, Object> map) throws IncompleteDataException {
+    try {
+      return fromMap().apply(map);
+    } catch (RuntimeException e) {
+      throw new IncompleteDataException("Incomplete data in map: " + map, e);
+    }
   }
 
   public final boolean isComplex() {

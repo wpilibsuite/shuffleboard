@@ -4,6 +4,7 @@ import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
+import edu.wpi.first.shuffleboard.api.sources.Sources;
 
 import com.google.common.collect.Iterables;
 
@@ -106,7 +107,7 @@ public class DestroyedSource<T> implements DataSource<T> {
       }
       restored.nameProperty().set(name.get());
       restored.activeProperty().set(true);
-      if (getData() == null) {
+      if (getData() == null && !Sources.getDefault().isRegistered(restored)) {
         // No data was saved, set it to the default value for its type
         restored.setData(restored.getDataType().getDefaultValue());
       } else {

@@ -31,4 +31,9 @@ public abstract class AbstractWidgetType<W extends Widget> implements WidgetType
   public Set<DataType> getDataTypes() {
     return dataTypes;
   }
+
+  @Override
+  public String toString() {
+    return "WidgetType(name=" + name + ")";
+  }
 }

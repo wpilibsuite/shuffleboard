@@ -19,7 +19,6 @@ import java.util.concurrent.TimeoutException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
@@ -56,7 +55,7 @@ public class SingleKeyNetworkTableSourceTest {
     SingleKeyNetworkTableSource<String> source
         = new SingleKeyNetworkTableSource<>(table, key, type);
     assertFalse(source.isActive(), "The source should not be active without any data");
-    assertNull(source.getData(), "The source should not have any data");
+    assertEquals(type.getDefaultValue(), source.getData(), "The source should not have any data");
     source.close();
   }
 
@@ -82,7 +81,7 @@ public class SingleKeyNetworkTableSourceTest {
         = new SingleKeyNetworkTableSource<>(table, key, type);
     table.getEntry(key).setNumber(12345);
     NetworkTableInstance.getDefault().waitForEntryListenerQueue(-1.0);
-    assertEquals(null, source.getData(), "The source should not have any data");
+    assertEquals(type.getDefaultValue(), source.getData(), "The source should not have any data");
     assertFalse(source.isActive());
     source.close();
   }
