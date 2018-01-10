@@ -156,7 +156,7 @@ public class Shuffleboard extends Application {
     fileHandler.setFormatter(new SimpleFormatter()); //log in text, not xml
 
     globalLogger.config("Configuration done."); //Log that we are done setting up the logger
-    globalLogger.config("Shuffleboard app version: " + Shuffleboard.class.getPackage().getImplementationVersion());
+    globalLogger.config("Shuffleboard app version: " + getVersion());
   }
 
   /**
@@ -169,6 +169,20 @@ public class Shuffleboard extends Application {
    */
   private static void uncaughtException(Thread thread, Throwable throwable) {
     logger.log(Level.WARNING, "Uncaught exception on " + thread.getName(), throwable);
+  }
+
+  /**
+   * Gets the current shuffleboard version.
+   */
+  public static String getVersion() {
+    // Try to get the version from the shuffleboard class. This will return null when running from source (eg using
+    // gradle run or similar), so in that case we fall back to getting the version from an API class, which will always
+    // have its version set in that case
+    String appVersion = Shuffleboard.class.getPackage().getImplementationVersion();
+    if (appVersion != null) {
+      return appVersion;
+    }
+    return Storage.class.getPackage().getImplementationVersion();
   }
 
 }

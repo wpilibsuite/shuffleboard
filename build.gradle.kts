@@ -7,13 +7,17 @@ import org.gradle.api.tasks.wrapper.Wrapper
 import org.gradle.jvm.tasks.Jar
 import org.gradle.testing.jacoco.tasks.JacocoReport
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import org.ajoberstar.grgit.Grgit
+import org.ajoberstar.grgit.operation.DescribeOp
 
 buildscript {
     repositories {
         mavenCentral()
+        jcenter()
     }
     dependencies {
         classpath("org.junit.platform:junit-platform-gradle-plugin:1.0.0")
+        classpath("org.ajoberstar:grgit:1.7.2")
     }
 }
 plugins {
@@ -22,6 +26,7 @@ plugins {
     id("edu.wpi.first.wpilib.versioning.WPILibVersioningPlugin") version "2.0"
     id("com.github.johnrengelman.shadow") version "2.0.1"
     id("com.diffplug.gradle.spotless") version "3.5.1"
+    id("org.ajoberstar.grgit") version "1.7.2"
 }
 
 allprojects {
@@ -148,7 +153,6 @@ allprojects {
      * Run UI tests in headless mode on Jenkins or when the `visibleUiTests` property is not set.
      */
     if (project.hasProperty("jenkinsBuild") || !project.hasProperty("visibleUiTests")) {
-        println("Running UI Tests Headless")
         junitPlatform {
             filters {
                 tags {
@@ -218,6 +222,15 @@ project(":app") {
             }
         }
     }
+
+    val git = Grgit.open()
+    val desc = DescribeOp(git.repository).call()
+    version = getWPILibVersion()?:desc // fall back to git describe if no WPILib version is set
+    tasks.withType<Jar> {
+        manifest {
+            attributes["Implementation-Version"] = version
+        }
+    }
 }
 
 project(":api") {
@@ -247,6 +260,15 @@ project(":api") {
                 artifact(sourceJar)
                 artifact(javadocJar)
             }
+        }
+    }
+
+    val git = Grgit.open()
+    val desc = DescribeOp(git.repository).call()
+    version = getWPILibVersion()?:desc // fall back to git describe if no WPILib version is set
+    tasks.withType<Jar> {
+        manifest {
+            attributes["Implementation-Version"] = version
         }
     }
 }
