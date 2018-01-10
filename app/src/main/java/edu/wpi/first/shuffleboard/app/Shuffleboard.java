@@ -118,6 +118,10 @@ public class Shuffleboard extends Application {
         // Don't need to check for NO because it just lets the window close normally
       });
     });
+
+    if (AppPreferences.getInstance().isCheckForUpdatesOnStartup()) {
+      mainWindowController.checkForUpdates();
+    }
     primaryStage.show();
     Time.setStartTime(Time.now());
   }

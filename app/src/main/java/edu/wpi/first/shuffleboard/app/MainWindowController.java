@@ -12,6 +12,7 @@ import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
 import edu.wpi.first.shuffleboard.api.theme.Theme;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.Storage;
+import edu.wpi.first.shuffleboard.api.util.ThreadUtils;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.app.components.DashboardTab;
@@ -36,6 +37,8 @@ import java.nio.charset.Charset;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -108,6 +111,9 @@ public class MainWindowController {
       = EasyBind.map(AppPreferences.getInstance().themeProperty(), Theme::getStyleSheets);
 
   private final Multimap<Plugin, TitledPane> sourcePanes = ArrayListMultimap.create();
+  private final ShuffleboardUpdateChecker shuffleboardUpdateChecker = new ShuffleboardUpdateChecker();
+  private final ExecutorService updateCheckingExecutor
+      = Executors.newSingleThreadExecutor(ThreadUtils::makeDaemonThread);
 
   @FXML
   private void initialize() throws IOException {
@@ -492,6 +498,11 @@ public class MainWindowController {
       pluginStage.initOwner(root.getScene().getWindow());
     }
     pluginStage.show();
+  }
+
+  @FXML
+  public void checkForUpdates() {
+    updateCheckingExecutor.submit(shuffleboardUpdateChecker::checkForUpdatesAndPromptToInstall);
   }
 
 }

@@ -22,6 +22,7 @@
             <MenuItem onAction="#saveAs" text="Save as..." accelerator="SHORTCUT+SHIFT+S"/>
             <MenuItem onAction="#load" text="Load layout" accelerator="SHORTCUT+O"/>
             <MenuItem onAction="#showPrefs" text="Preferences" accelerator="SHORTCUT+,"/>
+            <MenuItem onAction="#checkForUpdates" text="Check for updates" accelerator="SHORTCUT+U"/>
             <SeparatorMenuItem/>
             <MenuItem onAction="#showPlugins" text="Plugins" accelerator="SHORTCUT+L"/>
             <SeparatorMenuItem/>
