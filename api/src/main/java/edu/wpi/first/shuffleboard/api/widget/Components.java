@@ -129,7 +129,10 @@ public class Components extends Registry<ComponentType> {
    */
   public <T> Optional<Widget> createWidget(String name, DataSource<T> source) {
     Optional<Widget> widget = createWidget(name);
-    widget.ifPresent(w -> w.addSource(source));
+    widget.ifPresent(w -> {
+      w.addSource(source);
+      source.addClient(w);
+    });
     return widget;
   }
 
@@ -147,7 +150,10 @@ public class Components extends Registry<ComponentType> {
    */
   public Optional<Widget> createWidget(String name, Collection<DataSource> sources) throws IncompatibleSourceException {
     Optional<Widget> widget = createWidget(name);
-    widget.ifPresent(w -> sources.forEach(w::addSource));
+    widget.ifPresent(w -> {
+      sources.forEach(w::addSource);
+      sources.forEach(s -> s.addClient(w));
+    });
     return widget;
   }
 
@@ -188,6 +194,7 @@ public class Components extends Registry<ComponentType> {
         .map(c -> {
           if (c instanceof Sourced) {
             ((Sourced) c).addSource(source);
+            source.addClient((Sourced) c);
           }
           return c;
         });

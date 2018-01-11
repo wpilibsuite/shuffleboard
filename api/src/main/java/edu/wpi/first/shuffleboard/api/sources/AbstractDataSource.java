@@ -2,6 +2,11 @@ package edu.wpi.first.shuffleboard.api.sources;
 
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.properties.AsyncProperty;
+import edu.wpi.first.shuffleboard.api.widget.Sourced;
+
+import java.util.Collections;
+import java.util.Set;
+import java.util.WeakHashMap;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.Property;
@@ -19,6 +24,7 @@ import static java.util.Objects.requireNonNull;
  */
 public abstract class AbstractDataSource<T> implements DataSource<T> {
 
+  private final Set<Sourced> clients = Collections.newSetFromMap(new WeakHashMap<>());
   protected final StringProperty name = new SimpleStringProperty(this, "name", "");
   protected final BooleanProperty active = new SimpleBooleanProperty(this, "active", false);
   protected final Property<T> data = new AsyncProperty<>(this, "data", null);
@@ -90,4 +96,23 @@ public abstract class AbstractDataSource<T> implements DataSource<T> {
         getData(),
         getDataType());
   }
+
+  @Override
+  public void addClient(Sourced client) {
+    clients.add(client);
+  }
+
+  @Override
+  public void removeClient(Sourced client) {
+    clients.remove(client);
+    if (clients.isEmpty()) {
+      close();
+    }
+  }
+
+  @Override
+  public boolean hasClients() {
+    return !clients.isEmpty();
+  }
+
 }

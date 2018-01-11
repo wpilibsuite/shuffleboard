@@ -9,6 +9,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.NetworkTableType;
 import edu.wpi.first.shuffleboard.api.sources.AbstractDataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
+import edu.wpi.first.shuffleboard.api.sources.Sources;
 import edu.wpi.first.shuffleboard.api.util.EqualityUtils;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.api.util.ThreadUtils;
@@ -200,11 +201,14 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
 
   @Override
   public void close() {
+    setActive(false);
+    setConnected(false);
     streams.removeListener(streamsListener);
     enabled.removeListener(enabledListener);
     CameraServerJNI.removeListener(eventListenerId);
     cancelFrameGrabber();
     sources.remove(getName());
+    Sources.getDefault().unregister(this);
   }
 
 }

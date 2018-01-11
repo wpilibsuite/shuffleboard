@@ -70,6 +70,7 @@ public class LayoutSaver implements ElementTypeAdapter<Layout> {
           try {
             if (source.isPresent()) {
               sourcedLayout.addSource(source.get());
+              source.get().addClient(sourcedLayout);
             } else {
               sourcedRestorer.addDestroyedSourcesForAllDataTypes(sourcedLayout, uri);
             }
