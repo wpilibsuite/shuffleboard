@@ -17,6 +17,7 @@ import edu.wpi.first.shuffleboard.plugin.base.data.types.MecanumDriveType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.PIDCommandType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.PIDControllerType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.PowerDistributionType;
+import edu.wpi.first.shuffleboard.plugin.base.data.types.QuadratureEncoderType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.RelayType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.RobotPreferencesType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.SendableChooserType;
@@ -71,6 +72,7 @@ public class BasePlugin extends Plugin {
         new AnalogInputType(),
         new PowerDistributionType(),
         new EncoderType(),
+        QuadratureEncoderType.Instance,
         new RobotPreferencesType(),
         new SendableChooserType(),
         new SpeedControllerType(),
@@ -128,6 +130,7 @@ public class BasePlugin extends Plugin {
         .put(new PowerDistributionType(), WidgetType.forAnnotatedWidget(PowerDistributionPanelWidget.class))
         .put(new SendableChooserType(), WidgetType.forAnnotatedWidget(ComboBoxChooserWidget.class))
         .put(new EncoderType(), WidgetType.forAnnotatedWidget(EncoderWidget.class))
+        .put(QuadratureEncoderType.Instance, WidgetType.forAnnotatedWidget(EncoderWidget.class))
         .put(new RobotPreferencesType(), WidgetType.forAnnotatedWidget(RobotPreferencesWidget.class))
         .put(new SpeedControllerType(), WidgetType.forAnnotatedWidget(SpeedControllerWidget.class))
         .put(new CommandType(), WidgetType.forAnnotatedWidget(CommandWidget.class))
