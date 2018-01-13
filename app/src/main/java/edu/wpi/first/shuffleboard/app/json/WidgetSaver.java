@@ -53,9 +53,7 @@ public class WidgetSaver implements ElementTypeAdapter<Widget> {
         Optional<? extends DataSource<?>> source = Sources.getDefault().get(uri);
         try {
           if (source.isPresent()) {
-            DataSource dataSource = source.get();
-            widget.addSource(dataSource);
-            dataSource.addClient(widget);
+            widget.addSource(source.get());
           } else {
             sourcedRestorer.addDestroyedSourcesForAllDataTypes(widget, uri);
           }

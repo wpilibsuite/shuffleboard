@@ -1,6 +1,5 @@
 package edu.wpi.first.shuffleboard.app.json;
 
-import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 import edu.wpi.first.shuffleboard.api.widget.Sourced;
 import edu.wpi.first.shuffleboard.app.sources.DestroyedSource;
@@ -23,9 +22,7 @@ public class SourcedRestorer {
    * @param sourceUri the URI of the source
    */
   public void addDestroyedSourcesForAllDataTypes(Sourced sourced, String sourceUri) {
-    DestroyedSource<?> destroyedSource = DestroyedSource.forUnknownData(sourced.getDataTypes(), sourceUri);
-    sourced.addSource(destroyedSource);
-    destroyedSource.addClient(sourced);
+    sourced.addSource(DestroyedSource.forUnknownData(sourced.getDataTypes(), sourceUri));
   }
 
   /**
@@ -46,8 +43,7 @@ public class SourcedRestorer {
         .collect(Collectors.toList());
     for (DestroyedSource source : toRestore) {
       try {
-        DataSource restore = source.restore();
-        restore.addClient(sourced);
+        sourced.addSource(source.restore());
         // Remove all destroyed sources with the same ID; they were only present to allow us to restore the source
         // with the correct data type.  Since restoring this source was successful, the correct data type is known and
         // the remaining destroyed sources are no longer necessary

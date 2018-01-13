@@ -30,6 +30,16 @@ public interface Sourced {
    */
   ObservableList<DataSource> getSources();
 
+  default void removeSource(DataSource source) {
+    getSources().remove(source);
+    source.removeClient(this);
+  }
+
+  default void removeAllSources() {
+    getSources().forEach(s -> s.removeClient(this));
+    getSources().clear();
+  }
+
   /**
    * Gets the allowable data types for sources. Defaults to {@link DataTypes#All}.
    */

@@ -91,21 +91,7 @@ public class WidgetPaneController {
     });
 
     // Add a context menu for pane-related actions
-    pane.setOnContextMenuRequested(e -> {
-      MenuItem clear = FxUtils.menuItem("Clear", __ -> {
-        Function<Tile, Component> removeTile = pane::removeTile;
-        List<Tile> tiles = new ArrayList<>(pane.getTiles());
-        tiles.stream()
-            .map(removeTile)
-            .flatMap(TypeUtils.castStream(Sourced.class))
-            .forEach(s -> {
-              s.getSources().forEach(source -> source.removeClient(s));
-              s.getSources().clear();
-            });
-      });
-      ContextMenu contextMenu = new ContextMenu(clear);
-      contextMenu.show(pane.getScene().getWindow(), e.getScreenX(), e.getScreenY());
-    });
+    pane.setOnContextMenuRequested(this::createPaneContextMenu);
 
     // Handle being dragged over
     pane.setOnDragOver(event -> {
@@ -285,6 +271,19 @@ public class WidgetPaneController {
     });
   }
 
+  private void createPaneContextMenu(ContextMenuEvent e) {
+    MenuItem clear = FxUtils.menuItem("Clear", __ -> {
+      List<Tile> tiles = new ArrayList<>(pane.getTiles());
+      tiles.stream()
+          .map((Function<Tile, Component>) pane::removeTile)
+          .flatMap(Component::allComponents)
+          .flatMap(TypeUtils.castStream(Sourced.class))
+          .forEach(Sourced::removeAllSources);
+    });
+    ContextMenu contextMenu = new ContextMenu(clear);
+    contextMenu.show(pane.getScene().getWindow(), e.getScreenX(), e.getScreenY());
+  }
+
   /**
    * Cleans up from dragging widgets around in the tile pane.
    */
@@ -359,7 +358,12 @@ public class WidgetPaneController {
           .addAction("Remove", () -> {
             Component removed = pane.removeTile(tile);
             if (removed instanceof Sourced) {
-              ((Sourced) removed).getSources().forEach(s -> s.removeClient((Sourced) removed));
+              ((Sourced) removed).removeAllSources();
+            }
+            if (removed instanceof Layout) {
+              ((Layout) removed).allComponents()
+                  .flatMap(TypeUtils.castStream(Sourced.class))
+                  .forEach(Sourced::removeAllSources);
             }
           })
           .addNested(createLayoutMenus(tile));
@@ -401,7 +405,6 @@ public class WidgetPaneController {
         DataSource source = entry.get();
         Sourced sourced = (Sourced) tile.getContent();
         sourced.addSource(source);
-        source.addClient(sourced);
         event.consume();
 
         return;

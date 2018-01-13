@@ -49,7 +49,7 @@ public interface Widget extends Component, Sourced {
   List<? extends Property<?>> getProperties();
 
   @Override
-  default Stream<Widget> allWidgets() {
+  default Stream<Component> allComponents() {
     return Stream.of(this);
   }
 }

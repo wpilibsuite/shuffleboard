@@ -1,10 +1,13 @@
 package edu.wpi.first.shuffleboard.app.components;
 
-import edu.wpi.first.shuffleboard.api.util.Debouncer;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 import edu.wpi.first.shuffleboard.api.widget.Component;
+import edu.wpi.first.shuffleboard.api.widget.Sourced;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import javafx.collections.ListChangeListener;
@@ -50,8 +53,16 @@ public class DashboardTabPane extends TabPane {
       if (change.wasRemoved()) {
         change.getRemoved().stream()
             .flatMap(TypeUtils.castStream(DashboardTab.class))
-            .map(DashboardTab::getPopulateDebouncer)
-            .forEach(Debouncer::cancel);
+            .forEach(tab -> {
+              tab.getPopulateDebouncer().cancel();
+              WidgetPane widgetPane = tab.getWidgetPane();
+              List<Tile> tiles = new ArrayList<>(widgetPane.getTiles());
+              tiles.stream()
+                  .map((Function<Tile, Component>) widgetPane::removeTile)
+                  .flatMap(c -> c.allComponents())
+                  .flatMap(TypeUtils.castStream(Sourced.class))
+                  .forEach(Sourced::removeAllSources);
+            });
       }
     }
   }

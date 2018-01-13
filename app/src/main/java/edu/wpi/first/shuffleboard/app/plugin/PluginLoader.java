@@ -409,8 +409,7 @@ public class PluginLoader {
     try {
       DataSource restore = destroyedSource.restore();
       widget.addSource(restore);
-      restore.addClient(widget);
-      destroyedSource.removeClient(widget);
+      widget.removeSource(destroyedSource);
     } catch (IncompatibleSourceException | DataTypeChangedException e) {
       log.log(Level.WARNING, "Could not set the restored source of " + widget
           + ". The plugin defining its data type was probably unloaded.", e);
