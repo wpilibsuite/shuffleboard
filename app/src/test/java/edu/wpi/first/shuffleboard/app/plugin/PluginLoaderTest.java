@@ -7,11 +7,13 @@ import edu.wpi.first.shuffleboard.api.plugin.Plugin;
 import edu.wpi.first.shuffleboard.api.plugin.Requires;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
+import edu.wpi.first.shuffleboard.api.tab.TabInfo;
 import edu.wpi.first.shuffleboard.api.theme.Theme;
 import edu.wpi.first.shuffleboard.api.theme.Themes;
 import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.ComponentType;
 import edu.wpi.first.shuffleboard.api.widget.Components;
+import edu.wpi.first.shuffleboard.app.tab.TabInfoRegistry;
 import edu.wpi.first.shuffleboard.testplugins.BasicPlugin;
 import edu.wpi.first.shuffleboard.testplugins.DependentOnUnknownPlugin;
 
@@ -46,6 +48,7 @@ public class PluginLoaderTest {
   private SourceTypes sourceTypes;
   private Components components;
   private Themes themes;
+  private TabInfoRegistry tabInfoRegistry;
 
   @BeforeEach
   public void setup() {
@@ -53,7 +56,8 @@ public class PluginLoaderTest {
     sourceTypes = new SourceTypes();
     components = new Components();
     themes = new Themes();
-    loader = new PluginLoader(dataTypes, sourceTypes, components, themes);
+    tabInfoRegistry = new TabInfoRegistry();
+    loader = new PluginLoader(dataTypes, sourceTypes, components, themes, tabInfoRegistry);
   }
 
   @Test
@@ -170,6 +174,18 @@ public class PluginLoaderTest {
     assertFalse(sourceTypes.isRegistered(MockPlugin.sourceType));
     assertFalse(components.isRegistered(MockPlugin.component));
     assertFalse(themes.isRegistered(MockPlugin.theme));
+  }
+
+  @Test
+  public void testDefaultTabs() {
+    // given
+    Plugin plugin = new DefaultTabsPlugin();
+
+    // when
+    loader.load(plugin);
+
+    // then
+    assertTrue(tabInfoRegistry.isRegistered(DefaultTabsPlugin.tabInfo), "Tab info was not registered");
   }
 
   @Test
@@ -388,5 +404,19 @@ public class PluginLoaderTest {
   @Requires(group = "test", name = "SelfDependentPlugin", minVersion = "0.0.0")
   private static final class SelfDependentPlugin extends Plugin {
   }
+
+  @Description(group = "test", name = "DefaultTabsPlugin", version = "0.0.0", summary = "")
+  private static final class DefaultTabsPlugin extends Plugin {
+
+    private static final TabInfo tabInfo = new TabInfo("tabName", false, "sourcePrefix");
+
+    @Override
+    public List<TabInfo> getDefaultTabInfo() {
+      return ImmutableList.of(
+          tabInfo
+      );
+    }
+  }
+
 
 }

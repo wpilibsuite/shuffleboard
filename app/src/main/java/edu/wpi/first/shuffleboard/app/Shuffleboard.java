@@ -88,12 +88,14 @@ public class Shuffleboard extends Application {
     PluginLoader.getDefault().load(new CameraServerPlugin());
     PluginLoader.getDefault().loadAllJarsFromDir(Storage.getPluginPath());
 
-    // Load the most recent save file after loading all plugins
-    if (AppPreferences.getInstance().isAutoLoadLastSaveFile()) {
-      Platform.runLater(() -> {
+    // Setup the dashboard tabs after all plugins are loaded
+    Platform.runLater(() -> {
+      if (AppPreferences.getInstance().isAutoLoadLastSaveFile()) {
         mainWindowController.load(AppPreferences.getInstance().getSaveFile());
-      });
-    }
+      } else {
+        mainWindowController.newLayout();
+      }
+    });
 
     primaryStage.setTitle("Shuffleboard");
     primaryStage.setMinWidth(640);

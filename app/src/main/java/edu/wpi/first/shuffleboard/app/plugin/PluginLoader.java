@@ -16,6 +16,7 @@ import edu.wpi.first.shuffleboard.api.widget.SingleSourceWidget;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 import edu.wpi.first.shuffleboard.app.sources.DataTypeChangedException;
 import edu.wpi.first.shuffleboard.app.sources.DestroyedSource;
+import edu.wpi.first.shuffleboard.app.tab.TabInfoRegistry;
 
 import com.cedarsoft.version.Version;
 import com.google.common.annotations.VisibleForTesting;
@@ -50,7 +51,13 @@ public class PluginLoader {
   private static final Logger log = Logger.getLogger(PluginLoader.class.getName());
 
   private static final PluginLoader defaultLoader =
-      new PluginLoader(DataTypes.getDefault(), SourceTypes.getDefault(), Components.getDefault(), Themes.getDefault());
+      new PluginLoader(
+          DataTypes.getDefault(),
+          SourceTypes.getDefault(),
+          Components.getDefault(),
+          Themes.getDefault(),
+          TabInfoRegistry.getDefault()
+      );
 
   private final ObservableSet<Plugin> loadedPlugins = FXCollections.observableSet();
   private final Set<Class<? extends Plugin>> knownPluginClasses = new HashSet<>();
@@ -59,23 +66,30 @@ public class PluginLoader {
   private final SourceTypes sourceTypes;
   private final Components components;
   private final Themes themes;
+  private final TabInfoRegistry tabInfoRegistry;
 
   /**
    * Creates a new plugin loader object. For app use, use {@link #getDefault() the default instance}; this should only
    * be used for tests.
    *
-   * @param dataTypes   the data type registry to use for registering data types from plugins
-   * @param sourceTypes the source type registry to use for registering source types from plugins
-   * @param components  the component registry to use for registering components from plugins
-   * @param themes      the theme registry to use for registering themes from plugins
+   * @param dataTypes       the data type registry to use for registering data types from plugins
+   * @param sourceTypes     the source type registry to use for registering source types from plugins
+   * @param components      the component registry to use for registering components from plugins
+   * @param themes          the theme registry to use for registering themes from plugins
+   * @param tabInfoRegistry the registry for tab information provided by plugins
    *
    * @throws NullPointerException if any of the parameters is {@code null}
    */
-  public PluginLoader(DataTypes dataTypes, SourceTypes sourceTypes, Components components, Themes themes) {
+  public PluginLoader(DataTypes dataTypes,
+                      SourceTypes sourceTypes,
+                      Components components,
+                      Themes themes,
+                      TabInfoRegistry tabInfoRegistry) {
     this.dataTypes = Objects.requireNonNull(dataTypes, "dataTypes");
     this.sourceTypes = Objects.requireNonNull(sourceTypes, "sourceTypes");
     this.components = Objects.requireNonNull(components, "components");
     this.themes = Objects.requireNonNull(themes, "themes");
+    this.tabInfoRegistry = Objects.requireNonNull(tabInfoRegistry, "tabInfoRegistry");
   }
 
   /**
@@ -260,10 +274,10 @@ public class PluginLoader {
       return false;
     }
     log.info("Loading plugin " + plugin.fullIdString());
-    plugin.getDataTypes().forEach(dataTypes::register);
-    plugin.getSourceTypes().forEach(sourceTypes::register);
+    dataTypes.registerAll(plugin.getDataTypes());
+    sourceTypes.registerAll(plugin.getSourceTypes());
     plugin.getTypeAdapters().forEach(Serializers::add);
-    plugin.getComponents().forEach(components::register);
+    components.registerAll(plugin.getComponents());
     plugin.getDefaultComponents().forEach(components::setDefaultComponent);
     components.getActiveWidgets().stream()
         .filter(w -> w.getSources().stream().anyMatch(s -> s instanceof DestroyedSource))
@@ -279,6 +293,7 @@ public class PluginLoader {
               .forEach(s -> tryRestoreSource(w, (DestroyedSource) s));
         });
     plugin.getThemes().forEach(themes::register);
+    tabInfoRegistry.registerAll(plugin.getDefaultTabInfo());
 
     plugin.onLoad();
     plugin.setLoaded(true);
@@ -457,12 +472,13 @@ public class PluginLoader {
             });
           }
         });
-    plugin.getComponents().forEach(components::unregister);
-    plugin.getSourceTypes().forEach(sourceTypes::unregister);
+    components.unregisterAll(plugin.getComponents());
+    sourceTypes.unregisterAll(plugin.getSourceTypes());
     plugin.getTypeAdapters().forEach(Serializers::remove);
-    plugin.getDataTypes().forEach(dataTypes::unregister);
+    dataTypes.unregisterAll(plugin.getDataTypes());
     // TODO figure out a good way to remember the theme & reapply it when reloading the plugin
-    plugin.getThemes().forEach(themes::unregister);
+    themes.unregisterAll(plugin.getThemes());
+    tabInfoRegistry.unregisterAll(plugin.getDefaultTabInfo());
 
     plugin.onUnload();
     plugin.setLoaded(false);
