@@ -108,9 +108,9 @@ public final class Playback {
       }
       currentFrame = data.get(newFrame);
       if (newFrame > lastFrame) {
-        forward(newFrame, lastFrame);
+        forward(lastFrame, newFrame);
       } else {
-        backward(newFrame, lastFrame);
+        backward(lastFrame, newFrame);
       }
     });
     paused.addListener((__, wasPaused, isPaused) -> {
