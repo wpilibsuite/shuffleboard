@@ -2,6 +2,7 @@ package edu.wpi.first.shuffleboard.app.json;
 
 import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
+import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
 import edu.wpi.first.shuffleboard.api.sources.Sources;
 import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
@@ -50,12 +51,20 @@ public class WidgetSaver implements ElementTypeAdapter<Widget> {
       String prop = "_source" + i;
       if (obj.has(prop)) {
         String uri = obj.get(prop).getAsString();
-        Optional<? extends DataSource<?>> source = Sources.getDefault().get(uri);
+        Optional<? extends DataSource<?>> existingSource = Sources.getDefault().get(uri);
         try {
-          if (source.isPresent()) {
-            widget.addSource(source.get());
+          if (existingSource.isPresent()) {
+            widget.addSource(existingSource.get());
           } else {
-            sourcedRestorer.addDestroyedSourcesForAllDataTypes(widget, uri);
+            // Attempt to create a new source for the saved URI
+            DataSource<?> dataSource = SourceTypes.getDefault().forUri(uri);
+            // Check the source type to make sure it's the same as the one expected in the save file
+            if (dataSource.getType().equals(SourceTypes.getDefault().typeForUri(uri))) {
+              widget.addSource(dataSource);
+            } else {
+              log.warning("Saved source type is not present, adding destroyed source(s) instead");
+              sourcedRestorer.addDestroyedSourcesForAllDataTypes(widget, uri);
+            }
           }
         } catch (IncompatibleSourceException e) {
           log.log(Level.WARNING, "Couldn't load source, adding destroyed source(s) instead", e);
