@@ -300,15 +300,15 @@ public class WidgetPaneController {
    */
   private void replaceWithDestroyedSource(Sourced sourced, Collection<? extends String> removedUris) {
     sourced.getSources().replaceAll(source -> {
-      if (!(source instanceof DestroyedSource)) {
+      if (source instanceof DestroyedSource) {
+        return source;
+      } else {
         if (removedUris.contains(source.getId())) {
           // Source is no longer available, replace with a destroyed source
           return DestroyedSource.forUnknownData(sourced.getDataTypes(), source.getId());
         } else {
           return source;
         }
-      } else {
-        return source;
       }
     });
   }

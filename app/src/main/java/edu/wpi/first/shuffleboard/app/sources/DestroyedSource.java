@@ -102,14 +102,13 @@ public class DestroyedSource<T> implements DataSource<T> {
   public DataSource<T> restore() throws DataTypeChangedException, IllegalStateException {
     SourceType sourceType = getSourceType();
     if (SourceTypes.getDefault().isRegistered(sourceType)) {
-      boolean restoredExists = sourceType.getAvailableSourceUris().contains(oldId);
       DataSource<T> restored = (DataSource<T>) sourceType.forUri(oldId);
       if (!possibleTypes.contains(restored.getDataType())) {
         throw new DataTypeChangedException(
             "The new data type is " + restored.getDataType() + ", was expecting one of: "
                 + Iterables.toString(possibleTypes));
       }
-      if (restoredExists) {
+      if (sourceType.getAvailableSourceUris().contains(oldId)) {
         // The restored source already existed at restoration time, no need to set its name or data
         return restored;
       }
