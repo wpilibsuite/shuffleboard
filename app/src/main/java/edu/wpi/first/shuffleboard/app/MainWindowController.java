@@ -9,6 +9,7 @@ import edu.wpi.first.shuffleboard.api.prefs.FlushableProperty;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceEntry;
 import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
+import edu.wpi.first.shuffleboard.api.tab.TabInfo;
 import edu.wpi.first.shuffleboard.api.theme.Theme;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.Storage;
@@ -21,6 +22,7 @@ import edu.wpi.first.shuffleboard.app.json.JsonBuilder;
 import edu.wpi.first.shuffleboard.app.plugin.PluginLoader;
 import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
 import edu.wpi.first.shuffleboard.app.sources.recording.Playback;
+import edu.wpi.first.shuffleboard.app.tab.TabInfoRegistry;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
@@ -358,6 +360,22 @@ public class MainWindowController {
     AppPreferences.getInstance().setSaveFile(currentFile);
   }
 
+  /**
+   * Generates a new layout.
+   */
+  @FXML
+  public void newLayout() {
+    currentFile = null;
+    double[] dividerPositions = centerSplitPane.getDividerPositions();
+    List<TabInfo> tabInfo = TabInfoRegistry.getDefault().getItems();
+    if (tabInfo.isEmpty()) {
+      // No tab info, so add a placeholder tab so there's SOMETHING in the dashboard
+      setDashboard(new DashboardTabPane(new DashboardTab("Tab 1")));
+    } else {
+      setDashboard(new DashboardTabPane(tabInfo));
+    }
+    centerSplitPane.setDividerPositions(dividerPositions);
+  }
 
   /**
    * Load the dashboard from a save file.
