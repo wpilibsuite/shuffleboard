@@ -4,6 +4,7 @@ import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.sources.SourceEntry;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
+import edu.wpi.first.shuffleboard.api.sources.Sources;
 import edu.wpi.first.shuffleboard.api.sources.recording.TimestampedData;
 import edu.wpi.first.shuffleboard.api.util.AsyncUtils;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
@@ -29,9 +30,16 @@ public final class NetworkTableSourceType extends SourceType {
 
   @SuppressWarnings("JavadocMethod")
   public NetworkTableSourceType(NetworkTablesPlugin plugin) {
-    super("NetworkTable", true, "network_table://", NetworkTableSource::forKey);
+    super("NetworkTables", true, "network_table://", NetworkTableSource::forKey);
     this.plugin = plugin;
     NetworkTableInstance inst = NetworkTableInstance.getDefault();
+    inst.addConnectionListener(notification -> {
+      if (!notification.connected) {
+        availableSources.clear();
+        availableSourceIds.clear();
+        NetworkTableSource.removeAllCachedSources();
+      }
+    }, false);
     inst.addEntryListener("", (event) -> {
       AsyncUtils.runAsync(() -> {
         final boolean delete = NetworkTableUtils.isDelete(event.flags);
@@ -41,6 +49,9 @@ public final class NetworkTableSourceType extends SourceType {
           if (i == hierarchy.size() - 1) {
             if (delete) {
               availableSources.remove(uri);
+              Sources sources = Sources.getDefault();
+              sources.get(uri).ifPresent(sources::unregister);
+              NetworkTableSource.removeCachedSource(uri);
             } else {
               availableSources.put(uri, event.value.getValue());
             }
