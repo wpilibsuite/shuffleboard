@@ -3,6 +3,7 @@ package edu.wpi.first.shuffleboard.app.components;
 import edu.wpi.first.shuffleboard.api.Populatable;
 import edu.wpi.first.shuffleboard.api.components.ExtendedPropertySheet;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
+import edu.wpi.first.shuffleboard.api.prefs.FlushableProperty;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
@@ -119,14 +120,13 @@ public class DashboardTab extends Tab implements HandledTab, Populatable {
    * Shows a dialog for editing the properties of this tab.
    */
   public void showPrefsDialog() {
-    // Use a dummy property here to prevent a call to populate() on every keystroke in the editor (!)
-    StringProperty dummySourcePrefix
-        = new SimpleStringProperty(sourcePrefix.getBean(), sourcePrefix.getName(), sourcePrefix.getValue());
+    // Use a flushable property here to prevent a call to populate() on every keystroke in the editor (!)
+    FlushableProperty<String> flushableSourcePrefix = new FlushableProperty<>(sourcePrefix);
     ExtendedPropertySheet propertySheet = new ExtendedPropertySheet(
         Arrays.asList(
             this.title,
             this.autoPopulate,
-            dummySourcePrefix,
+            flushableSourcePrefix,
             getWidgetPane().tileSizeProperty(),
             getWidgetPane().showGridProperty()
         ));
@@ -140,9 +140,7 @@ public class DashboardTab extends Tab implements HandledTab, Populatable {
     dialog.titleProperty().bind(EasyBind.map(this.title, t -> t + " Preferences"));
     dialog.getDialogPane().setContent(new BorderPane(propertySheet));
     dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CLOSE);
-    dialog.setOnCloseRequest(__ -> {
-      this.sourcePrefix.setValue(dummySourcePrefix.getValue());
-    });
+    dialog.setOnCloseRequest(__ -> flushableSourcePrefix.flush());
     dialog.showAndWait();
   }
 
@@ -237,6 +235,7 @@ public class DashboardTab extends Tab implements HandledTab, Populatable {
     String name = NetworkTable.normalizeKey(type.removeProtocol(sourceId), false);
     return !deferPopulation
         && isAutoPopulate()
+        && !getSourcePrefix().isEmpty()
         && type.dataTypeForSource(DataTypes.getDefault(), sourceId) != DataTypes.Map
         && !NetworkTableUtils.isMetadata(sourceId)
         && (name.startsWith(getSourcePrefix()) || sourceId.startsWith(getSourcePrefix()));

@@ -1,7 +1,9 @@
 package edu.wpi.first.shuffleboard.api.components;
 
+import edu.wpi.first.shuffleboard.api.prefs.FlushableProperty;
 import edu.wpi.first.shuffleboard.api.theme.Theme;
 import edu.wpi.first.shuffleboard.api.theme.Themes;
+import edu.wpi.first.shuffleboard.api.util.Debouncer;
 
 import org.controlsfx.control.PropertySheet;
 import org.controlsfx.control.ToggleSwitch;
@@ -9,6 +11,7 @@ import org.controlsfx.property.editor.AbstractPropertyEditor;
 import org.controlsfx.property.editor.DefaultPropertyEditorFactory;
 import org.controlsfx.property.editor.PropertyEditor;
 
+import java.time.Duration;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -16,6 +19,7 @@ import java.util.stream.Collectors;
 import javafx.beans.property.Property;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Control;
 import javafx.scene.control.TextField;
 import javafx.util.StringConverter;
 
@@ -166,11 +170,27 @@ public class ExtendedPropertySheet extends PropertySheet {
 
   }
 
+  private abstract static class DebouncedPropertyEditor<T, C extends Control> extends AbstractPropertyEditor<T, C> {
+
+    private static final Duration DEFAULT_DEBOUNCE_DELAY = Duration.ofMillis(250);
+
+    public DebouncedPropertyEditor(Item property, C control) {
+      super(property, control);
+      property.getObservableValue()
+          .filter(v -> v instanceof FlushableProperty)
+          .map(v -> (FlushableProperty<? super T>) v)
+          .ifPresent(flushable -> {
+            Debouncer debouncer = new Debouncer(flushable::flush, DEFAULT_DEBOUNCE_DELAY);
+            getObservableValue().addListener((__, oldValue, newValue) -> debouncer.run());
+          });
+    }
+  }
+
   /**
    * A property editor for numbers. We use this instead of the one bundled with ControlsFX because
    * their implementation is bad.
    */
-  private static class NumberPropertyEditor extends AbstractPropertyEditor<Double, NumberField> {
+  private static class NumberPropertyEditor extends DebouncedPropertyEditor<Double, NumberField> {
 
     NumberPropertyEditor(Item item) {
       super(item, new NumberField(((Number) item.getValue()).doubleValue()));
@@ -188,7 +208,7 @@ public class ExtendedPropertySheet extends PropertySheet {
 
   }
 
-  private static class IntegerPropertyEditor extends AbstractPropertyEditor<Integer, IntegerField> {
+  private static class IntegerPropertyEditor extends DebouncedPropertyEditor<Integer, IntegerField> {
 
     IntegerPropertyEditor(Item item) {
       super(item, new IntegerField((Integer) item.getValue()));
@@ -206,7 +226,7 @@ public class ExtendedPropertySheet extends PropertySheet {
   }
 
 
-  private static class TextPropertyEditor extends AbstractPropertyEditor<String, TextField> {
+  private static class TextPropertyEditor extends DebouncedPropertyEditor<String, TextField> {
 
     TextPropertyEditor(Item item) {
       super(item, new TextField((String) item.getValue()));
