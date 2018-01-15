@@ -207,6 +207,8 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
     enabled.removeListener(enabledListener);
     CameraServerJNI.removeListener(eventListenerId);
     cancelFrameGrabber();
+    videoSink.free();
+    camera.free();
     sources.remove(getName());
     Sources.getDefault().unregister(this);
   }
