@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.plugin.networktables;
 
+import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.shuffleboard.api.components.SourceTreeTable;
 import edu.wpi.first.shuffleboard.api.data.MapData;
 import edu.wpi.first.shuffleboard.api.sources.SourceEntry;
@@ -37,16 +38,19 @@ public class NetworkTableTreeWidget extends SimpleAnnotatedWidget<MapData> {
       sort(root);
       return true;
     });
-    dataProperty().addListener((__, oldData, newData) -> {
+    dataOrDefault.addListener((__, oldData, newData) -> {
       final Map<String, Object> newMap = newData.asMap();
       // Remove deleted keys
       if (oldData != null) {
         oldData.asMap().entrySet().stream()
             .filter(e -> !newMap.containsKey(e.getKey()))
-            .forEach(e -> tree.updateEntry(new NetworkTableSourceEntry(e.getKey(), e.getValue())));
+            .forEach(e -> tree.removeEntry(new NetworkTableSourceEntry(e.getKey(), e.getValue())));
       }
 
-      newData.changesFrom(oldData).forEach((key, value) -> tree.removeEntry(new NetworkTableSourceEntry(key, value)));
+      newData.changesFrom(oldData)
+          .forEach((key, value) ->
+              tree.updateEntry(new NetworkTableSourceEntry(
+                  NetworkTable.normalizeKey(key), value)));
     });
   }
 
