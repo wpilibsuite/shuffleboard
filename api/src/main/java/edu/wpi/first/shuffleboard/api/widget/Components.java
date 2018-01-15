@@ -295,6 +295,7 @@ public class Components extends Registry<ComponentType> {
     if (controller != null) { //NOPMD readability
       try {
         FXMLLoader loader = new FXMLLoader(annotatedClass.getResource(controller.value()));
+        loader.setClassLoader(annotatedClass.getClassLoader());
         loader.load();
         return Optional.of(loader.getController());
       } catch (IOException e) {
