@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.geometry.Insets?>
+<HBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="edu.wpi.first.shuffleboard.plugin.base.widget.DifferentialDriveWidget"
+      fx:id="root"
+      minWidth="400" minHeight="256">
+    <padding>
+        <Insets topRightBottomLeft="8"/>
+    </padding>
+    <StackPane fx:id="driveView">
+        <Pane fx:id="vectorPane" StackPane.alignment="CENTER" maxWidth="0" maxHeight="0"/>
+    </StackPane>
+</HBox>

@@ -68,7 +68,6 @@ public class Tile<T extends Component> extends BorderPane {
             }
           });
     });
-
     contentTitle.addListener((__, prev, cur) -> editableLabel.setText(cur));
   }
 

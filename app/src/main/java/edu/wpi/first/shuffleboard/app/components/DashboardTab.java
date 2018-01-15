@@ -3,6 +3,7 @@ package edu.wpi.first.shuffleboard.app.components;
 import edu.wpi.first.shuffleboard.api.Populatable;
 import edu.wpi.first.shuffleboard.api.components.ExtendedPropertySheet;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
+import edu.wpi.first.shuffleboard.api.prefs.FlushableProperty;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
@@ -10,6 +11,7 @@ import edu.wpi.first.shuffleboard.api.util.Debouncer;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
+import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.ComponentContainer;
 import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.api.widget.Sourced;
@@ -23,6 +25,7 @@ import org.fxmisc.easybind.EasyBind;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import javafx.beans.property.BooleanProperty;
@@ -117,14 +120,13 @@ public class DashboardTab extends Tab implements HandledTab, Populatable {
    * Shows a dialog for editing the properties of this tab.
    */
   public void showPrefsDialog() {
-    // Use a dummy property here to prevent a call to populate() on every keystroke in the editor (!)
-    StringProperty dummySourcePrefix
-        = new SimpleStringProperty(sourcePrefix.getBean(), sourcePrefix.getName(), sourcePrefix.getValue());
+    // Use a flushable property here to prevent a call to populate() on every keystroke in the editor (!)
+    FlushableProperty<String> flushableSourcePrefix = new FlushableProperty<>(sourcePrefix);
     ExtendedPropertySheet propertySheet = new ExtendedPropertySheet(
         Arrays.asList(
             this.title,
             this.autoPopulate,
-            dummySourcePrefix,
+            flushableSourcePrefix,
             getWidgetPane().tileSizeProperty(),
             getWidgetPane().showGridProperty()
         ));
@@ -138,9 +140,7 @@ public class DashboardTab extends Tab implements HandledTab, Populatable {
     dialog.titleProperty().bind(EasyBind.map(this.title, t -> t + " Preferences"));
     dialog.getDialogPane().setContent(new BorderPane(propertySheet));
     dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CLOSE);
-    dialog.setOnCloseRequest(__ -> {
-      this.sourcePrefix.setValue(dummySourcePrefix.getValue());
-    });
+    dialog.setOnCloseRequest(__ -> flushableSourcePrefix.flush());
     dialog.showAndWait();
   }
 
@@ -235,6 +235,7 @@ public class DashboardTab extends Tab implements HandledTab, Populatable {
     String name = NetworkTable.normalizeKey(type.removeProtocol(sourceId), false);
     return !deferPopulation
         && isAutoPopulate()
+        && !getSourcePrefix().isEmpty()
         && type.dataTypeForSource(DataTypes.getDefault(), sourceId) != DataTypes.Map
         && !NetworkTableUtils.isMetadata(sourceId)
         && (name.startsWith(getSourcePrefix()) || sourceId.startsWith(getSourcePrefix()));
@@ -242,12 +243,25 @@ public class DashboardTab extends Tab implements HandledTab, Populatable {
 
   @Override
   public boolean hasComponentFor(String sourceId) {
-    return getWidgetPane().getTiles().stream()
+    List<Component> topLevelComponents = getWidgetPane().getTiles().stream()
         .map(Tile::getContent)
+        .collect(Collectors.toList());
+    Predicate<Sourced> isSameSource = s -> s.getSources().stream()
+        .map(DataSource::getId)
+        .anyMatch(sourceId::equals);
+    Predicate<Sourced> isSubSource = s -> s.getSources().stream()
+        .map(i -> i.getId() + "/")
+        .anyMatch(sourceId::startsWith);
+    Predicate<Sourced> isNotContainer = s -> !(s instanceof ComponentContainer);
+    Predicate<Sourced> hasComponent = isSameSource.or(isSubSource.and(isNotContainer));
+    return topLevelComponents.stream()
         .flatMap(TypeUtils.castStream(Sourced.class))
-        .anyMatch(s -> s.getSources().stream().map(DataSource::getId).anyMatch(sourceId::equals)
-            || (s.getSources().stream().map(DataSource::getId).anyMatch(sourceId::startsWith)
-            && !(s instanceof ComponentContainer)));
+        .anyMatch(hasComponent)
+        || topLevelComponents.stream()
+        .flatMap(TypeUtils.castStream(ComponentContainer.class))
+        .flatMap(ComponentContainer::allComponents)
+        .flatMap(TypeUtils.castStream(Sourced.class))
+        .anyMatch(hasComponent);
   }
 
   @Override
@@ -262,6 +276,12 @@ public class DashboardTab extends Tab implements HandledTab, Populatable {
       Components.getDefault().defaultComponentNameFor(source.getDataType())
           .flatMap(s -> Components.getDefault().createComponent(s, source))
           .ifPresent(c -> {
+            // Remove redundant source name information from the title, if necessary
+            String sourcePrefix = getSourcePrefix();
+            sourcePrefix = sourcePrefix.endsWith("/") ? sourcePrefix : sourcePrefix + "/";
+            if (!"/".equals(sourcePrefix) && c.getTitle().startsWith(sourcePrefix)) {
+              c.setTitle(c.getTitle().substring(sourcePrefix.length()));
+            }
             getWidgetPane().addComponent(c);
             if (c instanceof Populatable) {
               Autopopulator.getDefault().addTarget((Populatable) c);

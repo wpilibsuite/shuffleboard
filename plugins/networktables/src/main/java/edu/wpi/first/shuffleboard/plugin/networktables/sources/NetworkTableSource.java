@@ -56,9 +56,12 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
     listenerUid = inst.addEntryListener(fullTableKey, (event) -> {
       if (isConnected()) {
         AsyncUtils.runAsync(() -> {
-          ntUpdate = true;
-          listener.onChange(event.name, event.value.getValue(), event.flags);
-          ntUpdate = false;
+          try {
+            ntUpdate = true;
+            listener.onChange(event.name, event.value.getValue(), event.flags);
+          } finally {
+            ntUpdate = false;
+          }
         });
       }
     },
@@ -101,6 +104,20 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
      */
     void onChange(String key, Object value, int flags);
 
+  }
+
+  /**
+   * Removes a cached NetworkTable source for the given source ID.
+   */
+  public static void removeCachedSource(String sourceId) {
+    sources.remove(sourceId);
+  }
+
+  /**
+   * Removes all cached NetworkTable sources.
+   */
+  public static void removeAllCachedSources() {
+    sources.clear();
   }
 
   /**

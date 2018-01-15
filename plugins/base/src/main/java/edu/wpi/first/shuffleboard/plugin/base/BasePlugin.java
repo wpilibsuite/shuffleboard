@@ -7,14 +7,18 @@ import edu.wpi.first.shuffleboard.api.plugin.Plugin;
 import edu.wpi.first.shuffleboard.api.widget.ComponentType;
 import edu.wpi.first.shuffleboard.api.widget.LayoutClass;
 import edu.wpi.first.shuffleboard.api.widget.WidgetType;
+import edu.wpi.first.shuffleboard.plugin.base.data.types.AccelerometerType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.AnalogInputType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.BasicSubsystemType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.CommandType;
+import edu.wpi.first.shuffleboard.plugin.base.data.types.DifferentialDriveType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.EncoderType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.GyroType;
+import edu.wpi.first.shuffleboard.plugin.base.data.types.MecanumDriveType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.PIDCommandType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.PIDControllerType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.PowerDistributionType;
+import edu.wpi.first.shuffleboard.plugin.base.data.types.QuadratureEncoderType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.RelayType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.RobotPreferencesType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.SendableChooserType;
@@ -23,13 +27,16 @@ import edu.wpi.first.shuffleboard.plugin.base.data.types.SubsystemType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.ThreeAxisAccelerometerType;
 import edu.wpi.first.shuffleboard.plugin.base.layout.ListLayout;
 import edu.wpi.first.shuffleboard.plugin.base.layout.SubsystemLayout;
+import edu.wpi.first.shuffleboard.plugin.base.widget.AccelerometerWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.BasicSubsystemWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.BooleanBoxWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.ComboBoxChooserWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.CommandWidget;
+import edu.wpi.first.shuffleboard.plugin.base.widget.DifferentialDriveWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.EncoderWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.GraphWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.GyroWidget;
+import edu.wpi.first.shuffleboard.plugin.base.widget.MecanumDriveWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.NumberBarWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.NumberSliderWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.PIDCommandWidget;
@@ -67,17 +74,21 @@ public class BasePlugin extends Plugin {
         AnalogInputType.Instance,
         PowerDistributionType.Instance,
         EncoderType.Instance,
+        QuadratureEncoderType.Instance,
         RobotPreferencesType.Instance,
         SendableChooserType.Instance,
         SpeedControllerType.Instance,
         SubsystemType.Instance,
         BasicSubsystemType.Instance,
         CommandType.Instance,
-        PIDControllerType.Instance,
-        ThreeAxisAccelerometerType.Instance,
         PIDCommandType.Instance,
+        PIDControllerType.Instance,
+        AccelerometerType.Instance,
+        ThreeAxisAccelerometerType.Instance,
         GyroType.Instance,
-        RelayType.Instance
+        RelayType.Instance,
+        MecanumDriveType.Instance,
+        DifferentialDriveType.Instance
     );
   }
 
@@ -101,10 +112,13 @@ public class BasePlugin extends Plugin {
         WidgetType.forAnnotatedWidget(CommandWidget.class),
         WidgetType.forAnnotatedWidget(BasicSubsystemWidget.class),
         WidgetType.forAnnotatedWidget(PIDCommandWidget.class),
+        WidgetType.forAnnotatedWidget(AccelerometerWidget.class),
         WidgetType.forAnnotatedWidget(ThreeAxisAccelerometerWidget.class),
         WidgetType.forAnnotatedWidget(PIDControllerWidget.class),
         WidgetType.forAnnotatedWidget(GyroWidget.class),
         WidgetType.forAnnotatedWidget(RelayWidget.class),
+        WidgetType.forAnnotatedWidget(DifferentialDriveWidget.class),
+        WidgetType.forAnnotatedWidget(MecanumDriveWidget.class),
         new LayoutClass<>("List Layout", ListLayout.class),
         createSubsystemLayoutType()
     );
@@ -120,16 +134,20 @@ public class BasePlugin extends Plugin {
         .put(PowerDistributionType.Instance, WidgetType.forAnnotatedWidget(PowerDistributionPanelWidget.class))
         .put(SendableChooserType.Instance, WidgetType.forAnnotatedWidget(ComboBoxChooserWidget.class))
         .put(EncoderType.Instance, WidgetType.forAnnotatedWidget(EncoderWidget.class))
+        .put(QuadratureEncoderType.Instance, WidgetType.forAnnotatedWidget(EncoderWidget.class))
         .put(RobotPreferencesType.Instance, WidgetType.forAnnotatedWidget(RobotPreferencesWidget.class))
         .put(SpeedControllerType.Instance, WidgetType.forAnnotatedWidget(SpeedControllerWidget.class))
         .put(CommandType.Instance, WidgetType.forAnnotatedWidget(CommandWidget.class))
         .put(PIDCommandType.Instance, WidgetType.forAnnotatedWidget(PIDCommandWidget.class))
-        .put(ThreeAxisAccelerometerType.Instance, WidgetType.forAnnotatedWidget(ThreeAxisAccelerometerWidget.class))
         .put(PIDControllerType.Instance, WidgetType.forAnnotatedWidget(PIDControllerWidget.class))
+        .put(AccelerometerType.Instance, WidgetType.forAnnotatedWidget(AccelerometerWidget.class))
+        .put(ThreeAxisAccelerometerType.Instance, WidgetType.forAnnotatedWidget(ThreeAxisAccelerometerWidget.class))
         .put(GyroType.Instance, WidgetType.forAnnotatedWidget(GyroWidget.class))
         .put(RelayType.Instance, WidgetType.forAnnotatedWidget(RelayWidget.class))
-        .put(SubsystemType.Instance, createSubsystemLayoutType())
+        .put(DifferentialDriveType.Instance, WidgetType.forAnnotatedWidget(DifferentialDriveWidget.class))
+        .put(MecanumDriveType.Instance, WidgetType.forAnnotatedWidget(MecanumDriveWidget.class))
         .put(BasicSubsystemType.Instance, WidgetType.forAnnotatedWidget(BasicSubsystemWidget.class))
+        .put(SubsystemType.Instance, createSubsystemLayoutType())
         .build();
   }
 
