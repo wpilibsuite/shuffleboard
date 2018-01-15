@@ -6,9 +6,11 @@ import edu.wpi.first.shuffleboard.plugin.base.data.PIDCommandData;
 import java.util.Map;
 import java.util.function.Function;
 
-public class PIDCommandType extends ComplexDataType<PIDCommandData> {
+public final class PIDCommandType extends ComplexDataType<PIDCommandData> {
 
-  public PIDCommandType() {
+  public static final PIDCommandType Instance = new PIDCommandType();
+
+  private PIDCommandType() {
     super("PIDCommand", PIDCommandData.class);
   }
 

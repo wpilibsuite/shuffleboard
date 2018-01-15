@@ -46,7 +46,7 @@ public abstract class AbstractDriveWidget<T> extends SimpleAnnotatedWidget<T> {
                                                         ToDoubleFunction<T> getter,
                                                         BiFunction<T, Double, T> setter) {
     return new SubSource<>(
-        new SpeedControllerType(),
+        SpeedControllerType.Instance,
         source,
         d -> setter.apply(dataOrDefault.get(), d == null ? 0.0 : d.getValue()),
         d -> new SpeedControllerData(motorName, d == null ? 0.0 : getter.applyAsDouble(d))

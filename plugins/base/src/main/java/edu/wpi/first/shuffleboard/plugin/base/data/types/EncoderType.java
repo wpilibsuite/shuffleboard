@@ -6,9 +6,11 @@ import edu.wpi.first.shuffleboard.plugin.base.data.EncoderData;
 import java.util.Map;
 import java.util.function.Function;
 
-public class EncoderType extends ComplexDataType<EncoderData> {
+public final class EncoderType extends ComplexDataType<EncoderData> {
 
-  public EncoderType() {
+  public static final EncoderType Instance = new EncoderType();
+
+  private EncoderType() {
     super("Encoder", EncoderData.class);
   }
 

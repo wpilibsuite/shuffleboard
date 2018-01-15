@@ -47,57 +47,57 @@ public class DataTypes extends Registry<DataType> {
    * Represents the type of "null" or non-present data. Differs from {@link UnknownType} in that <i>no</i> data is
    * present for this type, while data <i>is</i> present but of an unknown type for the latter.
    */
-  public static final DataType None = new NoneType();
+  public static final DataType None = NoneType.Instance;
 
   /**
    * Represents the type of <i>all</i> data; a widget that can accept this data type can accept data of <i>any</i>
    * type.
    */
-  public static final DataType All = new AllType();
+  public static final DataType All = AllType.Instance;
 
   /**
    * Represents an "unknown" data type; that is, data is present, but the type could not be determined.
    */
-  public static final DataType Unknown = new UnknownType();
+  public static final DataType Unknown = UnknownType.Instance;
 
-  public static final ComplexDataType<MapData> Map = new MapType();
+  public static final ComplexDataType<MapData> Map = MapType.Instance;
 
   // Primitive types
   /**
    * The type corresponding to <i>boolean</i> data.
    */
-  public static final DataType<Boolean> Boolean = new BooleanType();
+  public static final DataType<Boolean> Boolean = BooleanType.Instance;
 
   /**
    * The type corresponding to a boolean array (<tt>boolean[]</tt>).
    */
-  public static final DataType<boolean[]> BooleanArray = new BooleanArrayType();
+  public static final DataType<boolean[]> BooleanArray = BooleanArrayType.Instance;
 
   /**
    * The type corresponding to <i>numeric</i> data.
    */
-  public static final DataType<Number> Number = new NumberType();
+  public static final DataType<Number> Number = NumberType.Instance;
 
   /**
    * The type corresponding to an array of numeric data (<tt>double[]</tt>). Note that number arrays <i>must</i> be
    * implemented as <tt>double[]</tt> in order to be represented by this type.
    */
-  public static final DataType<double[]> NumberArray = new NumberArrayType();
+  public static final DataType<double[]> NumberArray = NumberArrayType.Instance;
 
   /**
    * The type corresponding to text data.
    */
-  public static final DataType<String> String = new StringType();
+  public static final DataType<String> String = StringType.Instance;
 
   /**
    * The type corresponding to an array of strings (<tt>String[]</tt>).
    */
-  public static final DataType<String[]> StringArray = new StringArrayType();
+  public static final DataType<String[]> StringArray = StringArrayType.Instance;
 
   /**
    * The type corresponding to an array of raw bytes (<tt>byte[]</tt>).
    */
-  public static final DataType<byte[]> ByteArray = new RawByteType();
+  public static final DataType<byte[]> ByteArray = RawByteType.Instance;
 
   /**
    * The default data types. None of these may be unregistered.

@@ -72,22 +72,22 @@ public class BasePlugin extends Plugin {
   @Override
   public List<DataType> getDataTypes() {
     return ImmutableList.of(
-        new AnalogInputType(),
-        new PowerDistributionType(),
-        new EncoderType(),
+        AnalogInputType.Instance,
+        PowerDistributionType.Instance,
+        EncoderType.Instance,
         QuadratureEncoderType.Instance,
-        new RobotPreferencesType(),
-        new SendableChooserType(),
-        new SpeedControllerType(),
-        new SubsystemType(),
+        RobotPreferencesType.Instance,
+        SendableChooserType.Instance,
+        SpeedControllerType.Instance,
+        SubsystemType.Instance,
         BasicSubsystemType.Instance,
-        new CommandType(),
-        new PIDControllerType(),
+        CommandType.Instance,
+        PIDCommandType.Instance,
+        PIDControllerType.Instance,
         AccelerometerType.Instance,
-        new ThreeAxisAccelerometerType(),
-        new PIDCommandType(),
-        new GyroType(),
-        new RelayType(),
+        ThreeAxisAccelerometerType.Instance,
+        GyroType.Instance,
+        RelayType.Instance,
         MecanumDriveType.Instance,
         DifferentialDriveType.Instance
     );
@@ -131,24 +131,24 @@ public class BasePlugin extends Plugin {
         .put(DataTypes.Boolean, WidgetType.forAnnotatedWidget(BooleanBoxWidget.class))
         .put(DataTypes.Number, WidgetType.forAnnotatedWidget(TextViewWidget.class))
         .put(DataTypes.String, WidgetType.forAnnotatedWidget(TextViewWidget.class))
-        .put(new AnalogInputType(), WidgetType.forAnnotatedWidget(VoltageViewWidget.class))
-        .put(new PowerDistributionType(), WidgetType.forAnnotatedWidget(PowerDistributionPanelWidget.class))
-        .put(new SendableChooserType(), WidgetType.forAnnotatedWidget(ComboBoxChooserWidget.class))
-        .put(new EncoderType(), WidgetType.forAnnotatedWidget(EncoderWidget.class))
+        .put(AnalogInputType.Instance, WidgetType.forAnnotatedWidget(VoltageViewWidget.class))
+        .put(PowerDistributionType.Instance, WidgetType.forAnnotatedWidget(PowerDistributionPanelWidget.class))
+        .put(SendableChooserType.Instance, WidgetType.forAnnotatedWidget(ComboBoxChooserWidget.class))
+        .put(EncoderType.Instance, WidgetType.forAnnotatedWidget(EncoderWidget.class))
         .put(QuadratureEncoderType.Instance, WidgetType.forAnnotatedWidget(EncoderWidget.class))
-        .put(new RobotPreferencesType(), WidgetType.forAnnotatedWidget(RobotPreferencesWidget.class))
-        .put(new SpeedControllerType(), WidgetType.forAnnotatedWidget(SpeedControllerWidget.class))
-        .put(new CommandType(), WidgetType.forAnnotatedWidget(CommandWidget.class))
-        .put(new PIDCommandType(), WidgetType.forAnnotatedWidget(PIDCommandWidget.class))
+        .put(RobotPreferencesType.Instance, WidgetType.forAnnotatedWidget(RobotPreferencesWidget.class))
+        .put(SpeedControllerType.Instance, WidgetType.forAnnotatedWidget(SpeedControllerWidget.class))
+        .put(CommandType.Instance, WidgetType.forAnnotatedWidget(CommandWidget.class))
+        .put(PIDCommandType.Instance, WidgetType.forAnnotatedWidget(PIDCommandWidget.class))
+        .put(PIDControllerType.Instance, WidgetType.forAnnotatedWidget(PIDControllerWidget.class))
         .put(AccelerometerType.Instance, WidgetType.forAnnotatedWidget(AccelerometerWidget.class))
-        .put(new ThreeAxisAccelerometerType(), WidgetType.forAnnotatedWidget(ThreeAxisAccelerometerWidget.class))
-        .put(new PIDControllerType(), WidgetType.forAnnotatedWidget(PIDControllerWidget.class))
-        .put(new GyroType(), WidgetType.forAnnotatedWidget(GyroWidget.class))
-        .put(new RelayType(), WidgetType.forAnnotatedWidget(RelayWidget.class))
+        .put(ThreeAxisAccelerometerType.Instance, WidgetType.forAnnotatedWidget(ThreeAxisAccelerometerWidget.class))
+        .put(GyroType.Instance, WidgetType.forAnnotatedWidget(GyroWidget.class))
+        .put(RelayType.Instance, WidgetType.forAnnotatedWidget(RelayWidget.class))
         .put(DifferentialDriveType.Instance, WidgetType.forAnnotatedWidget(DifferentialDriveWidget.class))
         .put(MecanumDriveType.Instance, WidgetType.forAnnotatedWidget(MecanumDriveWidget.class))
-        .put(new SubsystemType(), createSubsystemLayoutType())
         .put(BasicSubsystemType.Instance, WidgetType.forAnnotatedWidget(BasicSubsystemWidget.class))
+        .put(SubsystemType.Instance, createSubsystemLayoutType())
         .build();
   }
 
@@ -156,7 +156,7 @@ public class BasePlugin extends Plugin {
     return new LayoutClass<SubsystemLayout>("Subsystem Layout", SubsystemLayout.class) {
       @Override
       public Set<DataType> getDataTypes() {
-        return ImmutableSet.of(new SubsystemType());
+        return ImmutableSet.of(SubsystemType.Instance);
       }
     };
   }

@@ -2,9 +2,11 @@ package edu.wpi.first.shuffleboard.api.data.types;
 
 import edu.wpi.first.shuffleboard.api.data.SimpleDataType;
 
-public class StringType extends SimpleDataType<String> {
+public final class StringType extends SimpleDataType<String> {
 
-  public StringType() {
+  public static final StringType Instance = new StringType();
+
+  private StringType() {
     super("String", String.class);
   }
 

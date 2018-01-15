@@ -58,7 +58,7 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
   };
 
   private CameraServerSource(String name) {
-    super(CameraServerDataType.INSTANCE);
+    super(CameraServerDataType.Instance);
     setName(name);
     videoSink = new CvSink(name + "-videosink");
     eventListenerId = CameraServerJNI.addListener(e -> {
