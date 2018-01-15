@@ -23,7 +23,9 @@ public class Scrubber extends Slider {
   private Property<Number> progressProperty = null;
   private final ChangeListener<Number> progressListener = (__, oldProgress, newProgress) -> {
     if (isViewMode()) {
-      FxUtils.runOnFxThread(() -> setValue(newProgress.doubleValue()));
+      if (newProgress != null) {
+        FxUtils.runOnFxThread(() -> setValue(newProgress.doubleValue()));
+      }
     }
   };
 
