@@ -132,12 +132,13 @@ public class DashboardTab extends Tab implements HandledTab, Populatable {
   public void showPrefsDialog() {
     // Use a flushable property here to prevent a call to populate() on every keystroke in the editor (!)
     FlushableProperty<String> flushableSourcePrefix = new FlushableProperty<>(sourcePrefix);
+    FlushableProperty<Number> flushableTileSize = new FlushableProperty<>(getWidgetPane().tileSizeProperty());
     ExtendedPropertySheet propertySheet = new ExtendedPropertySheet(
         Arrays.asList(
             this.title,
             this.autoPopulate,
             flushableSourcePrefix,
-            getWidgetPane().tileSizeProperty(),
+            flushableTileSize,
             getWidgetPane().showGridProperty()
         ));
     propertySheet.getItems().addAll(
@@ -150,7 +151,10 @@ public class DashboardTab extends Tab implements HandledTab, Populatable {
     dialog.titleProperty().bind(EasyBind.map(this.title, t -> t + " Preferences"));
     dialog.getDialogPane().setContent(new BorderPane(propertySheet));
     dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CLOSE);
-    dialog.setOnCloseRequest(__ -> flushableSourcePrefix.flush());
+    dialog.setOnCloseRequest(__ -> {
+      flushableSourcePrefix.flush();
+      flushableTileSize.flush();
+    });
     dialog.showAndWait();
   }
 
