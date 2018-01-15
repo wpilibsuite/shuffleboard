@@ -8,6 +8,7 @@ import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.api.widget.Layout;
 import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
+import edu.wpi.first.shuffleboard.api.widget.Sourced;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 
 import org.fxmisc.easybind.EasyBind;
@@ -98,7 +99,10 @@ public class ListLayout implements Layout {
     }
 
     actions.addAction("Remove from list", () -> {
-      widgets.remove(index);
+      Component removed = widgets.remove(index);
+      if (removed instanceof Sourced) {
+        ((Sourced) removed).removeAllSources();
+      }
     });
 
     if (index > 0) {

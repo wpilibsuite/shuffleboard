@@ -31,6 +31,7 @@ import edu.wpi.first.shuffleboard.app.sources.DestroyedSource;
 
 import org.fxmisc.easybind.EasyBind;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -91,11 +92,7 @@ public class WidgetPaneController {
     });
 
     // Add a context menu for pane-related actions
-    pane.setOnContextMenuRequested(e -> {
-      MenuItem clear = FxUtils.menuItem("Clear", __ -> pane.getChildren().clear());
-      ContextMenu contextMenu = new ContextMenu(clear);
-      contextMenu.show(pane.getScene().getWindow(), e.getScreenX(), e.getScreenY());
-    });
+    pane.setOnContextMenuRequested(this::createPaneContextMenu);
 
     // Handle being dragged over
     pane.setOnDragOver(event -> {
@@ -274,12 +271,25 @@ public class WidgetPaneController {
           // Replace all removed sources with DestroyedSources
           pane.getTiles().stream()
               .map(Tile::getContent)
-              .flatMap(Component::allWidgets)
+              .flatMap(Component::allComponents)
               .flatMap(TypeUtils.castStream(Sourced.class))
               .forEach(s -> replaceWithDestroyedSource(s, c.getRemoved()));
         }
       }
     });
+  }
+
+  private void createPaneContextMenu(ContextMenuEvent e) {
+    MenuItem clear = FxUtils.menuItem("Clear", __ -> {
+      List<Tile> tiles = new ArrayList<>(pane.getTiles());
+      tiles.stream()
+          .map((Function<Tile, Component>) pane::removeTile)
+          .flatMap(Component::allComponents)
+          .flatMap(TypeUtils.castStream(Sourced.class))
+          .forEach(Sourced::removeAllSources);
+    });
+    ContextMenu contextMenu = new ContextMenu(clear);
+    contextMenu.show(pane.getScene().getWindow(), e.getScreenX(), e.getScreenY());
   }
 
   /**
@@ -374,7 +384,17 @@ public class WidgetPaneController {
     ActionList.registerSupplier(tile, () -> {
       ActionList widgetPaneActions = ActionList
           .withName(tile.getContent().getTitle())
-          .addAction("Remove", () -> pane.removeTile(tile))
+          .addAction("Remove", () -> {
+            Component removed = pane.removeTile(tile);
+            if (removed instanceof Sourced) {
+              ((Sourced) removed).removeAllSources();
+            }
+            if (removed instanceof Layout) {
+              ((Layout) removed).allComponents()
+                  .flatMap(TypeUtils.castStream(Sourced.class))
+                  .forEach(Sourced::removeAllSources);
+            }
+          })
           .addNested(createLayoutMenus(tile));
 
       if (tile instanceof WidgetTile) {
@@ -407,7 +427,9 @@ public class WidgetPaneController {
       // Dragging a source onto a tile
       if (dragboard.hasContent(DataFormats.source) && tile.getContent() instanceof Sourced) {
         SourceEntry entry = (SourceEntry) dragboard.getContent(DataFormats.source);
-        ((Sourced) tile.getContent()).addSource(entry.get());
+        DataSource source = entry.get();
+        Sourced sourced = (Sourced) tile.getContent();
+        sourced.addSource(source);
         event.consume();
 
         return;

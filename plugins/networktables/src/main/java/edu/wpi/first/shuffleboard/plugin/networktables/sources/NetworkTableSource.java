@@ -7,6 +7,7 @@ import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.sources.AbstractDataSource;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
+import edu.wpi.first.shuffleboard.api.sources.Sources;
 import edu.wpi.first.shuffleboard.api.util.AsyncUtils;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 
@@ -89,7 +90,11 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
 
   @Override
   public void close() {
+    setActive(false);
+    setConnected(false);
     NetworkTableInstance.getDefault().removeEntryListener(listenerUid);
+    Sources.getDefault().unregister(this);
+    sources.remove(getId());
   }
 
   @FunctionalInterface

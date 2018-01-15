@@ -19,6 +19,7 @@ public abstract class SingleSourceWidget extends AbstractWidget {
     if (getDataTypes().contains(source.getDataType())) {
       this.source.set(source);
       this.sources.setAll(source);
+      source.addClient(this);
     } else {
       throw new IncompatibleSourceException(getDataTypes(), source.getDataType());
     }

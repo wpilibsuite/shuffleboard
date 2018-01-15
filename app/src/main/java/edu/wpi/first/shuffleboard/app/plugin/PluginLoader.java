@@ -7,6 +7,7 @@ import edu.wpi.first.shuffleboard.api.plugin.InvalidPluginDefinitionException;
 import edu.wpi.first.shuffleboard.api.plugin.Plugin;
 import edu.wpi.first.shuffleboard.api.plugin.Requirements;
 import edu.wpi.first.shuffleboard.api.plugin.Requires;
+import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
 import edu.wpi.first.shuffleboard.api.sources.recording.serialization.Serializers;
 import edu.wpi.first.shuffleboard.api.theme.Themes;
@@ -421,7 +422,9 @@ public class PluginLoader {
 
   private void tryRestoreSource(Widget widget, DestroyedSource destroyedSource) {
     try {
-      widget.addSource(destroyedSource.restore());
+      DataSource restore = destroyedSource.restore();
+      widget.addSource(restore);
+      widget.removeSource(destroyedSource);
     } catch (IncompatibleSourceException | DataTypeChangedException e) {
       log.log(Level.WARNING, "Could not set the restored source of " + widget
           + ". The plugin defining its data type was probably unloaded.", e);
