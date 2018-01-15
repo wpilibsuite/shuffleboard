@@ -159,8 +159,8 @@ public class MainWindowController {
       }
     });
 
-    SourceTypes.getDefault().getItems().addListener((InvalidationListener) __ -> {
-      List<? extends Node> collect = ((ObservableList<SourceType>) __).stream()
+    SourceTypes.getDefault().getItems().addListener((InvalidationListener) items -> {
+      List<? extends Node> collect = ((ObservableList<SourceType>) items).stream()
           .filter(s -> !optOutOfConnectionIndicator(s))
           .map(this::generateConnectionLabel)
           .collect(joining(this::generateSeparatorLabel));
@@ -185,17 +185,17 @@ public class MainWindowController {
     return hints != null && !hints.showConnectionIndicator();
   }
 
-  private Label generateConnectionLabel(SourceType t) {
+  private Label generateConnectionLabel(SourceType sourceType) {
     Label label = new Label();
     label.getStyleClass().add("connection-indicator");
     label.textProperty().bind(
-        EasyBind.monadic(t.connectionStatusProperty())
+        EasyBind.monadic(sourceType.connectionStatusProperty())
             .map(ConnectionStatus::isConnected)
-            .map(connected -> t.getName() + ": " + (connected ? "connected" : "not connected")));
-    t.connectionStatusProperty().addListener((__, old, status) -> {
+            .map(connected -> sourceType.getName() + ": " + (connected ? "connected" : "not connected")));
+    sourceType.connectionStatusProperty().addListener((__, old, status) -> {
       updateConnectionLabel(label, status.isConnected());
     });
-    updateConnectionLabel(label, t.getConnectionStatus().isConnected());
+    updateConnectionLabel(label, sourceType.getConnectionStatus().isConnected());
     return label;
   }
 
