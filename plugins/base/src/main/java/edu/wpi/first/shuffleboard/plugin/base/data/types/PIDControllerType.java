@@ -8,7 +8,9 @@ import java.util.function.Function;
 
 public final class PIDControllerType extends ComplexDataType<PIDControllerData> {
 
-  public PIDControllerType() {
+  public static final PIDControllerType Instance = new PIDControllerType();
+
+  private PIDControllerType() {
     super("PIDController", PIDControllerData.class);
   }
 

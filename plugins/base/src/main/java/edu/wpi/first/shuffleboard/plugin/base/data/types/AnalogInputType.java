@@ -6,9 +6,11 @@ import edu.wpi.first.shuffleboard.api.data.ComplexDataType;
 import java.util.Map;
 import java.util.function.Function;
 
-public class AnalogInputType extends ComplexDataType<AnalogInputData> {
+public final class AnalogInputType extends ComplexDataType<AnalogInputData> {
 
-  public AnalogInputType() {
+  public static final AnalogInputType Instance = new AnalogInputType();
+
+  private AnalogInputType() {
     super("Analog Input", AnalogInputData.class);
   }
 

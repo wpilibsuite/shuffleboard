@@ -35,9 +35,9 @@ public interface Component {
   }
 
   /**
-   * All of the widgets contained by or represented by this one, if any.
+   * All of the components contained by or represented by this one, if any.
    */
-  Stream<Widget> allWidgets();
+  Stream<Component> allComponents();
 
   /**
    * Gets the name of this widget type. This should be unique among all component types; if not, attempting to register

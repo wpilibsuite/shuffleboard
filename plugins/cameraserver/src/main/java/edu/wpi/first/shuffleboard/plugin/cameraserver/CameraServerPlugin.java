@@ -53,7 +53,7 @@ public class CameraServerPlugin extends Plugin {
   @Override
   public Map<DataType, ComponentType> getDefaultComponents() {
     return ImmutableMap.of(
-        CameraServerDataType.INSTANCE, WidgetType.forAnnotatedWidget(CameraServerWidget.class)
+        CameraServerDataType.Instance, WidgetType.forAnnotatedWidget(CameraServerWidget.class)
     );
   }
 
@@ -67,7 +67,7 @@ public class CameraServerPlugin extends Plugin {
   @Override
   public List<DataType> getDataTypes() {
     return ImmutableList.of(
-        CameraServerDataType.INSTANCE
+        CameraServerDataType.Instance
     );
   }
 

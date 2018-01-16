@@ -3,9 +3,11 @@ package edu.wpi.first.shuffleboard.app.components;
 import edu.wpi.first.shuffleboard.api.Populatable;
 import edu.wpi.first.shuffleboard.api.components.ExtendedPropertySheet;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
+import edu.wpi.first.shuffleboard.api.prefs.FlushableProperty;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
+import edu.wpi.first.shuffleboard.api.tab.TabInfo;
 import edu.wpi.first.shuffleboard.api.util.Debouncer;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
@@ -116,18 +118,27 @@ public class DashboardTab extends Tab implements HandledTab, Populatable {
   }
 
   /**
+   * Creates a new tab from a tab info object.
+   */
+  public DashboardTab(TabInfo tabInfo) {
+    this(tabInfo.getName());
+    setSourcePrefix(tabInfo.getSourcePrefix());
+    setAutoPopulate(tabInfo.isAutoPopulate());
+  }
+
+  /**
    * Shows a dialog for editing the properties of this tab.
    */
   public void showPrefsDialog() {
-    // Use a dummy property here to prevent a call to populate() on every keystroke in the editor (!)
-    StringProperty dummySourcePrefix
-        = new SimpleStringProperty(sourcePrefix.getBean(), sourcePrefix.getName(), sourcePrefix.getValue());
+    // Use a flushable property here to prevent a call to populate() on every keystroke in the editor (!)
+    FlushableProperty<String> flushableSourcePrefix = new FlushableProperty<>(sourcePrefix);
+    FlushableProperty<Number> flushableTileSize = new FlushableProperty<>(getWidgetPane().tileSizeProperty());
     ExtendedPropertySheet propertySheet = new ExtendedPropertySheet(
         Arrays.asList(
             this.title,
             this.autoPopulate,
-            dummySourcePrefix,
-            getWidgetPane().tileSizeProperty(),
+            flushableSourcePrefix,
+            flushableTileSize,
             getWidgetPane().showGridProperty()
         ));
     propertySheet.getItems().addAll(
@@ -141,7 +152,8 @@ public class DashboardTab extends Tab implements HandledTab, Populatable {
     dialog.getDialogPane().setContent(new BorderPane(propertySheet));
     dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CLOSE);
     dialog.setOnCloseRequest(__ -> {
-      this.sourcePrefix.setValue(dummySourcePrefix.getValue());
+      flushableSourcePrefix.flush();
+      flushableTileSize.flush();
     });
     dialog.showAndWait();
   }
@@ -237,6 +249,7 @@ public class DashboardTab extends Tab implements HandledTab, Populatable {
     String name = NetworkTable.normalizeKey(type.removeProtocol(sourceId), false);
     return !deferPopulation
         && isAutoPopulate()
+        && !getSourcePrefix().isEmpty()
         && type.dataTypeForSource(DataTypes.getDefault(), sourceId) != DataTypes.Map
         && !NetworkTableUtils.isMetadata(sourceId)
         && (name.startsWith(getSourcePrefix()) || sourceId.startsWith(getSourcePrefix()));

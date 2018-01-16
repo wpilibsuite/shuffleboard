@@ -44,7 +44,7 @@ public class PIDCommandWidget extends SimpleAnnotatedWidget<PIDCommandData> {
 
     typedSourceProperty().addListener((__, oldSource, newSource) -> {
       controllerDataSource = new SubSource<>(
-          new PIDControllerType(),
+          PIDControllerType.Instance,
           newSource,
           pidControllerData -> new PIDCommandData(dataOrDefault.get().getCommandData(), pidControllerData),
           PIDCommandData::getPidControllerData

@@ -1,6 +1,7 @@
 package edu.wpi.first.shuffleboard.api.sources;
 
 import edu.wpi.first.shuffleboard.api.data.DataType;
+import edu.wpi.first.shuffleboard.api.widget.Sourced;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.Property;
@@ -106,7 +107,7 @@ public interface DataSource<T> {
   DataType<T> getDataType();
 
   /**
-   * Closes this data source and frees any used resources.
+   * Closes this data source and frees any used resources. A closed source will not be usable
    */
   default void close() {
     // default to NOP
@@ -137,5 +138,25 @@ public interface DataSource<T> {
    * Checks if this source is currently connected to its underlying data stream.
    */
   boolean isConnected();
+
+  /**
+   * Checks if any clients are connected to this source.
+   */
+  boolean hasClients();
+
+  /**
+   * Adds a client to this source.
+   *
+   * @param client the client to add
+   */
+  void addClient(Sourced client);
+
+  /**
+   * Removes a client from this source. If there are no remaining clients after removing a client, the source will be
+   * {@link #close() closed}.
+   *
+   * @param client the client to remove
+   */
+  void removeClient(Sourced client);
 
 }

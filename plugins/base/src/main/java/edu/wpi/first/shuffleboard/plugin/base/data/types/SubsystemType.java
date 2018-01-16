@@ -8,9 +8,11 @@ import java.util.function.Function;
 /**
  * Type of a simple subsystem. Subsystems don't contain any data in and of themselves.
  */
-public class SubsystemType extends ComplexDataType {
+public final class SubsystemType extends ComplexDataType {
 
-  public SubsystemType() {
+  public static final SubsystemType Instance = new SubsystemType();
+
+  private SubsystemType() {
     super("LW Subsystem", Object.class);
   }
 

@@ -21,7 +21,7 @@ public interface Layout extends Component, ComponentContainer {
     return getChildren().stream();
   }
 
-  default Stream<Widget> allWidgets() {
-    return getChildren().stream().flatMap(Component::allWidgets);
+  default Stream<Component> allComponents() {
+    return Stream.concat(Stream.of(this), getChildren().stream().flatMap(Component::allComponents));
   }
 }

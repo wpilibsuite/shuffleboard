@@ -5,6 +5,7 @@ import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
 import edu.wpi.first.shuffleboard.api.sources.Sources;
+import edu.wpi.first.shuffleboard.api.widget.Sourced;
 
 import com.google.common.collect.Iterables;
 
@@ -12,6 +13,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.WeakHashMap;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
@@ -33,6 +35,7 @@ public class DestroyedSource<T> implements DataSource<T> {
   private final StringProperty name = new SimpleStringProperty(this, "name", null);
   private final ObjectProperty<T> data = new SimpleObjectProperty<>(this, "data", null);
   private final BooleanProperty active = new SimpleBooleanProperty(this, "active", false);
+  private final Set<Sourced> clients = Collections.newSetFromMap(new WeakHashMap<>());
 
   /**
    * Creates a new destroyed source for the given data types and URI. This should be used to represent a saved data
@@ -105,6 +108,10 @@ public class DestroyedSource<T> implements DataSource<T> {
             "The new data type is " + restored.getDataType() + ", was expecting one of: "
                 + Iterables.toString(possibleTypes));
       }
+      if (sourceType.getAvailableSourceUris().contains(oldId)) {
+        // The restored source already existed at restoration time, no need to set its name or data
+        return restored;
+      }
       restored.nameProperty().set(name.get());
       restored.activeProperty().set(true);
       if (getData() == null && !Sources.getDefault().isRegistered(restored)) {
@@ -162,6 +169,21 @@ public class DestroyedSource<T> implements DataSource<T> {
   @Override
   public boolean isConnected() {
     return false;
+  }
+
+  @Override
+  public boolean hasClients() {
+    return !clients.isEmpty();
+  }
+
+  @Override
+  public void addClient(Sourced client) {
+    clients.add(client);
+  }
+
+  @Override
+  public void removeClient(Sourced client) {
+    clients.remove(client);
   }
 
   @Override

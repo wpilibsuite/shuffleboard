@@ -6,9 +6,11 @@ import edu.wpi.first.shuffleboard.plugin.base.data.PowerDistributionData;
 import java.util.Map;
 import java.util.function.Function;
 
-public class PowerDistributionType extends ComplexDataType<PowerDistributionData> {
+public final class PowerDistributionType extends ComplexDataType<PowerDistributionData> {
 
-  public PowerDistributionType() {
+  public static final PowerDistributionType Instance = new PowerDistributionType();
+
+  private PowerDistributionType() {
     super("PowerDistributionPanel", PowerDistributionData.class);
   }
 

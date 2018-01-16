@@ -6,11 +6,12 @@ import edu.wpi.first.shuffleboard.api.data.SimpleDataType;
  * A catchall data type that represents all data. This should only be used by widgets that can truly show <i>any</i>
  * data.
  */
-public class AllType extends SimpleDataType<Object> {
+public final class AllType extends SimpleDataType<Object> {
 
+  public static final AllType Instance = new AllType();
   private final Object defaultValue = new Object();
 
-  public AllType() {
+  private AllType() {
     super("All", Object.class);
   }
 

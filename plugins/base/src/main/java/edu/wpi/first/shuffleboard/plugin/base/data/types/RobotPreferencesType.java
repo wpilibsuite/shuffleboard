@@ -9,7 +9,9 @@ import java.util.function.Function;
 
 public final class RobotPreferencesType extends ComplexDataType<RobotPreferencesData> {
 
-  public RobotPreferencesType() {
+  public static final RobotPreferencesType Instance = new RobotPreferencesType();
+
+  private RobotPreferencesType() {
     super("RobotPreferences", RobotPreferencesData.class);
   }
 

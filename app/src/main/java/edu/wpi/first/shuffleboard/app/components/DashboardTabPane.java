@@ -1,10 +1,15 @@
 package edu.wpi.first.shuffleboard.app.components;
 
-import edu.wpi.first.shuffleboard.api.util.Debouncer;
+import edu.wpi.first.shuffleboard.api.tab.TabInfo;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 import edu.wpi.first.shuffleboard.api.widget.Component;
+import edu.wpi.first.shuffleboard.api.widget.Sourced;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import javafx.collections.ListChangeListener;
@@ -19,18 +24,14 @@ import static edu.wpi.first.shuffleboard.api.util.TypeUtils.optionalCast;
 public class DashboardTabPane extends TabPane {
 
   /**
-   * Creates a dashboard with one default tab.
+   * Creates a dashboard with no tabs.
    */
   public DashboardTabPane() {
-    this(createAutoPopulateTab("SmartDashboard", "SmartDashboard/"),
-        createAutoPopulateTab("LiveWindow", "LiveWindow/"));
+    this((Tab[]) null);
   }
 
-  private static DashboardTab createAutoPopulateTab(String name, String sourcePrefix) {
-    DashboardTab tab = new DashboardTab(name);
-    tab.setAutoPopulate(true);
-    tab.setSourcePrefix(sourcePrefix);
-    return tab;
+  public DashboardTabPane(Collection<TabInfo> tabInfo) {
+    this(tabInfo.stream().map(DashboardTab::new).toArray(DashboardTab[]::new));
   }
 
   /**
@@ -50,8 +51,16 @@ public class DashboardTabPane extends TabPane {
       if (change.wasRemoved()) {
         change.getRemoved().stream()
             .flatMap(TypeUtils.castStream(DashboardTab.class))
-            .map(DashboardTab::getPopulateDebouncer)
-            .forEach(Debouncer::cancel);
+            .forEach(tab -> {
+              tab.getPopulateDebouncer().cancel();
+              WidgetPane widgetPane = tab.getWidgetPane();
+              List<Tile> tiles = new ArrayList<>(widgetPane.getTiles());
+              tiles.stream()
+                  .map((Function<Tile, Component>) widgetPane::removeTile)
+                  .flatMap(c -> c.allComponents())
+                  .flatMap(TypeUtils.castStream(Sourced.class))
+                  .forEach(Sourced::removeAllSources);
+            });
       }
     }
   }
