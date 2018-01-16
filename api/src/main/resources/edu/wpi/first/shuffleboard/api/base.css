@@ -282,6 +282,7 @@
     -fx-background-color: transparent;
 }
 
+/*
 .connection-indicator:connected {
     -fx-text-fill: green;
 }
@@ -289,6 +290,7 @@
 .connection-indicator:disconnected {
     -fx-text-fill: red;
 }
+*/
 
 /*******************************************************************************
  *                                                                             *
