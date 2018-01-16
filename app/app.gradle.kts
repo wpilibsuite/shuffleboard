@@ -14,7 +14,9 @@ All of the application specific code that makes shuffleboard run.
 """.trimMargin()
 
 repositories {
-    mavenLocal()
+    maven {
+        setUrl("https://dl.bintray.com/samcarlberg/maven-artifacts/")
+    }
 }
 
 dependencies {
