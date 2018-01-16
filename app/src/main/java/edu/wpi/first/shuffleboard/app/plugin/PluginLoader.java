@@ -321,14 +321,12 @@ public class PluginLoader {
     Requirements requirements = pluginClass.getAnnotation(Requirements.class);
     Requires[] requires = pluginClass.getAnnotationsByType(Requires.class);
     List<Requires> requirementsArray = new ArrayList<Requires>();
-    // First half of concat
-    for ( Requires r : requirements.value()) {
-        requirementsArray.add(r);
-    }
-    // Second half of concat
-    for( Requires r : requires ) {
-        requirementsArray.add(r);
-    }
+    // Split into two pieces because Stream.concat has weird type inference issues
+    requirementsArray = Stream.of(requirements)
+            .filter(Objects::nonNull)
+            .map(Requirements::value)
+            .flatMap(Stream::of).collect(Collectors.toList());
+    requirementsArray.addAll(Stream.of(requires).collect(Collectors.toList()));
     /*List<Object> test = Stream.concat(
             Stream.of(requirements)
                 .filter(Objects::nonNull)
