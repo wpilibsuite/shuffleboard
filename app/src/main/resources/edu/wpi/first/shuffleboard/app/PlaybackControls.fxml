@@ -8,6 +8,7 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.layout.Region?>
 <HBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="edu.wpi.first.shuffleboard.app.PlaybackController"
@@ -15,37 +16,47 @@
       alignment="CENTER"
       styleClass="playback-controls"
       spacing="8">
-    <Button fx:id="recordButton" onAction="#toggleRecord"/>
-    <HBox fx:id="playbackControls" alignment="CENTER">
+    <HBox>
         <padding>
-            <Insets topRightBottomLeft="2"/>
+            <Insets topRightBottomLeft="5"/>
         </padding>
-        <Button onAction="#previousFrame">
-            <graphic>
-                <ImageView>
-                    <Image url="/edu/wpi/first/shuffleboard/app/icons/icons8-Rewind-16.png"/>
-                </ImageView>
-            </graphic>
-        </Button>
-        <Button fx:id="playPauseButton" onAction="#togglePlayPause"/>
-        <Button onAction="#stopPlayback">
-            <graphic>
-                <ImageView>
-                    <Image url="/edu/wpi/first/shuffleboard/app/icons/icons8-Stop-16.png"/>
-                </ImageView>
-            </graphic>
-        </Button>
-        <Button onAction="#nextFrame">
-            <graphic>
-                <ImageView>
-                    <Image url="/edu/wpi/first/shuffleboard/app/icons/icons8-Fast Forward-16.png"/>
-                </ImageView>
-            </graphic>
-        </Button>
-        <HBox alignment="CENTER" spacing="4">
-            <Scrubber fx:id="progressScrubber"/>
-            <ToggleSwitch text="Loop" fx:id="loopingSwitch" alignment="CENTER" textAlignment="CENTER"/>
-            <Label fx:id="progressLabel"/>
+        <Label fx:id="connectionIndicator">Disconnected!</Label>
+    </HBox>
+    <Region HBox.hgrow="ALWAYS"/>
+    <HBox>
+        <Button fx:id="recordButton" onAction="#toggleRecord"/>
+        <HBox fx:id="playbackControls" alignment="CENTER">
+            <padding>
+                <Insets topRightBottomLeft="2"/>
+            </padding>
+            <Button onAction="#previousFrame">
+                <graphic>
+                    <ImageView>
+                        <Image url="/edu/wpi/first/shuffleboard/app/icons/icons8-Rewind-16.png"/>
+                    </ImageView>
+                </graphic>
+            </Button>
+            <Button fx:id="playPauseButton" onAction="#togglePlayPause"/>
+            <Button onAction="#stopPlayback">
+                <graphic>
+                    <ImageView>
+                        <Image url="/edu/wpi/first/shuffleboard/app/icons/icons8-Stop-16.png"/>
+                    </ImageView>
+                </graphic>
+            </Button>
+            <Button onAction="#nextFrame">
+                <graphic>
+                    <ImageView>
+                        <Image url="/edu/wpi/first/shuffleboard/app/icons/icons8-Fast Forward-16.png"/>
+                    </ImageView>
+                </graphic>
+            </Button>
+            <HBox alignment="CENTER" spacing="4">
+                <Scrubber fx:id="progressScrubber"/>
+                <ToggleSwitch text="Loop" fx:id="loopingSwitch" alignment="CENTER" textAlignment="CENTER"/>
+                <Label fx:id="progressLabel"/>
+            </HBox>
         </HBox>
     </HBox>
+    <Region HBox.hgrow="ALWAYS"/>
 </HBox>
