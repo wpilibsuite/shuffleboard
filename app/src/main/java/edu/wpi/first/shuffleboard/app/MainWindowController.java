@@ -6,8 +6,12 @@ import edu.wpi.first.shuffleboard.api.components.SourceTreeTable;
 import edu.wpi.first.shuffleboard.api.dnd.DataFormats;
 import edu.wpi.first.shuffleboard.api.plugin.Plugin;
 import edu.wpi.first.shuffleboard.api.prefs.FlushableProperty;
+import edu.wpi.first.shuffleboard.api.sources.ConnectionStatus;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceEntry;
+import edu.wpi.first.shuffleboard.api.sources.SourceType;
+import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
+import edu.wpi.first.shuffleboard.api.sources.UiHints;
 import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
 import edu.wpi.first.shuffleboard.api.tab.TabInfo;
 import edu.wpi.first.shuffleboard.api.theme.Theme;
@@ -43,16 +47,21 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import javafx.application.Platform;
+import javafx.beans.InvalidationListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.MapChangeListener;
+import javafx.collections.ObservableList;
+import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Accordion;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Dialog;
+import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.Tab;
@@ -66,6 +75,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
@@ -76,6 +86,7 @@ import javafx.stage.WindowEvent;
 
 import static edu.wpi.first.shuffleboard.api.components.SourceTreeTable.alphabetical;
 import static edu.wpi.first.shuffleboard.api.components.SourceTreeTable.branchesFirst;
+import static edu.wpi.first.shuffleboard.api.util.ListUtils.joining;
 
 
 /**
@@ -98,6 +109,8 @@ public class MainWindowController {
   private DashboardTabPane dashboard;
   @FXML
   private Accordion sourcesAccordion;
+  @FXML
+  private HBox connectionIndicatorArea;
   @FXML
   private Pane pluginPane;
   private Stage pluginStage;
@@ -148,7 +161,49 @@ public class MainWindowController {
       }
     });
 
+    SourceTypes.getDefault().getItems().addListener((InvalidationListener) items -> {
+      List<? extends Node> collect = ((ObservableList<SourceType>) items).stream()
+          .filter(s -> !optOutOfConnectionIndicator(s))
+          .map(this::generateConnectionLabel)
+          .collect(joining(this::generateSeparatorLabel));
+      connectionIndicatorArea.getChildren().setAll(collect);
+    });
+
     setUpPluginsStage();
+  }
+
+  private Label generateSeparatorLabel() {
+    Label label = new Label(" | ");
+    label.getStyleClass().add("connection-indicator-separator");
+    return label;
+  }
+
+  /**
+   * Checks if a source type has opted out of displaying a connection indicator.
+   */
+  private boolean optOutOfConnectionIndicator(SourceType sourceType) {
+    Class<? extends SourceType> clazz = sourceType.getClass();
+    UiHints hints = clazz.getAnnotation(UiHints.class);
+    return hints != null && !hints.showConnectionIndicator();
+  }
+
+  private Label generateConnectionLabel(SourceType sourceType) {
+    Label label = new Label();
+    label.getStyleClass().add("connection-indicator");
+    label.textProperty().bind(
+        EasyBind.monadic(sourceType.connectionStatusProperty())
+            .map(ConnectionStatus::isConnected)
+            .map(connected -> sourceType.getName() + ": " + (connected ? "connected" : "not connected")));
+    sourceType.connectionStatusProperty().addListener((__, old, status) -> {
+      updateConnectionLabel(label, status.isConnected());
+    });
+    updateConnectionLabel(label, sourceType.getConnectionStatus().isConnected());
+    return label;
+  }
+
+  private void updateConnectionLabel(Label label, boolean connected) {
+    label.pseudoClassStateChanged(PseudoClass.getPseudoClass("connected"), connected);
+    label.pseudoClassStateChanged(PseudoClass.getPseudoClass("disconnected"), !connected);
   }
 
   private void setUpPluginsStage() {
@@ -242,11 +297,11 @@ public class MainWindowController {
         .map(tab -> (DashboardTab) tab)
         .map(DashboardTab::getWidgetPane)
         .forEach(pane ->
-          pane.getTiles().stream()
-              .filter(tile -> plugin.getComponents().stream()
-                  .anyMatch(t -> tile.getContent().getName().equals(t.getName())))
-              .collect(Collectors.toList()) // collect into temporary list to prevent comodification
-              .forEach(tile -> pane.getChildren().remove(tile)));
+            pane.getTiles().stream()
+                .filter(tile -> plugin.getComponents().stream()
+                    .anyMatch(t -> tile.getContent().getName().equals(t.getName())))
+                .collect(Collectors.toList()) // collect into temporary list to prevent comodification
+                .forEach(tile -> pane.getChildren().remove(tile)));
     // ... and from the gallery
     widgetGallery.setWidgets(Components.getDefault().allWidgets().collect(Collectors.toList()));
   }

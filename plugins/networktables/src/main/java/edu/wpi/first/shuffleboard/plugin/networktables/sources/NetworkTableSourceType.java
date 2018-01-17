@@ -2,6 +2,7 @@ package edu.wpi.first.shuffleboard.plugin.networktables.sources;
 
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
+import edu.wpi.first.shuffleboard.api.sources.ConnectionStatus;
 import edu.wpi.first.shuffleboard.api.sources.SourceEntry;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.Sources;
@@ -16,6 +17,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 
 import java.util.List;
 
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
@@ -32,7 +34,10 @@ public final class NetworkTableSourceType extends SourceType {
   public NetworkTableSourceType(NetworkTablesPlugin plugin) {
     super("NetworkTables", true, "network_table://", NetworkTableSource::forKey);
     this.plugin = plugin;
+    setConnectionStatus(new ConnectionStatus(plugin.getServerId(), false));
     NetworkTableInstance inst = NetworkTableInstance.getDefault();
+    plugin.serverIdProperty().addListener((__, old, serverId) -> setConnectionStatus(serverId, false));
+    inst.addConnectionListener(notification -> setConnectionStatus(plugin.getServerId(), notification.connected), true);
     inst.addConnectionListener(notification -> {
       if (!notification.connected) {
         availableSources.clear();
@@ -66,6 +71,19 @@ public final class NetworkTableSourceType extends SourceType {
     }, 0xFF);
   }
 
+  private void setConnectionStatus(String serverId, boolean connected) {
+    Platform.runLater(() -> {
+      String host;
+      if (serverId.isEmpty()) {
+        // empty server ID is treated as localhost by the plugin, so display it accordingly
+        host = "localhost";
+      } else {
+        host = serverId;
+      }
+      setConnectionStatus(new ConnectionStatus(host, connected));
+    });
+  }
+
   /**
    * For internal use only.
    */
@@ -92,6 +110,7 @@ public final class NetworkTableSourceType extends SourceType {
     String id = plugin.getServerId();
     plugin.setServerId("notarealserver:0");
     plugin.setServerId(id);
+    super.setConnectionStatus(new ConnectionStatus(id, false));
   }
 
   @Override
@@ -99,6 +118,7 @@ public final class NetworkTableSourceType extends SourceType {
     NetworkTableUtils.shutdown(NetworkTableInstance.getDefault());
     availableSourceIds.clear();
     availableSources.clear();
+    super.disconnect();
   }
 
   @Override

@@ -12,6 +12,9 @@
 <?import javafx.scene.control.Accordion?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.geometry.Insets?>
 <VBox fx:id="root" maxHeight="Infinity" maxWidth="Infinity"
       xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="edu.wpi.first.shuffleboard.app.MainWindowController">
@@ -54,7 +57,17 @@
         </TabPane>
         <DashboardTabPane fx:id="dashboard"/>
     </SplitPane>
-    <fx:include source="PlaybackControls.fxml"/>
+    <BorderPane styleClass="footer">
+        <padding>
+            <Insets left="4" right="4"/>
+        </padding>
+        <center>
+            <fx:include source="PlaybackControls.fxml"/>
+        </center>
+        <right>
+            <HBox fx:id="connectionIndicatorArea" spacing="2" alignment="CENTER" styleClass="connection-indicator-area"/>
+        </right>
+    </BorderPane>
     <fx:define>
         <fx:include source="PluginPane.fxml" fx:id="pluginPane"/>
     </fx:define>

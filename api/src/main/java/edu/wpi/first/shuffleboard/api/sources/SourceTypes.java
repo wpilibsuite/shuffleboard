@@ -148,6 +148,7 @@ public final class SourceTypes extends Registry<SourceType> {
     return allUris;
   }
 
+  @UiHints(showConnectionIndicator = false)
   private static class NoneType extends SourceType {
 
     public NoneType() {
@@ -165,6 +166,7 @@ public final class SourceTypes extends Registry<SourceType> {
     }
   }
 
+  @UiHints(showConnectionIndicator = false)
   private static class StaticType extends SourceType {
 
     public StaticType() {
