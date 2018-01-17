@@ -4,7 +4,6 @@
 
 # shuffleboard
 
-This is the 604 fork of shuffeboard. **The `604version` branch will be repeatedly forced-pushed as necessary in order to bring in updates from the main repo.**
 
 ## Structure
 
