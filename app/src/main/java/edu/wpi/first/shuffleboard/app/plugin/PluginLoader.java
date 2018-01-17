@@ -33,7 +33,6 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Comparator;
 import java.util.HashSet;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -336,20 +335,14 @@ public class PluginLoader {
   private static List<Requires> getRequirements(Class<? extends Plugin> pluginClass) {
     Requirements requirements = pluginClass.getAnnotation(Requirements.class);
     Requires[] requires = pluginClass.getAnnotationsByType(Requires.class);
-    List<Requires> requirementsArray = new ArrayList<Requires>();
+    // No need to initialize hear because it is set equal to something later
+    List<Requires> requirementsArray;
     // Split into two pieces because Stream.concat has weird type inference issues
     requirementsArray = Stream.of(requirements)
             .filter(Objects::nonNull)
             .map(Requirements::value)
             .flatMap(Stream::of).collect(Collectors.toList());
     requirementsArray.addAll(Stream.of(requires).collect(Collectors.toList()));
-    /*List<Object> test = Stream.concat(
-            Stream.of(requirements)
-                .filter(Objects::nonNull)
-                .map(Requirements::value)
-                .flatMap(Stream::of),
-            Stream.of(requires)
-        ).collect(Collectors.toList());*/
     return requirementsArray;
   }
 
