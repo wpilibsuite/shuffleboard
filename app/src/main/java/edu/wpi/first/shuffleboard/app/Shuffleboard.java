@@ -1,6 +1,7 @@
 package edu.wpi.first.shuffleboard.app;
 
 import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
+import edu.wpi.first.shuffleboard.api.util.ShutdownHooks;
 import edu.wpi.first.shuffleboard.api.util.Storage;
 import edu.wpi.first.shuffleboard.api.util.Time;
 import edu.wpi.first.shuffleboard.app.plugin.PluginLoader;
@@ -126,6 +127,13 @@ public class Shuffleboard extends Application {
     Time.setStartTime(Time.now());
   }
 
+  @Override
+  public void stop() throws Exception {
+    logger.info("Running shutdown hooks");
+    ShutdownHooks.runAllHooks();
+    logger.info("Shutting down");
+  }
+
   /**
    * Sets up loggers to print to stdout (rather than stderr) and log to ~/Shuffleboard/shuffleboard.log
    */
@@ -161,6 +169,7 @@ public class Shuffleboard extends Application {
 
     globalLogger.config("Configuration done."); //Log that we are done setting up the logger
     globalLogger.config("Shuffleboard app version: " + getVersion());
+    globalLogger.config("Running from " + getRunningLocation());
   }
 
   /**
@@ -187,6 +196,10 @@ public class Shuffleboard extends Application {
       return appVersion;
     }
     return Storage.class.getPackage().getImplementationVersion();
+  }
+
+  public static String getRunningLocation() {
+    return Shuffleboard.class.getProtectionDomain().getCodeSource().getLocation().toExternalForm();
   }
 
 }

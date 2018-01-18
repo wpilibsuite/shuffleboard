@@ -31,14 +31,19 @@ import org.fxmisc.easybind.EasyBind;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.Reader;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
+import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.DoubleConsumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -49,15 +54,20 @@ import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.MapChangeListener;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Accordion;
+import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Dialog;
+import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableRow;
@@ -68,6 +78,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -246,11 +257,11 @@ public class MainWindowController {
         .map(tab -> (DashboardTab) tab)
         .map(DashboardTab::getWidgetPane)
         .forEach(pane ->
-          pane.getTiles().stream()
-              .filter(tile -> plugin.getComponents().stream()
-                  .anyMatch(t -> tile.getContent().getName().equals(t.getName())))
-              .collect(Collectors.toList()) // collect into temporary list to prevent comodification
-              .forEach(tile -> pane.getChildren().remove(tile)));
+            pane.getTiles().stream()
+                .filter(tile -> plugin.getComponents().stream()
+                    .anyMatch(t -> tile.getContent().getName().equals(t.getName())))
+                .collect(Collectors.toList()) // collect into temporary list to prevent comodification
+                .forEach(tile -> pane.getChildren().remove(tile)));
     // ... and from the gallery
     widgetGallery.setWidgets(Components.getDefault().allWidgets().collect(Collectors.toList()));
   }
@@ -500,9 +511,74 @@ public class MainWindowController {
     pluginStage.show();
   }
 
+  /**
+   * Checks for updates to shuffleboard, then prompts the user to update (if applicable) and restart to apply the
+   * update. This also shows the download progress in a separate dialog, which can be closed or hidden.
+   */
   @FXML
   public void checkForUpdates() {
-    updateCheckingExecutor.submit(shuffleboardUpdateChecker::checkForUpdatesAndPromptToInstall);
+    Alert updateProgress = new Alert(Alert.AlertType.INFORMATION);
+    FxUtils.bind(updateProgress.getDialogPane().getStylesheets(), stylesheets);
+    updateProgress.initModality(Modality.NONE);
+    updateProgress.setTitle("Download progress");
+    updateProgress.setHeaderText("Download progress");
+
+    ProgressBar progressBar = new ProgressBar();
+    progressBar.setMaxWidth(Double.POSITIVE_INFINITY);
+    progressBar.setProgress(0);
+
+    Label label = new Label("0.00%");
+
+    AtomicBoolean firstShow = new AtomicBoolean(true);
+    final DoubleConsumer progressNotifier = value -> {
+      FxUtils.runOnFxThread(() -> {
+        if (value == 1) {
+          updateProgress.hide();
+        } else if (!updateProgress.isShowing() && firstShow.get()) {
+          updateProgress.show();
+          firstShow.set(false);
+        }
+        progressBar.setProgress(value);
+        label.setText(String.format("%.2f%%", value * 100));
+      });
+    };
+
+    StackPane content = new StackPane(progressBar, label);
+    content.setPadding(new Insets(8));
+    content.setPrefWidth(200);
+    updateProgress.getDialogPane().setContent(content);
+    updateCheckingExecutor.submit(() ->
+        shuffleboardUpdateChecker.checkForUpdatesAndPromptToInstall(progressNotifier, this::handleUpdateResult));
+  }
+
+  private void handleUpdateResult(ShuffleboardUpdateChecker.Result<Path> result) {
+    FxUtils.runOnFxThread(() -> {
+      if (result.failed()) {
+        Alert failureAlert = new Alert(Alert.AlertType.ERROR);
+        FxUtils.bind(failureAlert.getDialogPane().getStylesheets(), stylesheets);
+        failureAlert.setTitle("Update failed");
+        TextArea area = new TextArea();
+        StringWriter writer = new StringWriter();
+        PrintWriter pw = new PrintWriter(writer);
+        result.getError().printStackTrace(pw);
+        area.setText(writer.toString());
+        area.setEditable(false);
+        failureAlert.getDialogPane().setExpandableContent(area);
+        failureAlert.showAndWait();
+      } else {
+        Alert successAlert = new Alert(Alert.AlertType.CONFIRMATION);
+        FxUtils.bind(successAlert.getDialogPane().getStylesheets(), stylesheets);
+        successAlert.setTitle("Restart to apply update");
+        successAlert.setHeaderText("Restart shuffleboard to apply the update");
+        boolean restartNow = successAlert.showAndWait()
+            .map(ButtonType.OK::equals)
+            .orElse(false);
+        if (restartNow) {
+          // The update checker will run the update
+          close();
+        }
+      }
+    });
   }
 
 }
