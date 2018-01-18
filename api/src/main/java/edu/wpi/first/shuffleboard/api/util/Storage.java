@@ -31,6 +31,8 @@ public final class Storage {
 
   private static final String RECORDING_DIR = STORAGE_DIR + "/recordings";
 
+  private static final String THEMES_DIR = STORAGE_DIR + "/themes";
+
   private static final String RECORDING_FILE_FORMAT = RECORDING_DIR + "/${date}/recording-${time}.sbr";
 
   private static final DateTimeFormatter dateFormatter = DateTimeFormatter.ISO_DATE;
@@ -76,6 +78,14 @@ public final class Storage {
    */
   public static Path getPluginPath() throws IOException {
     return findOrCreate(PLUGINS_DIR);
+  }
+
+  /**
+   * Gets the directory for custom external themes, creating it if it does not exist.
+   * @throws IOException if the directory cannot be created
+   */
+  public static Path getThemesDir() throws IOException {
+    return findOrCreate(THEMES_DIR);
   }
 
   /**

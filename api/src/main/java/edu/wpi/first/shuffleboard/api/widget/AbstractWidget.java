@@ -87,6 +87,7 @@ public abstract class AbstractWidget implements Widget {
       throw new IncompatibleSourceException(getDataTypes(), source.getDataType());
     }
     sources.add(source);
+    source.addClient(this);
   }
 
 }

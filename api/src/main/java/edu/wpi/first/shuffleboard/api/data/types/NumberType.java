@@ -2,9 +2,11 @@ package edu.wpi.first.shuffleboard.api.data.types;
 
 import edu.wpi.first.shuffleboard.api.data.SimpleDataType;
 
-public class NumberType extends SimpleDataType<Number> {
+public final class NumberType extends SimpleDataType<Number> {
 
-  public NumberType() {
+  public static final NumberType Instance = new NumberType();
+
+  private NumberType() {
     super("Number", Number.class);
   }
 

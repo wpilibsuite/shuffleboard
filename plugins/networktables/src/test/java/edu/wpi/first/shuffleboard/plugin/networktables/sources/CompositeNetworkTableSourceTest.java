@@ -5,6 +5,7 @@ import edu.wpi.first.shuffleboard.api.data.MapData;
 import edu.wpi.first.shuffleboard.api.util.AsyncUtils;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
+import edu.wpi.first.shuffleboard.plugin.networktables.NetworkTablesPlugin;
 
 import edu.wpi.first.networktables.NetworkTableInstance;
 
@@ -23,7 +24,7 @@ public class CompositeNetworkTableSourceTest {
 
   @BeforeAll
   public static void clinit() {
-    NetworkTableSourceType.setInstance(new NetworkTableSourceType(null));
+    NetworkTableSourceType.setInstance(new NetworkTableSourceType(new NetworkTablesPlugin()));
   }
 
   @BeforeEach

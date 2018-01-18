@@ -1,6 +1,7 @@
 package edu.wpi.first.shuffleboard.app;
 
 import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
+import edu.wpi.first.shuffleboard.api.theme.Themes;
 import edu.wpi.first.shuffleboard.api.util.ShutdownHooks;
 import edu.wpi.first.shuffleboard.api.util.Storage;
 import edu.wpi.first.shuffleboard.api.util.Time;
@@ -60,6 +61,11 @@ public class Shuffleboard extends Application {
 
     // Install SVG image loaders so SVGs can be used like any other image
     SvgImageLoaderFactory.install();
+
+    // Search for and load themes from the custom theme directory before loading application preferences
+    // This avoids an issue with attempting to load a theme at startup that hasn't yet been registered
+    logger.finer("Registering custom user themes from external dir");
+    Themes.getDefault().loadThemesFromDir();
   }
 
   @Override
@@ -83,12 +89,14 @@ public class Shuffleboard extends Application {
     PluginLoader.getDefault().load(new CameraServerPlugin());
     PluginLoader.getDefault().loadAllJarsFromDir(Storage.getPluginPath());
 
-    // Load the most recent save file after loading all plugins
-    if (AppPreferences.getInstance().isAutoLoadLastSaveFile()) {
-      Platform.runLater(() -> {
+    // Setup the dashboard tabs after all plugins are loaded
+    Platform.runLater(() -> {
+      if (AppPreferences.getInstance().isAutoLoadLastSaveFile()) {
         mainWindowController.load(AppPreferences.getInstance().getSaveFile());
-      });
-    }
+      } else {
+        mainWindowController.newLayout();
+      }
+    });
 
     primaryStage.setTitle("Shuffleboard");
     primaryStage.setMinWidth(640);

@@ -9,6 +9,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.NetworkTableType;
 import edu.wpi.first.shuffleboard.api.sources.AbstractDataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
+import edu.wpi.first.shuffleboard.api.sources.Sources;
 import edu.wpi.first.shuffleboard.api.util.EqualityUtils;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.api.util.ThreadUtils;
@@ -58,7 +59,7 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
   };
 
   private CameraServerSource(String name) {
-    super(CameraServerDataType.INSTANCE);
+    super(CameraServerDataType.Instance);
     setName(name);
     videoSink = new CvSink(name + "-videosink");
     eventListenerId = CameraServerJNI.addListener(e -> {
@@ -200,11 +201,16 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
 
   @Override
   public void close() {
+    setActive(false);
+    setConnected(false);
     streams.removeListener(streamsListener);
     enabled.removeListener(enabledListener);
     CameraServerJNI.removeListener(eventListenerId);
     cancelFrameGrabber();
+    videoSink.free();
+    camera.free();
     sources.remove(getName());
+    Sources.getDefault().unregister(this);
   }
 
 }

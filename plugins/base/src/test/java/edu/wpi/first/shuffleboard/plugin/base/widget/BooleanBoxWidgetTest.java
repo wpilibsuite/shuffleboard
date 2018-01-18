@@ -23,13 +23,13 @@ public class BooleanBoxWidgetTest extends AbstractWidgetTest {
 
   @BeforeAll
   public static void register() {
-    setRequirements(BooleanBoxWidget.class, new BooleanType());
+    setRequirements(BooleanBoxWidget.class, BooleanType.Instance);
   }
 
   @Override
   public void start(Stage stage) throws Exception {
     widget = (BooleanBoxWidget) Components.getDefault().createWidget("Boolean Box",
-        DummySource.forTypes(new BooleanType()).get()).get();
+        DummySource.forTypes(BooleanType.Instance).get()).get();
     stage.setScene(new Scene(widget.getView()));
     stage.show();
   }

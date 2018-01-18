@@ -8,7 +8,9 @@ import java.util.function.Function;
 
 public final class ThreeAxisAccelerometerType extends ComplexDataType<ThreeAxisAccelerometerData> {
 
-  public ThreeAxisAccelerometerType() {
+  public static final ThreeAxisAccelerometerType Instance = new ThreeAxisAccelerometerType();
+
+  private ThreeAxisAccelerometerType() {
     super("3AxisAccelerometer", ThreeAxisAccelerometerData.class);
   }
 

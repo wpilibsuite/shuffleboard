@@ -40,16 +40,3 @@
 .text-area, .text-field {
     -underline-color: #eee;
 }
-
-/*******************************************************************************
- *                                                                             *
- * Playback controls                                                           *
- *                                                                             *
- ******************************************************************************/
-.playback-controls {
-    -fx-background-color: -swatch-gray;
-}
-
-.playback-controls .button {
-    -fx-background-radius: 1;
-}

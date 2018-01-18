@@ -34,7 +34,7 @@ public final class OsDetector {
      */
     MAC,
     /**
-     * Generic linux-based operating system
+     * Generic linux-based operating system.
      */
     LINUX
   }

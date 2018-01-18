@@ -25,12 +25,12 @@ public class ComboBoxChooserWidgetTest extends AbstractWidgetTest {
 
   @BeforeAll
   public static void register() {
-    setRequirements(ComboBoxChooserWidget.class, new SendableChooserType());
+    setRequirements(ComboBoxChooserWidget.class, SendableChooserType.Instance);
   }
 
   @Override
   public void start(Stage stage) throws Exception {
-    source = DummySource.forType(new SendableChooserType());
+    source = DummySource.forType(SendableChooserType.Instance);
     widget = (ComboBoxChooserWidget)
         Components.getDefault().createWidget("ComboBox Chooser", source).get();
 

@@ -2,6 +2,7 @@ package edu.wpi.first.shuffleboard.api.sources;
 
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
+import edu.wpi.first.shuffleboard.api.sources.recording.TimestampedData;
 import edu.wpi.first.shuffleboard.api.util.PropertyUtils;
 import edu.wpi.first.shuffleboard.api.util.Registry;
 
@@ -147,6 +148,7 @@ public final class SourceTypes extends Registry<SourceType> {
     return allUris;
   }
 
+  @UiHints(showConnectionIndicator = false)
   private static class NoneType extends SourceType {
 
     public NoneType() {
@@ -157,8 +159,14 @@ public final class SourceTypes extends Registry<SourceType> {
     public DataType<?> dataTypeForSource(DataTypes registry, String sourceUri) {
       return DataTypes.None;
     }
+
+    @Override
+    public void read(TimestampedData recordedData) {
+      // NOPE
+    }
   }
 
+  @UiHints(showConnectionIndicator = false)
   private static class StaticType extends SourceType {
 
     public StaticType() {

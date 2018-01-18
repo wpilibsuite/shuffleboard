@@ -6,9 +6,11 @@ import edu.wpi.first.shuffleboard.plugin.base.data.SpeedControllerData;
 import java.util.Map;
 import java.util.function.Function;
 
-public class SpeedControllerType extends ComplexDataType<SpeedControllerData> {
+public final class SpeedControllerType extends ComplexDataType<SpeedControllerData> {
 
-  public SpeedControllerType() {
+  public static final SpeedControllerType Instance = new SpeedControllerType();
+
+  private SpeedControllerType() {
     super("Speed Controller", SpeedControllerData.class);
   }
 

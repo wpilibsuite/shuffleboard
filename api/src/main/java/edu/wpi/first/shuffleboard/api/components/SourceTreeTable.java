@@ -7,6 +7,8 @@ import edu.wpi.first.shuffleboard.api.util.EqualityUtils;
 
 import edu.wpi.first.networktables.NetworkTable;
 
+import org.fxmisc.easybind.EasyBind;
+
 import java.util.Comparator;
 import java.util.List;
 
@@ -14,6 +16,7 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.scene.control.Label;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableColumn;
 import javafx.scene.control.TreeTableView;
@@ -54,6 +57,12 @@ public class SourceTreeTable<S extends SourceEntry, V> extends TreeTableView<S> 
         f -> new ReadOnlyStringWrapper(getEntryForCellData(f).getViewName()));
     valueColumn.setCellValueFactory(
         f -> new ReadOnlyObjectWrapper(getEntryForCellData(f).getValueView()));
+    Label placeholder = new Label();
+    placeholder.textProperty().bind(EasyBind.monadic(sourceType)
+        .map(SourceType::getName)
+        .map(n -> "No data available. Is there a connection to " + n + "?")
+        .orElse("No data available. Is the source connected?"));
+    setPlaceholder(placeholder);
 
     getColumns().addAll(keyColumn, valueColumn);
   }

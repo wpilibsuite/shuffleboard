@@ -66,14 +66,14 @@ public final class ShuffleboardUpdateChecker {
   private final UpdateChecker updateChecker = new UpdateChecker(group, artifact, version);
 
   public ShuffleboardUpdateChecker() {
-    updateChecker.usingRepos(Repo.maven("FRC Maven Release Server", createUrlYouDummy(releaseRepo)));
+    updateChecker.usingRepos(Repo.maven("FRC Maven Release Server", createUrlUnchecked(releaseRepo)));
   }
 
-  static URL createUrlYouDummy(String iSwearThisIsSafe) {
+  private static URL createUrlUnchecked(String iSwearThisIsSafe) {
     try {
       return new URL(iSwearThisIsSafe);
     } catch (MalformedURLException e) {
-      throw new IllegalArgumentException("You were wrong! Malformed URL: " + iSwearThisIsSafe, e);
+      throw new IllegalArgumentException("The URL string is malformed! " + iSwearThisIsSafe, e);
     }
   }
 

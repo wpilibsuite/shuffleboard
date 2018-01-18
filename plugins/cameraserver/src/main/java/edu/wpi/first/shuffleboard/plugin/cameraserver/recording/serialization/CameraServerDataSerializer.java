@@ -38,7 +38,7 @@ public class CameraServerDataSerializer extends TypeAdapter<CameraServerData> {
   private final Map<String, AWTSequenceEncoder> encoders = new HashMap<>();
 
   public CameraServerDataSerializer() {
-    super(CameraServerDataType.INSTANCE);
+    super(CameraServerDataType.Instance);
   }
 
   @Override

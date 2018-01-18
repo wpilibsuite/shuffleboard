@@ -88,14 +88,14 @@ public class SubsystemLayout extends ListLayout implements Populatable, Sourced 
         setTitle(source.getName());
       }
     } else {
-      throw new IncompatibleSourceException(ImmutableSet.of(new SubsystemType()), source.getDataType());
+      throw new IncompatibleSourceException(ImmutableSet.of(SubsystemType.Instance), source.getDataType());
     }
   }
 
   @Override
   public Set<DataType> getDataTypes() {
     return ImmutableSet.of(
-        new SubsystemType()
+        SubsystemType.Instance
     );
   }
 

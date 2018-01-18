@@ -3,6 +3,7 @@ package edu.wpi.first.shuffleboard.api.plugin;
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.recording.serialization.TypeAdapter;
+import edu.wpi.first.shuffleboard.api.tab.TabInfo;
 import edu.wpi.first.shuffleboard.api.theme.Theme;
 import edu.wpi.first.shuffleboard.api.util.Storage;
 import edu.wpi.first.shuffleboard.api.widget.ComponentType;
@@ -202,6 +203,13 @@ public class Plugin {
    * occur when a user manually confirms the change.
    */
   public List<Property<?>> getProperties() {
+    return ImmutableList.of();
+  }
+
+  /**
+   * Gets a list of information about any default tabs that shuffleboard should use.
+   */
+  public List<TabInfo> getDefaultTabInfo() {
     return ImmutableList.of();
   }
 

@@ -1,5 +1,7 @@
 repositories {
-    mavenLocal()
+    maven {
+        setUrl("https://dl.bintray.com/samcarlberg/maven-artifacts/")
+    }
 }
 
 dependencies {

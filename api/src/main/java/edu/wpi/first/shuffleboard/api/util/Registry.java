@@ -106,6 +106,28 @@ public abstract class Registry<T> {
   }
 
   /**
+   * Unregisters many items at once.
+   *
+   * @param items the items to unregister
+   */
+  public final void unregisterAll(T... items) {
+    Objects.requireNonNull(items, "items");
+    for (T item : items) {
+      unregister(item);
+    }
+  }
+
+  /**
+   * Unregisters many items at once.
+   *
+   * @param items the items to unregister
+   */
+  public final void unregisterAll(Collection<? extends T> items) {
+    Objects.requireNonNull(items, "items");
+    items.forEach(this::unregister);
+  }
+
+  /**
    * Gets a <i>read-only</i> view of the list of registered items.
    */
   public final ObservableList<T> getItems() {

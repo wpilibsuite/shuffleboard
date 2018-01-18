@@ -7,9 +7,11 @@ import edu.wpi.first.shuffleboard.api.data.SimpleDataType;
  * class is for data that is present but whose type is indeterminate, while {@code NoneType} represents the type of
  * data that is not present at all.
  */
-public class UnknownType extends SimpleDataType<Object> {
+public final class UnknownType extends SimpleDataType<Object> {
 
-  public UnknownType() {
+  public static final UnknownType Instance = new UnknownType();
+
+  private UnknownType() {
     super("Unknown", null);
   }
 
