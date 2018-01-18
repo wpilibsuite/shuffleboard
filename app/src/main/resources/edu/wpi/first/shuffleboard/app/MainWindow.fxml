@@ -38,6 +38,9 @@
             <MenuItem text="Close current tab" onAction="#closeCurrentTab" accelerator="SHORTCUT+W"/>
             <MenuItem text="Current tab preferences" onAction="#showCurrentTabPrefs" accelerator="SHORTCUT+SHIFT+,"/>
         </Menu>
+        <Menu text="Help">
+            <MenuItem text="About" onAction="#showAboutDialog"/>
+        </Menu>
     </MenuBar>
     <SplitPane fx:id="centerSplitPane" dividerPositions="0.02">
         <TabPane tabClosingPolicy="UNAVAILABLE" prefWidth="400">

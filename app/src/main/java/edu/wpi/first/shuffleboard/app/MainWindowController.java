@@ -511,6 +511,17 @@ public class MainWindowController {
     pluginStage.show();
   }
 
+  @FXML
+  private void showAboutDialog() {
+    Dialog<ButtonType> dialog = new Dialog<>();
+    FxUtils.bind(dialog.getDialogPane().getStylesheets(), stylesheets);
+    dialog.setTitle("About");
+    dialog.setHeaderText("About Shuffleboard");
+    dialog.setContentText("Current version: " + Shuffleboard.getVersion());
+    dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CLOSE);
+    dialog.showAndWait();
+  }
+
   /**
    * Checks for updates to shuffleboard, then prompts the user to update (if applicable) and restart to apply the
    * update. This also shows the download progress in a separate dialog, which can be closed or hidden.
