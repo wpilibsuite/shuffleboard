@@ -1,6 +1,7 @@
 package edu.wpi.first.shuffleboard.app;
 
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
+import edu.wpi.first.shuffleboard.api.util.OsDetector;
 import edu.wpi.first.shuffleboard.api.util.ShutdownHooks;
 import edu.wpi.first.shuffleboard.api.util.ThreadUtils;
 import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
@@ -23,7 +24,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 import java.util.function.DoubleConsumer;
@@ -36,6 +36,9 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
+
+import static edu.wpi.first.shuffleboard.api.util.OsDetector.OperatingSystemType.LINUX;
+import static edu.wpi.first.shuffleboard.api.util.OsDetector.OperatingSystemType.MAC;
 
 /**
  * Allows an easy way to check for updates and prompt the user to install the newest available version, if applicable.
@@ -166,21 +169,43 @@ public final class ShuffleboardUpdateChecker {
             log.info("Done downloading");
           }
         }
-        String runningLocation = Shuffleboard.getRunningLocation().substring("file:/".length());
+        // 6 -> "file:/".length() to change file:/C:/... to C:/...
+        // 5 -> "file:".length() to change file:/home/... to /home/...
+        int prefixLen = OsDetector.getOperatingSystemType() == OsDetector.OperatingSystemType.WINDOWS ? 6 : 5;
+        String runningLocation = Shuffleboard.getRunningLocation().substring(prefixLen);
         Path target;
         if (runningLocation.endsWith(".jar")) {
           target = Paths.get(runningLocation);
           ShutdownHooks.addHook(() -> {
             try {
-              if (System.getProperty("os.name").toLowerCase(Locale.US).contains("windows")) {
-                Path copyAndRestart = Files.createTempFile("copy_and_restart", ".bat");
-                try (InputStream in = ShuffleboardUpdateChecker.class.getResourceAsStream("/copy_and_restart.bat")) {
-                  Files.copy(in, copyAndRestart, StandardCopyOption.REPLACE_EXISTING);
-                  ProcessBuilder pb = new ProcessBuilder(
-                      copyAndRestart.toString(), temp.getAbsolutePath(), target.toString());
-                  pb.inheritIO();
-                  pb.start();
+              final String scriptFileExtension;
+              switch (OsDetector.getOperatingSystemType()) {
+                case WINDOWS:
+                  scriptFileExtension = ".bat";
+                  break;
+                case MAC:
+                  scriptFileExtension = "-mac.sh";
+                  break;
+                case LINUX:
+                  scriptFileExtension = "-linux.sh";
+                  break;
+                default:
+                  throw new AssertionError("Unknown OS type " + OsDetector.getOperatingSystemType());
+              }
+              Path scriptFile = Files.createTempFile("copy_and_restart", scriptFileExtension);
+              try (InputStream in = Shuffleboard.class.getResourceAsStream("/copy_and_restart" + scriptFileExtension)) {
+                Files.copy(in, scriptFile, StandardCopyOption.REPLACE_EXISTING);
+                if (OsDetector.getOperatingSystemType() == MAC || OsDetector.getOperatingSystemType() == LINUX) {
+                  // need to make the extracted script executable
+                  new ProcessBuilder("chmod", "u+x", scriptFile.toString())
+                      .inheritIO()
+                      .start()
+                      .waitFor();
                 }
+                ProcessBuilder pb = new ProcessBuilder(
+                    scriptFile.toString(), temp.getAbsolutePath(), target.toString());
+                pb.inheritIO();
+                pb.start();
               }
             } catch (IOException e) {
               log.log(Level.WARNING, "Could not copy newest jar!", e);
