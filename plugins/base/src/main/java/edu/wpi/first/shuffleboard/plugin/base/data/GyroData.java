@@ -23,6 +23,14 @@ public final class GyroData extends ComplexData<GyroData> {
   public Map<String, Object> asMap() {
     return ImmutableMap.of("Value", value);
   }
+  
+  public double getWrappedValue() {
+	  double tempval = value;
+	  while (tempval<0) {
+		  tempval+=360;
+	  }
+	  return tempval%360;
+  }
 
   public double getValue() {
     return value;
