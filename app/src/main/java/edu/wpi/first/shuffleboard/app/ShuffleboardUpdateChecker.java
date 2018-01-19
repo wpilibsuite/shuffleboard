@@ -114,7 +114,15 @@ public final class ShuffleboardUpdateChecker {
       alert.getDialogPane().getStylesheets().setAll(AppPreferences.getInstance().getTheme().getStyleSheets());
       alert.setTitle("An update is available");
       alert.setHeaderText("A newer version of shuffleboard is available for download!");
-      Label content = new Label("  Current version: " + currentVersion + "\n  Newest version: " + newestVersion);
+      StringBuilder messageBuilder = new StringBuilder();
+      messageBuilder.append("  ").append("Current version: ").append(currentVersion).append('\n');
+      messageBuilder.append("  ").append("Newest version: ").append(newestVersion).append('\n');
+      if (newestVersion.getMajorVersion() > currentVersion.getMajorVersion()) {
+        // Major version bump, may cause custom plugins to break. Alert the user
+        messageBuilder.append('\n').append("  ").append("WARNING: There has been a major version bump! " +
+            "Custom plugins may no longer load or behave properly");
+      }
+      Label content = new Label(messageBuilder.toString());
       content.setPadding(new Insets(8));
       alert.getDialogPane().setContent(content);
       ButtonType accept = new ButtonType("Download", ButtonBar.ButtonData.YES);
@@ -138,7 +146,7 @@ public final class ShuffleboardUpdateChecker {
 
   private static void downloadNewestRelease(URL newestVersionLocation,
                                             Version newestVersion,
-                                            DoubleConsumer progress,
+                                            DoubleConsumer progressNotifier,
                                             Consumer<Result<Path>> onComplete) {
     downloadService.submit(() -> {
       log.info("Downloading " + newestVersionLocation);
@@ -162,10 +170,10 @@ public final class ShuffleboardUpdateChecker {
               out.write(buf, 0, read);
               totalRead += read;
               if (fileSize > 0) {
-                progress.accept((double) totalRead / fileSize);
+                progressNotifier.accept((double) totalRead / fileSize);
               }
             }
-            progress.accept(1.0);
+            progressNotifier.accept(1.0);
             log.info("Done downloading");
           }
         }
