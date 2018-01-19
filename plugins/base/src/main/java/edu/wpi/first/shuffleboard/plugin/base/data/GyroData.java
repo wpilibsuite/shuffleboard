@@ -30,8 +30,7 @@ public final class GyroData extends ComplexData<GyroData> {
    */
   public double getWrappedValue() {
     if (value < 0) {
-      int addmultiplier = (((int) Math.abs(value) / 360) + 1) * 360;
-      return (addmultiplier + value) % 360;
+      return ((value % 360) + 360) % 360;
     } else {
       return value % 360;
     }
