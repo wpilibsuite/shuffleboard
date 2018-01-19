@@ -29,11 +29,12 @@ public final class GyroData extends ComplexData<GyroData> {
    * This is guaranteed to be displayed properly by the Gyro widget. 
    */
   public double getWrappedValue() {
-    double tempval = value;
-    while (tempval < 0) {
-      tempval += 360;
+    if (value < 0) {
+      int addmultiplier = (((int) Math.abs(value) / 360) + 1) * 360;
+      return (addmultiplier + value) % 360;
+    } else {
+      return value % 360;
     }
-    return tempval % 360;
   }
 
   public double getValue() {
