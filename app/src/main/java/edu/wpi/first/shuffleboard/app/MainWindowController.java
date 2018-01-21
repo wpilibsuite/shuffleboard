@@ -394,9 +394,8 @@ public class MainWindowController {
       chooser.setInitialFileName(currentFile.getName());
     }
 
-    File selected = chooser.showSaveDialog(root.getScene().getWindow());
-
-    saveFile(selected);
+    Optional.ofNullable(chooser.showSaveDialog(root.getScene().getWindow()))
+        .ifPresent(this::saveFile);
   }
 
   private void saveFile(File selected) {
