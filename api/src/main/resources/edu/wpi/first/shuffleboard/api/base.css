@@ -93,7 +93,7 @@
 
 .tile-title-bar {
     -fx-padding: 4px;
-    -fx-background-color: linear-gradient(to bottom, -swatch-100, -swatch-200);
+    -fx-background-color: -swatch-200;
     -fx-font-weight: bold;
     -fx-font-size: 11pt;
 }
