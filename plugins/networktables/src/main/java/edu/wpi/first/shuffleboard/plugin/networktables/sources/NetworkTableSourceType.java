@@ -8,6 +8,7 @@ import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.Sources;
 import edu.wpi.first.shuffleboard.api.sources.recording.TimestampedData;
 import edu.wpi.first.shuffleboard.api.util.AsyncUtils;
+import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.plugin.networktables.NetworkTablesPlugin;
 
@@ -40,9 +41,11 @@ public final class NetworkTableSourceType extends SourceType {
     inst.addConnectionListener(notification -> setConnectionStatus(plugin.getServerId(), notification.connected), true);
     inst.addConnectionListener(notification -> {
       if (!notification.connected) {
-        availableSources.clear();
-        availableSourceIds.clear();
-        NetworkTableSource.removeAllCachedSources();
+        FxUtils.runOnFxThread(() -> {
+          availableSources.clear();
+          availableSourceIds.clear();
+          NetworkTableSource.removeAllCachedSources();
+        });
       }
     }, false);
     inst.addEntryListener("", (event) -> {
