@@ -31,6 +31,8 @@ import static java.util.Objects.requireNonNull;
  */
 public final class FxUtils {
 
+  private static final Object FX_CONTROLLER_KEY = new Object();
+
   private FxUtils() {
     throw new UnsupportedOperationException("This is a utility class!");
   }
@@ -160,7 +162,7 @@ public final class FxUtils {
   /**
    * Creates a disabled menu item for use as a label.
    *
-   * @param text         the text of the label
+   * @param text the text of the label
    */
   public static MenuItem menuLabel(String text) {
     MenuItem menuItem = new MenuItem(text);
@@ -175,6 +177,29 @@ public final class FxUtils {
    */
   public static Optional<Label> getLabel(Node node) {
     return Optional.ofNullable((Label) node.queryAccessibleAttribute(AccessibleAttribute.LABELED_BY));
+  }
+
+  /**
+   * Sets the FXML controller for a node.
+   *
+   * @param node       the node to set the controller for
+   * @param controller the FXML controller for the node
+   */
+  public static void setController(Node node, Object controller) {
+    node.getProperties().put(FX_CONTROLLER_KEY, controller);
+  }
+
+  /**
+   * Gets the FXML controller for a node.
+   *
+   * @param node the node to get the FXML controller of
+   * @param <T>  the type of the controller
+   *
+   * @throws java.util.NoSuchElementException if no FXML controller has been set for the given node
+   * @throws ClassCastException               if the FXML controller has been set to a controller not of type {@code T}
+   */
+  public static <T> T getController(Node node) {
+    return Maps.get(node.getProperties(), FX_CONTROLLER_KEY);
   }
 
 }

@@ -43,7 +43,7 @@
             <MenuItem text="Current tab preferences" onAction="#showCurrentTabPrefs" accelerator="SHORTCUT+SHIFT+,"/>
         </Menu>
         <Menu text="Help">
-            <MenuItem text="About" onAction="#showAboutDialog"/>
+            <MenuItem text="About" onAction="#showAboutDialog" accelerator="F1"/>
         </Menu>
     </MenuBar>
     <SplitPane fx:id="centerSplitPane" dividerPositions="0.02">
@@ -74,5 +74,8 @@
     </BorderPane>
     <fx:define>
         <fx:include source="PluginPane.fxml" fx:id="pluginPane"/>
+        <fx:include source="DownloadDialogPane.fxml" fx:id="downloadPane"/>
+        <fx:include source="AboutDialogPane.fxml" fx:id="aboutPane"/>
+        <fx:include source="RestartPrompt.fxml" fx:id="restartPromptPane"/>
     </fx:define>
 </VBox>

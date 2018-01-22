@@ -9,6 +9,7 @@ import org.gradle.testing.jacoco.tasks.JacocoReport
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.ajoberstar.grgit.Grgit
 import org.ajoberstar.grgit.operation.DescribeOp
+import java.time.Instant
 
 buildscript {
     repositories {
@@ -229,6 +230,7 @@ project(":app") {
     tasks.withType<Jar> {
         manifest {
             attributes["Implementation-Version"] = version
+            attributes["Built-Date"] = Instant.now().toString()
         }
     }
 }

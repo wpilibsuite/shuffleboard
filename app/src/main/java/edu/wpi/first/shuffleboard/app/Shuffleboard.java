@@ -17,6 +17,12 @@ import it.sauronsoftware.junique.AlreadyLockedException;
 import it.sauronsoftware.junique.JUnique;
 
 import java.io.IOException;
+import java.time.Instant;
+import java.util.Collections;
+import java.util.Optional;
+import java.util.concurrent.Callable;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 import java.util.logging.FileHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -25,6 +31,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 import java.util.logging.StreamHandler;
+import java.util.stream.Stream;
 
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -66,6 +73,8 @@ public class Shuffleboard extends Application {
     // This avoids an issue with attempting to load a theme at startup that hasn't yet been registered
     logger.finer("Registering custom user themes from external dir");
     Themes.getDefault().loadThemesFromDir();
+
+    logger.info("Build time: " + getBuildTime());
   }
 
   @Override
@@ -193,6 +202,14 @@ public class Shuffleboard extends Application {
   }
 
   /**
+   * Gets the time at which the application JAR was built, or the instant this was first called if shuffleboard is not
+   * running from a JAR.
+   */
+  public static Instant getBuildTime() {
+    return ApplicationManifest.getBuildTime();
+  }
+
+  /**
    * Gets the current shuffleboard version.
    */
   public static String getVersion() {
@@ -206,6 +223,10 @@ public class Shuffleboard extends Application {
     return Storage.class.getPackage().getImplementationVersion();
   }
 
+  /**
+   * Gets the location from which shuffleboard is running. If running from a JAR, this will be the location of the JAR;
+   * otherwise, it will likely be the root build directory of the `app` project.
+   */
   public static String getRunningLocation() {
     return Shuffleboard.class.getProtectionDomain().getCodeSource().getLocation().toExternalForm();
   }

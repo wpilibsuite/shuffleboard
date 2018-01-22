@@ -2,6 +2,7 @@ package edu.wpi.first.shuffleboard.app;
 
 import edu.wpi.first.shuffleboard.api.DashboardMode;
 import edu.wpi.first.shuffleboard.api.components.ExtendedPropertySheet;
+import edu.wpi.first.shuffleboard.api.components.ShuffleboardDialog;
 import edu.wpi.first.shuffleboard.api.components.SourceTreeTable;
 import edu.wpi.first.shuffleboard.api.dnd.DataFormats;
 import edu.wpi.first.shuffleboard.api.plugin.Plugin;
@@ -63,17 +64,16 @@ import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
-import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Accordion;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
-import javafx.scene.control.ProgressBar;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
@@ -89,7 +89,6 @@ import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -127,6 +126,13 @@ public class MainWindowController {
   @FXML
   private Pane pluginPane;
   private Stage pluginStage;
+  @FXML
+  private Pane downloadPane;
+  private Stage downloadStage;
+  @FXML
+  private Pane restartPromptPane;
+  @FXML
+  private Pane aboutPane;
 
   private SourceEntry selectedEntry;
 
@@ -585,13 +591,30 @@ public class MainWindowController {
 
   @FXML
   private void showAboutDialog() {
-    Dialog<ButtonType> dialog = new Dialog<>();
+    ShuffleboardDialog dialog = new ShuffleboardDialog(aboutPane, true);
+    dialog.setHeaderText("WPILib Shuffleboard");
+    dialog.setSubheaderText(Shuffleboard.getVersion());
     FxUtils.bind(dialog.getDialogPane().getStylesheets(), stylesheets);
-    dialog.setTitle("About");
-    dialog.setHeaderText("About Shuffleboard");
-    dialog.setContentText("Current version: " + Shuffleboard.getVersion());
-    dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CLOSE);
+    Platform.runLater(dialog.getDialogPane()::requestFocus);
     dialog.showAndWait();
+  }
+
+  private void setUpDialogStage(Stage stage, Pane rootNode) {
+    stage.initOwner(root.getScene().getWindow());
+    stage.initModality(Modality.APPLICATION_MODAL);
+    stage.initStyle(StageStyle.UNDECORATED);
+    stage.setScene(new Scene(rootNode));
+    FxUtils.bind(stage.getScene().getStylesheets(), stylesheets);
+    rootNode.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
+      if (event.getCode() == KeyCode.ESCAPE) {
+        stage.close();
+      }
+    });
+    stage.focusedProperty().addListener((__, was, is) -> {
+      if (!is) {
+        //stage.close();
+      }
+    });
   }
 
   /**
@@ -600,68 +623,71 @@ public class MainWindowController {
    */
   @FXML
   public void checkForUpdates() {
-    Alert updateProgress = new Alert(Alert.AlertType.INFORMATION);
-    FxUtils.bind(updateProgress.getDialogPane().getStylesheets(), stylesheets);
-    updateProgress.initModality(Modality.NONE);
-    updateProgress.setTitle("Download progress");
-    updateProgress.setHeaderText("Download progress");
-
-    ProgressBar progressBar = new ProgressBar();
-    progressBar.setMaxWidth(Double.POSITIVE_INFINITY);
-    progressBar.setProgress(0);
-
-    Label label = new Label("0.00%");
+    if (downloadStage == null) {
+      downloadStage = new Stage();
+      setUpDialogStage(downloadStage, downloadPane);
+      downloadStage.setOnCloseRequest(event -> {
+        // TODO move the progress bar to the footer?
+      });
+    }
 
     AtomicBoolean firstShow = new AtomicBoolean(true);
+    DownloadDialogController controller = FxUtils.getController(downloadPane);
     final DoubleConsumer progressNotifier = value -> {
       FxUtils.runOnFxThread(() -> {
+        // Show the dialog on the first update
+        // Close the dialog when the download completes
+        // If the user closes the dialog before then, don't re-open it
         if (value == 1) {
-          updateProgress.hide();
-        } else if (!updateProgress.isShowing() && firstShow.get()) {
-          updateProgress.show();
+          downloadStage.hide();
+        } else if (!downloadStage.isShowing() && firstShow.get()) {
+          downloadStage.show();
           firstShow.set(false);
         }
-        progressBar.setProgress(value);
-        label.setText(String.format("%.2f%%", value * 100));
+        controller.setDownloadProgress(value);
       });
     };
-
-    StackPane content = new StackPane(progressBar, label);
-    content.setPadding(new Insets(8));
-    content.setPrefWidth(200);
-    updateProgress.getDialogPane().setContent(content);
     updateCheckingExecutor.submit(() ->
         shuffleboardUpdateChecker.checkForUpdatesAndPromptToInstall(progressNotifier, this::handleUpdateResult));
   }
 
   private void handleUpdateResult(ShuffleboardUpdateChecker.Result<Path> result) {
+    // Make sure this runs on the JavaFX thread -- this method is not guaranteed to be called from it
     FxUtils.runOnFxThread(() -> {
-      if (result.failed()) {
-        Alert failureAlert = new Alert(Alert.AlertType.ERROR);
-        FxUtils.bind(failureAlert.getDialogPane().getStylesheets(), stylesheets);
-        failureAlert.setTitle("Update failed");
-        TextArea area = new TextArea();
-        StringWriter writer = new StringWriter();
-        PrintWriter pw = new PrintWriter(writer);
-        result.getError().printStackTrace(pw);
-        area.setText(writer.toString());
-        area.setEditable(false);
-        failureAlert.getDialogPane().setExpandableContent(area);
-        failureAlert.showAndWait();
+      if (result.succeeded()) {
+        showRestartPrompt();
       } else {
-        Alert successAlert = new Alert(Alert.AlertType.CONFIRMATION);
-        FxUtils.bind(successAlert.getDialogPane().getStylesheets(), stylesheets);
-        successAlert.setTitle("Restart to apply update");
-        successAlert.setHeaderText("Restart shuffleboard to apply the update");
-        boolean restartNow = successAlert.showAndWait()
-            .map(ButtonType.OK::equals)
-            .orElse(false);
-        if (restartNow) {
-          // The update checker will run the update
-          close();
-        }
+        showFailureAlert(result);
       }
     });
+  }
+
+  private void showRestartPrompt() {
+    ShuffleboardDialog dialog = new ShuffleboardDialog(restartPromptPane);
+    dialog.setHeaderText("Update Downloaded");
+    dialog.initOwner(root.getScene().getWindow());
+    FxUtils.bind(dialog.getDialogPane().getStylesheets(), stylesheets);
+    ButtonType restartNow = new ButtonType("Restart now", ButtonBar.ButtonData.YES);
+    ButtonType later = new ButtonType("Later", ButtonBar.ButtonData.NO);
+    dialog.getDialogPane().getButtonTypes().addAll(restartNow, later);
+    dialog.showAndWait()
+        .filter(restartNow::equals)
+        .ifPresent(__ -> close());
+  }
+
+  private void showFailureAlert(ShuffleboardUpdateChecker.Result<Path> result) {
+    Alert failureAlert = new Alert(Alert.AlertType.ERROR);
+    FxUtils.bind(failureAlert.getDialogPane().getStylesheets(), stylesheets);
+    failureAlert.setTitle("Update failed");
+    TextArea area = new TextArea();
+    StringWriter writer = new StringWriter();
+    PrintWriter pw = new PrintWriter(writer);
+    result.getError().printStackTrace(pw);
+    area.setText(writer.toString());
+    area.setEditable(false);
+    failureAlert.getDialogPane().setContentText("The exception stack trace was:");
+    failureAlert.getDialogPane().setExpandableContent(area);
+    failureAlert.showAndWait();
   }
 
 }

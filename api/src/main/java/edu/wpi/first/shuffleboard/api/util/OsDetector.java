@@ -1,5 +1,8 @@
 package edu.wpi.first.shuffleboard.api.util;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Locale;
 
 /**
@@ -8,19 +11,46 @@ import java.util.Locale;
 public final class OsDetector {
 
   private static final OperatingSystemType operatingSystemType;
+  private static final String unknownDistribution = "unknown distribution";
 
   private OsDetector() {
     throw new UnsupportedOperationException("This is a utility class");
   }
 
   static {
-    String osName = System.getProperty("os.name").toLowerCase(Locale.US);
+    String osName = SystemProperties.OS_NAME.toLowerCase(Locale.US);
     if (osName.contains("windows")) {
       operatingSystemType = OperatingSystemType.WINDOWS;
     } else if (osName.contains("mac")) {
       operatingSystemType = OperatingSystemType.MAC;
-    } else {
+    } else if (osName.contains("linu")) {
       operatingSystemType = OperatingSystemType.LINUX;
+    } else {
+      operatingSystemType = OperatingSystemType.UNKNOWN;
+    }
+  }
+
+  /**
+   * Gets the distribution of the Linux-based operating system that shuffleboard is running on.
+   *
+   * @throws IllegalStateException if the operating system is not Linux-based
+   */
+  public static String getLinuxDistribution() throws IllegalStateException {
+    if (!isLinux()) {
+      throw new IllegalStateException(
+          "Not running on a Linux-based operating system! OS is " + getOperatingSystemType());
+    }
+    try {
+      Process lsbRelease = new ProcessBuilder("lsb_release", "-a").start();
+      try (BufferedReader reader = new BufferedReader(new InputStreamReader(lsbRelease.getInputStream()))) {
+        return reader.lines()
+            .filter(line -> line.startsWith("Description:"))
+            .findFirst()
+            .map(line -> line.substring("Description:\t".length()))
+            .orElse(unknownDistribution);
+      }
+    } catch (IOException e) {
+      return unknownDistribution;
     }
   }
 
@@ -36,7 +66,11 @@ public final class OsDetector {
     /**
      * Generic linux-based operating system.
      */
-    LINUX
+    LINUX,
+    /**
+     * An unknown operating system.
+     */
+    UNKNOWN
   }
 
   /**
@@ -44,6 +78,22 @@ public final class OsDetector {
    */
   public static OperatingSystemType getOperatingSystemType() {
     return operatingSystemType;
+  }
+
+  public static boolean isWindows() {
+    return operatingSystemType == OperatingSystemType.WINDOWS;
+  }
+
+  public static boolean isMac() {
+    return operatingSystemType == OperatingSystemType.MAC;
+  }
+
+  public static boolean isLinux() {
+    return operatingSystemType == OperatingSystemType.LINUX;
+  }
+
+  public static boolean isUnknown() {
+    return operatingSystemType == OperatingSystemType.UNKNOWN;
   }
 
 }

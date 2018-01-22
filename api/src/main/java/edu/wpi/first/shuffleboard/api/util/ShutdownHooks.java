@@ -1,5 +1,7 @@
 package edu.wpi.first.shuffleboard.api.util;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -57,6 +59,19 @@ public final class ShutdownHooks {
         Thread.currentThread().getUncaughtExceptionHandler().uncaughtException(Thread.currentThread(), e);
       }
     }
+  }
+
+  @VisibleForTesting
+  static void reset() {
+    runningHooks = false;
+  }
+
+  @VisibleForTesting
+  static void removeAllHooks() {
+    if (runningHooks) {
+      return;
+    }
+    hooks.clear();
   }
 
 }

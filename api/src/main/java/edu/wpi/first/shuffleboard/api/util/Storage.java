@@ -20,14 +20,9 @@ public final class Storage {
   private static final Logger log = Logger.getLogger(Storage.class.getName());
 
   /**
-   * The user home directory.
-   */
-  private static final String USER_HOME = System.getProperty("user.home");
-
-  /**
    * The root dashboard storage directory.
    */
-  private static final String STORAGE_DIR = USER_HOME + "/Shuffleboard";
+  private static final String STORAGE_DIR = SystemProperties.USER_HOME + "/Shuffleboard";
 
   private static final String RECORDING_DIR = STORAGE_DIR + "/recordings";
 

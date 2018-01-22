@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.StackPane?>
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:id="root"
+            styleClass="shuffleboard-dialog-pane"
+            prefHeight="125" prefWidth="600">
+    <center>
+        <StackPane>
+            <padding>
+                <Insets topRightBottomLeft="8"/>
+            </padding>
+            <Label text="The update has been downloaded. It will be installed when shuffleboard is restarted. Restart now?" wrapText="true"/>
+        </StackPane>
+    </center>
+</BorderPane>
