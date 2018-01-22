@@ -13,8 +13,6 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.NodeOrientation;
-import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.ButtonType;
@@ -68,6 +66,11 @@ public class ShuffleboardDialog extends Dialog<ButtonType> {
     }
   }
 
+  /**
+   * Creates a new dialog with the given content.
+   *
+   * @param content the content of the dialog
+   */
   public ShuffleboardDialog(Node content) {
     initModality(Modality.APPLICATION_MODAL);
     initStyle(StageStyle.UNDECORATED);
@@ -133,8 +136,6 @@ public class ShuffleboardDialog extends Dialog<ButtonType> {
 
     private final ChangeListener<String> removeIfNullText = (property, oldText, newText) -> {
       Node bean = (Node) ((Property) property).getBean();
-      assert bean == title || bean == subtitle :
-          "Unexpected bean: " + bean + ". Should be either title or subtitle label";
       if (newText == null) {
         getChildren().remove(bean);
       } else {

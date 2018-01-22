@@ -611,7 +611,7 @@ public class MainWindowController {
     });
     stage.focusedProperty().addListener((__, was, is) -> {
       if (!is) {
-        //stage.close();
+        stage.close();
       }
     });
   }

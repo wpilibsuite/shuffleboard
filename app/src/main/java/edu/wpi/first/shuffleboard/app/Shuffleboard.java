@@ -18,11 +18,6 @@ import it.sauronsoftware.junique.JUnique;
 
 import java.io.IOException;
 import java.time.Instant;
-import java.util.Collections;
-import java.util.Optional;
-import java.util.concurrent.Callable;
-import java.util.jar.Attributes;
-import java.util.jar.Manifest;
 import java.util.logging.FileHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -31,7 +26,6 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 import java.util.logging.StreamHandler;
-import java.util.stream.Stream;
 
 import javafx.application.Application;
 import javafx.application.Platform;

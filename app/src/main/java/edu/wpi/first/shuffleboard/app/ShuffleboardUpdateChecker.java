@@ -34,7 +34,6 @@ import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
-import javafx.scene.control.Label;
 
 import static edu.wpi.first.shuffleboard.api.util.OsDetector.OperatingSystemType.LINUX;
 import static edu.wpi.first.shuffleboard.api.util.OsDetector.OperatingSystemType.MAC;
@@ -107,7 +106,8 @@ public final class ShuffleboardUpdateChecker {
   }
 
   private void showUpToDateDialog() {
-    ShuffleboardDialog dialog = ShuffleboardDialog.createForFxml(Shuffleboard.class.getResource("UpToDateDialogPane.fxml"));
+    ShuffleboardDialog dialog = ShuffleboardDialog.createForFxml(
+        Shuffleboard.class.getResource("UpToDateDialogPane.fxml"));
     dialog.setCloseOnFocusLost(true);
     dialog.getDialogPane().getStylesheets().setAll(AppPreferences.getInstance().getTheme().getStyleSheets());
     dialog.setHeaderText("Up to date");
@@ -116,7 +116,8 @@ public final class ShuffleboardUpdateChecker {
   }
 
   private void showErrorDialog() {
-    ShuffleboardDialog dialog = ShuffleboardDialog.createForFxml(Shuffleboard.class.getResource("ErrorDialogPane.fxml"));
+    ShuffleboardDialog dialog = ShuffleboardDialog.createForFxml(
+        Shuffleboard.class.getResource("ErrorDialogPane.fxml"));
     dialog.setCloseOnFocusLost(false);
     dialog.getDialogPane().getStylesheets().setAll(AppPreferences.getInstance().getTheme().getStyleSheets());
     dialog.setHeaderText("No connection");

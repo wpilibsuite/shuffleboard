@@ -5,7 +5,6 @@ import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import org.fxmisc.easybind.EasyBind;
 
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.Pane;

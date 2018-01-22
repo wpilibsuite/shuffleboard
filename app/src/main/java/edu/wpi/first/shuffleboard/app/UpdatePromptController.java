@@ -31,13 +31,14 @@ public final class UpdatePromptController {
   private void initialize() {
     FxUtils.setController(root, this);
     MonadicBinding<String> text = EasyBind.combine(currentVersion, newestVersion, (current, newest) -> {
-      String base = "The current version of shuffleboard is " + current
-          + "\nThe newest version is " + newest
-          + "\nDo you want to download and install this update?";
+      StringBuilder base = new StringBuilder()
+          .append("The current version of shuffleboard is ").append(current)
+          .append("\nThe newest version is ").append(newest)
+          .append("\nDo you want to download and install this update?");
       if (newest.getMajorVersion() > current.getMajorVersion()) {
-        base += "\n\nWARNING: There has been a major version bump! Custom plugins and widgets may no longer work.";
+        base.append("\n\nWARNING: There has been a major version bump! Custom plugins and widgets may no longer work.");
       }
-      return base;
+      return base.toString();
     });
     infoLabel.textProperty().bind(text);
   }

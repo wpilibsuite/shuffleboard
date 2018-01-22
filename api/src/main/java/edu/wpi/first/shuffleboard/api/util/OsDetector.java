@@ -42,7 +42,7 @@ public final class OsDetector {
     }
     try {
       Process lsbRelease = new ProcessBuilder("lsb_release", "-a").start();
-      try (BufferedReader reader = new BufferedReader(new InputStreamReader(lsbRelease.getInputStream()))) {
+      try (BufferedReader reader = new BufferedReader(new InputStreamReader(lsbRelease.getInputStream(), "UTF8"))) {
         return reader.lines()
             .filter(line -> line.startsWith("Description:"))
             .findFirst()

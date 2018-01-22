@@ -69,7 +69,7 @@ public final class AboutDialogController {
   }
 
   /**
-   * Copies all the technical info to the system clipboard
+   * Copies all the technical info to the system clipboard.
    */
   @FXML
   private void copyTechInfoToClipboard() {
