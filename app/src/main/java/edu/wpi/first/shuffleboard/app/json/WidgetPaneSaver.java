@@ -15,7 +15,6 @@ import com.google.gson.JsonSerializationContext;
 
 import java.lang.reflect.Type;
 import java.util.Map;
-import java.util.Optional;
 
 import javafx.scene.layout.GridPane;
 
@@ -26,7 +25,6 @@ public class WidgetPaneSaver implements ElementTypeAdapter<WidgetPane> {
   public JsonElement serialize(WidgetPane src, JsonSerializationContext context) {
     JsonObject object = new JsonObject();
     object.addProperty("gridSize", src.getTileSize());
-    object.addProperty("showGrid", src.isShowGrid());
     object.addProperty("hgap", src.getHgap());
     object.addProperty("vgap", src.getVgap());
     JsonObject tiles = new JsonObject();
@@ -51,7 +49,6 @@ public class WidgetPaneSaver implements ElementTypeAdapter<WidgetPane> {
   public WidgetPane deserialize(JsonElement json, JsonDeserializationContext context) throws JsonParseException {
     JsonObject object = json.getAsJsonObject();
     WidgetPane pane = new WidgetPane();
-    pane.setShowGrid(Optional.ofNullable(object.get("showGrid")).map(JsonElement::getAsBoolean).orElse(true));
     pane.setTileSize(object.get("gridSize").getAsDouble());
     pane.setHgap(object.get("hgap").getAsDouble());
     pane.setVgap(object.get("vgap").getAsDouble());

@@ -24,7 +24,7 @@ public class GyroWidget extends SimpleAnnotatedWidget<GyroData> {
 
   @FXML
   private void initialize() {
-    gauge.valueProperty().bind(dataOrDefault.map(GyroData::getValue));
+    gauge.valueProperty().bind(dataOrDefault.map(GyroData::getWrappedValue));
     valueLabel.textProperty().bind(dataOrDefault.map(GyroData::getValue).map(d -> String.format("%.2f°", d)));
 
     exportProperties(

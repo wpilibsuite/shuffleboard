@@ -4,6 +4,7 @@ import edu.wpi.first.shuffleboard.api.prefs.FlushableProperty;
 import edu.wpi.first.shuffleboard.api.theme.Theme;
 import edu.wpi.first.shuffleboard.api.theme.Themes;
 import edu.wpi.first.shuffleboard.api.util.Debouncer;
+import edu.wpi.first.shuffleboard.api.util.FxUtils;
 
 import org.controlsfx.control.PropertySheet;
 import org.controlsfx.control.ToggleSwitch;
@@ -180,7 +181,7 @@ public class ExtendedPropertySheet extends PropertySheet {
           .filter(v -> v instanceof FlushableProperty)
           .map(v -> (FlushableProperty<? super T>) v)
           .ifPresent(flushable -> {
-            Debouncer debouncer = new Debouncer(flushable::flush, DEFAULT_DEBOUNCE_DELAY);
+            Debouncer debouncer = new Debouncer(() -> FxUtils.runOnFxThread(flushable::flush), DEFAULT_DEBOUNCE_DELAY);
             getObservableValue().addListener((__, oldValue, newValue) -> debouncer.run());
           });
     }
