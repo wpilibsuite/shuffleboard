@@ -49,6 +49,7 @@ import javafx.beans.binding.Binding;
 import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
+import javafx.scene.SnapshotParameters;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Dialog;
@@ -63,6 +64,7 @@ import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
+import javafx.scene.paint.Color;
 
 // needs refactoring to split out per-widget interaction
 @SuppressWarnings("PMD.GodClass")
@@ -330,7 +332,9 @@ public class WidgetPaneController {
             (int) tile.getBoundsInParent().getWidth(),
             (int) tile.getBoundsInParent().getHeight()
         );
-    tile.snapshot(null, preview);
+    SnapshotParameters parameters = new SnapshotParameters();
+    parameters.setFill(Color.TRANSPARENT);
+    tile.snapshot(parameters, preview);
     dragboard.setDragView(preview);
     ClipboardContent content = new ClipboardContent();
     content.put(DataFormats.widgetTile, new DataFormats.WidgetData(tile.getId(), point));
