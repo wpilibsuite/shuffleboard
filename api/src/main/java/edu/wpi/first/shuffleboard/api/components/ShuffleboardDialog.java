@@ -31,7 +31,7 @@ import javafx.stage.Window;
 /**
  * A type of dialog that defaults to be undecorated and non-modal. It will automatically close if the user
  * presses the ESC key or (optionally) when it loses focus. A dialog closed in this manner will always have a result of
- * {@link ButtonType#CANCEL}.
+ * {@link ButtonType#CLOSE}.
  *
  * <p>This type of dialog also supports subheader text, which is usually shown in a slightly darker color and default
  * font size.

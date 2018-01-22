@@ -31,8 +31,10 @@ import java.util.function.DoubleConsumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javafx.application.Platform;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.Label;
 
 import static edu.wpi.first.shuffleboard.api.util.OsDetector.OperatingSystemType.LINUX;
 import static edu.wpi.first.shuffleboard.api.util.OsDetector.OperatingSystemType.MAC;
@@ -86,7 +88,7 @@ public final class ShuffleboardUpdateChecker {
     switch (status) {
       case UP_TO_DATE:
         log.info("Shuffleboard is up-to-date");
-        // TODO show dialog
+        FxUtils.runOnFxThread(this::showUpToDateDialog);
         break;
       case UNKNOWN:
         log.warning("Could not determine if new versions are available");
@@ -102,6 +104,16 @@ public final class ShuffleboardUpdateChecker {
       default:
         throw new IllegalStateException("Unknown status: " + status);
     }
+  }
+
+  private void showUpToDateDialog() {
+    ShuffleboardDialog dialog = ShuffleboardDialog.createForFxml(Shuffleboard.class.getResource("UpToDateDialogPane.fxml"));
+    dialog.setCloseOnFocusLost(true);
+    dialog.getDialogPane().getStylesheets().setAll(AppPreferences.getInstance().getTheme().getStyleSheets());
+    dialog.setHeaderText("Up to date");
+    Platform.runLater(dialog.getDialogPane()::requestFocus);
+    dialog.showAndWait()
+        .ifPresent(System.out::println);
   }
 
   private void promptToInstall(Version newestVersion,
