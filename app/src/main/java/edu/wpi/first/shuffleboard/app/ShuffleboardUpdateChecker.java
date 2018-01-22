@@ -92,7 +92,7 @@ public final class ShuffleboardUpdateChecker {
         break;
       case UNKNOWN:
         log.warning("Could not determine if new versions are available");
-        // TODO show dialog
+        Platform.runLater(this::showErrorDialog);
         break;
       case OUTDATED:
         Version newestVersion = updateChecker.getMostRecentVersionSafe().get();
@@ -112,8 +112,16 @@ public final class ShuffleboardUpdateChecker {
     dialog.getDialogPane().getStylesheets().setAll(AppPreferences.getInstance().getTheme().getStyleSheets());
     dialog.setHeaderText("Up to date");
     Platform.runLater(dialog.getDialogPane()::requestFocus);
-    dialog.showAndWait()
-        .ifPresent(System.out::println);
+    dialog.showAndWait();
+  }
+
+  private void showErrorDialog() {
+    ShuffleboardDialog dialog = ShuffleboardDialog.createForFxml(Shuffleboard.class.getResource("ErrorDialogPane.fxml"));
+    dialog.setCloseOnFocusLost(false);
+    dialog.getDialogPane().getStylesheets().setAll(AppPreferences.getInstance().getTheme().getStyleSheets());
+    dialog.setHeaderText("No connection");
+    Platform.runLater(dialog.getDialogPane()::requestFocus);
+    dialog.showAndWait();
   }
 
   private void promptToInstall(Version newestVersion,
