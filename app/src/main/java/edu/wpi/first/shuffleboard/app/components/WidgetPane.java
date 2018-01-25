@@ -285,6 +285,25 @@ public class WidgetPane extends TilePane implements ComponentContainer {
     return addComponent(component, location, sizeOfWidget(component));
   }
 
+  /*
+   * Checks if there is enough open space to add the given component.
+   *
+   * @param component the component to check
+   *
+   * @return true if there is enough open space to add the component, false if not
+   */
+  public boolean canAdd(Component component) {
+    return firstPoint(sizeOfWidget(component)) != null;
+  }
+
+  @Override
+  public void removeComponent(Component component) {
+    tiles.stream()
+        .filter(tile -> tile.getContent() == component)
+        .findFirst()
+        .ifPresent(tiles::remove);
+  }
+
   @Override
   public Stream<Component> components() {
     return tiles.stream().map(Tile::getContent);

@@ -41,6 +41,11 @@ public interface Layout extends Component, ComponentContainer {
   void removeChild(Component component);
 
   @Override
+  default void removeComponent(Component component) {
+    removeChild(component);
+  }
+
+  @Override
   default void addComponent(Component component) {
     addChild(component);
   }

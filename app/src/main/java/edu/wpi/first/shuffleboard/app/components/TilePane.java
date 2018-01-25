@@ -289,7 +289,7 @@ public class TilePane extends GridPane {
    * @return the node added to the view
    */
   public Node addTile(Node node, TileSize size) {
-    GridPoint placement = firstPoint(size.getWidth(), size.getHeight());
+    GridPoint placement = firstPoint(size);
     if (placement == null) {
       // Nowhere to place the node
       return null;
@@ -343,6 +343,15 @@ public class TilePane extends GridPane {
       }
     }
     return null;
+  }
+
+  /**
+   * Finds the first point where a tile with the given size can be added, or {@code null} if no such point exists.
+   *
+   * @param tileSize the tile size to check
+   */
+  public GridPoint firstPoint(TileSize tileSize) {
+    return firstPoint(tileSize.getWidth(), tileSize.getHeight());
   }
 
   /**
