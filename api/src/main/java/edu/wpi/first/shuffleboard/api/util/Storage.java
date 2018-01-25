@@ -28,6 +28,8 @@ public final class Storage {
 
   private static final String THEMES_DIR = STORAGE_DIR + "/themes";
 
+  private static final String BACKUPS_DIR = STORAGE_DIR + "/backups";
+
   private static final String RECORDING_FILE_FORMAT = RECORDING_DIR + "/${date}/recording-${time}.sbr";
 
   private static final DateTimeFormatter dateFormatter = DateTimeFormatter.ISO_DATE;
@@ -73,6 +75,14 @@ public final class Storage {
    */
   public static Path getPluginPath() throws IOException {
     return findOrCreate(PLUGINS_DIR);
+  }
+
+  /**
+   * The directory that shuffleboard backups are stored in.
+   * @throws IOException if creating the directory fails
+   */
+  public static Path getBackupsDir() throws IOException {
+    return findOrCreate(BACKUPS_DIR);
   }
 
   /**

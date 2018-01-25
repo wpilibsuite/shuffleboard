@@ -4,6 +4,7 @@ import edu.wpi.first.shuffleboard.api.components.ShuffleboardDialog;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.OsDetector;
 import edu.wpi.first.shuffleboard.api.util.ShutdownHooks;
+import edu.wpi.first.shuffleboard.api.util.Storage;
 import edu.wpi.first.shuffleboard.api.util.ThreadUtils;
 import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
 
@@ -263,6 +264,11 @@ public final class ShuffleboardUpdateChecker {
         default:
           throw new AssertionError("Unknown OS type " + OsDetector.getOperatingSystemType());
       }
+      // Copy the jar to the backups folder
+      Files.copy(
+          target,
+          Paths.get(Storage.getBackupsDir().toString(), "Shuffleboard-" + Shuffleboard.getVersion() + ".jar"),
+          StandardCopyOption.REPLACE_EXISTING);
       Path scriptFile = Files.createTempFile("copy_and_restart", scriptFileExtension);
       try (InputStream in = Shuffleboard.class.getResourceAsStream("/copy_and_restart" + scriptFileExtension)) {
         Files.copy(in, scriptFile, StandardCopyOption.REPLACE_EXISTING);
