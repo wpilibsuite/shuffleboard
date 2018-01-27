@@ -277,7 +277,9 @@ public class MainWindowController {
       TitledPane titledPane = new TitledPane(sourceType.getName(), tree);
       sourcePanes.put(plugin, titledPane);
       sourcesAccordion.getPanes().add(titledPane);
-      sourcesAccordion.setExpandedPane(titledPane);
+      if (sourcesAccordion.getExpandedPane() == null) {
+        sourcesAccordion.setExpandedPane(titledPane);
+      }
     });
 
     // Add widgets to the gallery as well
