@@ -1,25 +1,21 @@
 package edu.wpi.first.shuffleboard.app.json;
 
-import com.google.common.reflect.ClassPath;
+import com.google.common.collect.ImmutableList;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.stream.Collectors;
-
 public final class JsonBuilder {
-  private JsonBuilder() {
-  }
 
-  private static List<? extends Class<?>> typeAdapters() throws IOException {
-    return ClassPath.from(JsonBuilder.class.getClassLoader())
-            .getAllClasses()
-            .stream()
-            .filter(ci -> ci.getPackageName().startsWith("edu.wpi.first.shuffleboard.app.json"))
-            .map(ClassPath.ClassInfo::load)
-            .filter(c -> c.isAnnotationPresent(AnnotatedTypeAdapter.class))
-            .collect(Collectors.toList());
+  private static final ImmutableList<Class<? extends ElementTypeAdapter<?>>> typeAdapters = ImmutableList.of(
+      ColorSaver.class,
+      DashboardTabPaneSaver.class,
+      LayoutSaver.class,
+      TileSizeSaver.class,
+      WidgetPaneSaver.class,
+      WidgetSaver.class
+  );
+
+  private JsonBuilder() {
   }
 
   /**
@@ -29,12 +25,12 @@ public final class JsonBuilder {
     GsonBuilder builder = new GsonBuilder();
 
     try {
-      for (Class<?> c : typeAdapters()) {
+      for (Class<?> c : typeAdapters) {
         builder.registerTypeHierarchyAdapter(
                 c.getAnnotation(AnnotatedTypeAdapter.class).forType(),
                 c.newInstance());
       }
-    } catch (IOException | InstantiationException | IllegalAccessException e) {
+    } catch (InstantiationException | IllegalAccessException e) {
       throw new RuntimeException("Could not initialize JSON serializers", e);
     }
 
