@@ -74,7 +74,7 @@ allprojects {
         "testCompile"(junitJupiter(name = "junit-jupiter-engine"))
         "testCompile"(junitJupiter(name = "junit-jupiter-params"))
         "testRuntime"(create(group = "org.junit.platform", name = "junit-platform-launcher", version = "1.0.0"))
-        fun testFx(name: String, version: String = "4.0.+") =
+        fun testFx(name: String, version: String = "4.0.10-alpha") =
                 create(group = "org.testfx", name = name, version = version)
         "testCompile"(testFx(name = "testfx-core"))
         "testCompile"(testFx(name = "testfx-junit5"))
