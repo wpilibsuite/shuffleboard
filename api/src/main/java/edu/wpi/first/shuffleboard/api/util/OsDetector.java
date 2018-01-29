@@ -23,7 +23,7 @@ public final class OsDetector {
       operatingSystemType = OperatingSystemType.WINDOWS;
     } else if (osName.contains("mac")) {
       operatingSystemType = OperatingSystemType.MAC;
-    } else if (osName.contains("linu")) {
+    } else if (osName.contains("linux")) {
       operatingSystemType = OperatingSystemType.LINUX;
     } else {
       operatingSystemType = OperatingSystemType.UNKNOWN;
