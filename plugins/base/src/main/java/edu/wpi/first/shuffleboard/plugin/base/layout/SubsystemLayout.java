@@ -28,6 +28,11 @@ public class SubsystemLayout extends ListLayout implements Populatable, Sourced 
   private final ObservableList<DataSource> sources = FXCollections.observableArrayList();
 
   @Override
+  public String getName() {
+    return "Subsystem Layout";
+  }
+
+  @Override
   public boolean supports(String sourceId) {
     DataType<?> dataType = SourceTypes.getDefault()
         .typeForUri(sourceId)
