@@ -5,6 +5,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import javafx.scene.input.MouseEvent;
 
 /**
@@ -23,8 +24,12 @@ public class AdderTab extends Tab implements HandledTab {
     this.setGraphic(handle);
 
     this.setOnSelectionChanged(__event -> {
-      getTabPane().getSelectionModel().selectFirst();
-      if (getTabPane().getSelectionModel().getSelectedItem().equals(this)) {
+      TabPane tabPane = getTabPane();
+      if (tabPane == null) {
+        return;
+      }
+      tabPane.getSelectionModel().selectFirst();
+      if (tabPane.getSelectionModel().getSelectedItem().equals(this)) {
         addTabAndFocus();
       }
     });
@@ -35,9 +40,16 @@ public class AdderTab extends Tab implements HandledTab {
     });
   }
 
+  /**
+   * Adds a new tab and selects it.
+   */
   public void addTabAndFocus() {
+    TabPane tabPane = getTabPane();
+    if (tabPane == null) {
+      return;
+    }
     getAddTabCallback().run();
-    getTabPane().getSelectionModel().select(getTabPane().getTabs().size() - 2);
+    tabPane.getSelectionModel().select(tabPane.getTabs().size() - 2);
   }
 
   @Override
