@@ -299,7 +299,9 @@ public class MainWindowController {
       TitledPane titledPane = new TitledPane(sourceType.getName(), tree);
       sourcePanes.put(plugin, titledPane);
       sourcesAccordion.getPanes().add(titledPane);
-      sourcesAccordion.setExpandedPane(titledPane);
+      if (sourcesAccordion.getExpandedPane() == null) {
+        sourcesAccordion.setExpandedPane(titledPane);
+      }
     });
 
     // Add widgets to the gallery as well
@@ -472,22 +474,17 @@ public class MainWindowController {
    *
    * @param saveFile the save file to load
    */
-  public void load(File saveFile) {
+  public void load(File saveFile) throws IOException {
     if (saveFile == null) {
       return;
     }
-    try {
-      Reader reader = Files.newReader(saveFile, Charset.forName("UTF-8"));
+    Reader reader = Files.newReader(saveFile, Charset.forName("UTF-8"));
 
-      DashboardData dashboardData = JsonBuilder.forSaveFile().fromJson(reader, DashboardData.class);
-      setDashboard(dashboardData.getTabPane());
-      Platform.runLater(() -> {
-        centerSplitPane.setDividerPositions(dashboardData.getDividerPosition());
-      });
-    } catch (Exception e) {
-      log.log(Level.WARNING, "Couldn't load", e);
-      return;
-    }
+    DashboardData dashboardData = JsonBuilder.forSaveFile().fromJson(reader, DashboardData.class);
+    setDashboard(dashboardData.getTabPane());
+    Platform.runLater(() -> {
+      centerSplitPane.setDividerPositions(dashboardData.getDividerPosition());
+    });
 
     currentFile = saveFile;
     AppPreferences.getInstance().setSaveFile(currentFile);
