@@ -18,6 +18,7 @@ dependencies {
     compile(project(path = ":plugins:base"))
     compile(project(path = ":plugins:cameraserver"))
     compile(project(path = ":plugins:networktables"))
+    compile(project(path = ":plugins:powerup"))
     compile(group = "com.google.code.gson", name = "gson", version = "2.8.2")
     compile(group = "de.huxhorn.lilith", name = "de.huxhorn.lilith.3rdparty.junique", version = "1.0.4")
     testCompile(project("test_plugins"))

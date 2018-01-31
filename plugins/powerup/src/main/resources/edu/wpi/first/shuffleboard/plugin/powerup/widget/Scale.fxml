@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.Double?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<GridPane xmlns="http://javafx.com/javafx"
+          xmlns:fx="http://javafx.com/fxml"
+          fx:controller="edu.wpi.first.shuffleboard.plugin.powerup.widget.ScaleController"
+          fx:id="root"
+          styleClass="powerup-scale"
+          alignment="CENTER">
+    <fx:define>
+        <Double fx:id="platformHeight" fx:value="54"/>
+        <Double fx:id="platformWidth" fx:value="129.5"/>
+    </fx:define>
+    <StackPane GridPane.halignment="CENTER" fx:id="farPlatform" styleClass="platform" minHeight="$platformHeight" minWidth="$platformWidth" maxHeight="-Infinity" maxWidth="-Infinity" translateY="16" GridPane.rowIndex="0">
+        <padding>
+            <Insets top="12.75" right="12.75" bottom="0" left="12.75"/>
+        </padding>
+        <VBox styleClass="platform-surface"/>
+    </StackPane>
+    <StackPane GridPane.halignment="CENTER" fx:id="nearPlatform" styleClass="platform" minHeight="$platformHeight" minWidth="$platformWidth" maxHeight="-Infinity" maxWidth="-Infinity" translateY="-16" GridPane.rowIndex="2">
+        <padding>
+            <Insets top="0" right="12.75" bottom="12.75" left="12.75"/>
+        </padding>
+        <VBox styleClass="platform-surface"/>
+    </StackPane>
+    <GridPane GridPane.halignment="CENTER" GridPane.rowIndex="1">
+        <fx:define>
+            <Double fx:id="width" fx:value="36"/>
+            <Double fx:id="height" fx:value="48"/>
+        </fx:define>
+        <Pane fx:id="leftPlate" minWidth="$width" minHeight="$height" styleClass="powerup-plate" GridPane.columnIndex="0"/>
+        <Pane fx:id="rightPlate" minWidth="$width" minHeight="$height" styleClass="powerup-plate" GridPane.columnIndex="2"/>
+        <Pane minWidth="108" minHeight="$height" styleClass="arm" GridPane.columnIndex="1"/>
+    </GridPane>
+</GridPane>

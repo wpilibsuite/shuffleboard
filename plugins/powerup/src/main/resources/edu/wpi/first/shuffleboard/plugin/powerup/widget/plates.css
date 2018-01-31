@@ -1,0 +1,74 @@
+/*******************************************************************************
+ *                                                                             *
+ * Power cube plates                                                           *
+ *                                                                             *
+ ******************************************************************************/
+.powerup-plate {
+    -fx-background-color: #7f7f7f;
+    /*-fx-effect: dropshadow(gaussian, black, 2, .7, 1, 1);*/
+}
+
+.powerup-plate:red {
+    -fx-background-color: red;
+}
+
+.powerup-plate:blue {
+    -fx-background-color: blue;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Switch                                                                      *
+ *                                                                             *
+ ******************************************************************************/
+.powerup-switch {
+    -fx-border-color: gray;
+    -fx-border-width: 2px;
+    -fx-padding: 2px;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Arms                                                                        *
+ *                                                                             *
+ ******************************************************************************/
+.arm {
+    -base-arm-color: #bbb;
+
+    /* Display a horizontal line in the middle third to represent the arms */
+    -fx-background-color: linear-gradient(to bottom, transparent 0%, transparent 28%, -base-arm-color 28%, -base-arm-color 71%, transparent 71%, transparent 100%);
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Scale and platforms                                                         *
+ *                                                                             *
+ ******************************************************************************/
+.powerup-scale .powerup-plate {
+    /* Dropshadow to suggest height  */
+    -fx-effect: dropshadow(gaussian, black, 9, .125, 2, 2);
+}
+
+.platform {
+    -fx-background-color: darkgray;
+}
+
+.platform .platform-surface {
+    -fx-background-color: lightgray;
+}
+
+.platform:red .platform-surface {
+    -fx-background-color: red;
+}
+
+.platform:red {
+    -fx-background-color: derive(red, -15%);
+}
+
+.platform:blue .platform-surface {
+    -fx-background-color: blue;
+}
+
+.platform:blue {
+    -fx-background-color: derive(blue, -25%);
+}

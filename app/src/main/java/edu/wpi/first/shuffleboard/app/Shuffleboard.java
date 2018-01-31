@@ -8,6 +8,7 @@ import edu.wpi.first.shuffleboard.app.plugin.PluginLoader;
 import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
 import edu.wpi.first.shuffleboard.plugin.base.BasePlugin;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.CameraServerPlugin;
+import edu.wpi.first.shuffleboard.plugin.powerup.PowerupPlugin;
 import edu.wpi.first.shuffleboard.plugin.networktables.NetworkTablesPlugin;
 
 import de.codecentric.centerdevice.javafxsvg.SvgImageLoaderFactory;
@@ -86,6 +87,7 @@ public class Shuffleboard extends Application {
 
     PluginLoader.getDefault().load(new NetworkTablesPlugin());
     PluginLoader.getDefault().load(new CameraServerPlugin());
+    PluginLoader.getDefault().load(new PowerupPlugin());
     PluginLoader.getDefault().loadAllJarsFromDir(Storage.getPluginPath());
 
     // Setup the dashboard tabs after all plugins are loaded
