@@ -1,5 +1,7 @@
 package edu.wpi.first.shuffleboard.plugin.base.data.fms;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import static edu.wpi.first.shuffleboard.api.util.BitUtils.flagMatches;
 import static edu.wpi.first.shuffleboard.api.util.BitUtils.toFlag;
 
@@ -8,12 +10,12 @@ import static edu.wpi.first.shuffleboard.api.util.BitUtils.toFlag;
  */
 public final class ControlWord {
 
-  private static final int ENABLED_FLAG = 0x01;
-  private static final int AUTO_FLAG = 0x02;
-  private static final int TEST_FLAG = 0x04;
-  private static final int EMERGENCY_STOP_FLAG = 0x08;
-  private static final int FMS_ATTACHED_FLAG = 0x10;
-  private static final int DS_ATTACHED_FLAG = 0x20;
+  @VisibleForTesting static final int ENABLED_FLAG = 0x01;
+  @VisibleForTesting static final int AUTO_FLAG = 0x02;
+  @VisibleForTesting static final int TEST_FLAG = 0x04;
+  @VisibleForTesting static final int EMERGENCY_STOP_FLAG = 0x08;
+  @VisibleForTesting static final int FMS_ATTACHED_FLAG = 0x10;
+  @VisibleForTesting static final int DS_ATTACHED_FLAG = 0x20;
 
   private final RobotControlState controlState;
   private final boolean emergencyStopped;
@@ -39,16 +41,16 @@ public final class ControlWord {
   }
 
   /**
-   * Creates a new ControlWord object from a control word bitset.
+   * Creates a new ControlWord object from a control word bitfield.
    *
-   * @param word the control word bitset
+   * @param word the control word bitfield
    */
   public static ControlWord fromBits(int word) {
-    return new ControlWord(
-        flagMatches(word, TEST_FLAG) ? RobotControlState.Test
-            : flagMatches(word, AUTO_FLAG) ? RobotControlState.Autonomous
-            : flagMatches(word, ENABLED_FLAG) ? RobotControlState.Teleoperated
-            : RobotControlState.Disabled,
+    RobotControlState state = flagMatches(word, ENABLED_FLAG)
+        ? flagMatches(word, TEST_FLAG) ? RobotControlState.Test
+        : flagMatches(word, AUTO_FLAG) ? RobotControlState.Autonomous
+        : RobotControlState.Teleoperated : RobotControlState.Disabled;
+    return new ControlWord(state,
         flagMatches(word, EMERGENCY_STOP_FLAG),
         flagMatches(word, FMS_ATTACHED_FLAG),
         flagMatches(word, DS_ATTACHED_FLAG)
