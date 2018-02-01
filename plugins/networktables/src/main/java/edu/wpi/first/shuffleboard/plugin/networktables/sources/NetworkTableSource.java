@@ -54,6 +54,7 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
   protected final void setTableListener(TableListener listener) {
     NetworkTableInstance inst = NetworkTableInstance.getDefault();
     inst.removeEntryListener(listenerUid);
+    setConnected(true);
     listenerUid = inst.addEntryListener(fullTableKey, (event) -> {
       if (isConnected()) {
         AsyncUtils.runAsync(() -> {
@@ -67,7 +68,6 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
       }
     },
     0xFF);
-    connect();
   }
 
   protected boolean isUpdateFromNetworkTables() {
