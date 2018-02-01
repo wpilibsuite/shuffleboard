@@ -43,6 +43,8 @@ public final class Storage {
    */
   private static final String PLUGINS_DIR = STORAGE_DIR + "/plugins";
 
+  private static final String PLUGIN_CACHE_FILE = PLUGINS_DIR + "/.plugincache";
+
   private Storage() {
   }
 
@@ -78,6 +80,18 @@ public final class Storage {
    */
   public static Path getPluginPath() throws IOException {
     return findOrCreate(PLUGINS_DIR);
+  }
+
+  /**
+   * The path to the file that contains a cache of external plugin jars.
+   * @throws IOException if the file does not exist and creating it fails
+   */
+  public static Path getPluginCache() throws IOException {
+    Path path = Paths.get(PLUGIN_CACHE_FILE);
+    if (Files.notExists(path)) {
+      Files.createFile(path);
+    }
+    return path;
   }
 
   /**

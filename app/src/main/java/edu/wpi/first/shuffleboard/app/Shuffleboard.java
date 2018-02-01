@@ -4,6 +4,7 @@ import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
 import edu.wpi.first.shuffleboard.api.theme.Themes;
 import edu.wpi.first.shuffleboard.api.util.Storage;
 import edu.wpi.first.shuffleboard.api.util.Time;
+import edu.wpi.first.shuffleboard.app.plugin.PluginCache;
 import edu.wpi.first.shuffleboard.app.plugin.PluginLoader;
 import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
 import edu.wpi.first.shuffleboard.plugin.base.BasePlugin;
@@ -87,6 +88,7 @@ public class Shuffleboard extends Application {
     PluginLoader.getDefault().load(new NetworkTablesPlugin());
     PluginLoader.getDefault().load(new CameraServerPlugin());
     PluginLoader.getDefault().loadAllJarsFromDir(Storage.getPluginPath());
+    PluginCache.getDefault().loadCache(PluginLoader.getDefault());
 
     // Setup the dashboard tabs after all plugins are loaded
     Platform.runLater(() -> {

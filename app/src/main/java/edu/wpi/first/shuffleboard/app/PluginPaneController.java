@@ -1,7 +1,9 @@
 package edu.wpi.first.shuffleboard.app;
 
 import edu.wpi.first.shuffleboard.api.plugin.Plugin;
+import edu.wpi.first.shuffleboard.api.util.Storage;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
+import edu.wpi.first.shuffleboard.app.plugin.PluginCache;
 import edu.wpi.first.shuffleboard.app.plugin.PluginLoader;
 
 import org.fxmisc.easybind.EasyBind;
@@ -9,6 +11,9 @@ import org.fxmisc.easybind.monadic.MonadicBinding;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -51,6 +56,9 @@ public class PluginPaneController {
   private TableColumn<Plugin, String> versionColumn;
   @FXML
   private TextArea descriptionArea;
+
+  private final List<URI> jarUris = new ArrayList<>();
+  private static final byte[] EMPTY_LIST_BYTES = new byte[0];
 
   @FXML
   private void initialize() {
@@ -134,8 +142,8 @@ public class PluginPaneController {
     }
     files.forEach(f -> {
       try {
-        // TODO save this in user preferences
         PluginLoader.getDefault().loadPluginJar(f.toURI());
+        jarUris.add(f.toURI());
       } catch (IOException | IllegalArgumentException e) {
         log.log(Level.WARNING, "Could not load jar", e);
         // TODO improve the dialog; use something like what GRIP has
@@ -146,6 +154,18 @@ public class PluginPaneController {
         alert.showAndWait();
       }
     });
+    PluginCache.getDefault().saveToCache(jarUris);
+  }
+
+  @FXML
+  private void clearCache() {
+    try {
+      log.info("Clearing plugin cache");
+      jarUris.clear();
+      Files.write(Storage.getPluginCache(), EMPTY_LIST_BYTES);
+    } catch (IOException e) {
+      log.log(Level.WARNING, "Could not clear cache", e);
+    }
   }
 
 }
