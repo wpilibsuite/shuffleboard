@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import java.lang.Double?>
-<?import javafx.geometry.Insets?>
+<?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.Pane?>
-<?import javafx.scene.layout.StackPane?>
-<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Line?>
 <GridPane xmlns="http://javafx.com/javafx"
           xmlns:fx="http://javafx.com/fxml"
           fx:controller="edu.wpi.first.shuffleboard.plugin.powerup.widget.ScaleController"
@@ -14,20 +13,19 @@
           alignment="CENTER">
     <fx:define>
         <Double fx:id="platformHeight" fx:value="54"/>
-        <Double fx:id="platformWidth" fx:value="129.5"/>
+        <Double fx:id="platformWidth" fx:value="130"/> <!-- 129.5, round to 130 to avoid subpixel sampling -->
+        <Double fx:id="rampLength" fx:value="12"/>
     </fx:define>
-    <StackPane GridPane.halignment="CENTER" fx:id="farPlatform" styleClass="platform" minHeight="$platformHeight" minWidth="$platformWidth" maxHeight="-Infinity" maxWidth="-Infinity" translateY="16" GridPane.rowIndex="0">
-        <padding>
-            <Insets top="12.75" right="12.75" bottom="0" left="12.75"/>
-        </padding>
-        <VBox styleClass="platform-surface"/>
-    </StackPane>
-    <StackPane GridPane.halignment="CENTER" fx:id="nearPlatform" styleClass="platform" minHeight="$platformHeight" minWidth="$platformWidth" maxHeight="-Infinity" maxWidth="-Infinity" translateY="-16" GridPane.rowIndex="2">
-        <padding>
-            <Insets top="0" right="12.75" bottom="12.75" left="12.75"/>
-        </padding>
-        <VBox styleClass="platform-surface"/>
-    </StackPane>
+    <AnchorPane fx:id="farPlatform" styleClass="platform" minHeight="$platformHeight" minWidth="$platformWidth" maxHeight="-Infinity" maxWidth="-Infinity" translateY="16" GridPane.halignment="CENTER" GridPane.rowIndex="0">
+        <Line startX="0" startY="0" endX="$rampLength" endY="$rampLength" styleClass="platform-line"/>
+        <Line startX="${platformWidth - rampLength}" startY="$rampLength" endX="$platformWidth" endY="0" styleClass="platform-line"/>
+        <Pane AnchorPane.topAnchor="$rampLength" AnchorPane.rightAnchor="$rampLength" AnchorPane.leftAnchor="$rampLength" AnchorPane.bottomAnchor="0" styleClass="platform-surface"/>
+    </AnchorPane>
+    <AnchorPane fx:id="nearPlatform" styleClass="platform" minHeight="$platformHeight" minWidth="$platformWidth" maxHeight="-Infinity" maxWidth="-Infinity" translateY="-16" GridPane.halignment="CENTER" GridPane.rowIndex="2">
+        <Line startX="0" startY="$platformHeight" endX="$rampLength" endY="${platformHeight - rampLength}" styleClass="platform-line"/>
+        <Line startX="${platformWidth - rampLength}" startY="${platformHeight - rampLength}" endX="$platformWidth" endY="$platformHeight" styleClass="platform-line"/>
+        <Pane AnchorPane.topAnchor="0" AnchorPane.rightAnchor="$rampLength" AnchorPane.leftAnchor="$rampLength" AnchorPane.bottomAnchor="$rampLength" styleClass="platform-surface"/>
+    </AnchorPane>
     <GridPane GridPane.halignment="CENTER" GridPane.rowIndex="1">
         <fx:define>
             <Double fx:id="width" fx:value="36"/>
@@ -35,6 +33,6 @@
         </fx:define>
         <Pane fx:id="leftPlate" minWidth="$width" minHeight="$height" styleClass="powerup-plate" GridPane.columnIndex="0"/>
         <Pane fx:id="rightPlate" minWidth="$width" minHeight="$height" styleClass="powerup-plate" GridPane.columnIndex="2"/>
-        <Pane minWidth="108" minHeight="$height" styleClass="arm" GridPane.columnIndex="1"/>
+        <Pane minWidth="108" minHeight="${height / 2}" maxHeight="-Infinity" styleClass="arm" GridPane.columnIndex="1"/>
     </GridPane>
 </GridPane>

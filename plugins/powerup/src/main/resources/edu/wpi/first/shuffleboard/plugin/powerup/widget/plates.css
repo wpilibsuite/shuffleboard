@@ -5,7 +5,6 @@
  ******************************************************************************/
 .powerup-plate {
     -fx-background-color: #7f7f7f;
-    /*-fx-effect: dropshadow(gaussian, black, 2, .7, 1, 1);*/
 }
 
 .powerup-plate:red {
@@ -33,10 +32,7 @@
  *                                                                             *
  ******************************************************************************/
 .arm {
-    -base-arm-color: #bbb;
-
-    /* Display a horizontal line in the middle third to represent the arms */
-    -fx-background-color: linear-gradient(to bottom, transparent 0%, transparent 28%, -base-arm-color 28%, -base-arm-color 71%, transparent 71%, transparent 100%);
+    -fx-background-color: #bbb;
 }
 
 /*******************************************************************************
@@ -50,11 +46,21 @@
 }
 
 .platform {
-    -fx-background-color: darkgray;
+    -fx-background-color: #878787;
 }
 
 .platform .platform-surface {
-    -fx-background-color: lightgray;
+    -fx-background-color: #9f9f9f;
+    -fx-border-color: black;
+    -fx-border-width: 1px;
+}
+
+.platform-line {
+    -fx-stroke: black;
+    -fx-stroke-width: 1px;
+    -fx-stroke-type: centered;
+    -fx-stroke-line-join: miter;
+    -fx-stroke-line-cap: butt;
 }
 
 .platform:red .platform-surface {

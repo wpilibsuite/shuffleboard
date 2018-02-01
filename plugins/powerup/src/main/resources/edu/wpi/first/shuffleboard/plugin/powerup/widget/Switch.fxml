@@ -15,6 +15,6 @@
         <Double fx:id="height" fx:value="48"/>
     </fx:define>
     <Pane fx:id="leftPlate" minWidth="$width" minHeight="$height" styleClass="powerup-plate"/>
-    <Pane minWidth="72" minHeight="$height" styleClass="arm"/>
+    <Pane minWidth="72" minHeight="${height / 2}" maxHeight="-Infinity" styleClass="arm"/>
     <Pane fx:id="rightPlate" minWidth="$width" minHeight="$height" styleClass="powerup-plate"/>
 </HBox>
