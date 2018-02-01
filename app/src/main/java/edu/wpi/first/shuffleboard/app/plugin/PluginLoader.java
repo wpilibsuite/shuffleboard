@@ -335,13 +335,15 @@ public class PluginLoader {
   private static List<Requires> getRequirements(Class<? extends Plugin> pluginClass) {
     Requirements requirements = pluginClass.getAnnotation(Requirements.class);
     Requires[] requires = pluginClass.getAnnotationsByType(Requires.class);
-    return Stream.concat(
-        Stream.of(requirements)
+    // No need to initialize hear because it is set equal to something later
+    List<Requires> requirementsArray;
+    // Split into two pieces because Stream.concat has weird type inference issues
+    requirementsArray = Stream.of(requirements)
             .filter(Objects::nonNull)
             .map(Requirements::value)
-            .flatMap(Stream::of),
-        Stream.of(requires)
-    ).collect(Collectors.toList());
+            .flatMap(Stream::of).collect(Collectors.toList());
+    requirementsArray.addAll(Stream.of(requires).collect(Collectors.toList()));
+    return requirementsArray;
   }
 
   /**
