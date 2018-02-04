@@ -74,6 +74,21 @@ public class Shuffleboard extends Application {
     Thread.currentThread().setUncaughtExceptionHandler(Shuffleboard::uncaughtException);
     onOtherAppStart = () -> Platform.runLater(primaryStage::toFront);
 
+    // Before we load components that only work with Java 8, check to make sure
+    // the application is running on Java 8. If we are running on an invalid
+    // version, show an alert and exit before we get into trouble.
+    if (!"1.8".equals(System.getProperty("java.specification.version"))) {
+      Alert invalidVersionAlert = new Alert(Alert.AlertType.ERROR);
+      invalidVersionAlert.setHeaderText("Invalid JRE Version!");
+      invalidVersionAlert.setContentText(
+          String.format("You are using an unsupported Java version: %s!  "
+                  + "Please download Java 8.",
+              System.getProperty("java.version")));
+      invalidVersionAlert.showAndWait();
+
+      return;
+    }
+
     FXMLLoader loader = new FXMLLoader(MainWindowController.class.getResource("MainWindow.fxml"));
     mainPane = loader.load();
     final MainWindowController mainWindowController = loader.getController();
