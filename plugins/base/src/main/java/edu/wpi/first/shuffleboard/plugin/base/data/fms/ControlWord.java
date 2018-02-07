@@ -46,10 +46,18 @@ public final class ControlWord {
    * @param word the control word bitfield
    */
   public static ControlWord fromBits(int word) {
-    RobotControlState state = flagMatches(word, ENABLED_FLAG)
-        ? flagMatches(word, TEST_FLAG) ? RobotControlState.Test
-        : flagMatches(word, AUTO_FLAG) ? RobotControlState.Autonomous
-        : RobotControlState.Teleoperated : RobotControlState.Disabled;
+    RobotControlState state;
+    if (flagMatches(word, ENABLED_FLAG)) {
+      if (flagMatches(word, TEST_FLAG)) {
+        state = RobotControlState.Test;
+      } else if (flagMatches(word, AUTO_FLAG)) {
+        state = RobotControlState.Autonomous;
+      } else {
+        state = RobotControlState.Teleoperated;
+      }
+    } else {
+      state = RobotControlState.Disabled;
+    }
     return new ControlWord(state,
         flagMatches(word, EMERGENCY_STOP_FLAG),
         flagMatches(word, FMS_ATTACHED_FLAG),
