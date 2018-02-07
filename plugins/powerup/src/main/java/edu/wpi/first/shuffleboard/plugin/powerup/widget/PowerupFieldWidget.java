@@ -7,10 +7,12 @@ import edu.wpi.first.shuffleboard.plugin.base.data.fms.Alliance;
 import edu.wpi.first.shuffleboard.plugin.base.data.fms.FmsInfo;
 import edu.wpi.first.shuffleboard.plugin.powerup.FieldConfiguration;
 
+import org.fxmisc.easybind.EasyBind;
 import org.fxmisc.easybind.monadic.MonadicBinding;
 
 import javafx.fxml.FXML;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.Region;
 
 @Description(name = "Powerup Field", dataTypes = FmsInfo.class)
 @ParametrizedController("PowerupFieldWidget.fxml")
@@ -41,11 +43,47 @@ public class PowerupFieldWidget extends SimpleAnnotatedWidget<FmsInfo> {
             .map(FmsInfo::getAlliance)
             .orElse((Alliance) null));
     farSwitchController.configurationProperty().bind(fieldConfiguration.map(FieldConfiguration::getFarSwitch));
+
+    root.scaleXProperty().bind(
+        EasyBind.monadic(root.parentProperty())
+            .map(p -> (Region) p)
+            .flatMap(p -> EasyBind.combine(p.widthProperty(), p.heightProperty(), Size::new))
+            .map(size -> calculateScaleFactor(size))
+            .orElse(1.0));
+    root.scaleYProperty().bind(root.scaleXProperty());
   }
 
   @Override
   public Pane getView() {
     return root;
+  }
+
+  private double calculateScaleFactor(Size size) {
+    double widgetHeight = root.getHeight();
+    double widgetWidth = root.getWidth();
+    double targetRatio = widgetWidth / widgetHeight;
+    double width = size.width;
+    double height = size.height;
+    double ratio = width / height;
+    if (ratio > targetRatio) {
+      return height / widgetHeight;
+    } else {
+      return width / widgetWidth;
+    }
+  }
+
+  private static final class Size {
+    final double width;
+    final double height;
+
+    Size(Number width, Number height) {
+      this(width.doubleValue(), height.doubleValue());
+    }
+
+    Size(double width, double height) {
+      this.width = width;
+      this.height = height;
+    }
   }
 
 }
