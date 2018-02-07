@@ -14,6 +14,7 @@ import edu.wpi.first.shuffleboard.plugin.base.data.types.BasicSubsystemType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.CommandType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.DifferentialDriveType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.EncoderType;
+import edu.wpi.first.shuffleboard.plugin.base.data.types.FmsInfoType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.GyroType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.MecanumDriveType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.PIDCommandType;
@@ -29,6 +30,7 @@ import edu.wpi.first.shuffleboard.plugin.base.data.types.ThreeAxisAccelerometerT
 import edu.wpi.first.shuffleboard.plugin.base.layout.ListLayout;
 import edu.wpi.first.shuffleboard.plugin.base.layout.SubsystemLayout;
 import edu.wpi.first.shuffleboard.plugin.base.widget.AccelerometerWidget;
+import edu.wpi.first.shuffleboard.plugin.base.widget.BasicFmsInfoWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.BasicSubsystemWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.BooleanBoxWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.ComboBoxChooserWidget;
@@ -89,7 +91,8 @@ public class BasePlugin extends Plugin {
         GyroType.Instance,
         RelayType.Instance,
         MecanumDriveType.Instance,
-        DifferentialDriveType.Instance
+        DifferentialDriveType.Instance,
+        FmsInfoType.Instance
     );
   }
 
@@ -120,6 +123,7 @@ public class BasePlugin extends Plugin {
         WidgetType.forAnnotatedWidget(RelayWidget.class),
         WidgetType.forAnnotatedWidget(DifferentialDriveWidget.class),
         WidgetType.forAnnotatedWidget(MecanumDriveWidget.class),
+        WidgetType.forAnnotatedWidget(BasicFmsInfoWidget.class),
         new LayoutClass<>("List Layout", ListLayout.class),
         createSubsystemLayoutType()
     );
@@ -147,6 +151,7 @@ public class BasePlugin extends Plugin {
         .put(RelayType.Instance, WidgetType.forAnnotatedWidget(RelayWidget.class))
         .put(DifferentialDriveType.Instance, WidgetType.forAnnotatedWidget(DifferentialDriveWidget.class))
         .put(MecanumDriveType.Instance, WidgetType.forAnnotatedWidget(MecanumDriveWidget.class))
+        .put(FmsInfoType.Instance, WidgetType.forAnnotatedWidget(BasicFmsInfoWidget.class))
         .put(BasicSubsystemType.Instance, WidgetType.forAnnotatedWidget(BasicSubsystemWidget.class))
         .put(SubsystemType.Instance, createSubsystemLayoutType())
         .build();

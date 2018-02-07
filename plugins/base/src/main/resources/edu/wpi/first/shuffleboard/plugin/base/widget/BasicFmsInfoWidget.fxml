@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.VBox?>
+<BorderPane xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="edu.wpi.first.shuffleboard.plugin.base.widget.BasicFmsInfoWidget"
+            fx:id="root"
+            minWidth="352" minHeight="84"
+            styleClass="fms-widget"
+            stylesheets="@fms-widget.css">
+    <top>
+        <Label fx:id="matchInfoLabel" styleClass="match-info-label" BorderPane.alignment="CENTER"/>
+    </top>
+    <center>
+        <VBox alignment="CENTER">
+            <padding>
+                <Insets bottom="4.0" left="4.0" right="4.0" top="4.0"/>
+            </padding>
+            <HBox alignment="CENTER" spacing="8.0" BorderPane.alignment="CENTER">
+                <Label fx:id="fmsConnectionLabel"/>
+                <Label fx:id="driverStationConnectionLabel"/>
+            </HBox>
+            <Label fx:id="robotStateLabel"/>
+        </VBox>
+    </center>
+    <bottom>
+        <HBox fx:id="emergencyStopPane" spacing="2">
+            <Pane styleClass="emergency-stop-pane" maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
+            <Label text="EMERGENCY STOPPED"/>
+            <Pane styleClass="emergency-stop-pane" maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
+        </HBox>
+    </bottom>
+</BorderPane>
