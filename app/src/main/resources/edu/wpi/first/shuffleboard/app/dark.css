@@ -206,6 +206,27 @@
 
 /*******************************************************************************
  *                                                                             *
+ * Scroll pane                                                                 *
+ *                                                                             *
+ ******************************************************************************/
+.scroll-pane .corner {
+    -fx-background-color: -swatch-dark-gray;
+}
+
+.scroll-bar .track-background {
+    -fx-background-color: -swatch-dark-gray !important;
+}
+
+.scroll-bar .thumb {
+    -fx-background-color: -swatch-light-gray !important;
+}
+
+.scroll-bar .increment-arrow, .scroll-bar .decrement-arrow {
+    -fx-background-color: white !important;
+}
+
+/*******************************************************************************
+ *                                                                             *
  * Tiles                                                                       *
  *                                                                             *
  ******************************************************************************/

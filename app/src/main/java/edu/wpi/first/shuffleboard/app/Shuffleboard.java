@@ -9,6 +9,7 @@ import edu.wpi.first.shuffleboard.app.plugin.PluginLoader;
 import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
 import edu.wpi.first.shuffleboard.plugin.base.BasePlugin;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.CameraServerPlugin;
+import edu.wpi.first.shuffleboard.plugin.powerup.PowerupPlugin;
 import edu.wpi.first.shuffleboard.plugin.networktables.NetworkTablesPlugin;
 
 import de.codecentric.centerdevice.javafxsvg.SvgImageLoaderFactory;
@@ -36,6 +37,7 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.layout.Pane;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 @SuppressWarnings("PMD.MoreThanOneLogger") // there's only one logger used, the others are for setting up file logging
 public class Shuffleboard extends Application {
@@ -78,6 +80,26 @@ public class Shuffleboard extends Application {
     Thread.currentThread().setUncaughtExceptionHandler(Shuffleboard::uncaughtException);
     onOtherAppStart = () -> Platform.runLater(primaryStage::toFront);
 
+    // Before we load components that only work with Java 8, check to make sure
+    // the application is running on Java 8. If we are running on an invalid
+    // version, show an alert and exit before we get into trouble.
+    String javaSpec = System.getProperty("java.specification.version");
+    String javaVersion = System.getProperty("java.version");
+    if (!"1.8".equals(javaSpec)) {
+      Alert invalidVersionAlert = new Alert(Alert.AlertType.ERROR);
+      invalidVersionAlert.setHeaderText("Invalid JRE Version!");
+      invalidVersionAlert.setContentText(
+          String.format("You are using an unsupported Java version: %s%n"
+                  + "Please download Java 8 and uninstall Java %s.",
+              javaVersion, javaSpec));
+      invalidVersionAlert.initStyle(StageStyle.UNDECORATED);
+      invalidVersionAlert.getDialogPane().getStylesheets().setAll(
+          AppPreferences.getInstance().getTheme().getStyleSheets());
+      invalidVersionAlert.showAndWait();
+
+      return;
+    }
+
     FXMLLoader loader = new FXMLLoader(MainWindowController.class.getResource("MainWindow.fxml"));
     mainPane = loader.load();
     final MainWindowController mainWindowController = loader.getController();
@@ -90,6 +112,7 @@ public class Shuffleboard extends Application {
 
     PluginLoader.getDefault().load(new NetworkTablesPlugin());
     PluginLoader.getDefault().load(new CameraServerPlugin());
+    PluginLoader.getDefault().load(new PowerupPlugin());
     PluginLoader.getDefault().loadAllJarsFromDir(Storage.getPluginPath());
 
     // Setup the dashboard tabs after all plugins are loaded

@@ -1,0 +1,17 @@
+/*******************************************************************************
+ *                                                                             *
+ * FMS widget                                                                  *
+ *                                                                             *
+ ******************************************************************************/
+.fms-widget .match-info-label {
+    -fx-font-weight: bold;
+}
+
+.fms-widget .emergency-stop-pane {
+    -fx-background-color: linear-gradient(from 0px 0px to 10px 10px, repeat, black 0%, black 49%, yellow 50%, yellow 100%);
+}
+
+.fms-widget .emergency-stop-pane .label {
+    -fx-text-fill: red !important;
+    -fx-font-weight: bold;
+}

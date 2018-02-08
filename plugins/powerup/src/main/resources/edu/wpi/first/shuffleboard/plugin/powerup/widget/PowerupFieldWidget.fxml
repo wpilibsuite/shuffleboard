@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.VBox?>
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="edu.wpi.first.shuffleboard.plugin.powerup.widget.PowerupFieldWidget"
+      stylesheets="@powerup-field.css"
+      fx:id="root"
+      alignment="CENTER"
+      spacing="8"
+      minWidth="200" minHeight="336"
+      maxWidth="${root.minWidth}" maxHeight="${root.minHeight}">
+    <fx:include source="Switch.fxml" fx:id="farSwitch"/>
+    <fx:include source="Scale.fxml" fx:id="scale"/>
+    <fx:include source="Switch.fxml" fx:id="nearSwitch"/>
+</VBox>

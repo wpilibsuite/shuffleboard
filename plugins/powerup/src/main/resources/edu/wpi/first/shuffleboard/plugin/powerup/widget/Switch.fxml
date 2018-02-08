@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.Double?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<HBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="edu.wpi.first.shuffleboard.plugin.powerup.widget.SwitchController"
+      fx:id="root"
+      alignment="CENTER"
+      maxWidth="-Infinity"
+      styleClass="powerup-switch">
+    <fx:define>
+        <Double fx:id="width" fx:value="36"/>
+        <Double fx:id="height" fx:value="48"/>
+    </fx:define>
+    <Pane fx:id="leftPlate" minWidth="$width" minHeight="$height" styleClass="powerup-plate"/>
+    <Pane minWidth="72" minHeight="${height / 2}" maxHeight="-Infinity" styleClass="arm"/>
+    <Pane fx:id="rightPlate" minWidth="$width" minHeight="$height" styleClass="powerup-plate"/>
+</HBox>
