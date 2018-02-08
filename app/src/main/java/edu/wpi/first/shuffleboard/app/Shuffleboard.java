@@ -81,7 +81,6 @@ public class Shuffleboard extends Application {
     String javaSpec = System.getProperty("java.specification.version");
     String javaVersion = System.getProperty("java.version");
     if (!"1.8".equals(javaSpec)) {
-      System.out.println(javaSpec);
       Alert invalidVersionAlert = new Alert(Alert.AlertType.ERROR);
       invalidVersionAlert.setHeaderText("Invalid JRE Version!");
       invalidVersionAlert.setContentText(
