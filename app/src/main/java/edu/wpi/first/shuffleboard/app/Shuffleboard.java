@@ -35,6 +35,7 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.layout.Pane;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 @SuppressWarnings("PMD.MoreThanOneLogger") // there's only one logger used, the others are for setting up file logging
 public class Shuffleboard extends Application {
@@ -74,6 +75,26 @@ public class Shuffleboard extends Application {
     // Must be called in start() because init() is run on the main thread, not the FX application thread
     Thread.currentThread().setUncaughtExceptionHandler(Shuffleboard::uncaughtException);
     onOtherAppStart = () -> Platform.runLater(primaryStage::toFront);
+
+    // Before we load components that only work with Java 8, check to make sure
+    // the application is running on Java 8. If we are running on an invalid
+    // version, show an alert and exit before we get into trouble.
+    String javaSpec = System.getProperty("java.specification.version");
+    String javaVersion = System.getProperty("java.version");
+    if (!"1.8".equals(javaSpec)) {
+      Alert invalidVersionAlert = new Alert(Alert.AlertType.ERROR);
+      invalidVersionAlert.setHeaderText("Invalid JRE Version!");
+      invalidVersionAlert.setContentText(
+          String.format("You are using an unsupported Java version: %s%n"
+                  + "Please download Java 8 and uninstall Java %s.",
+              javaVersion, javaSpec));
+      invalidVersionAlert.initStyle(StageStyle.UNDECORATED);
+      invalidVersionAlert.getDialogPane().getStylesheets().setAll(
+          AppPreferences.getInstance().getTheme().getStyleSheets());
+      invalidVersionAlert.showAndWait();
+
+      return;
+    }
 
     FXMLLoader loader = new FXMLLoader(MainWindowController.class.getResource("MainWindow.fxml"));
     mainPane = loader.load();
