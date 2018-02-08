@@ -85,7 +85,7 @@ public class Shuffleboard extends Application {
       Alert invalidVersionAlert = new Alert(Alert.AlertType.ERROR);
       invalidVersionAlert.setHeaderText("Invalid JRE Version!");
       invalidVersionAlert.setContentText(
-          String.format("You are using an unsupported Java version: %s\n"
+          String.format("You are using an unsupported Java version: %s%n"
                   + "Please download Java 8 and uninstall Java %s.",
               javaVersion, javaSpec));
       invalidVersionAlert.initStyle(StageStyle.UNDECORATED);
