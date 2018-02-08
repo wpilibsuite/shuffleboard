@@ -113,8 +113,13 @@ public class ShuffleboardDialog extends Dialog<ButtonType> {
   }
 
   private void closeAndCancel() {
-    setResult(ButtonType.CLOSE);
-    close();
+    // Need to check this to avoid macOS's weird window handling behavior, which will trigger a focusLost event when
+    // the dialog closes due to a user selection of a button in the dialog.
+    // Linux and Windows don't seem to have this problem.
+    if (isShowing()) {
+      setResult(ButtonType.CLOSE);
+      close();
+    }
   }
 
   public final String getSubheaderText() {
