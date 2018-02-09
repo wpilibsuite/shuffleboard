@@ -1,6 +1,8 @@
 package edu.wpi.first.shuffleboard.plugin.base.widget;
 
 import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
+import edu.wpi.first.shuffleboard.api.data.types.NumberArrayType;
+import edu.wpi.first.shuffleboard.api.data.types.NumberType;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.util.AlphanumComparator;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
@@ -41,6 +43,7 @@ import javafx.util.StringConverter;
 
 @Description(name = "Graph", dataTypes = {Number.class, double[].class})
 @ParametrizedController("GraphWidget.fxml")
+@SuppressWarnings("PMD.GodClass")
 public class GraphWidget implements AnnotatedWidget {
 
   @FXML
@@ -95,15 +98,24 @@ public class GraphWidget implements AnnotatedWidget {
       while (c.next()) {
         if (c.wasAdded()) {
           c.getAddedSubList().forEach(source -> {
-            if (source.getData() instanceof Number) {
+            if (source.getDataType() == NumberType.Instance) {
               source.dataProperty().addListener(numberChangeLister);
-              numberChangeLister.changed(source.dataProperty(), null, (Number) source.getData());
-            } else if (source.getData() instanceof double[]) {
+              if (source.isConnected()) {
+                numberChangeLister.changed(source.dataProperty(), null, (Number) source.getData());
+              }
+            } else if (source.getDataType() == NumberArrayType.Instance) {
               source.dataProperty().addListener(numberArrayChangeListener);
-              numberArrayChangeListener.changed(source.dataProperty(), null, (double[]) source.getData());
+              if (source.isConnected()) {
+                numberArrayChangeListener.changed(source.dataProperty(), null, (double[]) source.getData());
+              }
             } else {
               throw new IncompatibleSourceException(getDataTypes(), source.getDataType());
             }
+          });
+        } else if (c.wasRemoved()) {
+          c.getRemoved().forEach(source -> {
+            source.dataProperty().removeListener(numberChangeLister);
+            source.dataProperty().removeListener(numberArrayChangeListener);
           });
         }
       }
@@ -151,6 +163,14 @@ public class GraphWidget implements AnnotatedWidget {
 
   @SuppressWarnings("unchecked")
   private <T> DataSource<T> sourceFor(ObservableValue<? extends T> property) {
+    // Check the bean - if it's a DataSource's data property, the bean should be the source itself
+    if (property instanceof Property) {
+      Object bean = ((Property) property).getBean();
+      if (bean instanceof DataSource) {
+        return (DataSource<T>) bean;
+      }
+    }
+    // Fallback to search the sources for the property
     return sources.stream()
         .filter(source -> source.dataProperty() == property)
         .findFirst()
@@ -253,7 +273,7 @@ public class GraphWidget implements AnnotatedWidget {
 
   @Override
   public void addSource(DataSource source) throws IncompatibleSourceException {
-    if (sources.contains(source) || sources.stream().anyMatch(s -> s.getId().equals(source.getId()))) {
+    if (sources.contains(source)) {
       // Already have it, don't graph it twice
       return;
     }

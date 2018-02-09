@@ -7,13 +7,19 @@ import org.gradle.api.tasks.wrapper.Wrapper
 import org.gradle.jvm.tasks.Jar
 import org.gradle.testing.jacoco.tasks.JacocoReport
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import org.ajoberstar.grgit.Grgit
+import org.ajoberstar.grgit.exception.GrgitException
+import org.ajoberstar.grgit.operation.DescribeOp
+import java.time.Instant
 
 buildscript {
     repositories {
         mavenCentral()
+        jcenter()
     }
     dependencies {
         classpath("org.junit.platform:junit-platform-gradle-plugin:1.0.0")
+        classpath("org.ajoberstar:grgit:1.7.2")
     }
 }
 plugins {
@@ -22,6 +28,7 @@ plugins {
     id("edu.wpi.first.wpilib.versioning.WPILibVersioningPlugin") version "2.0"
     id("com.github.johnrengelman.shadow") version "2.0.1"
     id("com.diffplug.gradle.spotless") version "3.5.1"
+    id("org.ajoberstar.grgit") version "1.7.2"
 }
 
 allprojects {
@@ -148,7 +155,6 @@ allprojects {
      * Run UI tests in headless mode on Jenkins or when the `visibleUiTests` property is not set.
      */
     if (project.hasProperty("jenkinsBuild") || !project.hasProperty("visibleUiTests")) {
-        println("Running UI Tests Headless")
         junitPlatform {
             filters {
                 tags {
@@ -218,6 +224,14 @@ project(":app") {
             }
         }
     }
+
+    version = getWPILibVersion() ?: getVersionFromGitTag(fallback = "0.0.0") // fall back to git describe if no WPILib version is set
+    tasks.withType<Jar> {
+        manifest {
+            attributes["Implementation-Version"] = version
+            attributes["Built-Date"] = Instant.now().toString()
+        }
+    }
 }
 
 project(":api") {
@@ -247,6 +261,13 @@ project(":api") {
                 artifact(sourceJar)
                 artifact(javadocJar)
             }
+        }
+    }
+
+    version = getWPILibVersion() ?: getVersionFromGitTag(fallback = "v0.0.0")
+    tasks.withType<Jar> {
+        manifest {
+            attributes["Implementation-Version"] = version
         }
     }
 }
@@ -322,3 +343,21 @@ val Project.`junitPlatform`: org.junit.platform.gradle.plugin.JUnitPlatformExten
  */
 fun Project.`junitPlatform`(configure: org.junit.platform.gradle.plugin.JUnitPlatformExtension.() -> Unit) =
     extensions.configure("junitPlatform", configure)
+
+/**
+ * Gets the build version from git-describe. This is a combination of the most recent tag, the number of commits since
+ * that tag, and the abbreviated hash of the most recent commit, in this format: `<tag>-<n>-<hash>`; for example,
+ * v1.0.0-11-9ab123f when the most recent tag is `"v1.0.0"`, with 11 commits since that tag, and the most recent commit
+ * hash starting with `9ab123f`.
+ *
+ * @param fallback the version string to fall back to if git-describe fails. Default value is `"v0.0.0"`.
+ *
+ * @see <a href="https://git-scm.com/docs/git-describe">git-describe documentation</a>
+ */
+fun getVersionFromGitTag(fallback: String = "v0.0.0"): String = try {
+    val git = Grgit.open()
+    DescribeOp(git.repository).call()
+} catch (e: GrgitException) {
+    logger.log(LogLevel.WARN, "Cannot get the version from git-describe, falling back to $fallback", e)
+    fallback
+}

@@ -26,6 +26,7 @@
             <MenuItem onAction="#saveAs" text="Save as..." accelerator="SHORTCUT+SHIFT+S"/>
             <MenuItem onAction="#load" text="Load layout" accelerator="SHORTCUT+O"/>
             <MenuItem onAction="#showPrefs" text="Preferences" accelerator="SHORTCUT+,"/>
+            <MenuItem onAction="#checkForUpdates" text="Check for updates" accelerator="SHORTCUT+U"/>
             <SeparatorMenuItem/>
             <MenuItem onAction="#showPlugins" text="Plugins" accelerator="SHORTCUT+L"/>
             <SeparatorMenuItem/>
@@ -40,6 +41,9 @@
             <MenuItem text="New tab" onAction="#newTab" accelerator="SHORTCUT+T"/>
             <MenuItem text="Close current tab" onAction="#closeCurrentTab" accelerator="SHORTCUT+W"/>
             <MenuItem text="Current tab preferences" onAction="#showCurrentTabPrefs" accelerator="SHORTCUT+SHIFT+,"/>
+        </Menu>
+        <Menu text="Help">
+            <MenuItem text="About" onAction="#showAboutDialog" accelerator="F1"/>
         </Menu>
     </MenuBar>
     <SplitPane fx:id="centerSplitPane" dividerPositions="0.02">
@@ -70,5 +74,8 @@
     </BorderPane>
     <fx:define>
         <fx:include source="PluginPane.fxml" fx:id="pluginPane"/>
+        <fx:include source="DownloadDialogPane.fxml" fx:id="downloadPane"/>
+        <fx:include source="AboutDialogPane.fxml" fx:id="aboutPane"/>
+        <fx:include source="RestartPrompt.fxml" fx:id="restartPromptPane"/>
     </fx:define>
 </VBox>

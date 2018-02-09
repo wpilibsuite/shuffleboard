@@ -35,9 +35,11 @@ public final class NetworkTableUtils {
    * @param flag  the flag to check (eg {@link EntryListenerFlags#kDelete})
    *
    * @return true if the flags match, false otherwise
+   * @deprecated use {@link BitUtils#flagMatches(int, int)} instead
    */
+  @Deprecated
   public static boolean flagMatches(int flags, int flag) {
-    return (flags & flag) != 0;
+    return BitUtils.flagMatches(flags, flag);
   }
 
   /**
@@ -45,10 +47,10 @@ public final class NetworkTableUtils {
    *
    * <p>This is equivalent to {@code flagMatches(flags, EntryListenerFlags.kDelete)}
    *
-   * @see #flagMatches(int, int)
+   * @see BitUtils#flagMatches(int, int)
    */
   public static boolean isDelete(int flags) {
-    return flagMatches(flags, EntryListenerFlags.kDelete);
+    return BitUtils.flagMatches(flags, EntryListenerFlags.kDelete);
   }
 
   /**

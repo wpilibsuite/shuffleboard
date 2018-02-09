@@ -69,6 +69,7 @@ public final class Maps {
    * @param <T> the type of the value to return
    *
    * @throws NoSuchElementException if the key is not in the map
+   * @throws ClassCastException     if the value is present, but is not an instance of {@code T}
    */
   public static <K, T> T get(Map<? super K, ?> map, K key) throws NoSuchElementException {
     if (map.containsKey(key)) {

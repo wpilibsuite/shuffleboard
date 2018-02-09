@@ -43,8 +43,6 @@ public class SingleKeyNetworkTableSource<T> extends NetworkTableSource<T> {
 
       if (isActive()) {
         setData((T) value);
-      } else {
-        setData(null);
       }
     });
 

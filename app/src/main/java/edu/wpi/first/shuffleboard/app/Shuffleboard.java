@@ -2,6 +2,7 @@ package edu.wpi.first.shuffleboard.app;
 
 import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
 import edu.wpi.first.shuffleboard.api.theme.Themes;
+import edu.wpi.first.shuffleboard.api.util.ShutdownHooks;
 import edu.wpi.first.shuffleboard.api.util.Storage;
 import edu.wpi.first.shuffleboard.api.util.Time;
 import edu.wpi.first.shuffleboard.app.plugin.PluginCache;
@@ -9,6 +10,7 @@ import edu.wpi.first.shuffleboard.app.plugin.PluginLoader;
 import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
 import edu.wpi.first.shuffleboard.plugin.base.BasePlugin;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.CameraServerPlugin;
+import edu.wpi.first.shuffleboard.plugin.powerup.PowerupPlugin;
 import edu.wpi.first.shuffleboard.plugin.networktables.NetworkTablesPlugin;
 
 import de.codecentric.centerdevice.javafxsvg.SvgImageLoaderFactory;
@@ -17,6 +19,7 @@ import it.sauronsoftware.junique.AlreadyLockedException;
 import it.sauronsoftware.junique.JUnique;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.logging.FileHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -35,6 +38,7 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.layout.Pane;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 @SuppressWarnings("PMD.MoreThanOneLogger") // there's only one logger used, the others are for setting up file logging
 public class Shuffleboard extends Application {
@@ -66,6 +70,8 @@ public class Shuffleboard extends Application {
     // This avoids an issue with attempting to load a theme at startup that hasn't yet been registered
     logger.finer("Registering custom user themes from external dir");
     Themes.getDefault().loadThemesFromDir();
+
+    logger.info("Build time: " + getBuildTime());
   }
 
   @Override
@@ -74,6 +80,26 @@ public class Shuffleboard extends Application {
     // Must be called in start() because init() is run on the main thread, not the FX application thread
     Thread.currentThread().setUncaughtExceptionHandler(Shuffleboard::uncaughtException);
     onOtherAppStart = () -> Platform.runLater(primaryStage::toFront);
+
+    // Before we load components that only work with Java 8, check to make sure
+    // the application is running on Java 8. If we are running on an invalid
+    // version, show an alert and exit before we get into trouble.
+    String javaSpec = System.getProperty("java.specification.version");
+    String javaVersion = System.getProperty("java.version");
+    if (!"1.8".equals(javaSpec)) {
+      Alert invalidVersionAlert = new Alert(Alert.AlertType.ERROR);
+      invalidVersionAlert.setHeaderText("Invalid JRE Version!");
+      invalidVersionAlert.setContentText(
+          String.format("You are using an unsupported Java version: %s%n"
+                  + "Please download Java 8 and uninstall Java %s.",
+              javaVersion, javaSpec));
+      invalidVersionAlert.initStyle(StageStyle.UNDECORATED);
+      invalidVersionAlert.getDialogPane().getStylesheets().setAll(
+          AppPreferences.getInstance().getTheme().getStyleSheets());
+      invalidVersionAlert.showAndWait();
+
+      return;
+    }
 
     FXMLLoader loader = new FXMLLoader(MainWindowController.class.getResource("MainWindow.fxml"));
     mainPane = loader.load();
@@ -87,6 +113,7 @@ public class Shuffleboard extends Application {
 
     PluginLoader.getDefault().load(new NetworkTablesPlugin());
     PluginLoader.getDefault().load(new CameraServerPlugin());
+    PluginLoader.getDefault().load(new PowerupPlugin());
     PluginLoader.getDefault().loadAllJarsFromDir(Storage.getPluginPath());
     PluginCache.getDefault().loadCache(PluginLoader.getDefault());
 
@@ -133,8 +160,19 @@ public class Shuffleboard extends Application {
         // Don't need to check for NO because it just lets the window close normally
       });
     });
+
+    if (AppPreferences.getInstance().isCheckForUpdatesOnStartup()) {
+      mainWindowController.checkForUpdates();
+    }
     primaryStage.show();
     Time.setStartTime(Time.now());
+  }
+
+  @Override
+  public void stop() throws Exception {
+    logger.info("Running shutdown hooks");
+    ShutdownHooks.runAllHooks();
+    logger.info("Shutting down");
   }
 
   /**
@@ -171,7 +209,8 @@ public class Shuffleboard extends Application {
     fileHandler.setFormatter(new SimpleFormatter()); //log in text, not xml
 
     globalLogger.config("Configuration done."); //Log that we are done setting up the logger
-    globalLogger.config("Shuffleboard app version: " + Shuffleboard.class.getPackage().getImplementationVersion());
+    globalLogger.config("Shuffleboard app version: " + getVersion());
+    globalLogger.config("Running from " + getRunningLocation());
   }
 
   /**
@@ -184,6 +223,36 @@ public class Shuffleboard extends Application {
    */
   private static void uncaughtException(Thread thread, Throwable throwable) {
     logger.log(Level.WARNING, "Uncaught exception on " + thread.getName(), throwable);
+  }
+
+  /**
+   * Gets the time at which the application JAR was built, or the instant this was first called if shuffleboard is not
+   * running from a JAR.
+   */
+  public static Instant getBuildTime() {
+    return ApplicationManifest.getBuildTime();
+  }
+
+  /**
+   * Gets the current shuffleboard version.
+   */
+  public static String getVersion() {
+    // Try to get the version from the shuffleboard class. This will return null when running from source (eg using
+    // gradle run or similar), so in that case we fall back to getting the version from an API class, which will always
+    // have its version set in that case
+    String appVersion = Shuffleboard.class.getPackage().getImplementationVersion();
+    if (appVersion != null) {
+      return appVersion;
+    }
+    return Storage.class.getPackage().getImplementationVersion();
+  }
+
+  /**
+   * Gets the location from which shuffleboard is running. If running from a JAR, this will be the location of the JAR;
+   * otherwise, it will likely be the root build directory of the `app` project.
+   */
+  public static String getRunningLocation() {
+    return Shuffleboard.class.getProtectionDomain().getCodeSource().getLocation().toExternalForm();
   }
 
 }
