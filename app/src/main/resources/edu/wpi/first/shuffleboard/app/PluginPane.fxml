@@ -8,6 +8,7 @@
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.HBox?>
 <BorderPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="edu.wpi.first.shuffleboard.app.PluginPaneController"
@@ -31,11 +32,12 @@
         </SplitPane>
     </center>
     <bottom>
-        <StackPane alignment="CENTER_RIGHT">
+        <HBox alignment="CENTER_RIGHT" spacing="4">
             <padding>
                 <Insets top="8"/>
             </padding>
+            <Button text="Clear cache" onAction="#clearCache"/>
             <Button text="Load plugin" onAction="#loadPlugin"/>
-        </StackPane>
+        </HBox>
     </bottom>
 </BorderPane>
