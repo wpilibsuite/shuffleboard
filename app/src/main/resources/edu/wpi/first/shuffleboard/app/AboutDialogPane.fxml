@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Tooltip?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<AnchorPane prefHeight="150" prefWidth="600"
+            fx:id="root"
+            styleClass="shuffleboard-dialog-pane"
+            xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="edu.wpi.first.shuffleboard.app.AboutDialogController">
+    <Label fx:id="versionAndBuildInfo" layoutX="36.0" layoutY="25"/>
+    <HBox fx:id="techInfoHeader" layoutX="20" layoutY="60">
+        <Button onAction="#copyTechInfoToClipboard" visible="${techInfoHeader.hover}" style="-fx-padding: 0; -fx-background-color: none">
+            <graphic>
+                <ImageView>
+                    <Image url="/edu/wpi/first/shuffleboard/app/icons/icons8-copy-to-clipboard-16.png"/>
+                </ImageView>
+            </graphic>
+            <tooltip>
+                <Tooltip text="Copy to clipboard"/>
+            </tooltip>
+        </Button>
+        <Label text="Technical information" styleClass="h5"/>
+    </HBox>
+    <Label fx:id="jreInfo" layoutX="36.0" layoutY="75"/>
+    <Label fx:id="osInfo" layoutX="36.0" layoutY="90"/>
+</AnchorPane>

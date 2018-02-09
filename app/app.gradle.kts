@@ -13,6 +13,12 @@ description = """
 All of the application specific code that makes shuffleboard run.
 """.trimMargin()
 
+repositories {
+    maven {
+        setUrl("https://dl.bintray.com/samcarlberg/maven-artifacts/")
+    }
+}
+
 dependencies {
     compile(project(":api"))
     compile(project(path = ":plugins:base"))
@@ -21,6 +27,8 @@ dependencies {
     compile(project(path = ":plugins:powerup"))
     compile(group = "com.google.code.gson", name = "gson", version = "2.8.2")
     compile(group = "de.huxhorn.lilith", name = "de.huxhorn.lilith.3rdparty.junique", version = "1.0.4")
+    compile(group = "com.github.samcarlberg", name = "update-checker", version = "+")
+    compile(group = "com.github.zafarkhaja", name = "java-semver", version = "0.9.0")
     testCompile(project("test_plugins"))
 }
 
@@ -31,12 +39,8 @@ application {
 }
 
 tasks.withType<Jar> {
-    getWPILibVersion()?.let { version = it }
     manifest {
-        attributes(mapOf(
-            "Implementation-Version" to getWPILibVersion(),
-            "Main-Class" to theMainClassName
-        ).filterValues { it != null })
+        attributes["Main-Class"] = theMainClassName
     }
 }
 

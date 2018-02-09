@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.Pane?>
+<Pane xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:id="root"
+      prefHeight="100" prefWidth="600">
+    <Label fx:id="label" layoutX="24" layoutY="24" maxWidth="${root.width - 2 * label.layoutX}" text="Unable to connect to the update server. Check if your computer is connected to the internet. If it is, the update server may be down" wrapText="true"/>
+</Pane>

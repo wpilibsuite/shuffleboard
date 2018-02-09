@@ -258,6 +258,34 @@
 
 /*******************************************************************************
  *                                                                             *
+ * Shuffleboard dialogs                                                        *
+ *                                                                             *
+ ******************************************************************************/
+.shuffleboard-dialog-pane .content {
+    -fx-padding: 10 10 0 24; /* top right bottom left */
+}
+
+.shuffleboard-dialog-header {
+    -fx-background-color: -swatch-500;
+    -fx-padding: 0 0 0 24;
+}
+
+.shuffleboard-dialog-header-title {
+    -fx-text-fill: white;
+    -fx-font-size: 46;
+}
+
+.shuffleboard-dialog-header-subtitle {
+    -fx-text-fill: derive(white, -10%);
+    -fx-alignment: center-right;
+}
+
+.h5 {
+    -fx-font-weight: bold;
+}
+
+/*******************************************************************************
+ *                                                                             *
  * Footer                                                                      *
  *                                                                             *
  ******************************************************************************/

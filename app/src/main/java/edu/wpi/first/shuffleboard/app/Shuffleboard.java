@@ -2,6 +2,7 @@ package edu.wpi.first.shuffleboard.app;
 
 import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
 import edu.wpi.first.shuffleboard.api.theme.Themes;
+import edu.wpi.first.shuffleboard.api.util.ShutdownHooks;
 import edu.wpi.first.shuffleboard.api.util.Storage;
 import edu.wpi.first.shuffleboard.api.util.Time;
 import edu.wpi.first.shuffleboard.app.plugin.PluginLoader;
@@ -17,6 +18,7 @@ import it.sauronsoftware.junique.AlreadyLockedException;
 import it.sauronsoftware.junique.JUnique;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.logging.FileHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -67,6 +69,8 @@ public class Shuffleboard extends Application {
     // This avoids an issue with attempting to load a theme at startup that hasn't yet been registered
     logger.finer("Registering custom user themes from external dir");
     Themes.getDefault().loadThemesFromDir();
+
+    logger.info("Build time: " + getBuildTime());
   }
 
   @Override
@@ -154,8 +158,19 @@ public class Shuffleboard extends Application {
         // Don't need to check for NO because it just lets the window close normally
       });
     });
+
+    if (AppPreferences.getInstance().isCheckForUpdatesOnStartup()) {
+      mainWindowController.checkForUpdates();
+    }
     primaryStage.show();
     Time.setStartTime(Time.now());
+  }
+
+  @Override
+  public void stop() throws Exception {
+    logger.info("Running shutdown hooks");
+    ShutdownHooks.runAllHooks();
+    logger.info("Shutting down");
   }
 
   /**
@@ -192,7 +207,8 @@ public class Shuffleboard extends Application {
     fileHandler.setFormatter(new SimpleFormatter()); //log in text, not xml
 
     globalLogger.config("Configuration done."); //Log that we are done setting up the logger
-    globalLogger.config("Shuffleboard app version: " + Shuffleboard.class.getPackage().getImplementationVersion());
+    globalLogger.config("Shuffleboard app version: " + getVersion());
+    globalLogger.config("Running from " + getRunningLocation());
   }
 
   /**
@@ -205,6 +221,36 @@ public class Shuffleboard extends Application {
    */
   private static void uncaughtException(Thread thread, Throwable throwable) {
     logger.log(Level.WARNING, "Uncaught exception on " + thread.getName(), throwable);
+  }
+
+  /**
+   * Gets the time at which the application JAR was built, or the instant this was first called if shuffleboard is not
+   * running from a JAR.
+   */
+  public static Instant getBuildTime() {
+    return ApplicationManifest.getBuildTime();
+  }
+
+  /**
+   * Gets the current shuffleboard version.
+   */
+  public static String getVersion() {
+    // Try to get the version from the shuffleboard class. This will return null when running from source (eg using
+    // gradle run or similar), so in that case we fall back to getting the version from an API class, which will always
+    // have its version set in that case
+    String appVersion = Shuffleboard.class.getPackage().getImplementationVersion();
+    if (appVersion != null) {
+      return appVersion;
+    }
+    return Storage.class.getPackage().getImplementationVersion();
+  }
+
+  /**
+   * Gets the location from which shuffleboard is running. If running from a JAR, this will be the location of the JAR;
+   * otherwise, it will likely be the root build directory of the `app` project.
+   */
+  public static String getRunningLocation() {
+    return Shuffleboard.class.getProtectionDomain().getCodeSource().getLocation().toExternalForm();
   }
 
 }
