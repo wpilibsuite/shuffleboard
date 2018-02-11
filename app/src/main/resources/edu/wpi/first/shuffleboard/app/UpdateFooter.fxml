@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.geometry.Insets?>
+<HBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="edu.wpi.first.shuffleboard.app.UpdateFooterController"
+      fx:id="root"
+      styleClass="update-footer"
+      visible="${root.managed}"
+      spacing="4"
+      maxWidth="Infinity" alignment="CENTER">
+    <padding>
+        <Insets topRightBottomLeft="2"/>
+    </padding>
+    <Label text="An update is available. Download and install? This will restart shuffleboard. " fx:id="text" visible="${text.managed}"/>
+    <Button text="Yes" fx:id="downloadButton" visible="${downloadButton.managed}" onAction="#downloadUpdate"/>
+    <Button text="No" fx:id="cancelButton" managed="${downloadButton.managed}" visible="${cancelButton.managed}" onAction="#cancelUpdate"/>
+    <StackPane fx:id="downloadArea" managed="false" visible="${downloadArea.managed}">
+        <ProgressBar fx:id="downloadBar" minWidth="200"/>
+        <Label text="Downloading update..."/>
+    </StackPane>
+</HBox>
