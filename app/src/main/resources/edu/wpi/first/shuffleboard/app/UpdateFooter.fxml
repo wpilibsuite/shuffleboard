@@ -17,9 +17,9 @@
     <padding>
         <Insets topRightBottomLeft="2"/>
     </padding>
-    <Label text="An update is available. Download and install? This will restart shuffleboard. " fx:id="text" visible="${text.managed}"/>
-    <Button text="Yes" fx:id="downloadButton" visible="${downloadButton.managed}" onAction="#downloadUpdate"/>
-    <Button text="No" fx:id="cancelButton" managed="${downloadButton.managed}" visible="${cancelButton.managed}" onAction="#cancelUpdate"/>
+    <Label fx:id="text" visible="${text.managed}"/>
+    <Button text="Install and restart" fx:id="downloadButton" visible="${downloadButton.managed}" onAction="#downloadUpdate"/>
+    <Button text="Not now" fx:id="cancelButton" managed="${downloadButton.managed}" visible="${cancelButton.managed}" onAction="#cancelUpdate"/>
     <StackPane fx:id="downloadArea" managed="false" visible="${downloadArea.managed}">
         <ProgressBar fx:id="downloadBar" minWidth="200"/>
         <Label text="Downloading update..."/>

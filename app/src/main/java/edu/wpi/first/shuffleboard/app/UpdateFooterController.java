@@ -3,6 +3,8 @@ package edu.wpi.first.shuffleboard.app;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.ThreadUtils;
 
+import com.github.zafarkhaja.semver.Version;
+
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -54,7 +56,15 @@ public final class UpdateFooterController {
     updateService.submit(() -> {
       switch (shuffleboardUpdateChecker.getUpdateChecker().getStatus()) {
         case OUTDATED:
-          root.setManaged(true);
+          FxUtils.runOnFxThread(() -> {
+            Version version = shuffleboardUpdateChecker.getUpdateChecker().getMostRecentVersionSafe().get();
+            boolean major = version.getMajorVersion() > Shuffleboard.getSemverVersion().getMajorVersion();
+            text.setText(String.format(
+                "Version %s has been released. %sDo you want to install it? ",
+                version,
+                major ? "This is a major update and may break custom plugins. " : ""));
+            root.setManaged(true);
+          });
           break;
         case UP_TO_DATE:
           log.info("Shuffleboard is up-to-date");
@@ -72,8 +82,8 @@ public final class UpdateFooterController {
       text.setManaged(false);
       downloadButton.setManaged(false);
       downloadArea.setManaged(true);
-      DoubleConsumer progressNotifier = progress -> FxUtils.runOnFxThread(() -> downloadBar.setProgress(progress));
-      ShuffleboardUpdateChecker.downloadNewestRelease(url,Shuffleboard.getSemverVersion(), progressNotifier, result -> {
+      DoubleConsumer notifier = progress -> FxUtils.runOnFxThread(() -> downloadBar.setProgress(progress));
+      ShuffleboardUpdateChecker.downloadNewestRelease(url, Shuffleboard.getSemverVersion(), notifier, result -> {
         if (result.succeeded()) {
           Platform.exit(); // This will trigger the copy
         } else if (result.failed()) {
