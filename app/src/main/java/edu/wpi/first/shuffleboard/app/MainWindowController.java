@@ -122,6 +122,8 @@ public class MainWindowController {
   @FXML
   private Accordion sourcesAccordion;
   @FXML
+  private Pane updateFooter;
+  @FXML
   private HBox connectionIndicatorArea;
   @FXML
   private Pane pluginPane;
@@ -611,6 +613,17 @@ public class MainWindowController {
         stage.close();
       }
     });
+  }
+
+  /**
+   * Checks for updates to shuffleboard and prompts the user to update, if an update is available. The prompt
+   * is displayed as a small footer bar across the bottom of the scene. If the check fails, no notifications are shown.
+   * This differs from {@link #checkForUpdates()}, which will display all status updates as dialogs.
+   */
+  public void checkForUpdatesSubdued() {
+    UpdateFooterController controller = FxUtils.getController(updateFooter);
+    controller.setShuffleboardUpdateChecker(shuffleboardUpdateChecker);
+    controller.checkForUpdatesAndPrompt();
   }
 
   /**

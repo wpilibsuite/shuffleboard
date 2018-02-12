@@ -10,8 +10,10 @@ import edu.wpi.first.shuffleboard.app.plugin.PluginLoader;
 import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
 import edu.wpi.first.shuffleboard.plugin.base.BasePlugin;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.CameraServerPlugin;
-import edu.wpi.first.shuffleboard.plugin.powerup.PowerupPlugin;
 import edu.wpi.first.shuffleboard.plugin.networktables.NetworkTablesPlugin;
+import edu.wpi.first.shuffleboard.plugin.powerup.PowerupPlugin;
+
+import com.github.zafarkhaja.semver.Version;
 
 import de.codecentric.centerdevice.javafxsvg.SvgImageLoaderFactory;
 
@@ -162,7 +164,7 @@ public class Shuffleboard extends Application {
     });
 
     if (AppPreferences.getInstance().isCheckForUpdatesOnStartup()) {
-      mainWindowController.checkForUpdates();
+      mainWindowController.checkForUpdatesSubdued();
     }
     primaryStage.show();
     Time.setStartTime(Time.now());
@@ -245,6 +247,20 @@ public class Shuffleboard extends Application {
       return appVersion;
     }
     return Storage.class.getPackage().getImplementationVersion();
+  }
+
+  /**
+   * Gets a Version object representing the current shuffleboard version.
+   */
+  public static Version getSemverVersion() {
+    String rawVersion = getVersion();
+    for (int index = 0; index < rawVersion.length(); index++) {
+      if (Character.isDigit(rawVersion.charAt(index))) {
+        return Version.valueOf(rawVersion.substring(index));
+      }
+    }
+    throw new IllegalStateException("Invalid semver string: " + rawVersion
+        + ". Please open an issue on Github or contact a developer");
   }
 
   /**

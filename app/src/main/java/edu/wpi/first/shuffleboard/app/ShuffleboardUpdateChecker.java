@@ -26,7 +26,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.time.Duration;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.DoubleConsumer;
 import java.util.logging.Level;
@@ -49,20 +52,12 @@ public final class ShuffleboardUpdateChecker {
   private static final String group = "edu.wpi.first.shuffleboard";
   private static final String artifact = "app";
   private static final String releaseRepo = "http://first.wpi.edu/FRC/roborio/maven/release/";
-  private static final String currentVersion;
+  private static final String currentVersion = Shuffleboard.getSemverVersion().toString();
   private static final ExecutorService downloadService = ThreadUtils.newDaemonScheduledExecutorService();
-
-  static {
-    // Remove leading letters like "v" or "version" from the string
-    String sbVersion = Shuffleboard.getVersion();
-    int index = 0;
-    while (Character.isAlphabetic(sbVersion.charAt(index))) {
-      index++;
-    }
-    currentVersion = sbVersion.substring(index);
-  }
+  private static final Duration timeout = Duration.ofSeconds(15);
 
   private final UpdateChecker updateChecker = new UpdateChecker(group, artifact, currentVersion);
+  private final ScheduledExecutorService scheduledExecutorService = ThreadUtils.newDaemonScheduledExecutorService();
 
   public ShuffleboardUpdateChecker() {
     updateChecker.usingRepos(Repo.maven("FRC Maven Release Server", createUrlUnchecked(releaseRepo)));
@@ -84,15 +79,25 @@ public final class ShuffleboardUpdateChecker {
    * @param onComplete       a callback to be called after the download completes or fails
    */
   public void checkForUpdatesAndPromptToInstall(DoubleConsumer progressNotifier, Consumer<Result<Path>> onComplete) {
+    Duration start = Duration.ofNanos(System.nanoTime());
     UpdateStatus status = updateChecker.getStatus();
+    Duration end = Duration.ofNanos(System.nanoTime());
+    boolean showAlerts = end.minus(start).compareTo(timeout) < 0;
+    if (!showAlerts) {
+      log.info("Took longer than expected to check the update server, not showing alerts");
+    }
     switch (status) {
       case UP_TO_DATE:
         log.info("Shuffleboard is up-to-date");
-        FxUtils.runOnFxThread(this::showUpToDateDialog);
+        if (showAlerts) {
+          FxUtils.runOnFxThread(this::showUpToDateDialog);
+        }
         break;
       case UNKNOWN:
         log.warning("Could not determine if new versions are available");
-        Platform.runLater(this::showErrorDialog);
+        if (showAlerts) {
+          Platform.runLater(this::showErrorDialog);
+        }
         break;
       case OUTDATED:
         Version newestVersion = updateChecker.getMostRecentVersionSafe().get();
@@ -113,6 +118,7 @@ public final class ShuffleboardUpdateChecker {
     dialog.getDialogPane().getStylesheets().setAll(AppPreferences.getInstance().getTheme().getStyleSheets());
     dialog.setHeaderText("Up to date");
     Platform.runLater(dialog.getDialogPane()::requestFocus);
+    scheduledExecutorService.schedule(() -> Platform.runLater(dialog::closeAndCancel), 5, TimeUnit.SECONDS);
     dialog.showAndWait();
   }
 
@@ -123,6 +129,7 @@ public final class ShuffleboardUpdateChecker {
     dialog.getDialogPane().getStylesheets().setAll(AppPreferences.getInstance().getTheme().getStyleSheets());
     dialog.setHeaderText("No connection");
     Platform.runLater(dialog.getDialogPane()::requestFocus);
+    scheduledExecutorService.schedule(() -> Platform.runLater(dialog::closeAndCancel), 10, TimeUnit.SECONDS);
     dialog.showAndWait();
   }
 
@@ -135,7 +142,7 @@ public final class ShuffleboardUpdateChecker {
       dialog.setCloseOnFocusLost(true);
       dialog.setHeaderText("Update!");
       UpdatePromptController controller = FxUtils.getController(dialog.getDialogPane().getContent());
-      controller.setCurrentVersion(Version.valueOf(currentVersion));
+      controller.setCurrentVersion(Shuffleboard.getSemverVersion());
       controller.setNewestVersion(newestVersion);
       dialog.getDialogPane().getStylesheets().setAll(AppPreferences.getInstance().getTheme().getStyleSheets());
 
@@ -157,10 +164,22 @@ public final class ShuffleboardUpdateChecker {
     });
   }
 
-  private static void downloadNewestRelease(URL newestVersionLocation,
-                                            Version newestVersion,
-                                            DoubleConsumer progressNotifier,
-                                            Consumer<Result<Path>> onComplete) {
+  public UpdateChecker getUpdateChecker() {
+    return updateChecker;
+  }
+
+  /**
+   * Downloads the newest release.
+   *
+   * @param newestVersionLocation the URL of the newest version
+   * @param newestVersion         the newest version
+   * @param progressNotifier      a callback to use to get notifications of the download progress
+   * @param onComplete            a callback to call when the download is completed, or fails for any reason
+   */
+  public static void downloadNewestRelease(URL newestVersionLocation,
+                                           Version newestVersion,
+                                           DoubleConsumer progressNotifier,
+                                           Consumer<Result<Path>> onComplete) {
     downloadService.submit(() -> {
       log.info("Downloading " + newestVersionLocation);
       try {
@@ -181,6 +200,7 @@ public final class ShuffleboardUpdateChecker {
         onComplete.accept(Result.success(target));
       } catch (IOException e) {
         log.log(Level.WARNING, "Could not download release from " + newestVersionLocation, e);
+        onComplete.accept(Result.failure(e));
       }
     });
   }

@@ -61,17 +61,20 @@
         </TabPane>
         <DashboardTabPane fx:id="dashboard"/>
     </SplitPane>
-    <BorderPane styleClass="footer">
-        <padding>
-            <Insets left="4" right="4"/>
-        </padding>
-        <center>
-            <fx:include source="PlaybackControls.fxml"/>
-        </center>
-        <right>
-            <HBox fx:id="connectionIndicatorArea" spacing="2" alignment="CENTER" styleClass="connection-indicator-area"/>
-        </right>
-    </BorderPane>
+    <VBox>
+        <fx:include source="UpdateFooter.fxml" fx:id="updateFooter" managed="false"/>
+        <BorderPane styleClass="footer">
+            <padding>
+                <Insets left="4" right="4"/>
+            </padding>
+            <center>
+                <fx:include source="PlaybackControls.fxml"/>
+            </center>
+            <right>
+                <HBox fx:id="connectionIndicatorArea" spacing="2" alignment="CENTER" styleClass="connection-indicator-area"/>
+            </right>
+        </BorderPane>
+    </VBox>
     <fx:define>
         <fx:include source="PluginPane.fxml" fx:id="pluginPane"/>
         <fx:include source="DownloadDialogPane.fxml" fx:id="downloadPane"/>
