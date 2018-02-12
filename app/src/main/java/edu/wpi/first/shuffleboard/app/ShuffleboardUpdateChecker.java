@@ -218,8 +218,11 @@ public final class ShuffleboardUpdateChecker {
   private static File downloadFile(URL remoteFile, DoubleConsumer progressNotifier) throws IOException {
     File temp = File.createTempFile("newestshuffleboard", ".jar");
     log.finer("Downloading to " + temp);
+    URLConnection connection = remoteFile.openConnection();
+    connection.setReadTimeout(5000);    // ms
+    connection.setConnectTimeout(5000); // ms
     try (OutputStream out = new FileOutputStream(temp)) {
-      try (InputStream in = remoteFile.openStream()) {
+      try (InputStream in = connection.getInputStream()) {
         final long fileSize = getFileSize(remoteFile);
         long totalRead = 0;
         byte[] buf = new byte[4096];

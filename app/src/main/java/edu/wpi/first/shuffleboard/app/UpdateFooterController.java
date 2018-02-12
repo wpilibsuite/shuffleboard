@@ -8,6 +8,7 @@ import com.github.zafarkhaja.semver.Version;
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.function.DoubleConsumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -38,6 +39,8 @@ public final class UpdateFooterController {
   private Button downloadButton;
   @FXML
   private Button cancelButton;
+  @FXML
+  private Label errorLabel;
 
   private final ExecutorService updateService = Executors.newSingleThreadExecutor(ThreadUtils::makeDaemonThread);
 
@@ -88,7 +91,10 @@ public final class UpdateFooterController {
           Platform.exit(); // This will trigger the copy
         } else if (result.failed()) {
           log.log(Level.WARNING, "Could not download update", result.getError());
-          root.setManaged(false);
+          downloadArea.setManaged(false);
+          errorLabel.setManaged(true);
+          ThreadUtils.newDaemonScheduledExecutorService()
+              .schedule(() -> Platform.runLater(() -> root.setManaged(false)), 5, TimeUnit.SECONDS);
         }
       });
     });
