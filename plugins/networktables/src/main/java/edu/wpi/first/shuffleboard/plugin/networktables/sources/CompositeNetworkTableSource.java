@@ -39,7 +39,7 @@ public class CompositeNetworkTableSource<D extends ComplexData<D>> extends Netwo
   public CompositeNetworkTableSource(String tableName, ComplexDataType<D> dataType) {
     super(tableName, dataType);
     this.dataType = dataType;
-    String path = NetworkTable.normalizeKey(tableName, false);
+    String path = NetworkTable.normalizeKey(tableName, false) + '/';
     NetworkTable table = NetworkTableInstance.getDefault().getTable(path);
     setData(dataType.getDefaultValue());
 
@@ -81,4 +81,8 @@ public class CompositeNetworkTableSource<D extends ComplexData<D>> extends Netwo
     return dataType;
   }
 
+  @Override
+  protected boolean isSingular() {
+    return false;
+  }
 }
