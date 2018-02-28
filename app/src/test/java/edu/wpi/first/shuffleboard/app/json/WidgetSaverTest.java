@@ -2,23 +2,34 @@ package edu.wpi.first.shuffleboard.app.json;
 
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.data.types.AllType;
+import edu.wpi.first.shuffleboard.api.properties.SavePropertyFrom;
+import edu.wpi.first.shuffleboard.api.properties.SaveThisProperty;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
+import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.api.widget.Description;
 import edu.wpi.first.shuffleboard.api.widget.SimpleAnnotatedWidget;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
-import edu.wpi.first.shuffleboard.api.widget.Components;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.testfx.framework.junit5.ApplicationTest;
 
+import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
+import javafx.scene.control.Slider;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class WidgetSaverTest extends ApplicationTest {
 
@@ -38,6 +49,38 @@ public class WidgetSaverTest extends ApplicationTest {
       return new Pane();
     }
 
+  }
+
+  @Description(name = "WidgetWithSavedProperties", dataTypes = AllType.class)
+  public static class WidgetWithSavedProperties extends SimpleAnnotatedWidget {
+
+    @SaveThisProperty
+    final DoubleProperty property = new SimpleDoubleProperty(this, "property", 0);
+    @SaveThisProperty(name = "mathematical constant")
+    final DoubleProperty property2 = new SimpleDoubleProperty(this, "property2", 0);
+
+    @Override
+    public Pane getView() {
+      return new Pane();
+    }
+  }
+
+  @Description(name = "WidgetSavingPropertiesFromFields", dataTypes = AllType.class)
+  public static class WidgetSavingPropertiesFromFields extends SimpleAnnotatedWidget {
+
+    @SavePropertyFrom(propertyName = "text", savedName = "example text")
+    final TextField textField = new TextField("text");
+
+    @SavePropertyFrom(propertyName = "value", savedName = "a property")
+    @SavePropertyFrom(propertyName = "min", savedName = "minimum")
+    @SavePropertyFrom(propertyName = "max", savedName = "maximum")
+    @SavePropertyFrom(propertyName = "visible", savedName = "showSlider")
+    final Slider slider = new Slider(0, 100, 0);
+
+    @Override
+    public Pane getView() {
+      return new Pane();
+    }
   }
 
   @Override
@@ -86,4 +129,72 @@ public class WidgetSaverTest extends ApplicationTest {
     assertEquals(1.0, getPropertyValue(widget, "max"));
     assertEquals(0.0625, getPropertyValue(widget, "blockIncrement"));
   }
+
+  @Test
+  public void widgetWithSavedProperties() {
+    // given
+    Components.getDefault().register(WidgetWithSavedProperties.class);
+    final Gson gson = JsonBuilder.forSaveFile();
+    final WidgetWithSavedProperties saveMe = new WidgetWithSavedProperties();
+    final double property1Value = 555.555;
+    final double property2Value = Math.PI;
+    saveMe.property.set(property1Value);
+    saveMe.property2.set(property2Value);
+
+    // Test saving
+    JsonObject jsonObject = gson.toJsonTree(saveMe, Widget.class).getAsJsonObject();
+
+    assertAll(
+        () -> assertEquals(property1Value, jsonObject.get("property").getAsDouble(), "property value not saved"),
+        () -> assertEquals(property2Value, jsonObject.get("mathematical constant").getAsDouble(),
+            "property2 value not saved")
+    );
+
+    // Test loading
+    Widget read = gson.fromJson(jsonObject, Widget.class);
+    Assertions.assertThat(read).isExactlyInstanceOf(WidgetWithSavedProperties.class);
+
+    WidgetWithSavedProperties actualRead = (WidgetWithSavedProperties) read;
+
+    assertAll(
+        () -> assertEquals(property1Value, actualRead.property.get(), "property value not read"),
+        () -> assertEquals(property2Value, actualRead.property2.get(), "property2 value not read")
+    );
+  }
+
+  @Test
+  public void widgetWithSavedFields() {
+    Components.getDefault().register(WidgetSavingPropertiesFromFields.class);
+    final Gson gson = JsonBuilder.forSaveFile();
+    final WidgetSavingPropertiesFromFields saveMe = new WidgetSavingPropertiesFromFields();
+    saveMe.textField.setText("new text");
+    saveMe.slider.setValue(75);
+    saveMe.slider.setVisible(false);
+
+    // Test saving
+    JsonObject jsonObject = gson.toJsonTree(saveMe, Widget.class).getAsJsonObject();
+
+    assertAll(
+        () -> assertEquals("new text", jsonObject.get("example text").getAsString()),
+        () -> assertEquals(0, jsonObject.get("minimum").getAsDouble()),
+        () -> assertEquals(75, jsonObject.get("a property").getAsDouble()),
+        () -> assertEquals(100, jsonObject.get("maximum").getAsDouble()),
+        () -> assertFalse(jsonObject.get("showSlider").getAsBoolean())
+    );
+
+    // Test loading
+    Widget read = gson.fromJson(jsonObject, Widget.class);
+    Assertions.assertThat(read).isExactlyInstanceOf(WidgetSavingPropertiesFromFields.class);
+
+    WidgetSavingPropertiesFromFields actualRead = (WidgetSavingPropertiesFromFields) read;
+
+    assertAll(
+        () -> assertEquals("new text", actualRead.textField.getText()),
+        () -> assertEquals(0, actualRead.slider.getMin()),
+        () -> assertEquals(75, actualRead.slider.getValue()),
+        () -> assertEquals(100, actualRead.slider.getMax()),
+        () -> assertFalse(actualRead.slider.isVisible())
+    );
+  }
+
 }
