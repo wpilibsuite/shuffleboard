@@ -18,6 +18,7 @@ public abstract class AbstractNumberField<N extends Number> extends TextField {
 
   protected AbstractNumberField() {
     super();
+    getStyleClass().add("number-field");
     setText("0");
     setNumber(getNumberFromText("0"));
     setTextFormatter(new TextFormatter<>(change -> {
