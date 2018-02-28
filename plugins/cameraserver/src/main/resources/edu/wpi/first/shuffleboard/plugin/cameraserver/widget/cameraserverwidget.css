@@ -1,0 +1,7 @@
+.camera-controls {
+    /*-fx-background-color: rgba(0, 0, 0, 0.9);*/
+}
+
+.camera-controls .label {
+    -fx-font-size: 9pt;
+}

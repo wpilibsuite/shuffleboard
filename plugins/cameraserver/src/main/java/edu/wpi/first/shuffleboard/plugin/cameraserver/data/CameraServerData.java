@@ -16,6 +16,7 @@ public final class CameraServerData extends ComplexData<CameraServerData> implem
 
   private final String name;
   private final transient Image image;
+  // TODO add FPS and bandwidth measurements once those are added to cscore
 
   public CameraServerData(String name, Image image) {
     this.name = name;
