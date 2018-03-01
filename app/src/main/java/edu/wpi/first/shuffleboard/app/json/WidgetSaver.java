@@ -150,7 +150,11 @@ public class WidgetSaver implements ElementTypeAdapter<Widget> {
           Property property = ReflectionUtils.getUnchecked(widget, f);
           String name = getSavedName(property, f.getAnnotation(SaveThisProperty.class));
           Object deserialize = context.deserialize(obj.get(name), property.getValue().getClass());
-          property.setValue(deserialize);
+          // Can be null if not set
+          // Instead of throwing IllegalArgumentException, just let the default value be used
+          if (deserialize != null) {
+            property.setValue(deserialize);
+          }
         });
 
     // Load @SavePropertyFrom fields
@@ -168,7 +172,11 @@ public class WidgetSaver implements ElementTypeAdapter<Widget> {
               Object field = ReflectionUtils.getUnchecked(widget, f);
               Method set = getSetter(f.getType(), propName);
               Object deserialize = context.deserialize(obj.get(savedName), set.getParameterTypes()[0]);
-              set.invoke(field, deserialize);
+              // Can be null if not set
+              // Instead of throwing IllegalArgumentException, just let the default value be used
+              if (deserialize != null) {
+                set.invoke(field, deserialize);
+              }
             } catch (IllegalAccessException | InvocationTargetException e) {
               throw new RuntimeException("Could not get value of property '" + propName + "' of " + f.getType(), e);
             }
