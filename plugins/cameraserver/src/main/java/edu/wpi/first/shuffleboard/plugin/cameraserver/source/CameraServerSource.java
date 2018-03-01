@@ -3,6 +3,7 @@ package edu.wpi.first.shuffleboard.plugin.cameraserver.source;
 import edu.wpi.first.shuffleboard.api.sources.AbstractDataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.Sources;
+import edu.wpi.first.shuffleboard.api.util.Debouncer;
 import edu.wpi.first.shuffleboard.api.util.EqualityUtils;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.api.util.ThreadUtils;
@@ -21,6 +22,8 @@ import edu.wpi.first.networktables.NetworkTableType;
 
 import org.opencv.core.Mat;
 
+import java.time.Duration;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -65,16 +68,17 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
     //Recorder.getInstance().recordCurrentValue(this);
   };
 
+  private String[] streamUrls = null;
+
   private final IntegerProperty targetCompression = new SimpleIntegerProperty(this, "targetCompression", -1);
   private final IntegerProperty targetFps = new SimpleIntegerProperty(this, "targetFps", -1);
   private final Property<Resolution> targetResolution =
       new SimpleObjectProperty<>(this, "targetResolution", Resolution.EMPTY);
   private final CameraUrlGenerator urlGenerator = new CameraUrlGenerator(this);
-  private final InvalidationListener cameraUrlUpdater = __ -> {
-    if (camera != null) {
-      camera.setUrls(urlGenerator.generateUrls(camera.getUrls()));
-    }
-  };
+
+  // Needs to be debounced; quickly changing URLs can cause serious performance hits
+  private final Debouncer urlUpdateDebouncer = new Debouncer(this::updateUrls, Duration.ofMillis(500));
+  private final InvalidationListener cameraUrlUpdater = __ -> urlUpdateDebouncer.run();
 
   private CameraServerSource(String name) {
     super(CameraServerDataType.Instance);
@@ -97,7 +101,7 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
     }, 0xFF, true);
 
     streams = cameraPublisherTable.getSubTable(name).getEntry(STREAMS_KEY);
-    String[] streamUrls = removeCameraProtocols(streams.getStringArray(emptyStringArray));
+    streamUrls = removeCameraProtocols(streams.getStringArray(emptyStringArray));
     if (streamUrls.length > 0) {
       camera = new HttpCamera(name, streamUrls);
       videoSink.setSource(camera);
@@ -121,8 +125,8 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
               || (entryNotification.value.getStringArray()).length == 0) {
             setActive(false);
           } else {
-            String[] baseUrls = removeCameraProtocols(entryNotification.value.getStringArray());
-            String[] parameterizedUrls = urlGenerator.generateUrls(baseUrls);
+            streamUrls = removeCameraProtocols(entryNotification.value.getStringArray());
+            String[] parameterizedUrls = urlGenerator.generateUrls(streamUrls);
             if (camera == null) {
               camera = new HttpCamera(name, parameterizedUrls);
               videoSink.setSource(camera);
@@ -229,9 +233,23 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
     CameraServerJNI.removeListener(eventListenerId);
     cancelFrameGrabber();
     videoSink.free();
-    camera.free();
+    if (camera != null) {
+      camera.free();
+    }
     sources.remove(getName());
     Sources.getDefault().unregister(this);
+  }
+
+  private void updateUrls() {
+    if (camera != null) {
+      while (!camera.isConnected()) {
+        setConnected(false);
+      }
+      setConnected(true);
+      String[] urls = urlGenerator.generateUrls(streamUrls);
+      System.out.println("Setting URLs: " + Arrays.toString(urls));
+      camera.setUrls(urls);
+    }
   }
 
   /**
