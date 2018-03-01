@@ -39,11 +39,11 @@ public final class CameraUrlGenerator {
     }
     int compression = source.getTargetCompression();
     if (compression >= 0 && compression <= 100) {
-      commands.put("targetCompression", Integer.toString(compression));
+      commands.put("compression", Integer.toString(compression));
     }
     int frameRate = source.getTargetFps();
     if (frameRate > 0) {
-      commands.put("targetFps", Integer.toString(frameRate));
+      commands.put("fps", Integer.toString(frameRate));
     }
     return generateUrls(commands, baseUrls);
   }
