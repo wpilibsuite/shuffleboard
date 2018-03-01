@@ -7,7 +7,9 @@ import javafx.beans.InvalidationListener;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 
 /**
@@ -21,6 +23,13 @@ public abstract class AbstractWidget implements Widget {
   private final StringProperty title = new SimpleStringProperty(this, "title", "");
 
   private final ObservableList<Property<?>> properties = FXCollections.observableArrayList();
+  private final ChangeListener<Boolean> connectionListener = (__, was, is) -> {
+    if (!is) {
+      getView().setDisable(true);
+    } else {
+      getView().setDisable(!sources.stream().allMatch(DataSource::isConnected));
+    }
+  };
 
   /**
    * Only set the title when the sources change if it hasn't been set externally (eg by a user or an enclosing layout).
@@ -40,6 +49,16 @@ public abstract class AbstractWidget implements Widget {
         }
       }
       getView().setDisable(sources.stream().anyMatch(s -> !s.isConnected()));
+    });
+    sources.addListener((ListChangeListener<DataSource>) c -> {
+      getView().setDisable(!sources.stream().allMatch(DataSource::isConnected));
+      while (c.next()) {
+        if (c.wasAdded()) {
+          c.getAddedSubList().forEach(s -> s.connectedProperty().addListener(connectionListener));
+        } else if (c.wasRemoved()) {
+          c.getRemoved().forEach(s -> s.connectedProperty().removeListener(connectionListener));
+        }
+      }
     });
   }
 

@@ -134,6 +134,8 @@ public interface DataSource<T> {
    */
   void disconnect();
 
+  BooleanProperty connectedProperty();
+
   /**
    * Checks if this source is currently connected to its underlying data stream.
    */

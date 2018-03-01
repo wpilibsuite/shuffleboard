@@ -18,6 +18,7 @@ import java.util.WeakHashMap;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.Property;
+import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -144,6 +145,11 @@ public class DestroyedSource<T> implements DataSource<T> {
   @Override
   public void setData(T newValue) {
     // NOP
+  }
+
+  @Override
+  public BooleanProperty connectedProperty() {
+    return new ReadOnlyBooleanWrapper(false);
   }
 
   @Override

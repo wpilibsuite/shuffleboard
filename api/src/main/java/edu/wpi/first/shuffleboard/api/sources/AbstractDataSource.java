@@ -74,6 +74,7 @@ public abstract class AbstractDataSource<T> implements DataSource<T> {
     setConnected(false);
   }
 
+  @Override
   public BooleanProperty connectedProperty() {
     return connected;
   }
