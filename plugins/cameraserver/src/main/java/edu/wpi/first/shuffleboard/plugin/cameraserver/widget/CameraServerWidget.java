@@ -32,10 +32,10 @@ public class CameraServerWidget extends SimpleAnnotatedWidget<CameraServerData> 
 
   @FXML
   private Pane root;
-  @FXML
-  private Label fpsLabel;
-  @FXML
-  private Label bandwidthLabel;
+//  @FXML
+//  private Label fpsLabel;
+//  @FXML
+//  private Label bandwidthLabel;
   @FXML
   private ImageView imageView;
   @FXML
