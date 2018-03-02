@@ -69,7 +69,7 @@ public final class CameraUrlGenerator {
     }
     return commands.entrySet().stream()
         .map(e -> e.getKey() + "=" + e.getValue())
-        .collect(Collectors.joining("&", "&", ""));
+        .collect(Collectors.joining("&"));
   }
 
 }

@@ -2,8 +2,6 @@ package edu.wpi.first.shuffleboard.plugin.cameraserver.widget;
 
 import edu.wpi.first.shuffleboard.api.components.IntegerField;
 import edu.wpi.first.shuffleboard.api.properties.SavePropertyFrom;
-import edu.wpi.first.shuffleboard.api.properties.SaveThisProperty;
-import edu.wpi.first.shuffleboard.api.util.PropertyUtils;
 import edu.wpi.first.shuffleboard.api.widget.Description;
 import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 import edu.wpi.first.shuffleboard.api.widget.SimpleAnnotatedWidget;
@@ -12,14 +10,12 @@ import edu.wpi.first.shuffleboard.plugin.cameraserver.data.Resolution;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.source.CameraServerSource;
 
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
-import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -32,7 +28,7 @@ public class CameraServerWidget extends SimpleAnnotatedWidget<CameraServerData> 
 
   @FXML
   private Pane root;
-//  @FXML
+  //  @FXML
 //  private Label fpsLabel;
 //  @FXML
 //  private Label bandwidthLabel;
@@ -44,14 +40,15 @@ public class CameraServerWidget extends SimpleAnnotatedWidget<CameraServerData> 
   private Pane controls;
   @FXML
   @SavePropertyFrom(propertyName = "value", savedName = "compression")
-  @SavePropertyFrom(propertyName = "min", savedName = "minCompression")
-  @SavePropertyFrom(propertyName = "max", savedName = "maxCompression")
   private Slider compressionSlider;
   @FXML
+  @SavePropertyFrom(propertyName = "number", savedName = "fps")
   private IntegerField frameRateField;
   @FXML
+  @SavePropertyFrom(propertyName = "number", savedName = "imageWidth")
   private IntegerField width;
   @FXML
+  @SavePropertyFrom(propertyName = "number", savedName = "imageHeight")
   private IntegerField height;
   @FXML
   private Node crosshairs;
@@ -59,60 +56,74 @@ public class CameraServerWidget extends SimpleAnnotatedWidget<CameraServerData> 
   private final BooleanProperty showControls = new SimpleBooleanProperty(this, "showControls", true);
   private final BooleanProperty showCrosshair = new SimpleBooleanProperty(this, "showCrosshair", true);
   private final Property<Color> crosshairColor = new SimpleObjectProperty<>(this, "crosshairColor", Color.WHITE);
-
-  @SaveThisProperty(name = "resolution")
-  private final Property<Resolution> resolution = new SimpleObjectProperty<>(this, "resolution", Resolution.EMPTY);
-  @SaveThisProperty(name = "fps")
-  private final IntegerProperty fps = new SimpleIntegerProperty(this, "fps");
+  private final ChangeListener<Number> sourceCompressionListener =
+      (__, old, compression) -> compressionSlider.setValue(compression.doubleValue());
+  private final ChangeListener<Number> numberChangeListener =
+      (__, old, fps) -> frameRateField.setNumber(fps.intValue());
+  private final ChangeListener<Resolution> resolutionChangeListener =
+      (__, old, resolution) -> {
+        width.setNumber(resolution.getWidth());
+        height.setNumber(resolution.getHeight());
+      };
 
   @FXML
   private void initialize() {
     imageView.imageProperty().bind(dataOrDefault.map(CameraServerData::getImage).orElse(emptyImage));
-    PropertyUtils.bindBidirectionalWithConverter(frameRateField.numberProperty(), fps, i -> i, Number::intValue);
-    width.numberProperty().addListener((__, old, width) -> {
-      resolution.setValue(new Resolution(width, resolution.getValue().getHeight()));
-    });
-    height.numberProperty().addListener((__, old, height) -> {
-      resolution.setValue(new Resolution(resolution.getValue().getWidth(), height));
-    });
-    resolution.addListener((__, old, resolution) -> {
-      width.setNumber(resolution.getWidth());
-      height.setNumber(resolution.getHeight());
-    });
 
     sourceProperty().addListener((__, old, source) -> {
       if (source instanceof CameraServerSource) {
-        bindToSource((CameraServerSource) source);
+        CameraServerSource s = (CameraServerSource) source;
+        if (source.hasClients()) {
+          compressionSlider.setValue(s.getTargetCompression());
+          frameRateField.setNumber(s.getTargetFps());
+          width.setNumber(s.getTargetResolution().getWidth());
+          height.setNumber(s.getTargetResolution().getHeight());
+        } else {
+          applySettings();
+        }
+        s.targetCompressionProperty().addListener(sourceCompressionListener);
+        s.targetFpsProperty().addListener(numberChangeListener);
+        s.targetResolutionProperty().addListener(resolutionChangeListener);
       }
       if (old instanceof CameraServerSource) {
-        unbindFromSource((CameraServerSource) old);
+        CameraServerSource s = (CameraServerSource) old;
+        s.targetCompressionProperty().removeListener(sourceCompressionListener);
+        s.targetFpsProperty().removeListener(numberChangeListener);
+        s.targetResolutionProperty().removeListener(resolutionChangeListener);
       }
     });
 
     exportProperties(showControls, showCrosshair, crosshairColor);
   }
 
-  private void bindToSource(CameraServerSource source) {
-    compressionSlider.setValue(source.getTargetCompression());
-    fps.set(source.getTargetFps());
-    resolution.setValue(source.getTargetResolution());
-    source.targetCompressionProperty().bindBidirectional(compressionSlider.valueProperty());
-    source.targetFpsProperty().bindBidirectional(fps);
-    source.targetResolutionProperty().bindBidirectional(resolution);
-  }
-
-  private void unbindFromSource(CameraServerSource source) {
-    source.targetCompressionProperty().unbindBidirectional(compressionSlider.valueProperty());
-    source.targetFpsProperty().unbindBidirectional(fps);
-    source.targetResolutionProperty().unbindBidirectional(resolution);
-    source.setTargetCompression(-1);
-    source.setTargetFps(-1);
-    source.setTargetResolution(Resolution.EMPTY);
-  }
-
   @Override
   public Pane getView() {
     return root;
+  }
+
+  @FXML
+  private void applySettings() {
+    if (getSource() instanceof CameraServerSource) {
+      CameraServerSource source = (CameraServerSource) getSource();
+      int compression = (int) compressionSlider.getValue();
+      int fps = frameRateField.getNumber();
+      int width = this.width.getNumber();
+      int height = this.height.getNumber();
+      boolean change = source.getTargetCompression() != compression
+          || source.getTargetFps() != fps
+          || source.getTargetResolution().getWidth() != width
+          || source.getTargetResolution().getHeight() != height;
+      if (!change) {
+        return;
+      }
+      source.setTargetCompression(compression);
+      source.setTargetFps(fps);
+      if (width > 0 && height > 0) {
+        source.setTargetResolution(new Resolution(width, height));
+      } else {
+        source.setTargetResolution(Resolution.EMPTY);
+      }
+    }
   }
 
   public boolean isShowControls() {

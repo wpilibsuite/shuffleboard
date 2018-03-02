@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.plugin.cameraserver.source;
 
+import edu.wpi.first.shuffleboard.api.DashboardMode;
 import edu.wpi.first.shuffleboard.api.sources.AbstractDataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.Sources;
@@ -15,6 +16,8 @@ import edu.wpi.first.shuffleboard.plugin.cameraserver.recording.serialization.Im
 import edu.wpi.cscore.CameraServerJNI;
 import edu.wpi.cscore.CvSink;
 import edu.wpi.cscore.HttpCamera;
+import edu.wpi.cscore.VideoMode;
+import edu.wpi.first.networktables.EntryListenerFlags;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -77,7 +80,7 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
   private final CameraUrlGenerator urlGenerator = new CameraUrlGenerator(this);
 
   // Needs to be debounced; quickly changing URLs can cause serious performance hits
-  private final Debouncer urlUpdateDebouncer = new Debouncer(this::updateUrls, Duration.ofMillis(500));
+  private final Debouncer urlUpdateDebouncer = new Debouncer(this::updateUrls, Duration.ofMillis(10));
   private final InvalidationListener cameraUrlUpdater = __ -> urlUpdateDebouncer.run();
 
   private CameraServerSource(String name) {
@@ -101,9 +104,16 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
     }, 0xFF, true);
 
     streams = cameraPublisherTable.getSubTable(name).getEntry(STREAMS_KEY);
+    streams.addListener(notification -> {
+      String[] arr = notification.getEntry().getStringArray(emptyStringArray);
+      if (camera != null) {
+        setActive(arr.length > 0);
+        setConnected(DashboardMode.getCurrentMode() != DashboardMode.PLAYBACK);
+      }
+    }, EntryListenerFlags.kNew | EntryListenerFlags.kUpdate | EntryListenerFlags.kImmediate);
     streamUrls = removeCameraProtocols(streams.getStringArray(emptyStringArray));
     if (streamUrls.length > 0) {
-      camera = new HttpCamera(name, streamUrls);
+      camera = new HttpCamera(name, urlGenerator.generateUrls(streamUrls));
       videoSink.setSource(camera);
       videoSink.setEnabled(true);
     }
@@ -131,7 +141,7 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
               camera = new HttpCamera(name, parameterizedUrls);
               videoSink.setSource(camera);
             } else if (EqualityUtils.isDifferent(camera.getUrls(), parameterizedUrls)) {
-              camera.setUrls(parameterizedUrls);
+              setCameraUrls(parameterizedUrls);
             }
             setActive(true);
           }
@@ -167,6 +177,7 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
   private static String[] removeCameraProtocols(String... streams) {
     return Stream.of(streams)
         .map(url -> url.replaceFirst("^(mjpe?g|ip|usb):", ""))
+        .map(url -> url.replace("/?action=stream", "/stream.mjpg?"))
         .toArray(String[]::new);
   }
 
@@ -242,14 +253,16 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
 
   private void updateUrls() {
     if (camera != null) {
-      while (!camera.isConnected()) {
-        setConnected(false);
-      }
-      setConnected(true);
-      String[] urls = urlGenerator.generateUrls(streamUrls);
-      System.out.println("Setting URLs: " + Arrays.toString(urls));
-      camera.setUrls(urls);
+      setCameraUrls(urlGenerator.generateUrls(streamUrls));
     }
+  }
+
+  private void setCameraUrls(String[] urls) {
+    camera.setUrls(urls);
+    // Setting the video mode forces a reconnect
+    Resolution resolution = getTargetResolution();
+    VideoMode videoMode = new VideoMode(VideoMode.PixelFormat.kMJPEG, resolution.getWidth(), resolution.getHeight(), getTargetFps());
+    camera.setVideoMode(videoMode);
   }
 
   /**
