@@ -96,34 +96,6 @@ public class WidgetSaver implements ElementTypeAdapter<Widget> {
     Widget widget = Components.getDefault().createWidget(type)
         .orElseThrow(() -> new JsonParseException("No widget found for " + type));
 
-    for (int i = 0; i > Integer.MIN_VALUE; i++) {
-      String prop = "_source" + i;
-      if (obj.has(prop)) {
-        String uri = obj.get(prop).getAsString();
-        Optional<? extends DataSource<?>> existingSource = Sources.getDefault().get(uri);
-        try {
-          if (existingSource.isPresent()) {
-            widget.addSource(existingSource.get());
-          } else {
-            // Attempt to create a new source for the saved URI
-            DataSource<?> dataSource = SourceTypes.getDefault().forUri(uri);
-            // Check the source type to make sure it's the same as the one expected in the save file
-            if (dataSource.getType().equals(SourceTypes.getDefault().typeForUri(uri))) {
-              widget.addSource(dataSource);
-            } else {
-              log.warning("Saved source type is not present, adding destroyed source(s) instead");
-              sourcedRestorer.addDestroyedSourcesForAllDataTypes(widget, uri);
-            }
-          }
-        } catch (IncompatibleSourceException e) {
-          log.log(Level.WARNING, "Couldn't load source, adding destroyed source(s) instead", e);
-          sourcedRestorer.addDestroyedSourcesForAllDataTypes(widget, uri);
-        }
-      } else {
-        break;
-      }
-    }
-
     JsonElement title = obj.get("_title");
     if (title != null) {
       widget.setTitle(title.getAsString());
@@ -182,6 +154,35 @@ public class WidgetSaver implements ElementTypeAdapter<Widget> {
             }
           }
         });
+
+    // Load sources last - widgets can have saved properties that modify sources when they're added
+    for (int i = 0; i > Integer.MIN_VALUE; i++) {
+      String prop = "_source" + i;
+      if (obj.has(prop)) {
+        String uri = obj.get(prop).getAsString();
+        Optional<? extends DataSource<?>> existingSource = Sources.getDefault().get(uri);
+        try {
+          if (existingSource.isPresent()) {
+            widget.addSource(existingSource.get());
+          } else {
+            // Attempt to create a new source for the saved URI
+            DataSource<?> dataSource = SourceTypes.getDefault().forUri(uri);
+            // Check the source type to make sure it's the same as the one expected in the save file
+            if (dataSource.getType().equals(SourceTypes.getDefault().typeForUri(uri))) {
+              widget.addSource(dataSource);
+            } else {
+              log.warning("Saved source type is not present, adding destroyed source(s) instead");
+              sourcedRestorer.addDestroyedSourcesForAllDataTypes(widget, uri);
+            }
+          }
+        } catch (IncompatibleSourceException e) {
+          log.log(Level.WARNING, "Couldn't load source, adding destroyed source(s) instead", e);
+          sourcedRestorer.addDestroyedSourcesForAllDataTypes(widget, uri);
+        }
+      } else {
+        break;
+      }
+    }
 
     return widget;
   }
