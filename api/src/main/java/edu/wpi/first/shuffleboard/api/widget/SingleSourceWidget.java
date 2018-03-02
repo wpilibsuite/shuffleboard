@@ -18,6 +18,7 @@ public abstract class SingleSourceWidget extends AbstractWidget {
   public final void addSource(DataSource source) throws IncompatibleSourceException {
     if (getDataTypes().contains(source.getDataType())) {
       this.source.set(source);
+      this.sources.remove(getSource());
       this.sources.setAll(source);
       source.addClient(this);
     } else {
