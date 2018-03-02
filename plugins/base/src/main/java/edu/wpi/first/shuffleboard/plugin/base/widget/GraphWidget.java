@@ -12,6 +12,9 @@ import edu.wpi.first.shuffleboard.api.widget.Description;
 import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 
 import com.google.common.collect.ImmutableList;
+import com.sun.prism.GraphicsPipeline;
+import com.sun.prism.j2d.J2DPipeline;
+import com.sun.prism.sw.SWPipeline;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -20,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import javafx.beans.binding.Bindings;
@@ -45,6 +49,17 @@ import javafx.util.StringConverter;
 @ParametrizedController("GraphWidget.fxml")
 @SuppressWarnings("PMD.GodClass")
 public class GraphWidget implements AnnotatedWidget {
+
+  private static final Logger log = Logger.getLogger(GraphWidget.class.getName());
+
+  static {
+    GraphicsPipeline pipeline = GraphicsPipeline.getPipeline();
+    System.out.println("Using graphics pipeline: " + pipeline);
+    if (pipeline instanceof SWPipeline || pipeline instanceof J2DPipeline) {
+      log.warning("Software rendering detected! Graphs will be VERY slow and will most likely make the entire "
+          + "application slow down to the point of being completely unusable");
+    }
+  }
 
   @FXML
   private Pane root;
@@ -322,7 +337,17 @@ public class GraphWidget implements AnnotatedWidget {
   private void removeInvisibleData() {
     final double lower = xAxis.getLowerBound();
     realData.forEach((series, dataList) -> {
-      series.getData().removeIf(d -> d.getXValue().doubleValue() < lower);
+      int firstBeforeOutOfRange = -1;
+      for (int i = 0; i < series.getData().size(); i++) {
+        XYChart.Data<Number, Number> data = series.getData().get(i);
+        if (data.getXValue().doubleValue() >= lower) {
+          firstBeforeOutOfRange = i;
+          break;
+        }
+      }
+      if (firstBeforeOutOfRange > 0) {
+        series.getData().remove(0, firstBeforeOutOfRange);
+      }
     });
   }
 
