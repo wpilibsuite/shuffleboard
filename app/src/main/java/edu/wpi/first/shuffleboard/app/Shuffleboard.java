@@ -124,7 +124,7 @@ public class Shuffleboard extends Application {
       if (AppPreferences.getInstance().isAutoLoadLastSaveFile()) {
         try {
           mainWindowController.load(AppPreferences.getInstance().getSaveFile());
-        } catch (IOException e) {
+        } catch (RuntimeException | IOException e) {
           logger.log(Level.WARNING, "Could not load the last save file", e);
           mainWindowController.newLayout();
         }

@@ -483,6 +483,9 @@ public class MainWindowController {
     Reader reader = Files.newReader(saveFile, Charset.forName("UTF-8"));
 
     DashboardData dashboardData = JsonBuilder.forSaveFile().fromJson(reader, DashboardData.class);
+    if (dashboardData == null) {
+      throw new IOException("Save file could not be read: " + saveFile);
+    }
     setDashboard(dashboardData.getTabPane());
     Platform.runLater(() -> {
       centerSplitPane.setDividerPositions(dashboardData.getDividerPosition());
