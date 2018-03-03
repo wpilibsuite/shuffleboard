@@ -5,6 +5,7 @@ import edu.wpi.first.shuffleboard.api.util.Maps;
 
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Represents data options sent by the robot that may be selected by the drivers.
@@ -32,9 +33,9 @@ public final class SendableChooserData extends ComplexData<SendableChooserData> 
 
   @SuppressWarnings("JavadocMethod")
   public SendableChooserData(String[] options, String defaultOption, String selectedOption) {
-    this.options = options.clone();
-    this.defaultOption = defaultOption;
-    this.selectedOption = selectedOption;
+    this.options = Objects.requireNonNull(options, "options").clone();
+    this.defaultOption = Objects.requireNonNull(defaultOption, "defaultOption");
+    this.selectedOption = Objects.requireNonNull(selectedOption, "selectedOption");
   }
 
   public String[] getOptions() {
