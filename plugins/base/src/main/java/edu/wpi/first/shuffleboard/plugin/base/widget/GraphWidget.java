@@ -81,6 +81,16 @@ public class GraphWidget implements AnnotatedWidget {
   private final Map<XYChart.Series<Number, Number>, ObservableList<XYChart.Data<Number, Number>>> realData
       = new HashMap<>();
 
+  // The number of data points to average
+  private static final int SAMPLING_SIZE = 5;
+
+  // How many times each series has been updated in the range [0, SAMPLING_SIZE)
+  private final Map<XYChart.Series, Integer> seen = new HashMap<>();
+
+  // The average value of the past N values in each series, where 0 <= N < SAMPLING_SIZE
+  // Once the series has been updated SAMPLING_SIZE times, the average value is reset to zero.
+  private final Map<XYChart.Series, Double> avg = new HashMap<>();
+
   private final ChangeListener<Number> numberChangeLister = (property, oldNumber, newNumber) -> {
     final DataSource<Number> source = sourceFor(property);
     updateFromNumberSource(source);
@@ -218,15 +228,22 @@ public class GraphWidget implements AnnotatedWidget {
   }
 
   private void updateSeries(XYChart.Series<Number, Number> series, long now, double newData) {
+    int lastSeen = seen.put(series, (seen.computeIfAbsent(series, __ -> SAMPLING_SIZE - 1) + 1) % SAMPLING_SIZE);
+    double currentAvg = (avg.computeIfAbsent(series, __ -> 0.0) + newData) / SAMPLING_SIZE;
+    if (lastSeen != 0) {
+      avg.put(series, currentAvg);
+      return;
+    }
+    avg.put(series, 0.0);
     long elapsed = now - Time.getStartTime();
-    XYChart.Data<Number, Number> point = new XYChart.Data<>(elapsed, newData);
+    XYChart.Data<Number, Number> point = new XYChart.Data<>(elapsed, currentAvg);
     ObservableList<XYChart.Data<Number, Number>> dataList = series.getData();
     if (!dataList.isEmpty()) {
       // Make the graph a square wave
       // This prevents the graph from appearing to be continuous when the data is discreet
       // Note this only affects the chart; the actual data is not changed
       double prev = dataList.get(dataList.size() - 1).getYValue().doubleValue();
-      if (prev != newData) {
+      if (prev != currentAvg) {
         dataList.add(new XYChart.Data<>(elapsed - 1, prev));
       }
     }
