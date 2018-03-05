@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class CameraUrlGeneratorTest {
+public class CameraUrlGeneratorTest {
 
   @Test
   public void testGenerateHttpParams() {
@@ -19,18 +19,18 @@ class CameraUrlGeneratorTest {
 
     commands.put("foo", "bar");
     params = CameraUrlGenerator.toHttpParams(commands);
-    assertEquals("&foo=bar", params);
+    assertEquals("foo=bar", params);
 
     commands.put("baz", "buq");
     params = CameraUrlGenerator.toHttpParams(commands);
-    assertEquals("&foo=bar&baz=buq", params);
+    assertEquals("foo=bar&baz=buq", params);
   }
 
   @Test
   public void testGenerateUrls() {
     Map<String, String> commands = new HashMap<>();
-    String url1 = "mjpeg:http://roborio-0000-frc.local:1181/?action=stream";
-    String url2 = "mjpeg:http://10.0.0.2:1181/?action=stream";
+    String url1 = "mjpeg:http://roborio-0000-frc.local:1181/stream.mjpg?";
+    String url2 = "mjpeg:http://10.0.0.2:1181/stream.mjpg?";
     String[] baseUrls = {url1, url2};
 
     assertArrayEquals(baseUrls, CameraUrlGenerator.generateUrls(commands, baseUrls),
@@ -38,7 +38,7 @@ class CameraUrlGeneratorTest {
 
     commands.put("foo", "bar");
     assertArrayEquals(
-        new String[]{url1 + "&foo=bar", url2 + "&foo=bar"},
+        new String[]{url1 + "foo=bar", url2 + "foo=bar"},
         CameraUrlGenerator.generateUrls(commands, baseUrls),
         "Generated URLs do not match");
   }

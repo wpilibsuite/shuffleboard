@@ -1,9 +1,10 @@
 package edu.wpi.first.shuffleboard.plugin.cameraserver.data;
 
+import edu.wpi.first.shuffleboard.api.data.ComplexData;
+
 import com.google.common.collect.ImmutableMap;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import edu.wpi.first.shuffleboard.api.data.ComplexData;
 
 import java.io.Serializable;
 import java.util.Map;
@@ -16,11 +17,22 @@ public final class CameraServerData extends ComplexData<CameraServerData> implem
 
   private final String name;
   private final transient Image image;
-  // TODO add FPS and bandwidth measurements once those are added to cscore
+  private final double fps;
+  private final double bandwidth;
 
-  public CameraServerData(String name, Image image) {
+  /**
+   * Creates a new data object.
+   *
+   * @param name      the name of the camera
+   * @param image     the images being supplied by the stream, or <tt>null</tt> if the stream is not providing an image
+   * @param fps       the current FPS of the stream. If the FPS is unknown, set to -1
+   * @param bandwidth the current bandwidth of the stream, in bytes per second. If the bandwidth is unknown, set to -1
+   */
+  public CameraServerData(String name, Image image, double fps, double bandwidth) {
     this.name = name;
     this.image = image;
+    this.fps = fps;
+    this.bandwidth = bandwidth;
   }
 
   public String getName() {
@@ -31,11 +43,27 @@ public final class CameraServerData extends ComplexData<CameraServerData> implem
     return image;
   }
 
+  /**
+   * Gets the current framerate of the stream in frames per second.
+   */
+  public double getFps() {
+    return fps;
+  }
+
+  /**
+   * Gets the current bandwidth use of the stream in bytes per second.
+   */
+  public double getBandwidth() {
+    return bandwidth;
+  }
+
   @Override
   public Map<String, Object> asMap() {
     return ImmutableMap.of(
         "name", name,
-        "image", image
+        "image", image,
+        "fps", fps,
+        "bandwidth", bandwidth
     );
   }
 
@@ -45,7 +73,7 @@ public final class CameraServerData extends ComplexData<CameraServerData> implem
    * @param image the image for the new data object
    */
   public CameraServerData withImage(Image image) {
-    return new CameraServerData(name, image);
+    return new CameraServerData(name, image, fps, bandwidth);
   }
 
 }

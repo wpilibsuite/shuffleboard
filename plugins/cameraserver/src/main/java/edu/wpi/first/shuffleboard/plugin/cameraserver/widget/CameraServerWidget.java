@@ -16,6 +16,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
+import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -28,10 +29,10 @@ public class CameraServerWidget extends SimpleAnnotatedWidget<CameraServerData> 
 
   @FXML
   private Pane root;
-  //  @FXML
-//  private Label fpsLabel;
-//  @FXML
-//  private Label bandwidthLabel;
+  @FXML
+  private Label fpsLabel;
+  @FXML
+  private Label bandwidthLabel;
   @FXML
   private ImageView imageView;
   @FXML
@@ -69,27 +70,42 @@ public class CameraServerWidget extends SimpleAnnotatedWidget<CameraServerData> 
   @FXML
   private void initialize() {
     imageView.imageProperty().bind(dataOrDefault.map(CameraServerData::getImage).orElse(emptyImage));
+    fpsLabel.textProperty().bind(dataOrDefault.map(CameraServerData::getFps).map(fps -> {
+      if (fps < 0) {
+        return "--- FPS";
+      } else {
+        return String.format("%.2f FPS", fps);
+      }
+    }));
+    bandwidthLabel.textProperty().bind(dataOrDefault.map(CameraServerData::getBandwidth).map(bandwidth -> {
+      if (bandwidth < 0) {
+        return "--- Mbps";
+      } else {
+        double mbps = bandwidth * 8 / 1e6;
+        return String.format("%.2f Mbps", mbps);
+      }
+    }));
 
     sourceProperty().addListener((__, old, source) -> {
       if (source instanceof CameraServerSource) {
-        CameraServerSource s = (CameraServerSource) source;
+        CameraServerSource newSource = (CameraServerSource) source;
         if (source.hasClients()) {
-          compressionSlider.setValue(s.getTargetCompression());
-          frameRateField.setNumber(s.getTargetFps());
-          width.setNumber(s.getTargetResolution().getWidth());
-          height.setNumber(s.getTargetResolution().getHeight());
+          compressionSlider.setValue(newSource.getTargetCompression());
+          frameRateField.setNumber(newSource.getTargetFps());
+          width.setNumber(newSource.getTargetResolution().getWidth());
+          height.setNumber(newSource.getTargetResolution().getHeight());
         } else {
           applySettings();
         }
-        s.targetCompressionProperty().addListener(sourceCompressionListener);
-        s.targetFpsProperty().addListener(numberChangeListener);
-        s.targetResolutionProperty().addListener(resolutionChangeListener);
+        newSource.targetCompressionProperty().addListener(sourceCompressionListener);
+        newSource.targetFpsProperty().addListener(numberChangeListener);
+        newSource.targetResolutionProperty().addListener(resolutionChangeListener);
       }
       if (old instanceof CameraServerSource) {
-        CameraServerSource s = (CameraServerSource) old;
-        s.targetCompressionProperty().removeListener(sourceCompressionListener);
-        s.targetFpsProperty().removeListener(numberChangeListener);
-        s.targetResolutionProperty().removeListener(resolutionChangeListener);
+        CameraServerSource oldSource = (CameraServerSource) old;
+        oldSource.targetCompressionProperty().removeListener(sourceCompressionListener);
+        oldSource.targetFpsProperty().removeListener(numberChangeListener);
+        oldSource.targetResolutionProperty().removeListener(resolutionChangeListener);
       }
     });
 

@@ -24,10 +24,10 @@ public abstract class AbstractWidget implements Widget {
 
   private final ObservableList<Property<?>> properties = FXCollections.observableArrayList();
   private final ChangeListener<Boolean> connectionListener = (__, was, is) -> {
-    if (!is) {
-      getView().setDisable(true);
-    } else {
+    if (is) {
       getView().setDisable(!sources.stream().allMatch(DataSource::isConnected));
+    } else {
+      getView().setDisable(true);
     }
   };
 

@@ -1,6 +1,8 @@
 package edu.wpi.first.shuffleboard.plugin.cameraserver.source;
 
 import edu.wpi.first.shuffleboard.api.DashboardMode;
+import edu.wpi.first.shuffleboard.api.properties.AsyncProperty;
+import edu.wpi.first.shuffleboard.api.properties.AtomicIntegerProperty;
 import edu.wpi.first.shuffleboard.api.sources.AbstractDataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.Sources;
@@ -16,6 +18,7 @@ import edu.wpi.first.shuffleboard.plugin.cameraserver.recording.serialization.Im
 import edu.wpi.cscore.CameraServerJNI;
 import edu.wpi.cscore.CvSink;
 import edu.wpi.cscore.HttpCamera;
+import edu.wpi.cscore.VideoEvent;
 import edu.wpi.cscore.VideoMode;
 import edu.wpi.first.networktables.EntryListenerFlags;
 import edu.wpi.first.networktables.NetworkTable;
@@ -26,7 +29,6 @@ import edu.wpi.first.networktables.NetworkTableType;
 import org.opencv.core.Mat;
 
 import java.time.Duration;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -40,8 +42,6 @@ import javafx.beans.InvalidationListener;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.Property;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.scene.image.Image;
 
@@ -73,10 +73,9 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
 
   private String[] streamUrls = null;
 
-  private final IntegerProperty targetCompression = new SimpleIntegerProperty(this, "targetCompression", -1);
-  private final IntegerProperty targetFps = new SimpleIntegerProperty(this, "targetFps", -1);
-  private final Property<Resolution> targetResolution =
-      new SimpleObjectProperty<>(this, "targetResolution", Resolution.EMPTY);
+  private final IntegerProperty targetCompression = new AtomicIntegerProperty(this, "targetCompression", -1);
+  private final IntegerProperty targetFps = new AtomicIntegerProperty(this, "targetFps", -1);
+  private final Property<Resolution> targetResolution = new AsyncProperty<>(this, "targetResolution", Resolution.EMPTY);
   private final CameraUrlGenerator urlGenerator = new CameraUrlGenerator(this);
 
   // Needs to be debounced; quickly changing URLs can cause serious performance hits
@@ -102,6 +101,15 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
         }
       }
     }, 0xFF, true);
+
+    CameraServerJNI.addListener(e -> {
+      if (enabled.get() && camera != null && camera.isValid()) {
+        double bandwidth = camera.getActualDataRate();
+        double fps = camera.getActualFPS();
+        CameraServerData currentData = getData();
+        setData(new CameraServerData(currentData.getName(), currentData.getImage(), fps, bandwidth));
+      }
+    }, VideoEvent.Kind.kTelemetryUpdated.getValue(), true);
 
     streams = cameraPublisherTable.getSubTable(name).getEntry(STREAMS_KEY);
     streams.addListener(notification -> {
@@ -227,7 +235,7 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
     } else {
       Image image = imageConverter.convert(imageStorage);
       if (getData() == null) {
-        setData(new CameraServerData(getName(), image));
+        setData(new CameraServerData(getName(), image, -1, -1));
       } else {
         setData(getData().withImage(image));
       }
@@ -257,11 +265,16 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
     }
   }
 
-  private void setCameraUrls(String[] urls) {
+  private void setCameraUrls(String[] urls) { // NOPMD varargs instead of array
     camera.setUrls(urls);
     // Setting the video mode forces a reconnect
     Resolution resolution = getTargetResolution();
-    VideoMode videoMode = new VideoMode(VideoMode.PixelFormat.kMJPEG, resolution.getWidth(), resolution.getHeight(), getTargetFps());
+    VideoMode videoMode = new VideoMode(
+        VideoMode.PixelFormat.kMJPEG,
+        resolution.getWidth(),
+        resolution.getHeight(),
+        getTargetFps()
+    );
     camera.setVideoMode(videoMode);
   }
 

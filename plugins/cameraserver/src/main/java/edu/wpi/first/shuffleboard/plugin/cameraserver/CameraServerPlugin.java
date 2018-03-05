@@ -40,7 +40,7 @@ public class CameraServerPlugin extends Plugin {
     log.info("OpenCV version: " + Core.VERSION);
     // Make sure the JNI is loaded. If it's not, this plugin can't work!
     // Calling a function from CameraServerJNI will extract the OpenCV JNI dependencies and load them
-    CameraServerJNI.getHostname();
+    CameraServerJNI.setTelemetryPeriod(1);
   }
 
   @Override

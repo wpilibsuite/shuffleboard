@@ -21,7 +21,7 @@ public final class CameraServerDataType extends ComplexDataType<CameraServerData
 
   @Override
   public CameraServerData getDefaultValue() {
-    return new CameraServerData("Example", null);
+    return new CameraServerData("Example", null, 0, 0);
   }
 
 }
