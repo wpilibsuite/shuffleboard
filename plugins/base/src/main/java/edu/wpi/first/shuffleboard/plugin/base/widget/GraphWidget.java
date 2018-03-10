@@ -89,7 +89,6 @@ public class GraphWidget implements AnnotatedWidget {
   private final DoubleProperty visibleTime = new SimpleDoubleProperty(this, "Visible time", 30);
 
   private final Map<Series<Number, Number>, BooleanProperty> visibleSeries = new HashMap<>();
-  private final Map<Series<Number, Number>, List<Data<Number, Number>>> realData = new HashMap<>();
 
   private final Object queueLock = new Object();
   private final Map<Series<Number, Number>, List<Data<Number, Number>>> queuedData = new HashMap<>();
@@ -103,6 +102,8 @@ public class GraphWidget implements AnnotatedWidget {
     final DataSource<double[]> source = sourceFor(property);
     updateFromArraySource(source);
   };
+
+  private final Map<Series<Number, Number>, SimpleData> realData = new HashMap<>();
 
   private final Function<Series<Number, Number>, BooleanProperty> createVisibleProperty = s -> {
     SimpleBooleanProperty visible = new SimpleBooleanProperty(this, s.getName() + " visible", true);
@@ -207,10 +208,25 @@ public class GraphWidget implements AnnotatedWidget {
       if (cur.doubleValue() > prev.doubleValue()) {
         // insert data at the beginning of each series
         realData.forEach((series, dataList) -> {
-          List<Data<Number, Number>> toAdd = dataList.stream()
-              .filter(d -> d.getXValue().doubleValue() >= xAxis.getLowerBound())
-              .filter(d -> d.getXValue().doubleValue() < series.getData().get(0).getXValue().doubleValue())
-              .collect(Collectors.toList());
+          List<Data<Number, Number>> toAdd = new ArrayList<>();
+          for (int i = 0; i < dataList.getXValues().size(); i++) {
+            double x = dataList.getXValues().get(i);
+            if (x >= xAxis.getLowerBound()) {
+              if (x < series.getData().get(0).getXValue().doubleValue()) {
+                Data<Number, Number> data = dataList.asData(i);
+                if (!toAdd.isEmpty()) {
+                  Data<Number, Number> squarifier = new Data<>(
+                      data.getXValue().doubleValue() - 1,
+                      toAdd.get(toAdd.size() - 1).getYValue().doubleValue()
+                  );
+                  toAdd.add(squarifier);
+                }
+                toAdd.add(data);
+              } else {
+                break;
+              }
+            }
+          }
           series.getData().addAll(0, toAdd);
         });
       }
@@ -263,7 +279,7 @@ public class GraphWidget implements AnnotatedWidget {
     final Data<Number, Number> point = new Data<>(elapsed, newData);
     final ObservableList<Data<Number, Number>> dataList = series.getData();
     Data<Number, Number> squarifier = null;
-    realData.computeIfAbsent(series, __ -> new ArrayList<>()).add(point);
+    realData.computeIfAbsent(series, __ -> new SimpleData()).add(point);
     synchronized (queueLock) {
       List<Data<Number, Number>> queue = queuedData.computeIfAbsent(series, __ -> new ArrayList<>());
       if (queue.isEmpty()) {
@@ -301,7 +317,7 @@ public class GraphWidget implements AnnotatedWidget {
       Series<Number, Number> series = new Series<>();
       series.setName(source.getName());
       numberSeriesMap.put(source, series);
-      realData.put(series, new ArrayList<>());
+      realData.put(series, new SimpleData());
       visibleSeries.computeIfAbsent(series, createVisibleProperty);
       series.nodeProperty().addListener((__, old, node) -> {
         if (node instanceof Parent) {
@@ -332,7 +348,7 @@ public class GraphWidget implements AnnotatedWidget {
         Series<Number, Number> newSeries = new Series<>();
         newSeries.setName(source.getName() + "[" + i + "]"); // eg "array[0]", "array[1]", etc
         series.add(newSeries);
-        realData.put(newSeries, new ArrayList<>());
+        realData.put(newSeries, new SimpleData());
         visibleSeries.computeIfAbsent(newSeries, createVisibleProperty);
       }
     }
@@ -439,6 +455,35 @@ public class GraphWidget implements AnnotatedWidget {
         series.getData().remove(0, firstBeforeOutOfRange);
       }
     });
+  }
+
+  /**
+   * Stores data in two parallel arrays.
+   */
+  private static final class SimpleData {
+    private final PrimitiveDoubleArrayList xValues = new PrimitiveDoubleArrayList();
+    private final PrimitiveDoubleArrayList yValues = new PrimitiveDoubleArrayList();
+
+    public void add(double x, double y) {
+      xValues.add(x);
+      yValues.add(y);
+    }
+
+    public PrimitiveDoubleArrayList getXValues() {
+      return xValues;
+    }
+
+    public PrimitiveDoubleArrayList getYValues() {
+      return yValues;
+    }
+
+    public void add(Data<? extends Number, ? extends Number> point) {
+      add(point.getXValue().doubleValue(), point.getYValue().doubleValue());
+    }
+
+    public Data<Number, Number> asData(int index) {
+      return new Data<>(xValues.get(index), yValues.get(index));
+    }
   }
 
 }
