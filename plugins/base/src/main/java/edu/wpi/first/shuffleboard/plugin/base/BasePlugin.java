@@ -27,6 +27,7 @@ import edu.wpi.first.shuffleboard.plugin.base.data.types.SendableChooserType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.SpeedControllerType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.SubsystemType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.ThreeAxisAccelerometerType;
+import edu.wpi.first.shuffleboard.plugin.base.layout.GridLayout;
 import edu.wpi.first.shuffleboard.plugin.base.layout.ListLayout;
 import edu.wpi.first.shuffleboard.plugin.base.layout.SubsystemLayout;
 import edu.wpi.first.shuffleboard.plugin.base.widget.AccelerometerWidget;
@@ -125,6 +126,7 @@ public class BasePlugin extends Plugin {
         WidgetType.forAnnotatedWidget(MecanumDriveWidget.class),
         WidgetType.forAnnotatedWidget(BasicFmsInfoWidget.class),
         new LayoutClass<>("List Layout", ListLayout.class),
+        new LayoutClass<>("Grid Layout", GridLayout.class),
         createSubsystemLayoutType()
     );
   }

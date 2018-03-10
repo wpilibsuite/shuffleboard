@@ -3,19 +3,14 @@
 <?import javafx.scene.control.Slider?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.StackPane?>
-<?import javafx.geometry.Insets?>
 <BorderPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="edu.wpi.first.shuffleboard.plugin.base.widget.NumberSliderWidget"
             fx:id="root"
-            minWidth="64" minHeight="64"
+            minWidth="64" minHeight="22"
             prefHeight="128" prefWidth="256">
     <center>
         <StackPane>
-            <padding>
-                <!-- Slider already has ~5px bottom padding -->
-                <Insets top="8" right="8" left="8"/>
-            </padding>
             <Slider fx:id="slider" showTickLabels="true" min="-1" max="1" blockIncrement="0.0625"/>
         </StackPane>
     </center>
