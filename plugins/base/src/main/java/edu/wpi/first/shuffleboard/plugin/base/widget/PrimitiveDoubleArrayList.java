@@ -2,6 +2,7 @@ package edu.wpi.first.shuffleboard.plugin.base.widget;
 
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.function.Consumer;
 import java.util.function.DoubleConsumer;
 import java.util.stream.DoubleStream;
@@ -54,7 +55,7 @@ public class PrimitiveDoubleArrayList implements Iterable<Double> {
   }
 
   /**
-   * Gets the value at the given index
+   * Gets the value at the given index.
    *
    * @param index the index to get the value at
    *
@@ -139,17 +140,19 @@ public class PrimitiveDoubleArrayList implements Iterable<Double> {
   @Override
   public Iterator<Double> iterator() {
     return new Iterator<Double>() {
-
-      int index = 0;
+      private int index = 0;
 
       @Override
       public boolean hasNext() {
-        return index < size - 1;
+        return index < size() - 1;
       }
 
       @Override
       public Double next() {
-        return array[index++];
+        if (!hasNext()) {
+          throw new NoSuchElementException();
+        }
+        return get(index++);
       }
     };
   }
@@ -161,6 +164,12 @@ public class PrimitiveDoubleArrayList implements Iterable<Double> {
     }
   }
 
+  /**
+   * Performs the given action for each element until all elements have been processed or the action
+   * throws an exception. Exceptions thrown by the action are relayed to the caller.
+   *
+   * @param action the action to be performed on each element
+   */
   public void forEach(DoubleConsumer action) {
     for (int i = 0; i < size; i++) {
       action.accept(array[i]);

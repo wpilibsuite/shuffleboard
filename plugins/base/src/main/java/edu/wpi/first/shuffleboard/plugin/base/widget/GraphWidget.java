@@ -120,7 +120,7 @@ public class GraphWidget implements AnnotatedWidget {
   };
 
   /**
-   * Keep track of all graph widgets so they update at the same time
+   * Keep track of all graph widgets so they update at the same time.
    * It's jarring to see a bunch of graphs all updating at different times
    */
   private static final Collection<GraphWidget> graphWidgets =
@@ -469,16 +469,16 @@ public class GraphWidget implements AnnotatedWidget {
       yValues.add(y);
     }
 
+    public void add(Data<? extends Number, ? extends Number> point) {
+      add(point.getXValue().doubleValue(), point.getYValue().doubleValue());
+    }
+
     public PrimitiveDoubleArrayList getXValues() {
       return xValues;
     }
 
     public PrimitiveDoubleArrayList getYValues() {
       return yValues;
-    }
-
-    public void add(Data<? extends Number, ? extends Number> point) {
-      add(point.getXValue().doubleValue(), point.getYValue().doubleValue());
     }
 
     public Data<Number, Number> asData(int index) {
