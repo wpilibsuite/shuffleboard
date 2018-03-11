@@ -98,18 +98,78 @@ public final class Serialization {
       segments.add(dataType);
       segments.add(dataBytes);
     }
-    byte[] all = new byte[segments.stream().mapToInt(b -> b.length).sum()];
-    for (int i = 0, j = 0; i < all.length; ) {
-      byte[] next = segments.get(j);
-      put(all, next, i);
-      i += next.length;
-      j++;
-    }
+    byte[] all = segments
+        .stream()
+        .reduce(new byte[0], Serialization::concat);
     Path saveDir = file.getParent();
     if (saveDir != null) {
       Files.createDirectories(saveDir);
     }
     Files.write(file, all);
+  }
+
+  /**
+   * Updates a saved recording file with the contents of the given recording. Note: the recording should <i>not</i>
+   * contain any data that has already been saved to disk, or it will be saved again.
+   *
+   * @param recording the recording to update the save file with
+   * @param file      the path to the save file to update
+   *
+   * @throws IOException if the save file could not be updated
+   */
+  public static void updateRecordingSave(Recording recording, Path file) throws IOException {
+    byte[] bytes = Files.readAllBytes(file);
+    if (bytes.length == 0) {
+      saveRecording(recording, file);
+      return;
+    }
+    if (bytes.length < 8) {
+      throw new IOException("Recording file too small");
+    }
+    final int magic = readInt(bytes, 0);
+    if (magic != MAGIC_NUMBER) {
+      throw new IOException("Wrong magic number in the header. Expected " + MAGIC_NUMBER + ", but was " + magic);
+    }
+    final String[] sourceIds = readStringArray(bytes, 8);
+    final List<String> sourceIdList = new ArrayList<>(Arrays.asList(sourceIds));
+    final int constantPoolEnd = 8 + sizeOfStringArray(sourceIds);
+    byte[] newConstantPoolEntries = recording.getData().stream()
+        .map(TimestampedData::getSourceId)
+        .distinct()
+        .filter(id -> !sourceIdList.contains(id))
+        .map(Serialization::toByteArray)
+        .reduce(new byte[0], Serialization::concat);
+    recording.getData().stream()
+        .map(TimestampedData::getSourceId)
+        .distinct()
+        .filter(s -> !sourceIdList.contains(s))
+        .forEachOrdered(sourceIdList::add);
+    byte[] newBodyEntries = recording.getData().stream()
+        .map(data -> {
+          final DataType type = data.getDataType();
+          final Object value = data.getData();
+
+          final byte[] timestamp = toByteArray(data.getTimestamp()); // NOPMD
+          // use int16 instead of int32 -- 32,767 sources should be enough
+          int index = sourceIdList.indexOf(data.getSourceId());
+          if (index < 0) {
+            throw new IllegalStateException("Source ID list does not contain '" + data.getSourceId() + "'");
+          }
+          final byte[] sourceIdIndex = toByteArray((short) index); //NOPMD
+          final byte[] dataType = toByteArray(type.getName()); // NOPMD
+          final byte[] dataBytes = encode(value, type); // NOPMD
+
+          if (dataBytes == null) {
+            throw new IllegalStateException("Cannot serialize value of type " + type.getName());
+          }
+
+          return concat(concat(timestamp, sourceIdIndex), concat(dataType, dataBytes));
+        })
+        .reduce(new byte[0], Serialization::concat);
+    byte[] withUpdatedHeader = insert(newConstantPoolEntries, bytes, constantPoolEnd);
+    byte[] result = concat(withUpdatedHeader, newBodyEntries);
+    put(result, toByteArray(sourceIdList.size()), 8); // Make sure to update the number of source IDs
+    Files.write(file, result);
   }
 
   public static <T> byte[] encode(T value) {
@@ -174,7 +234,7 @@ public final class Serialization {
         value = adapter.deserialize(bytes, cursor);
         cursor += adapter.getSerializedSize(value);
       } else {
-        throw new IOException("No serializer for " + dataType);
+        throw new IOException("No serializer for data type '" + dataType + "'");
       }
 
       // Since the data is guaranteed to be ordered in the file, we call recording.append()
@@ -446,6 +506,68 @@ public final class Serialization {
         .map(Serializers::get)
         .map(function)
         .orElseThrow(() -> new UnsupportedOperationException("No type adapter for " + type.getSimpleName()));
+  }
+
+  /**
+   * Concatenates multiple byte arrays.
+   *
+   * @param bytes the bytes to concatenate
+   *
+   * @return the result of concatenating the byte arrays
+   *
+   * @throws IllegalArgumentException if there are too many bytes across all the arrays to fit into a single array; that
+   *                                  is, there are at least {@link Integer#MAX_VALUE} total bytes
+   */
+  public static byte[] concat(byte[]... bytes) {
+    if (bytes.length == 0) {
+      return new byte[0];
+    }
+    if (bytes.length == 1) {
+      return bytes[0];
+    }
+    int len = 0;
+    for (byte[] arr : bytes) {
+      len += arr.length;
+    }
+    if (len == 0) {
+      return new byte[0];
+    }
+    if (len < 0) {
+      throw new IllegalArgumentException("Too many bytes to concatenate into a single array");
+    }
+    byte[] all = new byte[len];
+    int pos = 0;
+    for (byte[] arr : bytes) {
+      put(all, arr, pos);
+      pos += arr.length;
+    }
+    return all;
+  }
+
+  /**
+   * Inserts one array into another, returning the result. Neither array is modified.
+   *
+   * @param src the source array to insert
+   * @param dst the array to insert into
+   * @param pos the position to insert into
+   *
+   * @return the result of insertion
+   */
+  public static byte[] insert(byte[] src, byte[] dst, int pos) {
+    if (src.length == 0) {
+      return dst;
+    }
+    if (pos == 0) {
+      // Shortcut: inserting src at the start of dst
+      return concat(src, dst);
+    }
+    if (pos == dst.length) {
+      // Shortcut: appending src at the end of dst
+      return concat(dst, src);
+    }
+    byte[] left = Arrays.copyOfRange(dst, 0, pos);
+    byte[] right = Arrays.copyOfRange(dst, pos, dst.length);
+    return concat(left, src, right);
   }
 
 }

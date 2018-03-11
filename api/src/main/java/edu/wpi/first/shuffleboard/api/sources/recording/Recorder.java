@@ -16,6 +16,7 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javafx.beans.property.BooleanProperty;
@@ -36,9 +37,18 @@ public final class Recorder {
   private Recording recording = null;
   private File recordingFile;
 
+  private final Object recordingLock = new Object();
+  private boolean firstSave = true;
+
   private Recorder() {
     // Save the recording at the start (get the initial values) and the stop
-    running.addListener((__, wasRunning, isRunning) -> saveToDisk());
+    running.addListener((__, wasRunning, isRunning) -> {
+      try {
+        saveToDisk();
+      } catch (IOException e) {
+        log.log(Level.WARNING, "Could not save to disk", e);
+      }
+    });
     running.addListener((__, was, is) -> {
       if (is) {
         DashboardMode.setCurrentMode(DashboardMode.RECORDING);
@@ -52,25 +62,35 @@ public final class Recorder {
         .scheduleAtFixedRate(
             () -> {
               if (isRunning()) {
-                saveToDisk();
+                try {
+                  saveToDisk();
+                } catch (Exception e) {
+                  log.log(Level.WARNING, "Could not save recording", e);
+                }
               }
             }, 0, 2, TimeUnit.SECONDS);
   }
 
-  private void saveToDisk() {
+  private void saveToDisk() throws IOException {
     if (recording == null) {
       // Nothing to save
       return;
     }
-    try {
+    synchronized (recordingLock) {
       Path file = Storage.createRecordingFilePath(startTime);
       if (recordingFile == null) {
         recordingFile = file.toFile();
       }
-      Serialization.saveRecording(recording, file);
+      if (firstSave) {
+        System.out.println("First-time save");
+        Serialization.saveRecording(recording, file);
+        firstSave = false;
+      } else {
+        System.out.println("Updating existing save");
+        Serialization.updateRecordingSave(recording, file);
+      }
+      recording.getData().clear();
       log.fine("Saved recording to " + file);
-    } catch (IOException e) {
-      throw new RuntimeException("Could not save the recording", e);
     }
   }
 
@@ -86,15 +106,19 @@ public final class Recorder {
    */
   public void start() {
     startTime = Instant.now();
+    firstSave = true;
     recording = new Recording();
     // Record initial conditions
-    SourceTypes.getDefault().getItems().stream()
-        .map(SourceType::getAvailableSources)
-        .forEach(sources -> sources.forEach((id, value) -> {
-          DataTypes.getDefault().forJavaType(value.getClass())
-              .map(t -> new TimestampedData(id, t, value, 0L))
-              .ifPresent(recording::append);
-        }));
+    synchronized (recordingLock) {
+      System.out.println("Recording initial data");
+      SourceTypes.getDefault().getItems().stream()
+          .map(SourceType::getAvailableSources)
+          .forEach(sources -> sources.forEach((id, value) -> {
+            DataTypes.getDefault().forJavaType(value.getClass())
+                .map(t -> new TimestampedData(id, t, value, 0L))
+                .ifPresent(recording::append);
+          }));
+    }
     setRunning(true);
   }
 
@@ -136,7 +160,9 @@ public final class Recorder {
     // Store the ID in the common string pool
     // There can easily tens or hundreds of thousands of instances, so storing it in the pool can cut memory
     // use by megabytes per data point
-    recording.append(new TimestampedData(id.intern(), dataType, value, timestamp()));
+    synchronized (recordingLock) {
+      recording.append(new TimestampedData(id.intern(), dataType, value, timestamp()));
+    }
   }
 
   private long timestamp() {
