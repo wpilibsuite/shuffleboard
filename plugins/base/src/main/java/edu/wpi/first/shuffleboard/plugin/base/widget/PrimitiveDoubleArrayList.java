@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.function.Consumer;
-import java.util.function.DoubleConsumer;
 import java.util.stream.DoubleStream;
 
 /**
@@ -144,7 +143,7 @@ public class PrimitiveDoubleArrayList implements Iterable<Double> {
 
       @Override
       public boolean hasNext() {
-        return index < size() - 1;
+        return index < size();
       }
 
       @Override
@@ -165,15 +164,16 @@ public class PrimitiveDoubleArrayList implements Iterable<Double> {
   }
 
   /**
-   * Performs the given action for each element until all elements have been processed or the action
-   * throws an exception. Exceptions thrown by the action are relayed to the caller.
+   * Creates a new primitive <tt>double</tt> array containing all the values in this list.
    *
-   * @param action the action to be performed on each element
+   * @return a new <tt>double</tt> array
    */
-  public void forEach(DoubleConsumer action) {
-    for (int i = 0; i < size; i++) {
-      action.accept(array[i]);
+  public double[] toArray() {
+    double[] arr = new double[size];
+    if (size > 0) {
+      System.arraycopy(array, 0, arr, 0, size);
     }
+    return arr;
   }
 
 }
