@@ -100,7 +100,7 @@ public final class Serialization {
     }
     byte[] all = segments
         .stream()
-        .reduce(new byte[0], Serialization::concat);
+        .reduce(new byte[0], Bytes::concat);
     Path saveDir = file.getParent();
     if (saveDir != null) {
       Files.createDirectories(saveDir);
@@ -138,7 +138,7 @@ public final class Serialization {
         .distinct()
         .filter(id -> !sourceIdList.contains(id))
         .map(Serialization::toByteArray)
-        .reduce(new byte[0], Serialization::concat);
+        .reduce(new byte[0], Bytes::concat);
     recording.getData().stream()
         .map(TimestampedData::getSourceId)
         .distinct()
@@ -163,11 +163,11 @@ public final class Serialization {
             throw new IllegalStateException("Cannot serialize value of type " + type.getName());
           }
 
-          return concat(concat(timestamp, sourceIdIndex), concat(dataType, dataBytes));
+          return Bytes.concat(timestamp, sourceIdIndex, dataType, dataBytes);
         })
-        .reduce(new byte[0], Serialization::concat);
+        .reduce(new byte[0], Bytes::concat);
     byte[] withUpdatedHeader = insert(newConstantPoolEntries, bytes, constantPoolEnd);
-    byte[] result = concat(withUpdatedHeader, newBodyEntries);
+    byte[] result = Bytes.concat(withUpdatedHeader, newBodyEntries);
     put(result, toByteArray(readInt(bytes, 4) + recording.getData().size()), 4); // Update number of data points
     put(result, toByteArray(sourceIdList.size()), 8); // Make sure to update the number of source IDs
     Files.write(file, result);
@@ -510,42 +510,6 @@ public final class Serialization {
   }
 
   /**
-   * Concatenates multiple byte arrays.
-   *
-   * @param bytes the bytes to concatenate
-   *
-   * @return the result of concatenating the byte arrays
-   *
-   * @throws IllegalArgumentException if there are too many bytes across all the arrays to fit into a single array; that
-   *                                  is, there are at least {@link Integer#MAX_VALUE} total bytes
-   */
-  public static byte[] concat(byte[]... bytes) {
-    if (bytes.length == 0) {
-      return new byte[0];
-    }
-    if (bytes.length == 1) {
-      return bytes[0];
-    }
-    int len = 0;
-    for (byte[] arr : bytes) {
-      len += arr.length;
-    }
-    if (len == 0) {
-      return new byte[0];
-    }
-    if (len < 0) {
-      throw new IllegalArgumentException("Too many bytes to concatenate into a single array");
-    }
-    byte[] all = new byte[len];
-    int pos = 0;
-    for (byte[] arr : bytes) {
-      put(all, arr, pos);
-      pos += arr.length;
-    }
-    return all;
-  }
-
-  /**
    * Inserts one array into another, returning the result. Neither array is modified.
    *
    * @param src the source array to insert
@@ -560,15 +524,15 @@ public final class Serialization {
     }
     if (pos == 0) {
       // Shortcut: inserting src at the start of dst
-      return concat(src, dst);
+      return Bytes.concat(src, dst);
     }
     if (pos == dst.length) {
       // Shortcut: appending src at the end of dst
-      return concat(dst, src);
+      return Bytes.concat(dst, src);
     }
     byte[] left = Arrays.copyOfRange(dst, 0, pos);
     byte[] right = Arrays.copyOfRange(dst, pos, dst.length);
-    return concat(left, src, right);
+    return Bytes.concat(left, src, right);
   }
 
 }
