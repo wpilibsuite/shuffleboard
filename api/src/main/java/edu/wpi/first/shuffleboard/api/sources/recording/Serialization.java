@@ -83,15 +83,11 @@ public final class Serialization {
       final DataType type = data.getDataType();
       final Object value = data.getData();
 
-      final byte[] timestamp = toByteArray(data.getTimestamp()); // NOPMD
+      final byte[] timestamp = toByteArray(data.getTimestamp());
       // use int16 instead of int32 -- 32,767 sources should be enough
-      final byte[] sourceIdIndex = toByteArray((short) sourceNames.indexOf(data.getSourceId())); //NOPMD
-      final byte[] dataType = toByteArray(type.getName()); // NOPMD
-      final byte[] dataBytes = encode(value, type); // NOPMD
-
-      if (dataBytes == null) {
-        throw new IOException("Cannot serialize value of type " + type.getName());
-      }
+      final byte[] sourceIdIndex = toByteArray((short) sourceNames.indexOf(data.getSourceId()));
+      final byte[] dataType = toByteArray(type.getName());
+      final byte[] dataBytes = encode(value, type);
 
       segments.add(timestamp);
       segments.add(sourceIdIndex);
@@ -149,19 +145,11 @@ public final class Serialization {
           final DataType type = data.getDataType();
           final Object value = data.getData();
 
-          final byte[] timestamp = toByteArray(data.getTimestamp()); // NOPMD
+          final byte[] timestamp = toByteArray(data.getTimestamp());
           // use int16 instead of int32 -- 32,767 sources should be enough
-          int index = sourceIdList.indexOf(data.getSourceId());
-          if (index < 0) {
-            throw new IllegalStateException("Source ID list does not contain '" + data.getSourceId() + "'");
-          }
-          final byte[] sourceIdIndex = toByteArray((short) index); //NOPMD
-          final byte[] dataType = toByteArray(type.getName()); // NOPMD
-          final byte[] dataBytes = encode(value, type); // NOPMD
-
-          if (dataBytes == null) {
-            throw new IllegalStateException("Cannot serialize value of type " + type.getName());
-          }
+          final byte[] sourceIdIndex = toByteArray((short) sourceIdList.indexOf(data.getSourceId()));
+          final byte[] dataType = toByteArray(type.getName());
+          final byte[] dataBytes = encode(value, type);
 
           return Bytes.concat(timestamp, sourceIdIndex, dataType, dataBytes);
         })
