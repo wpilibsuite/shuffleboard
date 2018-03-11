@@ -168,6 +168,7 @@ public final class Serialization {
         .reduce(new byte[0], Serialization::concat);
     byte[] withUpdatedHeader = insert(newConstantPoolEntries, bytes, constantPoolEnd);
     byte[] result = concat(withUpdatedHeader, newBodyEntries);
+    put(result, toByteArray(readInt(bytes, 4) + recording.getData().size()), 4); // Update number of data points
     put(result, toByteArray(sourceIdList.size()), 8); // Make sure to update the number of source IDs
     Files.write(file, result);
   }
