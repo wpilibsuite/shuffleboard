@@ -82,11 +82,9 @@ public final class Recorder {
         recordingFile = file.toFile();
       }
       if (firstSave) {
-        System.out.println("First-time save");
         Serialization.saveRecording(recording, file);
         firstSave = false;
       } else {
-        System.out.println("Updating existing save");
         Serialization.updateRecordingSave(recording, file);
       }
       recording.getData().clear();
@@ -110,7 +108,6 @@ public final class Recorder {
     recording = new Recording();
     // Record initial conditions
     synchronized (recordingLock) {
-      System.out.println("Recording initial data");
       SourceTypes.getDefault().getItems().stream()
           .map(SourceType::getAvailableSources)
           .forEach(sources -> sources.forEach((id, value) -> {
