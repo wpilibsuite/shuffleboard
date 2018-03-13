@@ -10,7 +10,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -90,25 +89,6 @@ public class SerializationTest {
     Serialization.updateRecordingSave(recording, file);
     final Recording loadedUpdate = Serialization.loadRecording(file);
     assertEquals(data, loadedUpdate.getData());
-  }
-
-  @Test
-  public void testInsert() {
-    byte[] src = {-128, 0, 127};
-    byte[] dst = {1, 1, 1, 1};
-    byte[] index0 = Serialization.insert(src, dst, 0);
-    byte[] index1 = Serialization.insert(src, dst, 1);
-    byte[] index2 = Serialization.insert(src, dst, 2);
-    byte[] index3 = Serialization.insert(src, dst, 3);
-    byte[] atEnd = Serialization.insert(src, dst, 4);
-    assertAll(
-        () -> assertArrayEquals(new byte[]{-128, 0, 127, 1, 1, 1, 1}, index0),
-        () -> assertArrayEquals(new byte[]{1, -128, 0, 127, 1, 1, 1}, index1),
-        () -> assertArrayEquals(new byte[]{1, 1, -128, 0, 127, 1, 1}, index2),
-        () -> assertArrayEquals(new byte[]{1, 1, 1, -128, 0, 127, 1}, index3),
-        () -> assertArrayEquals(new byte[]{1, 1, 1, 1, -128, 0, 127}, atEnd)
-    );
-
   }
 
 }

@@ -603,30 +603,4 @@ public final class Serialization {
         .orElseThrow(() -> new UnsupportedOperationException("No type adapter for " + type.getSimpleName()));
   }
 
-  /**
-   * Inserts one array into another, returning the result. Neither array is modified.
-   *
-   * @param src the source array to insert
-   * @param dst the array to insert into
-   * @param pos the position to insert into
-   *
-   * @return the result of insertion
-   */
-  public static byte[] insert(byte[] src, byte[] dst, int pos) {
-    if (src.length == 0) {
-      return dst;
-    }
-    if (pos == 0) {
-      // Shortcut: inserting src at the start of dst
-      return Bytes.concat(src, dst);
-    }
-    if (pos == dst.length) {
-      // Shortcut: appending src at the end of dst
-      return Bytes.concat(dst, src);
-    }
-    byte[] left = Arrays.copyOfRange(dst, 0, pos);
-    byte[] right = Arrays.copyOfRange(dst, pos, dst.length);
-    return Bytes.concat(left, src, right);
-  }
-
 }
