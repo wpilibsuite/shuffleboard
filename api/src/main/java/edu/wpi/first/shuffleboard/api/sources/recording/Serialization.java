@@ -2,6 +2,8 @@ package edu.wpi.first.shuffleboard.api.sources.recording;
 
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
+import edu.wpi.first.shuffleboard.api.data.types.StringArrayType;
+import edu.wpi.first.shuffleboard.api.data.types.StringType;
 import edu.wpi.first.shuffleboard.api.sources.recording.serialization.Serializers;
 import edu.wpi.first.shuffleboard.api.sources.recording.serialization.TypeAdapter;
 
@@ -24,7 +26,6 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -455,7 +456,7 @@ public final class Serialization {
    * Encodes a string array as a big-endian byte array. These can be read with {@link #readStringArray(byte[], int)}.
    */
   public static byte[] toByteArray(String[] array) { // NOPMD varargs
-    return useSerializer(String[].class, s -> s.serialize(array));
+    return Serializers.get(StringArrayType.Instance).serialize(array);
   }
 
   /**
@@ -583,7 +584,7 @@ public final class Serialization {
    * @param pos   the starting position of the encoded string
    */
   public static String readString(byte[] array, int pos) {
-    return useSerializer(String.class, s -> s.deserialize(array, pos));
+    return Serializers.get(StringType.Instance).deserialize(array, pos);
   }
 
   /**
@@ -593,14 +594,7 @@ public final class Serialization {
    * @param pos   the starting position of the encoded string array
    */
   public static String[] readStringArray(byte[] array, int pos) {
-    return useSerializer(String[].class, s -> s.deserialize(array, pos));
-  }
-
-  private static <T, U> U useSerializer(Class<T> type, Function<TypeAdapter<T>, U> function) {
-    return DataTypes.getDefault().forJavaType(type)
-        .map(Serializers::get)
-        .map(function)
-        .orElseThrow(() -> new UnsupportedOperationException("No type adapter for " + type.getSimpleName()));
+    return Serializers.get(StringArrayType.Instance).deserialize(array, pos);
   }
 
 }
