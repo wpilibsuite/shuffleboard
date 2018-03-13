@@ -1,7 +1,5 @@
 package edu.wpi.first.shuffleboard.plugin.networktables.sources;
 
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.shuffleboard.api.data.ComplexDataType;
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.sources.AbstractDataSource;
@@ -10,6 +8,9 @@ import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.Sources;
 import edu.wpi.first.shuffleboard.api.util.AsyncUtils;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
+
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -56,6 +57,14 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
     inst.removeEntryListener(listenerUid);
     setConnected(true);
     listenerUid = inst.addEntryListener(fullTableKey, (event) -> {
+      if (isSingular() && !event.name.equals(fullTableKey)) {
+        // Since NetworkTableInstance.addEntryListener() will fire on anything that starts with the key,
+        // a singular source will be notified for an unrelated entry.
+        // For example, a singular source for the entry "/S" will also be fired for any changing entry that
+        // starts with "/S", such as "/SmartDashboard/<anything>" or "/SomeUnrelatedEntry".
+        // This check prevents the source from being erroneously updated for an unrelated entry.
+        return;
+      }
       if (isConnected()) {
         AsyncUtils.runAsync(() -> {
           try {
@@ -69,6 +78,13 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
     },
     0xFF);
   }
+
+  /**
+   * Checks if this source is singular; i.e. is for a single entry only.
+   *
+   * @return true if this source is for a single entry, false if not
+   */
+  protected abstract boolean isSingular();
 
   protected boolean isUpdateFromNetworkTables() {
     return ntUpdate;

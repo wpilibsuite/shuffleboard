@@ -69,4 +69,9 @@ public class SingleKeyNetworkTableSource<T> extends NetworkTableSource<T> {
 
     Sources.getDefault().register(this);
   }
+
+  @Override
+  protected boolean isSingular() {
+    return true;
+  }
 }
