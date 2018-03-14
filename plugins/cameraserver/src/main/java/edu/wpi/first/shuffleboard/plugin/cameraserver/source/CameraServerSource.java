@@ -19,6 +19,7 @@ import edu.wpi.cscore.CameraServerJNI;
 import edu.wpi.cscore.CvSink;
 import edu.wpi.cscore.HttpCamera;
 import edu.wpi.cscore.VideoEvent;
+import edu.wpi.cscore.VideoException;
 import edu.wpi.cscore.VideoMode;
 import edu.wpi.first.networktables.EntryListenerFlags;
 import edu.wpi.first.networktables.NetworkTable;
@@ -34,6 +35,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
@@ -104,8 +106,20 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
 
     CameraServerJNI.addListener(e -> {
       if (enabled.get() && camera != null && camera.isValid()) {
-        double bandwidth = camera.getActualDataRate();
-        double fps = camera.getActualFPS();
+        double bandwidth;
+        double fps;
+        try {
+          bandwidth = camera.getActualDataRate();
+        } catch (VideoException ex) {
+          log.log(Level.WARNING, "Could not get bandwidth", ex);
+          bandwidth = -1;
+        }
+        try {
+          fps = camera.getActualFPS();
+        } catch (VideoException ex) {
+          log.log(Level.WARNING, "Could not get framerate", ex);
+          fps = -1;
+        }
         CameraServerData currentData = getData();
         setData(new CameraServerData(currentData.getName(), currentData.getImage(), fps, bandwidth));
       }
