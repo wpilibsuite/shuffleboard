@@ -39,8 +39,59 @@ subprojects {
                 artifact(sourceJar)
             }
         }
+        val checkForVersionUpdate = task("checkPluginVersionUpdated") {
+            description = "Check that the plugin's version number has been updated"
+            doLast {
+                val changedFiles = getChangedFiles(project)
+                if (changedFiles.isNotEmpty()) {
+                    val pluginFileChanged = changedFiles.any { file ->
+                        file.endsWith(suffix = "/${project.name}plugin.java", ignoreCase = true)
+                    }
+                    if (!pluginFileChanged) {
+                        throw VersionNotUpdatedException("Plugin version was not updated for plugin '${project.name}'")
+                    }
+                    val pluginFile = project.java.sourceSets["main"].allJava.toList()
+                            .first { file -> file.nameWithoutExtension.toLowerCase() == "${project.name}plugin" }
+                    val versionRegex = Regex("^.*version\\s*=\\s*\"(.+)\".*$")
+                    val versionLine = pluginFile.readLines()
+                            .first { line -> line.matches(versionRegex) }
+                    val version = versionRegex.matchEntire(versionLine)!!.groupValues[1]
+                    val masterVersion = getMasterVersion(rootProject, pluginFile)
+                    if (masterVersion.contains("version = \"$version\"")) {
+                        throw VersionNotUpdatedException("Plugin version was not updated for plugin '${project.name}'")
+                    }
+                }
+            }
+        }
+
+        tasks.getByName("check").dependsOn(checkForVersionUpdate)
     }
 }
+
+/**
+ * Gets a list of the names of the files in the project that have changed on the current branch, including uncommitted
+ * and unstaged files, relative to the `master` branch.
+ *
+ * @param project the project to get the changed files for
+ */
+fun getChangedFiles(project: Project): List<String> {
+    val diffProc = Runtime.getRuntime().exec("git diff master --name-only")
+    val input = diffProc.inputStream.bufferedReader().use { it.readText() }
+    return input.split('\n')
+            .filter { path -> path.startsWith("plugins/${project.name}") }
+            .toList()
+}
+
+/**
+ * Gets the version of a file on the `master` branch.
+ */
+fun getMasterVersion(rootProject: Project, file: File): String {
+    val cmd = "git show master:${file.relativeTo(rootProject.projectDir)}"
+    val lineHistProc = Runtime.getRuntime().exec(cmd)
+    return lineHistProc.inputStream.bufferedReader().use { it.readText() }
+}
+
+class VersionNotUpdatedException(message: String) : GradleException(message)
 
 /**
  * @return [edu.wpi.first.wpilib.versioning.WPILibVersioningPluginExtension.version] value or null
