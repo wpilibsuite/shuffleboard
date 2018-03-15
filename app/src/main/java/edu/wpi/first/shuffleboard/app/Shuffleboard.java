@@ -23,6 +23,9 @@ import it.sauronsoftware.junique.JUnique;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.FileHandler;
 import java.util.logging.Handler;
@@ -199,7 +202,8 @@ public class Shuffleboard extends Application {
       globalLogger.removeHandler(handler);
     }
 
-    final Handler fileHandler = new FileHandler(Storage.getStorageDir() + "/shuffleboard.log");
+    String time = DateTimeFormatter.ofPattern("YYYY-MM-dd-HH.mm.ss", Locale.getDefault()).format(LocalDateTime.now());
+    final Handler fileHandler = new FileHandler(Storage.getStorageDir() + "/shuffleboard." + time + ".log");
 
     fileHandler.setLevel(Level.INFO);    // Only log INFO and above to disk
     globalLogger.setLevel(Level.CONFIG); // Log CONFIG and higher
