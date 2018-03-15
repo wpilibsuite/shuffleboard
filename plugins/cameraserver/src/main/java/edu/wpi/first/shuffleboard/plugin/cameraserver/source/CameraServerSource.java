@@ -47,6 +47,7 @@ import javafx.beans.property.Property;
 import javafx.beans.value.ChangeListener;
 import javafx.scene.image.Image;
 
+@SuppressWarnings("PMD.GodClass")
 public final class CameraServerSource extends AbstractDataSource<CameraServerData> {
 
   private static final Logger log = Logger.getLogger(CameraServerSource.class.getName());
@@ -75,9 +76,24 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
 
   private String[] streamUrls = null;
 
+  /**
+   * The maximum supported resolution. Attempts to set the resolution higher than this will fail.
+   */
+  public static final Resolution MAX_RESOLUTION = new Resolution(1920, 1080);
+
   private final IntegerProperty targetCompression = new AtomicIntegerProperty(this, "targetCompression", -1);
   private final IntegerProperty targetFps = new AtomicIntegerProperty(this, "targetFps", -1);
-  private final Property<Resolution> targetResolution = new AsyncProperty<>(this, "targetResolution", Resolution.EMPTY);
+  private final Property<Resolution> targetResolution =
+      new AsyncProperty<Resolution>(this, "targetResolution", Resolution.EMPTY) {
+        @Override
+        public void set(Resolution newValue) {
+          if (newValue.getWidth() > MAX_RESOLUTION.getWidth() || newValue.getHeight() > MAX_RESOLUTION.getHeight()) {
+            throw new IllegalArgumentException(
+                "The maximum supported resolution is " + MAX_RESOLUTION + ", but was given " + newValue);
+          }
+          super.set(newValue);
+        }
+      };
   private final CameraUrlGenerator urlGenerator = new CameraUrlGenerator(this);
 
   // Needs to be debounced; quickly changing URLs can cause serious performance hits

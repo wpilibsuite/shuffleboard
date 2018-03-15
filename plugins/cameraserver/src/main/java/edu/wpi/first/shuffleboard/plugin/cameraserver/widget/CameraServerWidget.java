@@ -85,6 +85,8 @@ public class CameraServerWidget extends SimpleAnnotatedWidget<CameraServerData> 
         return String.format("%.2f Mbps", mbps);
       }
     }));
+    width.setMaxValue(CameraServerSource.MAX_RESOLUTION.getWidth());
+    height.setMaxValue(CameraServerSource.MAX_RESOLUTION.getHeight());
 
     sourceProperty().addListener((__, old, source) -> {
       if (source instanceof CameraServerSource) {
