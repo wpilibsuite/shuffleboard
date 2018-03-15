@@ -14,6 +14,7 @@ import edu.wpi.first.shuffleboard.plugin.networktables.NetworkTablesPlugin;
 import edu.wpi.first.shuffleboard.plugin.powerup.PowerupPlugin;
 
 import com.github.zafarkhaja.semver.Version;
+import com.google.common.base.Stopwatch;
 
 import de.codecentric.centerdevice.javafxsvg.SvgImageLoaderFactory;
 
@@ -22,6 +23,7 @@ import it.sauronsoftware.junique.JUnique;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.FileHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -49,6 +51,8 @@ public class Shuffleboard extends Application {
 
   private Pane mainPane; //NOPMD local variable
   private Runnable onOtherAppStart = () -> {};
+
+  private final Stopwatch startupTimer = Stopwatch.createStarted();
 
   @Override
   public void init() throws AlreadyLockedException, IOException {
@@ -103,8 +107,12 @@ public class Shuffleboard extends Application {
       return;
     }
 
+    Stopwatch fxmlLoadTimer = Stopwatch.createStarted();
+
     FXMLLoader loader = new FXMLLoader(MainWindowController.class.getResource("MainWindow.fxml"));
     mainPane = loader.load();
+    long fxmlLoadTime = fxmlLoadTimer.elapsed(TimeUnit.MILLISECONDS);
+    logger.log(fxmlLoadTime >= 500 ? Level.WARNING : Level.INFO, "Took " + fxmlLoadTime + "ms to load the main FXML");
     final MainWindowController mainWindowController = loader.getController();
 
     primaryStage.setScene(new Scene(mainPane));
@@ -168,6 +176,8 @@ public class Shuffleboard extends Application {
     }
     primaryStage.show();
     Time.setStartTime(Time.now());
+    long startupTime = startupTimer.elapsed(TimeUnit.MILLISECONDS);
+    logger.log(startupTime > 5000 ? Level.WARNING : Level.INFO, "Took " + startupTime + "ms to start Shuffleboard");
   }
 
   @Override
