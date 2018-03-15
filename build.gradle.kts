@@ -287,7 +287,7 @@ if (!hasProperty("releaseType")) {
 fun getWPILibVersion(): String? = if (WPILibVersion.version != "") WPILibVersion.version else null
 
 task<Wrapper>("wrapper") {
-    gradleVersion = "4.1"
+    gradleVersion = "4.6"
 }
 
 /**
