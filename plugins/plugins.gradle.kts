@@ -75,8 +75,8 @@ subprojects {
  * @param project the project to get the changed files for
  */
 fun getChangedFiles(project: Project): List<String> {
-    val diffProc = Runtime.getRuntime().exec("git diff master --name-only")
-    val input = diffProc.inputStream.bufferedReader().use { it.readText() }
+    val getDiff: Process = Runtime.getRuntime().exec("git diff master --name-only")
+    val input = getDiff.inputStream.bufferedReader().use { it.readText() }
     return input.split('\n')
             .filter { path -> path.startsWith("plugins/${project.name}") }
             .toList()
@@ -87,8 +87,8 @@ fun getChangedFiles(project: Project): List<String> {
  */
 fun getMasterVersion(rootProject: Project, file: File): String {
     val cmd = "git show master:${file.relativeTo(rootProject.projectDir)}"
-    val lineHistProc = Runtime.getRuntime().exec(cmd)
-    return lineHistProc.inputStream.bufferedReader().use { it.readText() }
+    val getMasterVersion: Process = Runtime.getRuntime().exec(cmd)
+    return getMasterVersion.inputStream.bufferedReader().use { it.readText() }
 }
 
 class VersionNotUpdatedException(message: String) : GradleException(message)
