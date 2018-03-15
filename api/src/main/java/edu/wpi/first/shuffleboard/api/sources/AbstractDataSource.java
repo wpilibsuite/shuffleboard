@@ -2,6 +2,7 @@ package edu.wpi.first.shuffleboard.api.sources;
 
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.properties.AsyncProperty;
+import edu.wpi.first.shuffleboard.api.properties.AtomicBooleanProperty;
 import edu.wpi.first.shuffleboard.api.widget.Sourced;
 
 import java.util.Collections;
@@ -10,7 +11,6 @@ import java.util.WeakHashMap;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.Property;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
@@ -26,9 +26,9 @@ public abstract class AbstractDataSource<T> implements DataSource<T> {
 
   private final Set<Sourced> clients = Collections.newSetFromMap(new WeakHashMap<>());
   protected final StringProperty name = new SimpleStringProperty(this, "name", "");
-  protected final BooleanProperty active = new SimpleBooleanProperty(this, "active", false);
+  protected final BooleanProperty active = new AtomicBooleanProperty(this, "active", false);
   protected final Property<T> data = new AsyncProperty<>(this, "data", null);
-  protected final BooleanProperty connected = new SimpleBooleanProperty(this, "connected", false);
+  protected final BooleanProperty connected = new AtomicBooleanProperty(this, "connected", false);
   protected final DataType<T> dataType;
 
   protected AbstractDataSource(DataType<T> dataType) {
