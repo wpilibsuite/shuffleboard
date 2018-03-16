@@ -20,6 +20,7 @@ import edu.wpi.first.shuffleboard.app.tab.TabInfoRegistry;
 
 import com.cedarsoft.version.Version;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Stopwatch;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,6 +37,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -260,6 +262,7 @@ public class PluginLoader {
       // Already loaded
       return false;
     }
+    final Stopwatch timer = Stopwatch.createStarted(); // NOPMD -- need to time as much as posible
 
     // Unload an already-loaded version of this plugin, if it exists
     // This allows us to load
@@ -302,6 +305,7 @@ public class PluginLoader {
     if (!knownPlugins.contains(plugin)) {
       knownPlugins.add(plugin);
     }
+    log.info("Loaded plugin " + plugin.idString() + " in " + timer.elapsed(TimeUnit.MILLISECONDS) + "ms");
     return true;
   }
 
