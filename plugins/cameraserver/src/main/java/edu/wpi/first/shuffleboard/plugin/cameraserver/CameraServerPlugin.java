@@ -27,7 +27,7 @@ import java.util.logging.Logger;
 @Description(
     group = "edu.wpi.first.shuffleboard",
     name = "CameraServer",
-    version = "1.0.0",
+    version = "1.1.0",
     summary = "Provides sources and widgets for viewing CameraServer MJPEG streams"
 )
 @Requires(group = "edu.wpi.first.shuffleboard", name = "NetworkTables", minVersion = "1.0.0")
@@ -40,7 +40,7 @@ public class CameraServerPlugin extends Plugin {
     log.info("OpenCV version: " + Core.VERSION);
     // Make sure the JNI is loaded. If it's not, this plugin can't work!
     // Calling a function from CameraServerJNI will extract the OpenCV JNI dependencies and load them
-    CameraServerJNI.getHostname();
+    CameraServerJNI.setTelemetryPeriod(1);
   }
 
   @Override

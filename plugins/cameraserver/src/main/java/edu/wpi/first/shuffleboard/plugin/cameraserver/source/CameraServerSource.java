@@ -1,37 +1,53 @@
 package edu.wpi.first.shuffleboard.plugin.cameraserver.source;
 
-import edu.wpi.cscore.CameraServerJNI;
-import edu.wpi.cscore.CvSink;
-import edu.wpi.cscore.HttpCamera;
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableEntry;
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.NetworkTableType;
+import edu.wpi.first.shuffleboard.api.DashboardMode;
+import edu.wpi.first.shuffleboard.api.properties.AsyncProperty;
+import edu.wpi.first.shuffleboard.api.properties.AtomicIntegerProperty;
 import edu.wpi.first.shuffleboard.api.sources.AbstractDataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.Sources;
+import edu.wpi.first.shuffleboard.api.util.Debouncer;
 import edu.wpi.first.shuffleboard.api.util.EqualityUtils;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.api.util.ThreadUtils;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.data.CameraServerData;
+import edu.wpi.first.shuffleboard.plugin.cameraserver.data.Resolution;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.data.type.CameraServerDataType;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.recording.serialization.ImageConverter;
 
+import edu.wpi.cscore.CameraServerJNI;
+import edu.wpi.cscore.CvSink;
+import edu.wpi.cscore.HttpCamera;
+import edu.wpi.cscore.VideoEvent;
+import edu.wpi.cscore.VideoException;
+import edu.wpi.cscore.VideoMode;
+import edu.wpi.first.networktables.EntryListenerFlags;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.NetworkTableType;
+
 import org.opencv.core.Mat;
 
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 import javafx.application.Platform;
+import javafx.beans.InvalidationListener;
 import javafx.beans.binding.BooleanBinding;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.Property;
 import javafx.beans.value.ChangeListener;
 import javafx.scene.image.Image;
 
+@SuppressWarnings("PMD.GodClass")
 public final class CameraServerSource extends AbstractDataSource<CameraServerData> {
 
   private static final Logger log = Logger.getLogger(CameraServerSource.class.getName());
@@ -58,6 +74,32 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
     //Recorder.getInstance().recordCurrentValue(this);
   };
 
+  private String[] streamUrls = null;
+
+  /**
+   * The maximum supported resolution. Attempts to set the resolution higher than this will fail.
+   */
+  public static final Resolution MAX_RESOLUTION = new Resolution(1920, 1080);
+
+  private final IntegerProperty targetCompression = new AtomicIntegerProperty(this, "targetCompression", -1);
+  private final IntegerProperty targetFps = new AtomicIntegerProperty(this, "targetFps", -1);
+  private final Property<Resolution> targetResolution =
+      new AsyncProperty<Resolution>(this, "targetResolution", Resolution.EMPTY) {
+        @Override
+        public void set(Resolution newValue) {
+          if (newValue.getWidth() > MAX_RESOLUTION.getWidth() || newValue.getHeight() > MAX_RESOLUTION.getHeight()) {
+            throw new IllegalArgumentException(
+                "The maximum supported resolution is " + MAX_RESOLUTION + ", but was given " + newValue);
+          }
+          super.set(newValue);
+        }
+      };
+  private final CameraUrlGenerator urlGenerator = new CameraUrlGenerator(this);
+
+  // Needs to be debounced; quickly changing URLs can cause serious performance hits
+  private final Debouncer urlUpdateDebouncer = new Debouncer(this::updateUrls, Duration.ofMillis(10));
+  private final InvalidationListener cameraUrlUpdater = __ -> urlUpdateDebouncer.run();
+
   private CameraServerSource(String name) {
     super(CameraServerDataType.Instance);
     setName(name);
@@ -78,10 +120,38 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
       }
     }, 0xFF, true);
 
+    CameraServerJNI.addListener(e -> {
+      if (enabled.get() && camera != null && camera.isValid()) {
+        double bandwidth;
+        double fps;
+        try {
+          bandwidth = camera.getActualDataRate();
+        } catch (VideoException ex) {
+          log.log(Level.WARNING, "Could not get bandwidth", ex);
+          bandwidth = -1;
+        }
+        try {
+          fps = camera.getActualFPS();
+        } catch (VideoException ex) {
+          log.log(Level.WARNING, "Could not get framerate", ex);
+          fps = -1;
+        }
+        CameraServerData currentData = getData();
+        setData(new CameraServerData(currentData.getName(), currentData.getImage(), fps, bandwidth));
+      }
+    }, VideoEvent.Kind.kTelemetryUpdated.getValue(), true);
+
     streams = cameraPublisherTable.getSubTable(name).getEntry(STREAMS_KEY);
-    String[] streamUrls = removeCameraProtocols(streams.getStringArray(emptyStringArray));
+    streams.addListener(notification -> {
+      String[] arr = notification.getEntry().getStringArray(emptyStringArray);
+      if (camera != null) {
+        setActive(arr.length > 0);
+        setConnected(DashboardMode.getCurrentMode() != DashboardMode.PLAYBACK);
+      }
+    }, EntryListenerFlags.kNew | EntryListenerFlags.kUpdate | EntryListenerFlags.kImmediate);
+    streamUrls = removeCameraProtocols(streams.getStringArray(emptyStringArray));
     if (streamUrls.length > 0) {
-      camera = new HttpCamera(name, streamUrls);
+      camera = new HttpCamera(name, urlGenerator.generateUrls(streamUrls));
       videoSink.setSource(camera);
       videoSink.setEnabled(true);
     }
@@ -103,12 +173,13 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
               || (entryNotification.value.getStringArray()).length == 0) {
             setActive(false);
           } else {
-            String[] urls = removeCameraProtocols(entryNotification.value.getStringArray());
+            streamUrls = removeCameraProtocols(entryNotification.value.getStringArray());
+            String[] parameterizedUrls = urlGenerator.generateUrls(streamUrls);
             if (camera == null) {
-              camera = new HttpCamera(name, urls);
+              camera = new HttpCamera(name, parameterizedUrls);
               videoSink.setSource(camera);
-            } else if (EqualityUtils.isDifferent(camera.getUrls(), urls)) {
-              camera.setUrls(urls);
+            } else if (EqualityUtils.isDifferent(camera.getUrls(), parameterizedUrls)) {
+              setCameraUrls(parameterizedUrls);
             }
             setActive(true);
           }
@@ -119,7 +190,9 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
       }
     };
     enabled.addListener(enabledListener);
-
+    targetCompression.addListener(cameraUrlUpdater);
+    targetFps.addListener(cameraUrlUpdater);
+    targetResolution.addListener(cameraUrlUpdater);
     setActive(camera != null && camera.getUrls().length > 0);
   }
 
@@ -142,6 +215,7 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
   private static String[] removeCameraProtocols(String... streams) {
     return Stream.of(streams)
         .map(url -> url.replaceFirst("^(mjpe?g|ip|usb):", ""))
+        .map(url -> url.replace("/?action=stream", "/stream.mjpg?"))
         .toArray(String[]::new);
   }
 
@@ -191,7 +265,7 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
     } else {
       Image image = imageConverter.convert(imageStorage);
       if (getData() == null) {
-        setData(new CameraServerData(getName(), image));
+        setData(new CameraServerData(getName(), image, -1, -1));
       } else {
         setData(getData().withImage(image));
       }
@@ -208,9 +282,93 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
     CameraServerJNI.removeListener(eventListenerId);
     cancelFrameGrabber();
     videoSink.free();
-    camera.free();
+    if (camera != null) {
+      camera.free();
+    }
     sources.remove(getName());
     Sources.getDefault().unregister(this);
   }
 
+  private void updateUrls() {
+    if (camera != null) {
+      setCameraUrls(urlGenerator.generateUrls(streamUrls));
+    }
+  }
+
+  private void setCameraUrls(String[] urls) { // NOPMD varargs instead of array
+    camera.setUrls(urls);
+    // Setting the video mode forces a reconnect
+    Resolution resolution = getTargetResolution();
+    VideoMode videoMode = new VideoMode(
+        VideoMode.PixelFormat.kMJPEG,
+        resolution.getWidth(),
+        resolution.getHeight(),
+        getTargetFps()
+    );
+    camera.setVideoMode(videoMode);
+  }
+
+  /**
+   * Gets the target compression level of the stream as set by {@link #setTargetCompression}.
+   */
+  public int getTargetCompression() {
+    return targetCompression.get();
+  }
+
+  public IntegerProperty targetCompressionProperty() {
+    return targetCompression;
+  }
+
+  /**
+   * Sets the compression of the MJPEG stream, in the range [0, 100]. Lower values are lower compression. A value
+   * outside this range will result in the stream using its default compression level as set in the remote program.
+   *
+   * @param targetCompression the compression value of the MJPEG stream
+   */
+  public void setTargetCompression(int targetCompression) {
+    this.targetCompression.set(targetCompression);
+  }
+
+  /**
+   * Gets the target FPS of the stream as set by {@link #setTargetFps}.
+   */
+  public int getTargetFps() {
+    return targetFps.get();
+  }
+
+  public IntegerProperty targetFpsProperty() {
+    return targetFps;
+  }
+
+  /**
+   * Sets the output FPS of the camera. A negative or zero value will result in the camera using its default frame rate.
+   *
+   * @param targetFps the target FPS of the stream
+   */
+  public void setTargetFps(int targetFps) {
+    this.targetFps.set(targetFps);
+  }
+
+  /**
+   * Gets the target resolution of the stream as set by {@link #setTargetResolution}.
+   *
+   * @return the set target resolution
+   */
+  public Resolution getTargetResolution() {
+    return targetResolution.getValue();
+  }
+
+  public Property<Resolution> targetResolutionProperty() {
+    return targetResolution;
+  }
+
+  /**
+   * Sets the target resolution of the stream. If {@code null}, or if either dimension is negative or zero, the stream
+   * will use its default resolution.
+   *
+   * @param targetResolution the target resolution of the stream
+   */
+  public void setTargetResolution(Resolution targetResolution) {
+    this.targetResolution.setValue(targetResolution);
+  }
 }

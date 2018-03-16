@@ -15,13 +15,26 @@ import javafx.scene.control.TextFormatter;
 public abstract class AbstractNumberField<N extends Number> extends TextField {
 
   private final Property<N> number = new SimpleObjectProperty<>(this, "number");
+  private final Property<N> minValue = new SimpleObjectProperty<>(this, "minValue", null);
+  private final Property<N> maxValue = new SimpleObjectProperty<>(this, "maxValue", null);
 
   protected AbstractNumberField() {
     super();
+    getStyleClass().add("number-field");
     setText("0");
     setNumber(getNumberFromText("0"));
     setTextFormatter(new TextFormatter<>(change -> {
       String text = change.getControlNewText();
+      if (isCompleteNumber(text)) {
+        // Bounds check
+        final N number = getNumberFromText(text);
+        if (getMaxValue() != null && number.doubleValue() > getMaxValue().doubleValue()) {
+          return null;
+        }
+        if (getMinValue() != null && number.doubleValue() < getMinValue().doubleValue()) {
+          return null;
+        }
+      }
       if (isStartOfNumber(text)) {
         return change;
       }
@@ -71,4 +84,27 @@ public abstract class AbstractNumberField<N extends Number> extends TextField {
     this.number.setValue(number);
   }
 
+  public final N getMinValue() {
+    return minValue.getValue();
+  }
+
+  public final Property<N> minValueProperty() {
+    return minValue;
+  }
+
+  public final void setMinValue(N minValue) {
+    this.minValue.setValue(minValue);
+  }
+
+  public final N getMaxValue() {
+    return maxValue.getValue();
+  }
+
+  public final Property<N> maxValueProperty() {
+    return maxValue;
+  }
+
+  public final void setMaxValue(N maxValue) {
+    this.maxValue.setValue(maxValue);
+  }
 }
