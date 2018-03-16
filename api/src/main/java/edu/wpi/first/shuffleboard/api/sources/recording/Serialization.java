@@ -2,22 +2,30 @@ package edu.wpi.first.shuffleboard.api.sources.recording;
 
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
+import edu.wpi.first.shuffleboard.api.data.types.StringArrayType;
+import edu.wpi.first.shuffleboard.api.data.types.StringType;
 import edu.wpi.first.shuffleboard.api.sources.recording.serialization.Serializers;
 import edu.wpi.first.shuffleboard.api.sources.recording.serialization.TypeAdapter;
 
 import com.google.common.primitives.Bytes;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
+import java.nio.channels.FileChannel;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -57,6 +65,24 @@ public final class Serialization {
    */
   public static final int SIZE_OF_DOUBLE = 8;
 
+  /**
+   * Constant offsets for the binary save files.
+   */
+  private static final class Offsets {
+    /**
+     * The offset to the magic header number.
+     */
+    public static final int MAGIC_NUMBER_OFFSET = 0;
+    /**
+     * The offset to the <tt>int</tt> value of the number of data points.
+     */
+    public static final int NUMBER_DATA_POINTS_OFFSET = MAGIC_NUMBER_OFFSET + SIZE_OF_INT;
+    /**
+     * The offset to the <tt>int</tt> value of the number of entries in the constant pool.
+     */
+    public static final int CONSTANT_POOL_HEADER_OFFSET = NUMBER_DATA_POINTS_OFFSET + SIZE_OF_INT;
+  }
+
   private Serialization() {
   }
 
@@ -83,33 +109,163 @@ public final class Serialization {
       final DataType type = data.getDataType();
       final Object value = data.getData();
 
-      final byte[] timestamp = toByteArray(data.getTimestamp()); // NOPMD
+      final byte[] timestamp = toByteArray(data.getTimestamp());
       // use int16 instead of int32 -- 32,767 sources should be enough
-      final byte[] sourceIdIndex = toByteArray((short) sourceNames.indexOf(data.getSourceId())); //NOPMD
-      final byte[] dataType = toByteArray(type.getName()); // NOPMD
-      final byte[] dataBytes = encode(value, type); // NOPMD
-
-      if (dataBytes == null) {
-        throw new IOException("Cannot serialize value of type " + type.getName());
-      }
+      final byte[] sourceIdIndex = toByteArray((short) sourceNames.indexOf(data.getSourceId()));
+      final byte[] dataType = toByteArray(type.getName());
+      final byte[] dataBytes = encode(value, type);
 
       segments.add(timestamp);
       segments.add(sourceIdIndex);
       segments.add(dataType);
       segments.add(dataBytes);
     }
-    byte[] all = new byte[segments.stream().mapToInt(b -> b.length).sum()];
-    for (int i = 0, j = 0; i < all.length; ) {
-      byte[] next = segments.get(j);
-      put(all, next, i);
-      i += next.length;
-      j++;
-    }
+    byte[] all = segments
+        .stream()
+        .reduce(new byte[0], Bytes::concat);
     Path saveDir = file.getParent();
     if (saveDir != null) {
       Files.createDirectories(saveDir);
     }
     Files.write(file, all);
+  }
+
+  /**
+   * Updates a saved recording file with the contents of the given recording. Note: the recording should <i>not</i>
+   * contain any data that has already been saved to disk, or it will be saved again.
+   *
+   * @param recording the recording to update the save file with
+   * @param file      the path to the save file to update
+   *
+   * @throws IOException if the save file could not be updated
+   */
+  public static void updateRecordingSave(Recording recording, Path file) throws IOException {
+    if (Files.notExists(file) || Files.size(file) == 0) {
+      saveRecording(recording, file);
+      return;
+    }
+    if (recording.getData().isEmpty()) {
+      // No new data
+      return;
+    }
+    // Use a RandomAccessFile to avoid having to read its entire contents into memory
+    RandomAccessFile raf = new RandomAccessFile(file.toFile(), "rw");
+    int magic = raf.readInt();
+    if (magic != MAGIC_NUMBER) {
+      throw new IOException("Wrong magic number in the header. Expected " + MAGIC_NUMBER + ", but was " + magic);
+    }
+
+    // Update the number of data points
+    raf.seek(Offsets.NUMBER_DATA_POINTS_OFFSET);
+    int numExistingDataPoints = raf.readInt();
+    int totalDataPoints = numExistingDataPoints + recording.getData().size();
+    raf.seek(Offsets.NUMBER_DATA_POINTS_OFFSET);
+    raf.writeInt(totalDataPoints); // Update the number of data points
+
+    // Update the constant pool
+    raf.seek(Offsets.CONSTANT_POOL_HEADER_OFFSET);
+    int numExistingSourceIds = raf.readInt();
+    byte[] sourceIdBuffer = new byte[256];
+    final List<String> sourceIds = new ArrayList<>();
+    int constantPoolSize = 0;
+    int pos = Offsets.CONSTANT_POOL_HEADER_OFFSET + SIZE_OF_INT;
+    for (int i = 0; i < numExistingSourceIds; i++) {
+      raf.seek(pos);
+      final int sourceIdLength = raf.readInt();
+      pos += SIZE_OF_INT;
+      constantPoolSize += SIZE_OF_INT;
+      raf.seek(pos);
+      final int len = raf.read(sourceIdBuffer, 0, sourceIdLength);
+      String sourceId = new String(Arrays.copyOfRange(sourceIdBuffer, 0, len), StandardCharsets.UTF_8);
+      pos += len;
+      constantPoolSize += len;
+      sourceIds.add(sourceId);
+    }
+    byte[] newConstantPoolEntries = recording.getData().stream()
+        .map(TimestampedData::getSourceId)
+        .distinct()
+        .filter(id -> !sourceIds.contains(id))
+        .map(Serialization::toByteArray)
+        .reduce(new byte[0], Bytes::concat);
+    recording.getData().stream()
+        .map(TimestampedData::getSourceId)
+        .distinct()
+        .filter(s -> !sourceIds.contains(s))
+        .forEachOrdered(sourceIds::add);
+    byte[] newBodyEntries = recording.getData().stream()
+        .map(data -> {
+          final DataType type = data.getDataType();
+          final Object value = data.getData();
+
+          final byte[] timestamp = toByteArray(data.getTimestamp());
+          // use int16 instead of int32 -- 32,767 sources should be enough
+          final byte[] sourceIdIndex = toByteArray((short) sourceIds.indexOf(data.getSourceId()));
+          final byte[] dataType = toByteArray(type.getName());
+          final byte[] dataBytes = encode(value, type);
+
+          return Bytes.concat(timestamp, sourceIdIndex, dataType, dataBytes);
+        })
+        .reduce(new byte[0], Bytes::concat);
+
+    if (newConstantPoolEntries.length > 0) {
+      // Update the number of source IDs
+      int totalNumSourceIds = sourceIds.size();
+      raf.seek(Offsets.CONSTANT_POOL_HEADER_OFFSET);
+      raf.writeInt(totalNumSourceIds);
+
+      // Update the constant pool
+      int constantPoolEnd = Offsets.CONSTANT_POOL_HEADER_OFFSET + SIZE_OF_INT + constantPoolSize;
+      insertDataIntoFile(file, constantPoolEnd, newConstantPoolEntries);
+    }
+    Files.write(file, newBodyEntries, StandardOpenOption.WRITE, StandardOpenOption.APPEND);
+  }
+
+  /**
+   * Inserts binary data into a file at a specific position.
+   *
+   * @param path the path to the file to insert into
+   * @param pos  the position in the file to insert the data at
+   * @param data the data to insert
+   *
+   * @throws IOException if the file could not be modified
+   */
+  static void insertDataIntoFile(Path path, long pos, byte[] data) throws IOException {
+    if (Files.notExists(path)) {
+      throw new NoSuchFileException("The file specified does not exist: " + path);
+    }
+    if (!Files.isRegularFile(path, LinkOption.NOFOLLOW_LINKS)) {
+      // Make sure it's a normal file (not a directory and not a symlink/shortcut to another file)
+      throw new IllegalArgumentException("Cannot insert into " + path);
+    }
+    Objects.requireNonNull(data, "Data cannot be null");
+    if (data.length == 0) {
+      // Nothing to insert, do nothing
+      return;
+    }
+    Path fileName = path.getFileName();
+    if (fileName == null) {
+      // Shouldn't be possible
+      throw new AssertionError("File name is null - this should have been checked earlier");
+    }
+    File tmpFile = new File(path.toString().replace(fileName.toString(), "." + fileName));
+    RandomAccessFile file = new RandomAccessFile(path.toFile(), "rw");
+    RandomAccessFile tmp = new RandomAccessFile(tmpFile, "rw");
+    try (FileChannel src = file.getChannel(); FileChannel dst = tmp.getChannel()) {
+      final long fileSize = file.length();
+      final long count = fileSize - pos;
+      src.transferTo(pos, count, dst);
+      src.truncate(pos);
+      file.seek(pos);
+      file.write(data);
+      long newOffset = file.getFilePointer();
+      dst.position(0);
+      src.transferFrom(dst, newOffset, count);
+    } finally {
+      boolean deleted = tmpFile.delete();
+      if (!deleted) {
+        log.fine(() -> "Could not delete temp file");
+      }
+    }
   }
 
   public static <T> byte[] encode(T value) {
@@ -148,16 +304,16 @@ public final class Serialization {
     if (bytes.length < 8) {
       throw new IOException("Recording file too small");
     }
-    final int magic = readInt(bytes, 0);
+    final int magic = readInt(bytes, Offsets.MAGIC_NUMBER_OFFSET);
     if (magic != MAGIC_NUMBER) {
       throw new IOException("Wrong magic number in the header. Expected " + MAGIC_NUMBER + ", but was " + magic);
     }
     Serializers.getAdapters().forEach(a -> a.setCurrentFile(file.toFile()));
-    //final int numDataPoints = readInt(bytes, 4);
-    final String[] sourceNames = readStringArray(bytes, 8);
+    //final int numDataPoints = readInt(bytes, Offsets.NUMBER_DATA_POINTS_OFFSET);
+    final String[] sourceNames = readStringArray(bytes, Offsets.CONSTANT_POOL_HEADER_OFFSET);
 
     Recording recording = new Recording();
-    int cursor = 8 + sizeOfStringArray(sourceNames);
+    int cursor = Offsets.CONSTANT_POOL_HEADER_OFFSET + sizeOfStringArray(sourceNames);
     while (cursor < bytes.length) {
       final long timeStamp = readLong(bytes, cursor); // NOPMD
       cursor += SIZE_OF_LONG;
@@ -174,7 +330,7 @@ public final class Serialization {
         value = adapter.deserialize(bytes, cursor);
         cursor += adapter.getSerializedSize(value);
       } else {
-        throw new IOException("No serializer for " + dataType);
+        throw new IOException("No serializer for data type '" + dataType + "'");
       }
 
       // Since the data is guaranteed to be ordered in the file, we call recording.append()
@@ -300,7 +456,7 @@ public final class Serialization {
    * Encodes a string array as a big-endian byte array. These can be read with {@link #readStringArray(byte[], int)}.
    */
   public static byte[] toByteArray(String[] array) { // NOPMD varargs
-    return useSerializer(String[].class, s -> s.serialize(array));
+    return Serializers.get(StringArrayType.Instance).serialize(array);
   }
 
   /**
@@ -428,7 +584,7 @@ public final class Serialization {
    * @param pos   the starting position of the encoded string
    */
   public static String readString(byte[] array, int pos) {
-    return useSerializer(String.class, s -> s.deserialize(array, pos));
+    return Serializers.get(StringType.Instance).deserialize(array, pos);
   }
 
   /**
@@ -438,14 +594,7 @@ public final class Serialization {
    * @param pos   the starting position of the encoded string array
    */
   public static String[] readStringArray(byte[] array, int pos) {
-    return useSerializer(String[].class, s -> s.deserialize(array, pos));
-  }
-
-  private static <T, U> U useSerializer(Class<T> type, Function<TypeAdapter<T>, U> function) {
-    return DataTypes.getDefault().forJavaType(type)
-        .map(Serializers::get)
-        .map(function)
-        .orElseThrow(() -> new UnsupportedOperationException("No type adapter for " + type.getSimpleName()));
+    return Serializers.get(StringArrayType.Instance).deserialize(array, pos);
   }
 
 }
