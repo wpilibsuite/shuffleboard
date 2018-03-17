@@ -23,7 +23,7 @@ public final class ImageConverter {
   private WritableImage image;
   private byte[] data;
   private ByteBuffer buffer;
-  private Mat converted = new Mat();
+  private final Mat converted = new Mat();
 
   /**
    * Convert a BGR-formatted OpenCV {@link Mat} into a JavaFX {@link Image}. JavaFX understands ARGB
