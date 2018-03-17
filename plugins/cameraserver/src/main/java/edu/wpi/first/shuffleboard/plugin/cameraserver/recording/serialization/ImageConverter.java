@@ -1,7 +1,6 @@
 package edu.wpi.first.shuffleboard.plugin.cameraserver.recording.serialization;
 
 import org.opencv.core.Mat;
-import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
 import java.nio.ByteBuffer;
@@ -14,7 +13,6 @@ import static org.opencv.core.CvType.CV_8S;
 import static org.opencv.core.CvType.CV_8U;
 import static org.opencv.imgproc.Imgproc.COLOR_BGR2RGB;
 import static org.opencv.imgproc.Imgproc.COLOR_GRAY2RGB;
-import static org.opencv.imgproc.Imgproc.INTER_CUBIC;
 
 /**
  * Utility class for creating a JavaFX image from an OpenCV image.  This used by the preview views
@@ -25,6 +23,7 @@ public final class ImageConverter {
   private WritableImage image;
   private byte[] data;
   private ByteBuffer buffer;
+  private Mat converted = new Mat();
 
   /**
    * Convert a BGR-formatted OpenCV {@link Mat} into a JavaFX {@link Image}. JavaFX understands ARGB
@@ -51,21 +50,8 @@ public final class ImageConverter {
       return null;
     }
 
-    Mat toRender = new Mat();
-    if (mat.rows() > desiredHeight) {
-      // Scale the image down
-      Imgproc.resize(
-          mat, toRender,
-          new Size((int) (((double) mat.cols() * desiredHeight) / mat.rows()), desiredHeight),
-          0, 0, INTER_CUBIC
-      );
-    } else {
-      mat.copyTo(toRender);
-    }
-
-    final int width = toRender.cols();
-    final int height = toRender.rows();
-
+    final int width = mat.cols();
+    final int height = mat.rows();
 
     // If the size of the Mat changed for whatever reason, allocate a new image with the proper
     // dimensions and a buffer big enough to hold all of the pixels in the image.
@@ -78,20 +64,17 @@ public final class ImageConverter {
     // Convert BGR to RGB so it can be rendered  easily
     switch (channels) {
       case 1:
-        Imgproc.cvtColor(toRender, toRender, COLOR_GRAY2RGB);
+        Imgproc.cvtColor(mat, converted, COLOR_GRAY2RGB);
         break;
       case 3:
-        Imgproc.cvtColor(toRender, toRender, COLOR_BGR2RGB);
+        Imgproc.cvtColor(mat, converted, COLOR_BGR2RGB);
         break;
       default:
         throw new UnsupportedOperationException("Only 1 or 3-channel images are supported");
     }
 
     // Grab the image data
-    toRender.get(0, 0, data);
-    // Java may not realize how much memory this takes up, and won't garbage collect it,
-    // causing shuffleboard to eat more and more memory each frame.
-    toRender.release();
+    converted.get(0, 0, data);
 
     image.getPixelWriter().setPixels(0, 0, width, height, PixelFormat.getByteRgbInstance(), buffer, width * channels);
 
