@@ -89,6 +89,9 @@ public final class ImageConverter {
 
     // Grab the image data
     toRender.get(0, 0, data);
+    // Java may not realize how much memory this takes up, and won't garbage collect it,
+    // causing shuffleboard to eat more and more memory each frame.
+    toRender.release();
 
     image.getPixelWriter().setPixels(0, 0, width, height, PixelFormat.getByteRgbInstance(), buffer, width * channels);
 
