@@ -30,12 +30,11 @@ public final class ImageConverter {
    * pixel data, so one way to turn a Mat into a JavaFX image is to shift around the bytes from the
    * Mat into an int array of pixels.
    *
-   * @param mat           An 8-bit OpenCV Mat containing an image with either 1 or 3 channels
-   * @param desiredHeight the desired height of the image
+   * @param mat An 8-bit OpenCV Mat containing an image with either 1 or 3 channels
    *
    * @return A JavaFX image, or null for empty
    */
-  public Image convert(Mat mat, int desiredHeight) {
+  public Image convert(Mat mat) {
 
     final int channels = mat.channels();
 
@@ -79,19 +78,6 @@ public final class ImageConverter {
     image.getPixelWriter().setPixels(0, 0, width, height, PixelFormat.getByteRgbInstance(), buffer, width * channels);
 
     return image;
-  }
-
-  /**
-   * Convert a BGR-formatted OpenCV {@link Mat} into a JavaFX {@link Image}. JavaFX understands ARGB
-   * pixel data, so one way to turn a Mat into a JavaFX image is to shift around the bytes from the
-   * Mat into an int array of pixels.
-   *
-   * @param mat An 8-bit OpenCV Mat containing an image with either 1 or 3 channels
-   *
-   * @return A JavaFX image, or null for empty
-   */
-  public Image convert(Mat mat) {
-    return convert(mat, mat.rows());
   }
 
 }
