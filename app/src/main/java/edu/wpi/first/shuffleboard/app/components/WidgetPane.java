@@ -246,7 +246,12 @@ public class WidgetPane extends TilePane implements ComponentContainer {
       addWidget((Widget) component);
     } else {
       TileSize size = sizeOfWidget(component);
-      Tile<?> tile = addComponent(component, firstPoint(size.getWidth(), size.getHeight()), size);
+      GridPoint location = firstPoint(size.getWidth(), size.getHeight());
+      if (location == null) {
+        // Nowhere to place the component
+        return;
+      }
+      Tile<?> tile = addComponent(component, location, size);
       if (getChildren().contains(tile)) {
         // Can only set the size if the tile was actually added
         setSize(tile, size);
