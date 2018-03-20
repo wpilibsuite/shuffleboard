@@ -6,3 +6,5 @@ subtables) and a widget for displaying MapData as a tree table.
 dependencies {
     //TODO ntcore
 }
+
+version = "1.5.0"

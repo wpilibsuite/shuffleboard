@@ -14,7 +14,7 @@ import java.util.List;
 @Description(
     group = "edu.wpi.first.shuffleboard",
     name = "Powerup",
-    version = "1.0.0",
+    version = PowerupPluginVersion.VERSION,
     summary = "Adds widgets for viewing FMS Info for the 2018 FRC game POWER UP"
 )
 @Requires(group = "edu.wpi.first.shuffleboard", name = "Base", minVersion = "1.0.0")
