@@ -156,6 +156,18 @@ public class MainWindowController {
             running -> running ? "Stop recording" : "Start recording"));
     FxUtils.bind(root.getStylesheets(), stylesheets);
 
+    log.info("Setting up plugins in the UI");
+    PluginLoader.getDefault().getLoadedPlugins().forEach(plugin -> {
+      plugin.loadedProperty().addListener((__, was, is) -> {
+        if (is) {
+          setup(plugin);
+        } else {
+          tearDown(plugin);
+        }
+      });
+      setup(plugin);
+    });
+    sourcesAccordion.getPanes().sort(Comparator.comparing(TitledPane::getText));
     PluginLoader.getDefault().getKnownPlugins().addListener((ListChangeListener<Plugin>) c -> {
       while (c.next()) {
         if (c.wasAdded()) {
