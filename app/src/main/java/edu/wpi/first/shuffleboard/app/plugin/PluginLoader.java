@@ -34,6 +34,7 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -61,7 +62,7 @@ public class PluginLoader {
           TabInfoRegistry.getDefault()
       );
 
-  private final ObservableSet<Plugin> loadedPlugins = FXCollections.observableSet();
+  private final ObservableSet<Plugin> loadedPlugins = FXCollections.observableSet(new LinkedHashSet<>());
   private final Set<Class<? extends Plugin>> knownPluginClasses = new HashSet<>();
   private final ObservableList<Plugin> knownPlugins = FXCollections.observableArrayList();
   private final DataTypes dataTypes;
