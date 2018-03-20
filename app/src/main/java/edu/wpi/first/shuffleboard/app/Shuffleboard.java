@@ -11,7 +11,7 @@ import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
 import edu.wpi.first.shuffleboard.plugin.base.BasePlugin;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.CameraServerPlugin;
 import edu.wpi.first.shuffleboard.plugin.networktables.NetworkTablesPlugin;
-import edu.wpi.first.shuffleboard.plugin.powerup.PowerupPlugin;
+import edu.wpi.first.shuffleboard.plugin.powerup.PowerUpPlugin;
 
 import com.github.zafarkhaja.semver.Version;
 import com.google.common.base.Stopwatch;
@@ -126,7 +126,7 @@ public class Shuffleboard extends Application {
 
     PluginLoader.getDefault().load(new NetworkTablesPlugin());
     PluginLoader.getDefault().load(new CameraServerPlugin());
-    PluginLoader.getDefault().load(new PowerupPlugin());
+    PluginLoader.getDefault().load(new PowerUpPlugin());
     PluginLoader.getDefault().loadAllJarsFromDir(Storage.getPluginPath());
     PluginCache.getDefault().loadCache(PluginLoader.getDefault());
 
