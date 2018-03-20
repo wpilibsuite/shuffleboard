@@ -85,7 +85,6 @@ public class Shuffleboard extends Application {
     logger.finer("Registering custom user themes from external dir");
     notifyPreloader(new ShuffleboardPreloader.StateNotification("Loading custom themes", 0));
     Themes.getDefault().loadThemesFromDir();
-    notifyPreloader(new ShuffleboardPreloader.StateNotification("Loading custom themes", 1));
 
     logger.info("Build time: " + getBuildTime());
 
@@ -109,22 +108,22 @@ public class Shuffleboard extends Application {
       return;
     }
 
-    notifyPreloader(new ShuffleboardPreloader.StateNotification("Loading base plugin", 0));
+    notifyPreloader(new ShuffleboardPreloader.StateNotification("Loading base plugin", 0.125));
     PluginLoader.getDefault().load(new BasePlugin());
 
     Recorder.getInstance().start();
 
-    notifyPreloader(new ShuffleboardPreloader.StateNotification("Loading NetworkTables plugin", 0));
+    notifyPreloader(new ShuffleboardPreloader.StateNotification("Loading NetworkTables plugin", 0.25));
     PluginLoader.getDefault().load(new NetworkTablesPlugin());
-    notifyPreloader(new ShuffleboardPreloader.StateNotification("Loading CameraServer plugin", 0));
+    notifyPreloader(new ShuffleboardPreloader.StateNotification("Loading CameraServer plugin", 0.375));
     PluginLoader.getDefault().load(new CameraServerPlugin());
-    notifyPreloader(new ShuffleboardPreloader.StateNotification("Loading Powerup plugin", 0));
+    notifyPreloader(new ShuffleboardPreloader.StateNotification("Loading Powerup plugin", 0.5));
     PluginLoader.getDefault().load(new PowerupPlugin());
-    notifyPreloader(new ShuffleboardPreloader.StateNotification("Loading custom plugins", 0));
+    notifyPreloader(new ShuffleboardPreloader.StateNotification("Loading custom plugins", 0.625));
     PluginLoader.getDefault().loadAllJarsFromDir(Storage.getPluginPath());
-    notifyPreloader(new ShuffleboardPreloader.StateNotification("Loading custom plugins", 0.5));
+    notifyPreloader(new ShuffleboardPreloader.StateNotification("Loading custom plugins", 0.75));
     PluginCache.getDefault().loadCache(PluginLoader.getDefault());
-    notifyPreloader(new ShuffleboardPreloader.StateNotification("Loading custom plugins", 1));
+    notifyPreloader(new ShuffleboardPreloader.StateNotification("Loading custom plugins", 0.875));
     Thread.sleep(250); // wait to let the new status be visible before overwriting it
     notifyPreloader(new ShuffleboardPreloader.StateNotification("Starting up", 1));
     Thread.sleep(20); // small wait to let the status be visible - the preloader doesn't get notifications for a bit
