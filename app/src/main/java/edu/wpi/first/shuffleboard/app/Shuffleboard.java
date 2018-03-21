@@ -57,6 +57,7 @@ public class Shuffleboard extends Application {
   private Runnable onOtherAppStart = () -> {};
 
   private final Stopwatch startupTimer = Stopwatch.createStarted();
+  private MainWindowController mainWindowController;
 
   public static void main(String[] args) {
     LauncherImpl.launchApplication(Shuffleboard.class, ShuffleboardPreloader.class, args);
@@ -123,6 +124,15 @@ public class Shuffleboard extends Application {
     PluginLoader.getDefault().loadAllJarsFromDir(Storage.getPluginPath());
     notifyPreloader(new ShuffleboardPreloader.StateNotification("Loading custom plugins", 0.75));
     PluginCache.getDefault().loadCache(PluginLoader.getDefault());
+    Stopwatch fxmlLoadTimer = Stopwatch.createStarted();
+
+    notifyPreloader(new ShuffleboardPreloader.StateNotification("Initializing user interface", 0.875));
+    FXMLLoader loader = new FXMLLoader(MainWindowController.class.getResource("MainWindow.fxml"));
+    mainPane = loader.load();
+    long fxmlLoadTime = fxmlLoadTimer.elapsed(TimeUnit.MILLISECONDS);
+    mainWindowController = loader.getController();
+    logger.log(fxmlLoadTime >= 500 ? Level.WARNING : Level.INFO, "Took " + fxmlLoadTime + "ms to load the main FXML");
+
     notifyPreloader(new ShuffleboardPreloader.StateNotification("Starting up", 1));
     Thread.sleep(20); // small wait to let the status be visible - the preloader doesn't get notifications for a bit
   }
@@ -133,14 +143,6 @@ public class Shuffleboard extends Application {
     // Must be called in start() because init() is run on the main thread, not the FX application thread
     Thread.currentThread().setUncaughtExceptionHandler(Shuffleboard::uncaughtException);
     onOtherAppStart = () -> Platform.runLater(primaryStage::toFront);
-
-    Stopwatch fxmlLoadTimer = Stopwatch.createStarted();
-
-    FXMLLoader loader = new FXMLLoader(MainWindowController.class.getResource("MainWindow.fxml"));
-    mainPane = loader.load();
-    long fxmlLoadTime = fxmlLoadTimer.elapsed(TimeUnit.MILLISECONDS);
-    logger.log(fxmlLoadTime >= 500 ? Level.WARNING : Level.INFO, "Took " + fxmlLoadTime + "ms to load the main FXML");
-    final MainWindowController mainWindowController = loader.getController();
 
     primaryStage.setScene(new Scene(mainPane));
 

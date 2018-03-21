@@ -10,6 +10,7 @@ public class ShuffleboardLaunchTest extends ApplicationTest {
   @Override
   public void start(Stage stage) throws Exception {
     final Shuffleboard shuffleboard = new Shuffleboard();
+    shuffleboard.init();
     shuffleboard.start(stage);
   }
 
