@@ -18,6 +18,17 @@ It can also be run manually `java -jar c:\users\\<username\>wpilib\tools\Shuffle
 ### Requirements
 - [JRE 8](http://www.oracle.com/technetwork/java/javase/downloads/jre8-downloads-2133155.html). Java 8u40 or greater is required. Java 9 is not supported.
 
+If you have both the JDK 9 and JDK 8 installed on your machine you may need to explicitly set your shell's enviroment variables before running Gradle.
+
+For Bash:
+```bash
+JAVA_HOME=`/usr/libexec/java_home -v 1.8`
+```
+For [Fish Shell](https://fishshell.com/):
+```
+setenv -gx JAVA_HOME (/usr/libexec/java_home -v 1.8)
+```
+
 ## Building
 
 To run shuffleboard use the command `./gradlew :app:run`.
