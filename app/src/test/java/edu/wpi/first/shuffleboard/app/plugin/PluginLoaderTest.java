@@ -10,12 +10,11 @@ import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
 import edu.wpi.first.shuffleboard.api.tab.TabInfo;
 import edu.wpi.first.shuffleboard.api.theme.Theme;
 import edu.wpi.first.shuffleboard.api.theme.Themes;
+import edu.wpi.first.shuffleboard.api.util.EqualityUtils;
 import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.ComponentType;
 import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.app.tab.TabInfoRegistry;
-import edu.wpi.first.shuffleboard.testplugins.BasicPlugin;
-import edu.wpi.first.shuffleboard.testplugins.DependentOnUnknownPlugin;
 
 import com.cedarsoft.version.Version;
 import com.google.common.collect.ImmutableList;
@@ -106,21 +105,21 @@ public class PluginLoaderTest {
     assertAll(loader.getLoadedPlugins()
         .stream()
         .map(p ->
-            () -> assertInstanceOf(
-                p,
-                BasicPlugin.class,
-                edu.wpi.first.shuffleboard.testplugins.DependentPlugin.class
+            () -> assertAnyOf(
+                p.getClass().getName(),
+                "edu.wpi.first.shuffleboard.testplugins.BasicPlugin",
+                "edu.wpi.first.shuffleboard.testplugins.DependentPlugin"
             )
         )
     );
     assertAll(loader.getKnownPlugins()
         .stream()
         .map(p ->
-            () -> assertInstanceOf(
-                p,
-                BasicPlugin.class,
-                edu.wpi.first.shuffleboard.testplugins.DependentPlugin.class,
-                DependentOnUnknownPlugin.class
+            () -> assertAnyOf(
+                p.getClass().getName(),
+                "edu.wpi.first.shuffleboard.testplugins.BasicPlugin",
+                "edu.wpi.first.shuffleboard.testplugins.DependentPlugin",
+                "edu.wpi.first.shuffleboard.testplugins.DependentOnUnknownPlugin"
             )
         )
     );
@@ -291,13 +290,13 @@ public class PluginLoaderTest {
     assertFalse(dependent.isLoaded(), "Dependent plugin is still loaded");
   }
 
-  public static void assertInstanceOf(Object obj, Class<?>... possibleTypes) {
-    for (Class<?> possibleType : possibleTypes) {
-      if (possibleType.isInstance(obj)) {
+  public static <T> void assertAnyOf(T initial, T... options) {
+    for (T option : options) {
+      if (EqualityUtils.isEqual(initial, option)) {
         return;
       }
     }
-    throw new AssertionError("Object " + obj + " is not a instance of any of: " + Arrays.toString(possibleTypes));
+    throw new AssertionError("Object " + initial + " does not match any of: " + Arrays.toString(options));
   }
 
   /**

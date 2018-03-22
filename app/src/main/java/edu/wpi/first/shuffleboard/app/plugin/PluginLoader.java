@@ -26,8 +26,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.net.URI;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.AccessController;
@@ -52,6 +50,8 @@ public class PluginLoader {
 
   private static final Logger log = Logger.getLogger(PluginLoader.class.getName());
 
+  private static final PrivilegedAction<ModifiableUrlClassLoader> getClassLoaderAction =
+      () -> new ModifiableUrlClassLoader(ClassLoader.getSystemClassLoader());
   private static final PluginLoader defaultLoader =
       new PluginLoader(
           DataTypes.getDefault(),
@@ -61,6 +61,7 @@ public class PluginLoader {
           TabInfoRegistry.getDefault()
       );
 
+  private final ModifiableUrlClassLoader pluginClassLoader;
   private final ObservableSet<Plugin> loadedPlugins = FXCollections.observableSet();
   private final Set<Class<? extends Plugin>> knownPluginClasses = new HashSet<>();
   private final ObservableList<Plugin> knownPlugins = FXCollections.observableArrayList();
@@ -92,6 +93,8 @@ public class PluginLoader {
     this.components = Objects.requireNonNull(components, "components");
     this.themes = Objects.requireNonNull(themes, "themes");
     this.tabInfoRegistry = Objects.requireNonNull(tabInfoRegistry, "tabInfoRegistry");
+
+    this.pluginClassLoader = AccessController.doPrivileged(getClassLoaderAction);
   }
 
   /**
@@ -144,17 +147,13 @@ public class PluginLoader {
    */
   public void loadPluginJar(URI jarUri) throws IOException {
     log.info("Attempting to load plugin jar: " + jarUri);
-    URL url = jarUri.toURL();
-    PrivilegedAction<URLClassLoader> getClassLoader = () -> {
-      return new URLClassLoader(new URL[]{url}, ClassLoader.getSystemClassLoader());
-    };
-    URLClassLoader classLoader = AccessController.doPrivileged(getClassLoader);
+    pluginClassLoader.addURL(jarUri.toURL());
     try (JarFile jarFile = new JarFile(new File(jarUri))) {
       List<? extends Class<? extends Plugin>> pluginClasses = jarFile.stream()
           .filter(e -> e.getName().endsWith(".class"))
           .map(e -> e.getName().replace('/', '.'))
           .map(n -> n.substring(0, n.length() - 6)) // ".class".length() == 6
-          .flatMap(className -> tryLoadClass(className, classLoader))
+          .flatMap(className -> tryLoadClass(className, pluginClassLoader))
           .filter(Plugin.class::isAssignableFrom)
           .map(c -> (Class<? extends Plugin>) c)
           .filter(c -> {

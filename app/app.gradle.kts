@@ -29,7 +29,6 @@ dependencies {
     compile(group = "de.huxhorn.lilith", name = "de.huxhorn.lilith.3rdparty.junique", version = "1.0.4")
     compile(group = "com.github.samcarlberg", name = "update-checker", version = "+")
     compile(group = "com.github.zafarkhaja", name = "java-semver", version = "0.9.0")
-    testCompile(project("test_plugins"))
 }
 
 val theMainClassName = "edu.wpi.first.shuffleboard.app.Shuffleboard"
