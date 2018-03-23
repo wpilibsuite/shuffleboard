@@ -15,6 +15,7 @@ import edu.wpi.first.shuffleboard.plugin.powerup.PowerUpPlugin;
 
 import com.github.zafarkhaja.semver.Version;
 import com.google.common.base.Stopwatch;
+import com.sun.javafx.application.LauncherImpl;
 
 import de.codecentric.centerdevice.javafxsvg.SvgImageLoaderFactory;
 
@@ -57,8 +58,12 @@ public class Shuffleboard extends Application {
 
   private final Stopwatch startupTimer = Stopwatch.createStarted();
 
+  public static void main(String[] args) {
+    LauncherImpl.launchApplication(Shuffleboard.class, ShuffleboardPreloader.class, args);
+  }
+
   @Override
-  public void init() throws AlreadyLockedException, IOException {
+  public void init() throws AlreadyLockedException, IOException, InterruptedException {
     try {
       JUnique.acquireLock(getClass().getCanonicalName(), message -> {
         onOtherAppStart.run();
@@ -78,17 +83,10 @@ public class Shuffleboard extends Application {
     // Search for and load themes from the custom theme directory before loading application preferences
     // This avoids an issue with attempting to load a theme at startup that hasn't yet been registered
     logger.finer("Registering custom user themes from external dir");
+    notifyPreloader(new ShuffleboardPreloader.StateNotification("Loading custom themes", 0));
     Themes.getDefault().loadThemesFromDir();
 
     logger.info("Build time: " + getBuildTime());
-  }
-
-  @Override
-  public void start(Stage primaryStage) throws IOException {
-    // Set up the application thread to log exceptions instead of using printStackTrace()
-    // Must be called in start() because init() is run on the main thread, not the FX application thread
-    Thread.currentThread().setUncaughtExceptionHandler(Shuffleboard::uncaughtException);
-    onOtherAppStart = () -> Platform.runLater(primaryStage::toFront);
 
     // Before we load components that only work with Java 8, check to make sure
     // the application is running on Java 8. If we are running on an invalid
@@ -110,6 +108,32 @@ public class Shuffleboard extends Application {
       return;
     }
 
+    notifyPreloader(new ShuffleboardPreloader.StateNotification("Loading base plugin", 0.125));
+    PluginLoader.getDefault().load(new BasePlugin());
+
+    Recorder.getInstance().start();
+
+    notifyPreloader(new ShuffleboardPreloader.StateNotification("Loading NetworkTables plugin", 0.25));
+    PluginLoader.getDefault().load(new NetworkTablesPlugin());
+    notifyPreloader(new ShuffleboardPreloader.StateNotification("Loading CameraServer plugin", 0.375));
+    PluginLoader.getDefault().load(new CameraServerPlugin());
+    notifyPreloader(new ShuffleboardPreloader.StateNotification("Loading Powerup plugin", 0.5));
+    PluginLoader.getDefault().load(new PowerUpPlugin());
+    notifyPreloader(new ShuffleboardPreloader.StateNotification("Loading custom plugins", 0.625));
+    PluginLoader.getDefault().loadAllJarsFromDir(Storage.getPluginPath());
+    notifyPreloader(new ShuffleboardPreloader.StateNotification("Loading custom plugins", 0.75));
+    PluginCache.getDefault().loadCache(PluginLoader.getDefault());
+    notifyPreloader(new ShuffleboardPreloader.StateNotification("Starting up", 1));
+    Thread.sleep(20); // small wait to let the status be visible - the preloader doesn't get notifications for a bit
+  }
+
+  @Override
+  public void start(Stage primaryStage) throws IOException {
+    // Set up the application thread to log exceptions instead of using printStackTrace()
+    // Must be called in start() because init() is run on the main thread, not the FX application thread
+    Thread.currentThread().setUncaughtExceptionHandler(Shuffleboard::uncaughtException);
+    onOtherAppStart = () -> Platform.runLater(primaryStage::toFront);
+
     Stopwatch fxmlLoadTimer = Stopwatch.createStarted();
 
     FXMLLoader loader = new FXMLLoader(MainWindowController.class.getResource("MainWindow.fxml"));
@@ -119,16 +143,6 @@ public class Shuffleboard extends Application {
     final MainWindowController mainWindowController = loader.getController();
 
     primaryStage.setScene(new Scene(mainPane));
-
-    PluginLoader.getDefault().load(new BasePlugin());
-
-    Recorder.getInstance().start();
-
-    PluginLoader.getDefault().load(new NetworkTablesPlugin());
-    PluginLoader.getDefault().load(new CameraServerPlugin());
-    PluginLoader.getDefault().load(new PowerUpPlugin());
-    PluginLoader.getDefault().loadAllJarsFromDir(Storage.getPluginPath());
-    PluginCache.getDefault().loadCache(PluginLoader.getDefault());
 
     // Setup the dashboard tabs after all plugins are loaded
     Platform.runLater(() -> {
