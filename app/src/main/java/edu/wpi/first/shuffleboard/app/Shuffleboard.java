@@ -11,7 +11,7 @@ import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
 import edu.wpi.first.shuffleboard.plugin.base.BasePlugin;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.CameraServerPlugin;
 import edu.wpi.first.shuffleboard.plugin.networktables.NetworkTablesPlugin;
-import edu.wpi.first.shuffleboard.plugin.powerup.PowerupPlugin;
+import edu.wpi.first.shuffleboard.plugin.powerup.PowerUpPlugin;
 
 import com.github.zafarkhaja.semver.Version;
 import com.google.common.base.Stopwatch;
@@ -118,7 +118,7 @@ public class Shuffleboard extends Application {
     notifyPreloader(new ShuffleboardPreloader.StateNotification("Loading CameraServer plugin", 0.375));
     PluginLoader.getDefault().load(new CameraServerPlugin());
     notifyPreloader(new ShuffleboardPreloader.StateNotification("Loading Powerup plugin", 0.5));
-    PluginLoader.getDefault().load(new PowerupPlugin());
+    PluginLoader.getDefault().load(new PowerUpPlugin());
     notifyPreloader(new ShuffleboardPreloader.StateNotification("Loading custom plugins", 0.625));
     PluginLoader.getDefault().loadAllJarsFromDir(Storage.getPluginPath());
     notifyPreloader(new ShuffleboardPreloader.StateNotification("Loading custom plugins", 0.75));
