@@ -22,7 +22,9 @@ import de.codecentric.centerdevice.javafxsvg.SvgImageLoaderFactory;
 import it.sauronsoftware.junique.AlreadyLockedException;
 import it.sauronsoftware.junique.JUnique;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -296,7 +298,11 @@ public class Shuffleboard extends Application {
    * otherwise, it will likely be the root build directory of the `app` project.
    */
   public static String getRunningLocation() {
-    return Shuffleboard.class.getProtectionDomain().getCodeSource().getLocation().toExternalForm();
+    try {
+      return new File(Shuffleboard.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getAbsolutePath();
+    } catch (URISyntaxException e) {
+      throw new AssertionError("Local file URL somehow had invalid syntax!", e);
+    }
   }
 
 }
