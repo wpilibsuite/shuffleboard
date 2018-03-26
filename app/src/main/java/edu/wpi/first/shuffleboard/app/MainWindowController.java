@@ -204,8 +204,6 @@ public class MainWindowController {
           .collect(joining(this::generateSeparatorLabel));
       connectionIndicatorArea.getChildren().setAll(collect);
     });
-
-    setUpPluginsStage();
   }
 
   private Label generateSeparatorLabel() {
@@ -596,6 +594,9 @@ public class MainWindowController {
 
   @FXML
   private void showPlugins() {
+    if (pluginStage == null) {
+      setUpPluginsStage();
+    }
     if (pluginStage.getOwner() == null) {
       pluginStage.initOwner(root.getScene().getWindow());
     }
