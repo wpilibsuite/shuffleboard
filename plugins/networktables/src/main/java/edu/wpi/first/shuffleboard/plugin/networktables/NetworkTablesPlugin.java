@@ -32,7 +32,7 @@ import javafx.beans.value.ChangeListener;
 @Description(
     group = "edu.wpi.first.shuffleboard",
     name = "NetworkTables",
-    version = NetworktablesPluginVersion.VERSION,
+    version = NetworkTablesPluginVersion.VERSION,
     summary = "Provides sources and widgets for NetworkTables"
 )
 public class NetworkTablesPlugin extends Plugin {

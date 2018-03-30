@@ -11,3 +11,4 @@ dependencies {
 }
 
 version = "1.5.0"
+extra["pluginName"] = "CameraServer"
