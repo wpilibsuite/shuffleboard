@@ -45,7 +45,7 @@ public final class CameraServerSourceType extends SourceType {
             if (!availableUris.contains(uri)) {
               availableUris.add(uri);
             }
-            availableSources.put(uri, new CameraServerData(name, null));
+            availableSources.put(uri, new CameraServerData(name, null, -1, -1));
           }
         }), 0xFF);
   }
@@ -59,7 +59,7 @@ public final class CameraServerSourceType extends SourceType {
 
   @Override
   public SourceEntry createSourceEntryForUri(String uri) {
-    return new CameraServerSourceEntry(new CameraServerData(removeProtocol(uri), null));
+    return new CameraServerSourceEntry(new CameraServerData(removeProtocol(uri), null, -1, -1));
   }
 
   @Override

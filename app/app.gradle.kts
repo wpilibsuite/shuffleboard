@@ -36,6 +36,7 @@ val theMainClassName = "edu.wpi.first.shuffleboard.app.Shuffleboard"
 
 application {
     mainClassName = theMainClassName
+    applicationDefaultJvmArgs = listOf("-Xverify:none", "-Dprism.order=d3d,es2,sw")
 }
 
 tasks.withType<Jar> {

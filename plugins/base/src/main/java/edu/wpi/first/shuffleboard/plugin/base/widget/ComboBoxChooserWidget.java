@@ -1,13 +1,13 @@
 package edu.wpi.first.shuffleboard.plugin.base.widget;
 
+import edu.wpi.first.shuffleboard.api.widget.ComplexAnnotatedWidget;
+import edu.wpi.first.shuffleboard.api.widget.Description;
+import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 import edu.wpi.first.shuffleboard.plugin.base.data.SendableChooserData;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.SendableChooserType;
 
 import java.util.Map;
 
-import edu.wpi.first.shuffleboard.api.widget.ComplexAnnotatedWidget;
-import edu.wpi.first.shuffleboard.api.widget.Description;
-import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
 import javafx.scene.layout.Pane;
@@ -37,7 +37,16 @@ public class ComboBoxChooserWidget extends ComplexAnnotatedWidget<SendableChoose
     });
     comboBox.getSelectionModel()
         .selectedItemProperty()
-        .addListener((__, oldValue, newValue) -> setData(getData().withSelectedOption(newValue)));
+        .addListener((__, oldValue, newValue) -> {
+          SendableChooserData currentData = getData();
+          if (newValue == null) {
+            String defaultOption = currentData.getDefaultOption();
+            setData(currentData.withSelectedOption(defaultOption));
+            comboBox.getSelectionModel().select(defaultOption);
+          } else {
+            setData(currentData.withSelectedOption(newValue));
+          }
+        });
   }
 
   private void updateOptions(String... options) {

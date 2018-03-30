@@ -6,20 +6,31 @@ import edu.wpi.first.shuffleboard.api.data.types.NumberType;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.util.AlphanumComparator;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
+import edu.wpi.first.shuffleboard.api.util.ThreadUtils;
 import edu.wpi.first.shuffleboard.api.util.Time;
 import edu.wpi.first.shuffleboard.api.widget.AnnotatedWidget;
 import edu.wpi.first.shuffleboard.api.widget.Description;
 import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 
 import com.google.common.collect.ImmutableList;
+import com.sun.prism.GraphicsPipeline;
+import com.sun.prism.j2d.J2DPipeline;
+import com.sun.prism.sw.SWPipeline;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalLong;
+import java.util.WeakHashMap;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import javafx.beans.binding.Bindings;
@@ -36,8 +47,12 @@ import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.CacheHint;
+import javafx.scene.Parent;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
+import javafx.scene.chart.XYChart.Data;
+import javafx.scene.chart.XYChart.Series;
 import javafx.scene.layout.Pane;
 import javafx.util.StringConverter;
 
@@ -45,6 +60,17 @@ import javafx.util.StringConverter;
 @ParametrizedController("GraphWidget.fxml")
 @SuppressWarnings("PMD.GodClass")
 public class GraphWidget implements AnnotatedWidget {
+
+  private static final Logger log = Logger.getLogger(GraphWidget.class.getName());
+
+  static {
+    GraphicsPipeline pipeline = GraphicsPipeline.getPipeline();
+    log.info("Using graphics pipeline: " + pipeline);
+    if (pipeline instanceof SWPipeline || pipeline instanceof J2DPipeline) {
+      log.warning("Software rendering detected! Graphs will be VERY slow and will most likely make the entire "
+          + "application slow down to the point of being completely unusable");
+    }
+  }
 
   @FXML
   private Pane root;
@@ -58,13 +84,14 @@ public class GraphWidget implements AnnotatedWidget {
   private final StringProperty title = new SimpleStringProperty(this, "title", "");
 
   private final ObservableList<DataSource> sources = FXCollections.observableArrayList();
-  private final Map<DataSource<? extends Number>, XYChart.Series<Number, Number>> numberSeriesMap = new HashMap<>();
-  private final Map<DataSource<double[]>, List<XYChart.Series<Number, Number>>> arraySeriesMap = new HashMap<>();
+  private final Map<DataSource<? extends Number>, Series<Number, Number>> numberSeriesMap = new HashMap<>();
+  private final Map<DataSource<double[]>, List<Series<Number, Number>>> arraySeriesMap = new HashMap<>();
   private final DoubleProperty visibleTime = new SimpleDoubleProperty(this, "Visible time", 30);
 
-  private final Map<XYChart.Series<Number, Number>, BooleanProperty> visibleSeries = new HashMap<>();
-  private final Map<XYChart.Series<Number, Number>, ObservableList<XYChart.Data<Number, Number>>> realData
-      = new HashMap<>();
+  private final Map<Series<Number, Number>, BooleanProperty> visibleSeries = new HashMap<>();
+
+  private final Object queueLock = new Object();
+  private final Map<Series<Number, Number>, List<Data<Number, Number>>> queuedData = new HashMap<>();
 
   private final ChangeListener<Number> numberChangeLister = (property, oldNumber, newNumber) -> {
     final DataSource<Number> source = sourceFor(property);
@@ -76,7 +103,9 @@ public class GraphWidget implements AnnotatedWidget {
     updateFromArraySource(source);
   };
 
-  private final Function<XYChart.Series<Number, Number>, BooleanProperty> createVisibleProperty = s -> {
+  private final Map<Series<Number, Number>, SimpleData> realData = new HashMap<>();
+
+  private final Function<Series<Number, Number>, BooleanProperty> createVisibleProperty = s -> {
     SimpleBooleanProperty visible = new SimpleBooleanProperty(this, s.getName() + " visible", true);
     visible.addListener((__, was, is) -> {
       if (is) {
@@ -89,6 +118,34 @@ public class GraphWidget implements AnnotatedWidget {
     });
     return visible;
   };
+
+  /**
+   * Keep track of all graph widgets so they update at the same time.
+   * It's jarring to see a bunch of graphs all updating at different times
+   */
+  private static final Collection<GraphWidget> graphWidgets =
+      Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
+
+  /**
+   * How often graphs should be redrawn, in milliseconds.
+   */
+  private static final long UPDATE_PERIOD = 250;
+
+  private static final Future<?> updater = ThreadUtils.newDaemonScheduledExecutorService()
+      .scheduleAtFixedRate(() -> {
+        synchronized (graphWidgets) {
+          graphWidgets.forEach(GraphWidget::update);
+        }
+      }, 500, UPDATE_PERIOD, TimeUnit.MILLISECONDS);
+
+  /**
+   * Creates a new graph widget.
+   */
+  public GraphWidget() {
+    synchronized (graphWidgets) {
+      graphWidgets.add(this);
+    }
+  }
 
   @FXML
   private void initialize() {
@@ -151,10 +208,25 @@ public class GraphWidget implements AnnotatedWidget {
       if (cur.doubleValue() > prev.doubleValue()) {
         // insert data at the beginning of each series
         realData.forEach((series, dataList) -> {
-          List<XYChart.Data<Number, Number>> toAdd = dataList.stream()
-              .filter(d -> d.getXValue().doubleValue() >= xAxis.getLowerBound())
-              .filter(d -> d.getXValue().doubleValue() < series.getData().get(0).getXValue().doubleValue())
-              .collect(Collectors.toList());
+          List<Data<Number, Number>> toAdd = new ArrayList<>();
+          for (int i = 0; i < dataList.getXValues().size(); i++) {
+            double x = dataList.getXValues().get(i);
+            if (x >= xAxis.getLowerBound()) {
+              if (x < series.getData().get(0).getXValue().doubleValue()) {
+                Data<Number, Number> data = dataList.asData(i);
+                if (!toAdd.isEmpty()) {
+                  Data<Number, Number> squarifier = new Data<>(
+                      data.getXValue().doubleValue() - 1,
+                      toAdd.get(toAdd.size() - 1).getYValue().doubleValue()
+                  );
+                  toAdd.add(squarifier);
+                }
+                toAdd.add(data);
+              } else {
+                break;
+              }
+            }
+          }
           series.getData().addAll(0, toAdd);
         });
       }
@@ -179,7 +251,7 @@ public class GraphWidget implements AnnotatedWidget {
 
   private void updateFromNumberSource(DataSource<? extends Number> source) {
     final long now = Time.now();
-    final XYChart.Series<Number, Number> series = getNumberSeries(source);
+    final Series<Number, Number> series = getNumberSeries(source);
 
     // The update HAS TO run on the FX thread, otherwise we run the risk of ConcurrentModificationExceptions
     // when the chart goes to lay out the data
@@ -191,7 +263,7 @@ public class GraphWidget implements AnnotatedWidget {
   private void updateFromArraySource(DataSource<double[]> source) {
     final long now = System.currentTimeMillis();
     final double[] data = source.getData();
-    final List<XYChart.Series<Number, Number>> series = getArraySeries(source);
+    final List<Series<Number, Number>> series = getArraySeries(source);
 
     // The update HAS TO run on the FX thread, otherwise we run the risk of ConcurrentModificationExceptions
     // when the chart goes to lay out the data
@@ -202,54 +274,81 @@ public class GraphWidget implements AnnotatedWidget {
     });
   }
 
-  private void updateSeries(XYChart.Series<Number, Number> series, long now, double newData) {
-    long elapsed = now - Time.getStartTime();
-    XYChart.Data<Number, Number> point = new XYChart.Data<>(elapsed, newData);
-    ObservableList<XYChart.Data<Number, Number>> dataList = series.getData();
-    if (!dataList.isEmpty()) {
-      // Make the graph a square wave
-      // This prevents the graph from appearing to be continuous when the data is discreet
-      // Note this only affects the chart; the actual data is not changed
-      double prev = dataList.get(dataList.size() - 1).getYValue().doubleValue();
-      if (prev != newData) {
-        dataList.add(new XYChart.Data<>(elapsed - 1, prev));
+  private void updateSeries(Series<Number, Number> series, long now, double newData) {
+    final long elapsed = now - Time.getStartTime();
+    final Data<Number, Number> point = new Data<>(elapsed, newData);
+    final ObservableList<Data<Number, Number>> dataList = series.getData();
+    Data<Number, Number> squarifier = null;
+    realData.computeIfAbsent(series, __ -> new SimpleData()).add(point);
+    synchronized (queueLock) {
+      List<Data<Number, Number>> queue = queuedData.computeIfAbsent(series, __ -> new ArrayList<>());
+      if (queue.isEmpty()) {
+        if (!dataList.isEmpty()) {
+          squarifier = createSquarifier(newData, elapsed, dataList);
+        }
+      } else {
+        squarifier = createSquarifier(newData, elapsed, queue);
       }
+      if (squarifier != null) {
+        queue.add(squarifier);
+      }
+      queue.add(point);
     }
-    dataList.add(point);
-    realData.computeIfAbsent(series, __ -> FXCollections.observableArrayList()).add(point);
     if (!chart.getData().contains(series)
         && Optional.ofNullable(visibleSeries.get(series)).map(Property::getValue).orElse(true)) {
       chart.getData().add(series);
     }
-    updateBounds(elapsed);
   }
 
-  private XYChart.Series<Number, Number> getNumberSeries(DataSource<? extends Number> source) {
+  private Data<Number, Number> createSquarifier(double newData, long elapsed, List<Data<Number, Number>> queue) {
+    // Make the graph a square wave
+    // This prevents the graph from appearing to be continuous when the data is discreet
+    // Note this only affects the chart; the actual data is not changed
+    Data<Number, Number> squarifier = null;
+    double prev = queue.get(queue.size() - 1).getYValue().doubleValue();
+    if (prev != newData) {
+      squarifier = new Data<>(elapsed - 1, prev);
+    }
+    return squarifier;
+  }
+
+  private Series<Number, Number> getNumberSeries(DataSource<? extends Number> source) {
     if (!numberSeriesMap.containsKey(source)) {
-      XYChart.Series<Number, Number> series = new XYChart.Series<>();
+      Series<Number, Number> series = new Series<>();
       series.setName(source.getName());
       numberSeriesMap.put(source, series);
-      realData.put(series, FXCollections.observableArrayList());
+      realData.put(series, new SimpleData());
       visibleSeries.computeIfAbsent(series, createVisibleProperty);
+      series.nodeProperty().addListener((__, old, node) -> {
+        if (node instanceof Parent) {
+          Parent parent = (Parent) node;
+          parent.getChildrenUnmodifiable().forEach(child -> {
+            child.setCache(true);
+            child.setCacheHint(CacheHint.SPEED);
+          });
+          parent.setCache(true);
+          parent.setCacheHint(CacheHint.SPEED);
+        }
+      });
     }
     return numberSeriesMap.get(source);
   }
 
-  private List<XYChart.Series<Number, Number>> getArraySeries(DataSource<double[]> source) {
-    List<XYChart.Series<Number, Number>> series = arraySeriesMap.computeIfAbsent(source, __ -> new ArrayList<>());
+  private List<Series<Number, Number>> getArraySeries(DataSource<double[]> source) {
+    List<Series<Number, Number>> series = arraySeriesMap.computeIfAbsent(source, __ -> new ArrayList<>());
     final double[] data = source.getData();
     if (data.length < series.size()) {
       while (series.size() != data.length) {
-        XYChart.Series<Number, Number> removed = series.remove(series.size() - 1);
+        Series<Number, Number> removed = series.remove(series.size() - 1);
         realData.remove(removed);
         visibleSeries.remove(removed);
       }
     } else if (data.length > series.size()) {
       for (int i = series.size(); i < data.length; i++) {
-        XYChart.Series<Number, Number> newSeries = new XYChart.Series<>();
+        Series<Number, Number> newSeries = new Series<>();
         newSeries.setName(source.getName() + "[" + i + "]"); // eg "array[0]", "array[1]", etc
         series.add(newSeries);
-        realData.put(newSeries, FXCollections.observableArrayList());
+        realData.put(newSeries, new SimpleData());
         visibleSeries.computeIfAbsent(newSeries, createVisibleProperty);
       }
     }
@@ -259,6 +358,28 @@ public class GraphWidget implements AnnotatedWidget {
   private void updateBounds(long elapsed) {
     xAxis.setUpperBound(elapsed);
     removeInvisibleData();
+  }
+
+  private void update() {
+    FxUtils.runOnFxThread(() -> {
+      if (chart.getData().isEmpty()) {
+        return;
+      }
+      synchronized (queueLock) {
+        queuedData.forEach((series, queuedData) -> series.getData().addAll(queuedData));
+        queuedData.forEach((series, queuedData) -> queuedData.clear());
+        OptionalLong maxX = chart.getData().stream()
+            .map(Series::getData)
+            .filter(d -> !d.isEmpty())
+            .map(d -> d.get(d.size() - 1))
+            .map(Data::getXValue)
+            .mapToLong(Number::longValue)
+            .max();
+        if (maxX.isPresent()) {
+          updateBounds(maxX.getAsLong());
+        }
+      }
+    });
   }
 
   @Override
@@ -322,8 +443,47 @@ public class GraphWidget implements AnnotatedWidget {
   private void removeInvisibleData() {
     final double lower = xAxis.getLowerBound();
     realData.forEach((series, dataList) -> {
-      series.getData().removeIf(d -> d.getXValue().doubleValue() < lower);
+      int firstBeforeOutOfRange = -1;
+      for (int i = 0; i < series.getData().size(); i++) {
+        Data<Number, Number> data = series.getData().get(i);
+        if (data.getXValue().doubleValue() >= lower) {
+          firstBeforeOutOfRange = i;
+          break;
+        }
+      }
+      if (firstBeforeOutOfRange > 0) {
+        series.getData().remove(0, firstBeforeOutOfRange);
+      }
     });
+  }
+
+  /**
+   * Stores data in two parallel arrays.
+   */
+  private static final class SimpleData {
+    private final PrimitiveDoubleArrayList xValues = new PrimitiveDoubleArrayList();
+    private final PrimitiveDoubleArrayList yValues = new PrimitiveDoubleArrayList();
+
+    public void add(double x, double y) {
+      xValues.add(x);
+      yValues.add(y);
+    }
+
+    public void add(Data<? extends Number, ? extends Number> point) {
+      add(point.getXValue().doubleValue(), point.getYValue().doubleValue());
+    }
+
+    public PrimitiveDoubleArrayList getXValues() {
+      return xValues;
+    }
+
+    public PrimitiveDoubleArrayList getYValues() {
+      return yValues;
+    }
+
+    public Data<Number, Number> asData(int index) {
+      return new Data<>(xValues.get(index), yValues.get(index));
+    }
   }
 
 }

@@ -48,10 +48,10 @@ public class CameraServerDataSerializer extends TypeAdapter<CameraServerData> {
     pos += name.length() + Serialization.SIZE_OF_INT;
     int frameNum = Serialization.readInt(buffer, pos);
     try {
-      return new CameraServerData(name, readFrame(name, frameNum));
+      return new CameraServerData(name, readFrame(name, frameNum), -1, -1); // TODO add FPS and bandwidth
     } catch (IOException | JCodecException e) {
       log.log(Level.WARNING, "Could not read frame " + frameNum, e);
-      return new CameraServerData(name, null);
+      return new CameraServerData(name, null, -1, -1);
     }
   }
 

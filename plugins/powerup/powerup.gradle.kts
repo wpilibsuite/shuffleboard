@@ -1,5 +1,5 @@
 description = """
-Plugin for displaying the 2018 FMS data for Power Up.
+Plugin for displaying the 2018 FMS data for POWER UP.
 """.trimIndent().trim()
 
 dependencies {

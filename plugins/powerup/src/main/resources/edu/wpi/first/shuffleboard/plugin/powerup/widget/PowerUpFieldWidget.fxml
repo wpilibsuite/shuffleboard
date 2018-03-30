@@ -3,7 +3,7 @@
 <?import javafx.scene.layout.VBox?>
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
-      fx:controller="edu.wpi.first.shuffleboard.plugin.powerup.widget.PowerupFieldWidget"
+      fx:controller="edu.wpi.first.shuffleboard.plugin.powerup.widget.PowerUpFieldWidget"
       stylesheets="@powerup-field.css"
       fx:id="root"
       alignment="CENTER"

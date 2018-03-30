@@ -14,9 +14,9 @@ import javafx.fxml.FXML;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 
-@Description(name = "Powerup Field", dataTypes = FmsInfo.class)
-@ParametrizedController("PowerupFieldWidget.fxml")
-public class PowerupFieldWidget extends SimpleAnnotatedWidget<FmsInfo> {
+@Description(name = "POWER UP Field", dataTypes = FmsInfo.class)
+@ParametrizedController("PowerUpFieldWidget.fxml")
+public class PowerUpFieldWidget extends SimpleAnnotatedWidget<FmsInfo> {
 
   @FXML
   private Pane root;

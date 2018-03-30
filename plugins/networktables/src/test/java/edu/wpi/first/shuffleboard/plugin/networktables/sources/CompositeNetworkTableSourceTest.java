@@ -7,18 +7,30 @@ import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.plugin.networktables.NetworkTablesPlugin;
 
+import com.google.common.collect.ImmutableMap;
+
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.NetworkTableType;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.RepeatedTest;
+import org.testfx.framework.junit5.ApplicationTest;
 
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class CompositeNetworkTableSourceTest {
+// Note: we do a boatload of repetitions on these tests to make sure ntcore listeners trigger
+// We also use sleep calls because NetworkTableInstance.waitForEntryListenerQueue() fails about 20% of the time
+// which makes the tests break
+public class CompositeNetworkTableSourceTest extends ApplicationTest {
 
   private static final String tableName = "/CompositeNetworkTableSourceTest";
 
@@ -31,17 +43,17 @@ public class CompositeNetworkTableSourceTest {
   public void setUp() {
     AsyncUtils.setAsyncRunner(Runnable::run);
     NetworkTableUtils.shutdown();
-    NetworkTableInstance.getDefault().waitForEntryListenerQueue(-1.0);
+    sleep(100);
   }
 
   @AfterEach
   public void tearDown() {
     NetworkTableUtils.shutdown();
-    NetworkTableInstance.getDefault().waitForEntryListenerQueue(-1.0);
+    sleep(100);
     AsyncUtils.setAsyncRunner(FxUtils::runOnFxThread);
   }
 
-  @Test
+  @RepeatedTest(10)
   public void testInactiveByDefault() {
     CompositeNetworkTableSource<MapData> source
         = new CompositeNetworkTableSource<>(tableName, DataTypes.Map);
@@ -50,7 +62,7 @@ public class CompositeNetworkTableSourceTest {
     source.close();
   }
 
-  @Test
+  @RepeatedTest(10)
   public void testDataUpdates() {
     final CompositeNetworkTableSource<MapData> source
         = new CompositeNetworkTableSource<>(tableName, DataTypes.Map);
@@ -59,24 +71,47 @@ public class CompositeNetworkTableSourceTest {
     final NetworkTableInstance inst = NetworkTableInstance.getDefault();
 
     inst.getTable(tableName).getEntry(key).setString("value1");
-    inst.waitForEntryListenerQueue(-1.0);
+    sleep(100);
     assertEquals("value1", source.getData().get(key));
 
     inst.getTable(tableName).getEntry(key).setString("value2");
-    inst.waitForEntryListenerQueue(-1.0);
+    sleep(100);
     assertEquals("value2", source.getData().get(key));
     source.close();
   }
 
-  @Test
+  @RepeatedTest(10)
   public void testTypeDetectedCorrectly() {
     final CompositeNetworkTableSource<?> source
         = new CompositeNetworkTableSource<>(tableName, DataTypes.Map);
     final NetworkTableInstance inst = NetworkTableInstance.getDefault();
 
     inst.getTable(tableName).getEntry(".type").setString("Map");
-    inst.waitForEntryListenerQueue(-1.0);
+    sleep(100);
     assertTrue(source.isActive(), "Source not active");
+    source.close();
+  }
+
+  @RepeatedTest(10)
+  public void testUpdatesCorrectEntry() {
+    // given
+    final CompositeNetworkTableSource<MapData> source
+        = new CompositeNetworkTableSource<>(tableName, DataTypes.Map);
+    final NetworkTableInstance inst = NetworkTableInstance.getDefault();
+    final NetworkTable table = inst.getTable(tableName);
+    final NetworkTableEntry entry = table.getEntry("testUpdatesCorrectEntry");
+
+    // when
+    source.setData(new MapData(ImmutableMap.of("testUpdatesCorrectEntry", "It does!")));
+    sleep(100);
+
+    // then
+    assertAll(
+        () -> assertThat("Unexpected keys: " + table.getKeys(), table.getKeys(), hasItem("testUpdatesCorrectEntry")),
+        () -> assertEquals(NetworkTableType.kString, entry.getValue().getType()),
+        () -> assertEquals("It does!", entry.getValue().getValue())
+    );
+
     source.close();
   }
 }

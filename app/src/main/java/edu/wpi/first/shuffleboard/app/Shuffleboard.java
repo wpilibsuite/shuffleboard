@@ -11,17 +11,25 @@ import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
 import edu.wpi.first.shuffleboard.plugin.base.BasePlugin;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.CameraServerPlugin;
 import edu.wpi.first.shuffleboard.plugin.networktables.NetworkTablesPlugin;
-import edu.wpi.first.shuffleboard.plugin.powerup.PowerupPlugin;
+import edu.wpi.first.shuffleboard.plugin.powerup.PowerUpPlugin;
 
 import com.github.zafarkhaja.semver.Version;
+import com.google.common.base.Stopwatch;
+import com.sun.javafx.application.LauncherImpl;
 
 import de.codecentric.centerdevice.javafxsvg.SvgImageLoaderFactory;
 
 import it.sauronsoftware.junique.AlreadyLockedException;
 import it.sauronsoftware.junique.JUnique;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.FileHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -50,8 +58,15 @@ public class Shuffleboard extends Application {
   private Pane mainPane; //NOPMD local variable
   private Runnable onOtherAppStart = () -> {};
 
+  private final Stopwatch startupTimer = Stopwatch.createStarted();
+  private MainWindowController mainWindowController;
+
+  public static void main(String[] args) {
+    LauncherImpl.launchApplication(Shuffleboard.class, ShuffleboardPreloader.class, args);
+  }
+
   @Override
-  public void init() throws AlreadyLockedException, IOException {
+  public void init() throws AlreadyLockedException, IOException, InterruptedException {
     try {
       JUnique.acquireLock(getClass().getCanonicalName(), message -> {
         onOtherAppStart.run();
@@ -71,17 +86,10 @@ public class Shuffleboard extends Application {
     // Search for and load themes from the custom theme directory before loading application preferences
     // This avoids an issue with attempting to load a theme at startup that hasn't yet been registered
     logger.finer("Registering custom user themes from external dir");
+    notifyPreloader(new ShuffleboardPreloader.StateNotification("Loading custom themes", 0));
     Themes.getDefault().loadThemesFromDir();
 
     logger.info("Build time: " + getBuildTime());
-  }
-
-  @Override
-  public void start(Stage primaryStage) throws IOException {
-    // Set up the application thread to log exceptions instead of using printStackTrace()
-    // Must be called in start() because init() is run on the main thread, not the FX application thread
-    Thread.currentThread().setUncaughtExceptionHandler(Shuffleboard::uncaughtException);
-    onOtherAppStart = () -> Platform.runLater(primaryStage::toFront);
 
     // Before we load components that only work with Java 8, check to make sure
     // the application is running on Java 8. If we are running on an invalid
@@ -103,28 +111,49 @@ public class Shuffleboard extends Application {
       return;
     }
 
-    FXMLLoader loader = new FXMLLoader(MainWindowController.class.getResource("MainWindow.fxml"));
-    mainPane = loader.load();
-    final MainWindowController mainWindowController = loader.getController();
-
-    primaryStage.setScene(new Scene(mainPane));
-
+    notifyPreloader(new ShuffleboardPreloader.StateNotification("Loading base plugin", 0.125));
     PluginLoader.getDefault().load(new BasePlugin());
 
     Recorder.getInstance().start();
 
+    notifyPreloader(new ShuffleboardPreloader.StateNotification("Loading NetworkTables plugin", 0.25));
     PluginLoader.getDefault().load(new NetworkTablesPlugin());
+    notifyPreloader(new ShuffleboardPreloader.StateNotification("Loading CameraServer plugin", 0.375));
     PluginLoader.getDefault().load(new CameraServerPlugin());
-    PluginLoader.getDefault().load(new PowerupPlugin());
+    notifyPreloader(new ShuffleboardPreloader.StateNotification("Loading Powerup plugin", 0.5));
+    PluginLoader.getDefault().load(new PowerUpPlugin());
+    notifyPreloader(new ShuffleboardPreloader.StateNotification("Loading custom plugins", 0.625));
     PluginLoader.getDefault().loadAllJarsFromDir(Storage.getPluginPath());
+    notifyPreloader(new ShuffleboardPreloader.StateNotification("Loading custom plugins", 0.75));
     PluginCache.getDefault().loadCache(PluginLoader.getDefault());
+    Stopwatch fxmlLoadTimer = Stopwatch.createStarted();
+
+    notifyPreloader(new ShuffleboardPreloader.StateNotification("Initializing user interface", 0.875));
+    FXMLLoader loader = new FXMLLoader(MainWindowController.class.getResource("MainWindow.fxml"));
+    mainPane = loader.load();
+    long fxmlLoadTime = fxmlLoadTimer.elapsed(TimeUnit.MILLISECONDS);
+    mainWindowController = loader.getController();
+    logger.log(fxmlLoadTime >= 500 ? Level.WARNING : Level.INFO, "Took " + fxmlLoadTime + "ms to load the main FXML");
+
+    notifyPreloader(new ShuffleboardPreloader.StateNotification("Starting up", 1));
+    Thread.sleep(20); // small wait to let the status be visible - the preloader doesn't get notifications for a bit
+  }
+
+  @Override
+  public void start(Stage primaryStage) throws IOException {
+    // Set up the application thread to log exceptions instead of using printStackTrace()
+    // Must be called in start() because init() is run on the main thread, not the FX application thread
+    Thread.currentThread().setUncaughtExceptionHandler(Shuffleboard::uncaughtException);
+    onOtherAppStart = () -> Platform.runLater(primaryStage::toFront);
+
+    primaryStage.setScene(new Scene(mainPane));
 
     // Setup the dashboard tabs after all plugins are loaded
     Platform.runLater(() -> {
       if (AppPreferences.getInstance().isAutoLoadLastSaveFile()) {
         try {
           mainWindowController.load(AppPreferences.getInstance().getSaveFile());
-        } catch (IOException e) {
+        } catch (RuntimeException | IOException e) {
           logger.log(Level.WARNING, "Could not load the last save file", e);
           mainWindowController.newLayout();
         }
@@ -168,6 +197,8 @@ public class Shuffleboard extends Application {
     }
     primaryStage.show();
     Time.setStartTime(Time.now());
+    long startupTime = startupTimer.elapsed(TimeUnit.MILLISECONDS);
+    logger.log(startupTime > 5000 ? Level.WARNING : Level.INFO, "Took " + startupTime + "ms to start Shuffleboard");
   }
 
   @Override
@@ -189,7 +220,8 @@ public class Shuffleboard extends Application {
       globalLogger.removeHandler(handler);
     }
 
-    final Handler fileHandler = new FileHandler(Storage.getStorageDir() + "/shuffleboard.log");
+    String time = DateTimeFormatter.ofPattern("YYYY-MM-dd-HH.mm.ss", Locale.getDefault()).format(LocalDateTime.now());
+    final Handler fileHandler = new FileHandler(Storage.getStorageDir() + "/shuffleboard." + time + ".log");
 
     fileHandler.setLevel(Level.INFO);    // Only log INFO and above to disk
     globalLogger.setLevel(Level.CONFIG); // Log CONFIG and higher
@@ -268,7 +300,11 @@ public class Shuffleboard extends Application {
    * otherwise, it will likely be the root build directory of the `app` project.
    */
   public static String getRunningLocation() {
-    return Shuffleboard.class.getProtectionDomain().getCodeSource().getLocation().toExternalForm();
+    try {
+      return new File(Shuffleboard.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getAbsolutePath();
+    } catch (URISyntaxException e) {
+      throw new AssertionError("Local file URL somehow had invalid syntax!", e);
+    }
   }
 
 }

@@ -156,6 +156,18 @@ public class MainWindowController {
             running -> running ? "Stop recording" : "Start recording"));
     FxUtils.bind(root.getStylesheets(), stylesheets);
 
+    log.info("Setting up plugins in the UI");
+    PluginLoader.getDefault().getLoadedPlugins().forEach(plugin -> {
+      plugin.loadedProperty().addListener((__, was, is) -> {
+        if (is) {
+          setup(plugin);
+        } else {
+          tearDown(plugin);
+        }
+      });
+      setup(plugin);
+    });
+    sourcesAccordion.getPanes().sort(Comparator.comparing(TitledPane::getText));
     PluginLoader.getDefault().getKnownPlugins().addListener((ListChangeListener<Plugin>) c -> {
       while (c.next()) {
         if (c.wasAdded()) {
@@ -192,8 +204,6 @@ public class MainWindowController {
           .collect(joining(this::generateSeparatorLabel));
       connectionIndicatorArea.getChildren().setAll(collect);
     });
-
-    setUpPluginsStage();
   }
 
   private Label generateSeparatorLabel() {
@@ -483,6 +493,9 @@ public class MainWindowController {
     Reader reader = Files.newReader(saveFile, Charset.forName("UTF-8"));
 
     DashboardData dashboardData = JsonBuilder.forSaveFile().fromJson(reader, DashboardData.class);
+    if (dashboardData == null) {
+      throw new IOException("Save file could not be read: " + saveFile);
+    }
     setDashboard(dashboardData.getTabPane());
     Platform.runLater(() -> {
       centerSplitPane.setDividerPositions(dashboardData.getDividerPosition());
@@ -581,6 +594,9 @@ public class MainWindowController {
 
   @FXML
   private void showPlugins() {
+    if (pluginStage == null) {
+      setUpPluginsStage();
+    }
     if (pluginStage.getOwner() == null) {
       pluginStage.initOwner(root.getScene().getWindow());
     }

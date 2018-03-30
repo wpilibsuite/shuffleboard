@@ -1,0 +1,14 @@
+.camera-controls {
+    /*-fx-background-color: rgba(0, 0, 0, 0.9);*/
+}
+
+.camera-controls .label {
+    -fx-font-size: 9pt;
+}
+
+/*
+ * Decrease number field padding on the bottom, since there are no numeric characters that extend below the baseline
+ */
+.camera-controls .number-field {
+    -fx-padding: 4 4 0 4;
+}

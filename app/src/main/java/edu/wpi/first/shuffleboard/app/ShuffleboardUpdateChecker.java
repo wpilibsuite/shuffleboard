@@ -184,10 +184,7 @@ public final class ShuffleboardUpdateChecker {
       log.info("Downloading " + newestVersionLocation);
       try {
         File temp = downloadFile(newestVersionLocation, progressNotifier);
-        // 6 -> "file:/".length() to change file:/C:/... to C:/...
-        // 5 -> "file:".length() to change file:/home/... to /home/...
-        int prefixLen = OsDetector.isWindows() ? 6 : 5;
-        String runningLocation = Shuffleboard.getRunningLocation().substring(prefixLen);
+        String runningLocation = Shuffleboard.getRunningLocation();
         Path target;
         if (runningLocation.endsWith(".jar")) {
           target = Paths.get(runningLocation);
