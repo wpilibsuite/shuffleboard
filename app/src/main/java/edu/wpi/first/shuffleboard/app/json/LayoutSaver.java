@@ -28,6 +28,7 @@ import javafx.collections.ObservableList;
 public class LayoutSaver implements ElementTypeAdapter<Layout> {
 
   private final SourcedRestorer sourcedRestorer = new SourcedRestorer();
+  private final PropertySaver propertySaver = new PropertySaver();
 
   @Override
   public JsonElement serialize(Layout src, JsonSerializationContext context) {
@@ -42,6 +43,9 @@ public class LayoutSaver implements ElementTypeAdapter<Layout> {
     }
 
     object.addProperty("_title", src.getTitle());
+
+    propertySaver.saveAnnotatedFields(src, context, object);
+    propertySaver.saveNestedProperties(src, context, object);
 
     Collection<Component> components = src.getChildren();
     JsonArray children = new JsonArray(components.size());
@@ -59,6 +63,9 @@ public class LayoutSaver implements ElementTypeAdapter<Layout> {
 
     Layout layout = Components.getDefault().createComponent(name).flatMap(TypeUtils.optionalCast(Layout.class))
         .orElseThrow(() -> new JsonParseException("Can't find layout name " + name));
+
+    propertySaver.readAnnotatedFields(layout, context, obj);
+    propertySaver.readNestedProperties(layout, context, obj);
 
     if (layout instanceof Sourced) {
       Sourced sourcedLayout = (Sourced) layout;

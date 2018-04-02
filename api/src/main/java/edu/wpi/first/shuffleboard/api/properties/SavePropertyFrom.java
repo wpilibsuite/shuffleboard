@@ -9,7 +9,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Flags a property of a field in a widget class to be saved as part of that widget.
+ * Flags a property of a field to be saved as part of that object.
  *
  * <p>For example, take a widget class has a slider that controls the speed of something. In the old API, the widget
  * would have export its properties directly (which doesn't give descriptive names in the widget's context, and can
