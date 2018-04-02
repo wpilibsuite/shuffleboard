@@ -9,7 +9,7 @@ import java.util.stream.Stream;
 public interface Layout extends Component, ComponentContainer {
   Collection<Component> getChildren();
 
-  void addChild(Component widget);
+  void addChild(Component component);
 
   @Override
   default void addComponent(Component component) {

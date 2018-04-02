@@ -1,18 +1,14 @@
 package edu.wpi.first.shuffleboard.plugin.base.layout;
 
+import edu.wpi.first.shuffleboard.api.components.ActionList;
 import edu.wpi.first.shuffleboard.api.components.EditableLabel;
+import edu.wpi.first.shuffleboard.api.util.ListUtils;
 import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.Layout;
+import edu.wpi.first.shuffleboard.api.widget.LayoutBase;
 import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import javafx.beans.property.Property;
 import javafx.beans.property.ReadOnlyObjectWrapper;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.TableCell;
@@ -21,7 +17,7 @@ import javafx.scene.control.TableView;
 import javafx.scene.layout.Pane;
 
 @ParametrizedController("GridLayout.fxml")
-public class GridLayout implements Layout {
+public class GridLayout extends LayoutBase implements Layout {
 
   @FXML
   private Pane root;
@@ -31,9 +27,6 @@ public class GridLayout implements Layout {
   private TableColumn<Component, String> titleColumn;
   @FXML
   private TableColumn<Component, Node> viewColumn;
-
-  private final List<Component> components = new ArrayList<>();
-  private final StringProperty title = new SimpleStringProperty(this, "title", "");
 
   @FXML
   private void initialize() {
@@ -92,23 +85,26 @@ public class GridLayout implements Layout {
   }
 
   @Override
-  public Collection<Component> getChildren() {
-    return components;
+  protected void addComponentToView(Component component) {
+    table.getItems().add(component);
+    ActionList.registerSupplier(component.getView(), () -> actionsForComponent(component));
   }
 
   @Override
-  public void addChild(Component component) {
-    table.getItems().add(component);
+  protected void removeComponentFromView(Component component) {
+    table.getItems().remove(component);
+  }
+
+  @Override
+  protected void replaceInPlace(Component existing, Component replacement) {
+    ListUtils.replaceIn(table.getItems())
+        .replace(existing)
+        .with(replacement);
   }
 
   @Override
   public Pane getView() {
     return root;
-  }
-
-  @Override
-  public Property<String> titleProperty() {
-    return title;
   }
 
   @Override
