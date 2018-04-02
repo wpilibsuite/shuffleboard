@@ -88,6 +88,7 @@ public class GridLayout implements Layout {
         }
       }
     });
+    viewColumn.setSortable(false); // Views don't have any sensible sort order
   }
 
   @Override
