@@ -3,17 +3,21 @@
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.layout.StackPane?>
+<?import javafx.geometry.Insets?>
 <StackPane xmlns="http://javafx.com/javafx"
            xmlns:fx="http://javafx.com/fxml"
            fx:controller="edu.wpi.first.shuffleboard.plugin.base.layout.GridLayout"
            fx:id="root">
+    <padding>
+        <Insets topRightBottomLeft="4"/>
+    </padding>
     <TableView fx:id="table">
         <columnResizePolicy>
             <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
         </columnResizePolicy>
         <columns>
-            <TableColumn text="Name" fx:id="titleColumn"/>
-            <TableColumn fx:id="viewColumn"/>
+            <TableColumn text="Name" fx:id="titleColumn" minWidth="32"/>
+            <TableColumn fx:id="viewColumn" minWidth="32"/>
         </columns>
     </TableView>
 </StackPane>
