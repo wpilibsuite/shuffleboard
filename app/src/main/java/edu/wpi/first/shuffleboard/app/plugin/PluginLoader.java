@@ -378,7 +378,7 @@ public class PluginLoader {
         .filter(d -> d.group().equals(description.group()))
         .filter(d -> d.name().equals(description.name()))
         .map(d -> Version.parse(d.minVersion()))
-        .anyMatch(v -> isCompatible(v, Version.parse(description.version())));
+        .anyMatch(v -> isCompatible(Version.parse(description.version()), v));
   }
 
   /**
