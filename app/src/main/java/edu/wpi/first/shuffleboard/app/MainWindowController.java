@@ -260,64 +260,67 @@ public class MainWindowController {
    * Sets up UI components to represent the sources that a plugin defines.
    */
   private void setup(Plugin plugin) {
-    plugin.getSourceTypes().forEach(sourceType -> {
-      SourceTreeTable<SourceEntry, ?> tree = new SourceTreeTable<>();
-      tree.setSourceType(sourceType);
-      tree.setRoot(new TreeItem<>(sourceType.createRootSourceEntry()));
-      tree.setShowRoot(false);
-      tree.setSortPolicy(__ -> {
-        sortTree(tree.getRoot());
-        return true;
-      });
-      tree.getSelectionModel().selectedItemProperty().addListener((__, oldItem, newItem) -> {
-        selectedEntry = newItem == null ? null : newItem.getValue();
-      });
-      tree.setRowFactory(__ -> {
-        TreeTableRow<SourceEntry> row = new TreeTableRow<>();
-        makeSourceRowDraggable(row);
-        return row;
-      });
-      tree.setOnContextMenuRequested(e -> {
-        TreeItem<SourceEntry> selectedItem = tree.getSelectionModel().getSelectedItem();
-        if (selectedItem == null) {
-          return;
-        }
+    FxUtils.runOnFxThread(() -> {
+      plugin.getSourceTypes().forEach(sourceType -> {
+        SourceTreeTable<SourceEntry, ?> tree = new SourceTreeTable<>();
+        tree.setSourceType(sourceType);
+        tree.setRoot(new TreeItem<>(sourceType.createRootSourceEntry()));
+        tree.setShowRoot(false);
+        tree.setSortPolicy(__ -> {
+          sortTree(tree.getRoot());
+          return true;
+        });
+        tree.getSelectionModel().selectedItemProperty().addListener((__, oldItem, newItem) -> {
+          selectedEntry = newItem == null ? null : newItem.getValue();
+        });
+        tree.setRowFactory(__ -> {
+          TreeTableRow<SourceEntry> row = new TreeTableRow<>();
+          makeSourceRowDraggable(row);
+          return row;
+        });
+        tree.setOnContextMenuRequested(e -> {
+          TreeItem<SourceEntry> selectedItem = tree.getSelectionModel().getSelectedItem();
+          if (selectedItem == null) {
+            return;
+          }
 
-        DataSource<?> source = selectedItem.getValue().get();
-        List<String> componentNames = Components.getDefault().componentNamesForSource(source);
-        if (componentNames.isEmpty()) {
-          // No known components that can show this data
-          return;
-        }
+          DataSource<?> source = selectedItem.getValue().get();
+          List<String> componentNames = Components.getDefault().componentNamesForSource(source);
+          if (componentNames.isEmpty()) {
+            // No known components that can show this data
+            return;
+          }
 
-        ContextMenu menu = new ContextMenu();
-        componentNames.stream()
-            .map(name -> createShowAsMenuItem(name, source))
-            .forEach(menu.getItems()::add);
+          ContextMenu menu = new ContextMenu();
+          componentNames.stream()
+              .map(name -> createShowAsMenuItem(name, source))
+              .forEach(menu.getItems()::add);
 
-        menu.show(tree.getScene().getWindow(), e.getScreenX(), e.getScreenY());
-      });
-      sourceType.getAvailableSources().addListener((MapChangeListener<String, Object>) change -> {
-        SourceEntry entry = sourceType.createSourceEntryForUri(change.getKey());
-        if (change.wasAdded()) {
-          tree.updateEntry(entry);
-        } else if (change.wasRemoved()) {
-          tree.removeEntry(entry);
+          menu.show(tree.getScene().getWindow(), e.getScreenX(), e.getScreenY());
+        });
+        sourceType.getAvailableSources().addListener((MapChangeListener<String, Object>) change -> {
+          SourceEntry entry = sourceType.createSourceEntryForUri(change.getKey());
+          if (change.wasAdded()) {
+            tree.updateEntry(entry);
+          } else if (change.wasRemoved()) {
+            tree.removeEntry(entry);
+          }
+        });
+        sourceType.getAvailableSourceUris().stream()
+            .map(sourceType::createSourceEntryForUri)
+            .forEach(tree::updateEntry);
+        TitledPane titledPane = new TitledPane(sourceType.getName(), tree);
+        sourcePanes.put(plugin, titledPane);
+        sourcesAccordion.getPanes().add(titledPane);
+        FXCollections.sort(sourcesAccordion.getPanes(), Comparator.comparing(TitledPane::getText));
+        if (sourcesAccordion.getExpandedPane() == null) {
+          sourcesAccordion.setExpandedPane(titledPane);
         }
       });
-      sourceType.getAvailableSourceUris().stream()
-          .map(sourceType::createSourceEntryForUri)
-          .forEach(tree::updateEntry);
-      TitledPane titledPane = new TitledPane(sourceType.getName(), tree);
-      sourcePanes.put(plugin, titledPane);
-      sourcesAccordion.getPanes().add(titledPane);
-      if (sourcesAccordion.getExpandedPane() == null) {
-        sourcesAccordion.setExpandedPane(titledPane);
-      }
+
+      // Add widgets to the gallery as well
+      widgetGallery.setWidgets(Components.getDefault().allWidgets().collect(Collectors.toList()));
     });
-
-    // Add widgets to the gallery as well
-    widgetGallery.setWidgets(Components.getDefault().allWidgets().collect(Collectors.toList()));
   }
 
   /**
@@ -327,6 +330,7 @@ public class MainWindowController {
   private void tearDown(Plugin plugin) {
     // Remove the source panes
     sourcesAccordion.getPanes().removeAll(sourcePanes.removeAll(plugin));
+    FXCollections.sort(sourcesAccordion.getPanes(), Comparator.comparing(TitledPane::getText));
     // Remove widgets
     dashboard.getTabs().stream()
         .filter(tab -> tab instanceof DashboardTab)
