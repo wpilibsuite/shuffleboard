@@ -3,6 +3,7 @@ package edu.wpi.first.shuffleboard.app.json;
 import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.Sources;
+import edu.wpi.first.shuffleboard.api.util.ReflectionUtils;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.Components;
@@ -18,10 +19,13 @@ import com.google.gson.JsonSerializationContext;
 
 import java.lang.reflect.Type;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
+import javafx.beans.property.Property;
 import javafx.collections.ObservableList;
 
 @AnnotatedTypeAdapter(forType = Layout.class)
@@ -44,6 +48,17 @@ public class LayoutSaver implements ElementTypeAdapter<Layout> {
 
     object.addProperty("_title", src.getTitle());
 
+    final List<Property<?>> savedProperties = PropertySaver.getPropertyFields(src.getClass())
+        .map(f -> ReflectionUtils.<Property<?>>getUnchecked(src, f))
+        .collect(Collectors.toList());
+
+    // Save exported properties
+    for (Property p : src.getProperties()) {
+      if (!savedProperties.contains(p)) {
+        PropertySaver.serializeProperty(context, object, p, p.getName());
+      }
+    }
+
     propertySaver.saveAnnotatedFields(src, context, object);
     propertySaver.saveNestedProperties(src, context, object);
 
@@ -63,6 +78,22 @@ public class LayoutSaver implements ElementTypeAdapter<Layout> {
 
     Layout layout = Components.getDefault().createComponent(name).flatMap(TypeUtils.optionalCast(Layout.class))
         .orElseThrow(() -> new JsonParseException("Can't find layout name " + name));
+
+
+    List<Property<?>> savedProperties = PropertySaver.getPropertyFields(layout.getClass())
+        .map(f -> ReflectionUtils.<Property<?>>getUnchecked(layout, f))
+        .collect(Collectors.toList());
+
+    // Load exported properties
+    for (Property p : layout.getProperties()) {
+      if (savedProperties.contains(p)) {
+        continue;
+      }
+      Object deserialized = context.deserialize(obj.get(p.getName()), p.getValue().getClass());
+      if (deserialized != null) {
+        p.setValue(deserialized);
+      }
+    }
 
     propertySaver.readAnnotatedFields(layout, context, obj);
     propertySaver.readNestedProperties(layout, context, obj);

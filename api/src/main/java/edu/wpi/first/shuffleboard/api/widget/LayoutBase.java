@@ -110,24 +110,23 @@ public abstract class LayoutBase implements Layout {
    */
   protected final ActionList baseActionsForComponent(Component component) {
     ActionList actions = ActionList.withName(component.getTitle());
+    actions.addAction("Edit properties", () -> {
+      ExtendedPropertySheet propertySheet = new ExtendedPropertySheet();
+      propertySheet.getItems().add(new ExtendedPropertySheet.PropertyItem<>(component.titleProperty()));
+      propertySheet.getItems().addAll(
+          component.getProperties().stream()
+              .map(ExtendedPropertySheet.PropertyItem::new)
+              .collect(Collectors.toList()));
+      Dialog<ButtonType> dialog = new Dialog<>();
+      dialog.setTitle("Edit properties");
+      dialog.getDialogPane().getStylesheets().setAll(getView().getScene().getRoot().getStylesheets());
+      dialog.getDialogPane().setContent(new BorderPane(propertySheet));
+      dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CLOSE);
+      dialog.setResultConverter(button -> button);
+      dialog.showAndWait();
+    });
     if (component instanceof Widget) {
-      Widget widget = (Widget) component;
-      actions.addAction("Edit properties", () -> {
-        ExtendedPropertySheet propertySheet = new ExtendedPropertySheet();
-        propertySheet.getItems().add(new ExtendedPropertySheet.PropertyItem<>(widget.titleProperty()));
-        propertySheet.getItems().addAll(
-            widget.getProperties().stream()
-                .map(ExtendedPropertySheet.PropertyItem::new)
-                .collect(Collectors.toList()));
-        Dialog<ButtonType> dialog = new Dialog<>();
-        dialog.setTitle("Edit properties");
-        dialog.getDialogPane().getStylesheets().setAll(getView().getScene().getRoot().getStylesheets());
-        dialog.getDialogPane().setContent(new BorderPane(propertySheet));
-        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CLOSE);
-        dialog.setResultConverter(button -> button);
-        dialog.showAndWait();
-      });
-      actions.addNested(createChangeMenusForWidget(widget));
+      actions.addNested(createChangeMenusForWidget((Widget) component));
     }
 
     actions.addAction("Remove", () -> {

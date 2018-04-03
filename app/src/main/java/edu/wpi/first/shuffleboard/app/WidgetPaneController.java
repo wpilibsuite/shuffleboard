@@ -364,10 +364,10 @@ public class WidgetPaneController {
    */
   private void dropSource(DataSource<?> source, GridPoint point) {
     Components.getDefault().pickComponentNameFor(source.getDataType())
-           .flatMap(name -> Components.getDefault().createComponent(name, source))
-           .filter(widget -> pane.isOpen(point, pane.sizeOfWidget(widget), n -> widget == n))
-           .map(pane::addComponentToTile)
-           .ifPresent(tile -> pane.moveNode(tile, point));
+        .flatMap(name -> Components.getDefault().createComponent(name, source))
+        .filter(widget -> pane.isOpen(point, pane.sizeOfWidget(widget), n -> widget == n))
+        .map(pane::addComponentToTile)
+        .ifPresent(tile -> pane.moveNode(tile, point));
   }
 
   /**
@@ -394,7 +394,7 @@ public class WidgetPaneController {
               ((Sourced) removed).removeAllSources();
             }
             if (removed instanceof Layout) {
-              ((Layout) removed).allComponents()
+              removed.allComponents()
                   .flatMap(TypeUtils.castStream(Sourced.class))
                   .forEach(Sourced::removeAllSources);
             }
@@ -407,9 +407,9 @@ public class WidgetPaneController {
         if (changeMenus.hasItems()) {
           widgetPaneActions.addNested(changeMenus);
         }
-        widgetPaneActions.addAction("Edit Properties",
-            () -> showPropertySheet(widgetTile));
       }
+      widgetPaneActions.addAction("Edit Properties",
+          () -> showPropertySheet(tile));
       return widgetPaneActions;
     });
 
@@ -592,19 +592,16 @@ public class WidgetPaneController {
    * Creates the menu for editing the properties of a widget.
    *
    * @param tile the tile to pull properties from
-   * @return     the edit property menu
    */
   private void showPropertySheet(Tile<?> tile) {
     ExtendedPropertySheet propertySheet = new ExtendedPropertySheet();
     propertySheet.getItems().add(new ExtendedPropertySheet.PropertyItem<>(tile.getContent().titleProperty()));
     Dialog<ButtonType> dialog = new Dialog<>();
-    if (tile.getContent() instanceof Widget) {
-      ((Widget) tile.getContent()).getProperties().stream()
-          .map(ExtendedPropertySheet.PropertyItem::new)
-          .forEachOrdered(propertySheet.getItems()::add);
-    }
+    tile.getContent().getProperties().stream()
+        .map(ExtendedPropertySheet.PropertyItem::new)
+        .forEachOrdered(propertySheet.getItems()::add);
 
-    dialog.setTitle("Edit widget properties");
+    dialog.setTitle("Edit properties");
     dialog.getDialogPane().getStylesheets().setAll(AppPreferences.getInstance().getTheme().getStyleSheets());
     dialog.getDialogPane().setContent(new BorderPane(propertySheet));
     dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CLOSE);

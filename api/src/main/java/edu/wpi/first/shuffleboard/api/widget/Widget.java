@@ -43,11 +43,6 @@ import javafx.beans.property.Property;
  */
 public interface Widget extends Component, Sourced {
 
-  /**
-   * Gets the user-configurable properties for this widget.
-   */
-  List<? extends Property<?>> getProperties();
-
   @Override
   default Stream<Component> allComponents() {
     return Stream.of(this);
