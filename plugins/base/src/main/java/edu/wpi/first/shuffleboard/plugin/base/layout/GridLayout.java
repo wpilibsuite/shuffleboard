@@ -9,9 +9,6 @@ import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 
 import com.google.common.collect.ImmutableList;
 
-import org.fxmisc.easybind.EasyBind;
-import org.fxmisc.easybind.Subscription;
-
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
