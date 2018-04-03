@@ -43,7 +43,6 @@ public class GridLayout extends LayoutBase {
     components.addListener((ListChangeListener<Component>) c -> {
       while (c.next()) {
         if (c.wasReplaced()) {
-          // ignore
           for (int i = 0; i < c.getAddedSize(); i++) {
             Component removed = c.getRemoved().get(i);
             Component added = c.getAddedSubList().get(i);
@@ -58,6 +57,8 @@ public class GridLayout extends LayoutBase {
         } else if (c.wasAdded()) {
           for (Component added : c.getAddedSubList()) {
             Pane pane = paneFor(added);
+
+            // Find the first open spot
             boolean anyOpen = false;
             for (int col = 0; col < numColumns.get() && !anyOpen; col++) {
               for (int row = 0; row < numRows.get(); row++) {
@@ -69,6 +70,8 @@ public class GridLayout extends LayoutBase {
                 }
               }
             }
+
+            // No open spots, create a new row to add the pane to
             if (!anyOpen) {
               // Add another row
               numRows.set(numRows.get() + 1);
@@ -78,6 +81,7 @@ public class GridLayout extends LayoutBase {
             grid.getChildren().add(pane);
           }
         } else if (c.wasRemoved()) {
+          // Remove the panes, but don't rearrange other components
           c.getRemoved().stream()
               .map(panes::remove)
               .forEach(grid.getChildren()::remove);
