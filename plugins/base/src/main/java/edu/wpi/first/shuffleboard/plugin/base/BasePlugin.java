@@ -67,7 +67,7 @@ import java.util.Set;
 @Description(
     group = "edu.wpi.first.shuffleboard",
     name = "Base",
-    version = "1.0.1",
+    version = "1.0.2",
     summary = "Defines all the WPILib data types and stock widgets"
 )
 public class BasePlugin extends Plugin {
