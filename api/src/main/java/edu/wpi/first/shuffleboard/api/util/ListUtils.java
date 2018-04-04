@@ -21,6 +21,28 @@ public final class ListUtils {
     throw new UnsupportedOperationException("This is a utility class!");
   }
 
+  /**
+   * Gets the first index of an element matching a predicate.
+   *
+   * @param list      the list to search
+   * @param predicate the predicate to use
+   * @param <T>       the type of elements in the list
+   *
+   * @return the index of the first element to pass the predicate, or <tt>-1</tt> if no element matched
+   *
+   * @throws NullPointerException if either <tt>list</tt> or <tt>predicate</tt> is <tt>null</tt>
+   */
+  public static <T> int firstIndexOf(List<? extends T> list, Predicate<? super T> predicate) {
+    Objects.requireNonNull(list, "list");
+    Objects.requireNonNull(predicate, "predicate");
+    for (int i = 0; i < list.size(); i++) {
+      if (predicate.test(list.get(i))) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
   public static <T> Collector<T, ?, List<T>> joining(Supplier<? extends T> separator) {
     return joining(() -> null, separator, () -> null);
   }
