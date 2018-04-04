@@ -150,9 +150,10 @@ public class Shuffleboard extends Application {
 
     // Setup the dashboard tabs after all plugins are loaded
     Platform.runLater(() -> {
-      if (AppPreferences.getInstance().isAutoLoadLastSaveFile()) {
+      File lastSaveFile = AppPreferences.getInstance().getSaveFile();
+      if (AppPreferences.getInstance().isAutoLoadLastSaveFile() && lastSaveFile != null && lastSaveFile.exists()) {
         try {
-          mainWindowController.load(AppPreferences.getInstance().getSaveFile());
+          mainWindowController.load(lastSaveFile);
         } catch (RuntimeException | IOException e) {
           logger.log(Level.WARNING, "Could not load the last save file", e);
           mainWindowController.newLayout();
