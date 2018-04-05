@@ -1,5 +1,7 @@
 package edu.wpi.first.shuffleboard.api.util;
 
+import com.google.common.collect.ImmutableList;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -59,10 +61,43 @@ public final class ListUtils {
     return false;
   }
 
+  /**
+   * Adds an element to a list if the list does not already contain it.
+   *
+   * @param list    the list to add to
+   * @param index   the index in the list to add the element to
+   * @param element the element to add
+   * @param <T>     the type of values in the list
+   */
   public static <T> void addIfNotPresent(List<? super T> list, int index, T element) {
     if (!list.contains(element)) {
       list.add(index, element);
     }
+  }
+
+  /**
+   * Creates a new collector for immutable lists.
+   *
+   * <p>For example:
+   * <pre>{@code
+   * ImmutableList<T> list = values.stream()
+   *   .filter(...)
+   *   .map(...)
+   *   .collect(toImmutableList());
+   * }</pre>
+   *
+   * @param <T> the type of elements to collect
+   */
+  public static <T> Collector<T, ?, ImmutableList<T>> toImmutableList() {
+    return Collector.<T, List<T>, ImmutableList<T>>of(
+        ArrayList::new,
+        List::add,
+        (left, right) -> {
+          left.addAll(right);
+          return left;
+        },
+        ImmutableList::copyOf
+    );
   }
 
   public static <T> Collector<T, ?, List<T>> joining(Supplier<? extends T> separator) {

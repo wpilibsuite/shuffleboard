@@ -1,7 +1,6 @@
 package edu.wpi.first.shuffleboard.plugin.base.layout;
 
 import edu.wpi.first.shuffleboard.api.components.ActionList;
-import edu.wpi.first.shuffleboard.api.properties.SavePropertyFrom;
 import edu.wpi.first.shuffleboard.api.util.GridPoint;
 import edu.wpi.first.shuffleboard.api.util.ListUtils;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
@@ -30,7 +29,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 
 @ParametrizedController("GridLayout.fxml")
-public class GridLayout extends LayoutBase {
+public final class GridLayout extends LayoutBase {
 
   @FXML
   private Pane root;
@@ -41,38 +40,6 @@ public class GridLayout extends LayoutBase {
   private final IntegerProperty numRows = new SimpleIntegerProperty(this, "rows", 1);
   private final Map<Component, ChildContainer> panes = new WeakHashMap<>();
   private final Pane highlight = new Pane();
-
-  /**
-   * A placeholder for use in the grid. Placeholders are invisible and are behind all other components, and therefore
-   * do not modify the UI or UX. These are used to simplify the computations for mapping drag points to grid coordinates
-   * and for forcing empty columns and rows to have size (without placeholders, they would have zero width or height
-   * until child components are added).
-   */
-  private static final class Placeholder extends Pane {
-
-    final int col;
-    final int row;
-
-    Placeholder(int col, int row) {
-      this.col = col;
-      this.row = row;
-      GridPane.setColumnIndex(this, col);
-      GridPane.setRowIndex(this, row);
-      setVisible(false);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-      return obj instanceof Placeholder
-          && ((Placeholder) obj).col == this.col
-          && ((Placeholder) obj).row == this.row;
-    }
-
-    @Override
-    public int hashCode() {
-      return Objects.hash(col, row);
-    }
-  }
 
   @FXML
   private void initialize() {
@@ -130,20 +97,22 @@ public class GridLayout extends LayoutBase {
             .forEach(grid.getChildren()::remove);
       }
     });
+    setupDropHighlight();
+  }
+
+  private void setupDropHighlight() {
     grid.setOnDragEntered(e -> {
       ListUtils.addIfNotPresent(grid.getChildren(), highlight);
-      GridPane.setRowIndex(highlight, 0);
-      GridPane.setColumnIndex(highlight, 0);
+      pointAt(e.getX(), e.getY()).applyTo(highlight);
     });
 
     grid.setOnDragOver(event -> {
       GridPoint point = pointAt(event.getX(), event.getY());
-      if (point != null) {
-        ListUtils.addIfNotPresent(grid.getChildren(), highlight);
-        GridPane.setRowIndex(highlight, point.row);
-        GridPane.setColumnIndex(highlight, point.col);
-      } else {
+      if (point == null) {
         grid.getChildren().remove(highlight);
+      } else {
+        ListUtils.addIfNotPresent(grid.getChildren(), highlight);
+        point.applyTo(highlight);
       }
     });
 
@@ -206,7 +175,7 @@ public class GridLayout extends LayoutBase {
   private boolean isManaged(Node node) {
     return GridPane.getColumnIndex(node) != null
         && GridPane.getRowIndex(node) != null
-        && node != highlight;
+        && node != highlight; // NOPMD -- this is the correct comparison
   }
 
   /**
@@ -331,10 +300,45 @@ public class GridLayout extends LayoutBase {
     return "Grid Layout";
   }
 
-  public List<ChildContainer> getContainers() {
+  /**
+   * Gets a list of the component containers in this layout.
+   */
+  public ImmutableList<ChildContainer> getContainers() {
     return grid.getChildren().stream()
         .flatMap(TypeUtils.castStream(ChildContainer.class))
-        .collect(Collectors.toList());
+        .collect(ListUtils.toImmutableList());
+  }
+
+  /**
+   * A placeholder for use in the grid. Placeholders are invisible and are behind all other components, and therefore
+   * do not modify the UI or UX. These are used to simplify the computations for mapping drag points to grid coordinates
+   * and for forcing empty columns and rows to have size (without placeholders, they would have zero width or height
+   * until child components are added).
+   */
+  private static final class Placeholder extends Pane {
+
+    private final int col;
+    private final int row;
+
+    Placeholder(int col, int row) {
+      this.col = col;
+      this.row = row;
+      GridPane.setColumnIndex(this, col);
+      GridPane.setRowIndex(this, row);
+      setVisible(false);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      return obj instanceof Placeholder
+          && ((Placeholder) obj).col == this.col
+          && ((Placeholder) obj).row == this.row;
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(col, row);
+    }
   }
 
 }

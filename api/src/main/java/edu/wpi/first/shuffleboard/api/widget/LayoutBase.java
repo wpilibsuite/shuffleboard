@@ -177,6 +177,9 @@ public abstract class LayoutBase implements Layout {
     private final Property<Side> labelSide = new SimpleObjectProperty<>(this, "labelSide", Side.BOTTOM);
     private final Property<Component> child = new SimpleObjectProperty<>(this, "child", null);
 
+    /**
+     * Creates a new empty container.
+     */
     public ChildContainer() {
       setMaxWidth(Double.POSITIVE_INFINITY);
       getStyleClass().add("layout-stack");
@@ -197,6 +200,11 @@ public abstract class LayoutBase implements Layout {
       set(getLabelSide(), label);
     }
 
+    /**
+     * Creates a container for the given component.
+     *
+     * @param child the component to be contained
+     */
     public ChildContainer(Component child) {
       this();
       setChild(child);

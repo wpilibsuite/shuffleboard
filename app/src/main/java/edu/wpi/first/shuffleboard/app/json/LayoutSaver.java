@@ -6,7 +6,6 @@ import edu.wpi.first.shuffleboard.api.json.ElementTypeAdapter;
 import edu.wpi.first.shuffleboard.api.json.PropertySaver;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.Sources;
-import edu.wpi.first.shuffleboard.api.util.ReflectionUtils;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.Components;
@@ -22,13 +21,10 @@ import com.google.gson.JsonSerializationContext;
 
 import java.lang.reflect.Type;
 import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
-import javafx.beans.property.Property;
 import javafx.collections.ObservableList;
 
 @AnnotatedTypeAdapter(forType = Layout.class)
