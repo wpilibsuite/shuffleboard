@@ -91,7 +91,12 @@ public class ListLayout extends LayoutBase {
 
   @Override
   protected void replaceInPlace(Component existing, Component replacement) {
-    panes.get(existing).setChild(replacement);
+    ChildContainer container = panes.remove(existing);
+    container.setChild(replacement);
+
+    // Update the actions for the pane - otherwise, it'll still have the same actions as the original component!
+    ActionList.registerSupplier(container, () -> actionsForComponent(replacement));
+    panes.put(replacement, container);
   }
 
   @Override
