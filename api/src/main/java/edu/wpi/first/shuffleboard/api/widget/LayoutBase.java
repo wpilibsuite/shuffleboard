@@ -171,7 +171,7 @@ public abstract class LayoutBase implements Layout {
    * the title of the child. The position of this label can be configured with {@link #labelSideProperty()}. API
    * consumers should usually bind this property to the layout's own {@link LayoutBase#labelSideProperty() label side}.
    */
-  protected static final class ChildContainer extends BorderPane {
+  public static final class ChildContainer extends BorderPane {
 
     private final EditableLabel label = new EditableLabel();
     private final Property<Side> labelSide = new SimpleObjectProperty<>(this, "labelSide", Side.BOTTOM);

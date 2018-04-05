@@ -1,5 +1,7 @@
 package edu.wpi.first.shuffleboard.app.json;
 
+import edu.wpi.first.shuffleboard.api.json.AnnotatedTypeAdapter;
+import edu.wpi.first.shuffleboard.api.json.ElementTypeAdapter;
 import edu.wpi.first.shuffleboard.app.components.DashboardTab;
 import edu.wpi.first.shuffleboard.app.components.DashboardTabPane;
 import edu.wpi.first.shuffleboard.app.components.WidgetPane;

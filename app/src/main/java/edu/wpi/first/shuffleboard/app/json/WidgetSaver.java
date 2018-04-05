@@ -1,6 +1,9 @@
 package edu.wpi.first.shuffleboard.app.json;
 
 import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
+import edu.wpi.first.shuffleboard.api.json.AnnotatedTypeAdapter;
+import edu.wpi.first.shuffleboard.api.json.ElementTypeAdapter;
+import edu.wpi.first.shuffleboard.api.json.PropertySaver;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
 import edu.wpi.first.shuffleboard.api.sources.Sources;
@@ -39,22 +42,7 @@ public class WidgetSaver implements ElementTypeAdapter<Widget> {
     }
     object.addProperty("_title", src.getTitle());
 
-    final List<Property<?>> savedProperties = PropertySaver.getPropertyFields(src.getClass())
-        .map(f -> ReflectionUtils.<Property<?>>getUnchecked(src, f))
-        .collect(Collectors.toList());
-
-    // Save exported properties
-    for (Property p : src.getProperties()) {
-      if (!savedProperties.contains(p)) {
-        PropertySaver.serializeProperty(context, object, p, p.getName());
-      }
-    }
-
-    // Save @SaveThisProperty fields
-    propertySaver.saveAnnotatedFields(src, context, object);
-
-    // Save @SavePropertyFrom fields
-    propertySaver.saveNestedProperties(src, context, object);
+    propertySaver.saveAllProperties(src, context, object);
 
     return object;
   }
@@ -71,26 +59,7 @@ public class WidgetSaver implements ElementTypeAdapter<Widget> {
       widget.setTitle(title.getAsString());
     }
 
-    List<Property<?>> savedProperties = PropertySaver.getPropertyFields(widget.getClass())
-        .map(f -> ReflectionUtils.<Property<?>>getUnchecked(widget, f))
-        .collect(Collectors.toList());
-
-    // Load exported properties
-    for (Property p : widget.getProperties()) {
-      if (savedProperties.contains(p)) {
-        continue;
-      }
-      Object deserialized = context.deserialize(obj.get(p.getName()), p.getValue().getClass());
-      if (deserialized != null) {
-        p.setValue(deserialized);
-      }
-    }
-
-    // Load @SaveThisProperty fields
-    propertySaver.readAnnotatedFields(widget, context, obj);
-
-    // Load @SavePropertyFrom fields
-    propertySaver.readNestedProperties(widget, context, obj);
+    propertySaver.readAllProperties(widget, context, obj);
 
     // Load sources last - widgets can have saved properties that modify sources when they're added
     for (int i = 0; i > Integer.MIN_VALUE; i++) {

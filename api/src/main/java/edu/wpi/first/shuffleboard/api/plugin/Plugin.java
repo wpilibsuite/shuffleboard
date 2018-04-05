@@ -1,6 +1,7 @@
 package edu.wpi.first.shuffleboard.api.plugin;
 
 import edu.wpi.first.shuffleboard.api.data.DataType;
+import edu.wpi.first.shuffleboard.api.json.ElementTypeAdapter;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.recording.serialization.TypeAdapter;
 import edu.wpi.first.shuffleboard.api.tab.TabInfo;
@@ -210,6 +211,13 @@ public class Plugin {
    * Gets a list of information about any default tabs that shuffleboard should use.
    */
   public List<TabInfo> getDefaultTabInfo() {
+    return ImmutableList.of();
+  }
+
+  /**
+   * Gets the custom JSON serializers that this plugin requires to properly save and load custom components.
+   */
+  public List<ElementTypeAdapter<?>> getSavers() {
     return ImmutableList.of();
   }
 

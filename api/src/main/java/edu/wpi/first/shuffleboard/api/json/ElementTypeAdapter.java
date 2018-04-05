@@ -1,4 +1,4 @@
-package edu.wpi.first.shuffleboard.app.json;
+package edu.wpi.first.shuffleboard.api.json;
 
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;

@@ -43,6 +43,28 @@ public final class ListUtils {
     return -1;
   }
 
+  /**
+   * Adds an element to a list if the list does not already contain it.
+   *
+   * @param list    the list to add to
+   * @param element the element to add
+   * @param <T>     the type of values in the list
+   *
+   * @return true if the element was added to the list, false if not
+   */
+  public static <T> boolean addIfNotPresent(List<? super T> list, T element) {
+    if (!list.contains(element)) {
+      return list.add(element);
+    }
+    return false;
+  }
+
+  public static <T> void addIfNotPresent(List<? super T> list, int index, T element) {
+    if (!list.contains(element)) {
+      list.add(index, element);
+    }
+  }
+
   public static <T> Collector<T, ?, List<T>> joining(Supplier<? extends T> separator) {
     return joining(() -> null, separator, () -> null);
   }

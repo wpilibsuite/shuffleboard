@@ -1,6 +1,9 @@
 package edu.wpi.first.shuffleboard.app.json;
 
 import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
+import edu.wpi.first.shuffleboard.api.json.AnnotatedTypeAdapter;
+import edu.wpi.first.shuffleboard.api.json.ElementTypeAdapter;
+import edu.wpi.first.shuffleboard.api.json.PropertySaver;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.Sources;
 import edu.wpi.first.shuffleboard.api.util.ReflectionUtils;
@@ -48,19 +51,7 @@ public class LayoutSaver implements ElementTypeAdapter<Layout> {
 
     object.addProperty("_title", src.getTitle());
 
-    final List<Property<?>> savedProperties = PropertySaver.getPropertyFields(src.getClass())
-        .map(f -> ReflectionUtils.<Property<?>>getUnchecked(src, f))
-        .collect(Collectors.toList());
-
-    // Save exported properties
-    for (Property p : src.getProperties()) {
-      if (!savedProperties.contains(p)) {
-        PropertySaver.serializeProperty(context, object, p, p.getName());
-      }
-    }
-
-    propertySaver.saveAnnotatedFields(src, context, object);
-    propertySaver.saveNestedProperties(src, context, object);
+    propertySaver.saveAllProperties(src, context, object);
 
     Collection<Component> components = src.getChildren();
     JsonArray children = new JsonArray(components.size());
@@ -79,24 +70,7 @@ public class LayoutSaver implements ElementTypeAdapter<Layout> {
     Layout layout = Components.getDefault().createComponent(name).flatMap(TypeUtils.optionalCast(Layout.class))
         .orElseThrow(() -> new JsonParseException("Can't find layout name " + name));
 
-
-    List<Property<?>> savedProperties = PropertySaver.getPropertyFields(layout.getClass())
-        .map(f -> ReflectionUtils.<Property<?>>getUnchecked(layout, f))
-        .collect(Collectors.toList());
-
-    // Load exported properties
-    for (Property p : layout.getProperties()) {
-      if (savedProperties.contains(p)) {
-        continue;
-      }
-      Object deserialized = context.deserialize(obj.get(p.getName()), p.getValue().getClass());
-      if (deserialized != null) {
-        p.setValue(deserialized);
-      }
-    }
-
-    propertySaver.readAnnotatedFields(layout, context, obj);
-    propertySaver.readNestedProperties(layout, context, obj);
+    propertySaver.readAllProperties(layout, context, obj);
 
     if (layout instanceof Sourced) {
       Sourced sourcedLayout = (Sourced) layout;

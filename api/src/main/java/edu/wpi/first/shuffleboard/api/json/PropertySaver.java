@@ -1,8 +1,9 @@
-package edu.wpi.first.shuffleboard.app.json;
+package edu.wpi.first.shuffleboard.api.json;
 
 import edu.wpi.first.shuffleboard.api.properties.SavePropertyFrom;
 import edu.wpi.first.shuffleboard.api.properties.SaveThisProperty;
 import edu.wpi.first.shuffleboard.api.util.ReflectionUtils;
+import edu.wpi.first.shuffleboard.api.widget.Component;
 
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
@@ -24,6 +25,34 @@ import javafx.beans.property.Property;
  * not just fields from the object being serialized.
  */
 public final class PropertySaver {
+
+  /**
+   * Saves all properties from a component. Properties are saved in this order:
+   * <ol>
+   * <li>Properties exported via {@link Component#getProperties()}</li>
+   * <li>Properties from fields annotated with {@link SaveThisProperty} in the component's class hierarchy</li>
+   * <li>Properties from fields annotated with {@link SavePropertyFrom} in the component's class hierarchy</li>
+   * </ol>
+   *
+   * @param object     the object to serialize properties from
+   * @param context    the serialization context
+   * @param jsonObject the JSON object to serialize into
+   */
+  public void saveAllProperties(Component object, JsonSerializationContext context, JsonObject jsonObject) {
+    final List<Property<?>> savedProperties = getPropertyFields(object.getClass())
+        .map(f -> ReflectionUtils.<Property<?>>getUnchecked(object, f))
+        .collect(Collectors.toList());
+
+    // Save exported properties
+    for (Property p : object.getProperties()) {
+      if (!savedProperties.contains(p)) {
+        PropertySaver.serializeProperty(context, jsonObject, p, p.getName());
+      }
+    }
+
+    saveAnnotatedFields(object, context, jsonObject);
+    saveNestedProperties(object, context, jsonObject);
+  }
 
   /**
    * Saves property fields annotated with {@link SaveThisProperty @SaveThisProperty}.
@@ -69,6 +98,38 @@ public final class PropertySaver {
             }
           }
         });
+  }
+
+  /**
+   * Read all properties from a component. Properties are loaded in this order:
+   * <ol>
+   * <li>Properties exported via {@link Component#getProperties()}</li>
+   * <li>Properties from fields annotated with {@link SaveThisProperty} in the component's class hierarchy</li>
+   * <li>Properties from fields annotated with {@link SavePropertyFrom} in the component's class hierarchy</li>
+   * </ol>
+   *
+   * @param object     the object to serialize properties from
+   * @param context    the serialization context
+   * @param jsonObject the JSON object to serialize into
+   */
+  public void readAllProperties(Component object, JsonDeserializationContext context, JsonObject jsonObject) {
+    List<Property<?>> savedProperties = getPropertyFields(object.getClass())
+        .map(f -> ReflectionUtils.<Property<?>>getUnchecked(object, f))
+        .collect(Collectors.toList());
+
+    // Load exported properties
+    for (Property p : object.getProperties()) {
+      if (savedProperties.contains(p)) {
+        continue;
+      }
+      Object deserialized = context.deserialize(jsonObject.get(p.getName()), p.getValue().getClass());
+      if (deserialized != null) {
+        p.setValue(deserialized);
+      }
+    }
+
+    readAnnotatedFields(object, context, jsonObject);
+    readNestedProperties(object, context, jsonObject);
   }
 
   /**
@@ -139,7 +200,7 @@ public final class PropertySaver {
    * @throws IllegalArgumentException if there is not exactly ONE method matching {@code public Foo get<property>()}
    *                                  or {@code public boolean is<property>()}
    */
-  static Method getGetter(Class<?> clazz, String propertyName) {
+  public static Method getGetter(Class<?> clazz, String propertyName) {
     // Convert the first character to uppercase, so property name "foo" becomes "getFoo" or "isFoo"
     String base = Character.toUpperCase(propertyName.charAt(0)) + propertyName.substring(1);
     String getterName = "get" + base;
@@ -174,7 +235,7 @@ public final class PropertySaver {
    * @throws IllegalArgumentException if there is not exactly ONE method matching
    *                                  {@code public void set<property>(<type>)}
    */
-  static Method getSetter(Class<?> clazz, String propertyName) {
+  private static Method getSetter(Class<?> clazz, String propertyName) {
     // Convert the first character to uppercase, so property name "foo" becomes "setFoo"
     String setterName = "set" + Character.toUpperCase(propertyName.charAt(0)) + propertyName.substring(1);
     List<Method> possibleSetters = Arrays.stream(clazz.getMethods())
@@ -197,7 +258,7 @@ public final class PropertySaver {
    * Gets a stream of the fields in the object's class hierarchy annotated with
    * {@link SaveThisProperty @SaveThisProperty}.
    */
-  static Stream<Field> getPropertyFields(Class<?> clazz) {
+  public static Stream<Field> getPropertyFields(Class<?> clazz) {
     if (clazz == null) {
       return Stream.empty();
     } else {
@@ -217,7 +278,7 @@ public final class PropertySaver {
     }
   }
 
-  static void serializeProperty(JsonSerializationContext context, JsonObject object, Property p, String name) {
+  public static void serializeProperty(JsonSerializationContext context, JsonObject object, Property p, String name) {
     object.add(name, context.serialize(p.getValue()));
   }
 
@@ -234,7 +295,7 @@ public final class PropertySaver {
    * @throws IllegalArgumentException if the property has no name (either null or empty string) and the annotation does
    *                                  not specify the property name
    */
-  static String getSavedName(Property<?> property, SaveThisProperty annotation) {
+  private static String getSavedName(Property<?> property, SaveThisProperty annotation) {
     if (annotation.name().isEmpty()) {
       if (property.getName() == null || property.getName().isEmpty()) {
         throw new IllegalArgumentException("The property has no name, and no name was specified in the annotation");
@@ -252,7 +313,7 @@ public final class PropertySaver {
    *
    * @return the saved name of the property as set by the annotation
    */
-  static String getPropertyName(SavePropertyFrom annotation) {
+  private static String getPropertyName(SavePropertyFrom annotation) {
     if (annotation.savedName().isEmpty()) {
       return annotation.propertyName(); // Don't need to check this - it's done before this method is called
     } else {

@@ -2,6 +2,7 @@ package edu.wpi.first.shuffleboard.plugin.base;
 
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
+import edu.wpi.first.shuffleboard.api.json.ElementTypeAdapter;
 import edu.wpi.first.shuffleboard.api.plugin.Description;
 import edu.wpi.first.shuffleboard.api.plugin.Plugin;
 import edu.wpi.first.shuffleboard.api.tab.TabInfo;
@@ -28,6 +29,7 @@ import edu.wpi.first.shuffleboard.plugin.base.data.types.SpeedControllerType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.SubsystemType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.ThreeAxisAccelerometerType;
 import edu.wpi.first.shuffleboard.plugin.base.layout.GridLayout;
+import edu.wpi.first.shuffleboard.plugin.base.layout.GridLayoutSaver;
 import edu.wpi.first.shuffleboard.plugin.base.layout.ListLayout;
 import edu.wpi.first.shuffleboard.plugin.base.layout.SubsystemLayout;
 import edu.wpi.first.shuffleboard.plugin.base.widget.AccelerometerWidget;
@@ -173,6 +175,13 @@ public class BasePlugin extends Plugin {
     return ImmutableList.of(
         TabInfo.builder().name("SmartDashboard").autoPopulate().sourcePrefix("SmartDashboard/").build(),
         TabInfo.builder().name("LiveWindow").autoPopulate().sourcePrefix("LiveWindow/").build()
+    );
+  }
+
+  @Override
+  public List<ElementTypeAdapter<?>> getSavers() {
+    return ImmutableList.of(
+        GridLayoutSaver.Instance
     );
   }
 

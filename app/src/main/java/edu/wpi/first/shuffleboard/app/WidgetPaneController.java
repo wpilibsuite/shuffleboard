@@ -48,6 +48,7 @@ import java.util.stream.Stream;
 import javafx.beans.binding.Binding;
 import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
+import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.control.ButtonType;
@@ -59,6 +60,7 @@ import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.ContextMenuEvent;
+import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
@@ -106,6 +108,20 @@ public class WidgetPaneController {
 
       // preview the location of the widget if one is being dragged
       if (isWidgetTile) {
+        if (!pane.isOpen(point, new TileSize(1, 1), n -> false)
+            && pane.tileAt(point).map(Tile::getContent).filter(c -> c instanceof Layout).isPresent()) {
+          if (((DataFormats.WidgetData) event.getDragboard().getContent(DataFormats.widgetTile)).getId()
+              .equals(pane.tileAt(point)
+                  .map(Node::getId)
+                  .orElse(null))) {
+            // Dragged a layout tile onto itself
+            event.consume();
+          } else {
+            // Dragged a tile onto a layout, let the layout handle the drag and drop
+            pane.setHighlight(false);
+            return;
+          }
+        }
         pane.setHighlight(true);
         pane.setHighlightPoint(point);
         DataFormats.WidgetData data = (DataFormats.WidgetData) event.getDragboard().getContent(DataFormats.widgetTile);
@@ -449,7 +465,7 @@ public class WidgetPaneController {
         pane.tileMatching(t -> t.getId().equals(data.getId()))
             .ifPresent(t -> {
               Component content = pane.removeTile(t);
-              ((LayoutTile) tile).getContent().addChild(content);
+              add((Layout) tile.getContent(), content, event);
             });
         event.consume();
 
@@ -461,7 +477,7 @@ public class WidgetPaneController {
         String widgetType = (String) dragboard.getContent(DataFormats.widgetType);
 
         Components.getDefault().createWidget(widgetType).ifPresent(widget -> {
-          ((LayoutTile) tile).getContent().addChild(widget);
+          add((Layout) tile.getContent(), widget, event);
         });
         event.consume();
 
@@ -478,12 +494,17 @@ public class WidgetPaneController {
             .stream()
             .findAny()
             .flatMap(name -> Components.getDefault().createWidget(name, source))
-            .ifPresent(container::addChild);
+            .ifPresent(w -> add(container, w, event));
         event.consume();
 
         return;
       }
     });
+  }
+
+  private static void add(Layout layout, Component component, DragEvent event) {
+    Point2D point = layout.getView().screenToLocal(event.getScreenX(), event.getScreenY());
+    layout.addChild(component, point.getX(), point.getY());
   }
 
   /**
