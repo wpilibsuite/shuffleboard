@@ -68,11 +68,15 @@ public final class ListUtils {
    * @param index   the index in the list to add the element to
    * @param element the element to add
    * @param <T>     the type of values in the list
+   *
+   * @return true if the element was added, false if not
    */
-  public static <T> void addIfNotPresent(List<? super T> list, int index, T element) {
+  public static <T> boolean addIfNotPresent(List<? super T> list, int index, T element) {
     if (!list.contains(element)) {
       list.add(index, element);
+      return true;
     }
+    return false;
   }
 
   /**

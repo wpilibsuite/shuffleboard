@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.WeakHashMap;
+import java.util.function.ToDoubleFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -53,53 +54,75 @@ public final class GridLayout extends LayoutBase {
       int oldNum = prev.intValue();
       int newNum = cur.intValue();
       if (newNum > oldNum) {
-        for (int col = oldNum; col < newNum; col++) {
-          for (int row = 0; row < numRows.get(); row++) {
-            Placeholder placeholder = new Placeholder(col, row);
-            if (nodesInCol(col).count() == 0) {
-              placeholder.prefWidthProperty().bind(grid.widthProperty().divide(numColumns));
-            }
-            if (nodesInRow(row).count() == 0) {
-              placeholder.prefHeightProperty().bind(grid.heightProperty().divide(numRows));
-            }
-            ListUtils.addIfNotPresent(grid.getChildren(), 0, placeholder);
-          }
-        }
+        addPlaceholders(oldNum, newNum, 0, numRows.get());
       } else {
-        grid.getChildren().stream()
-            .filter(child -> child instanceof Placeholder)
-            .filter(child -> GridPane.getColumnIndex(child) > newNum)
-            .collect(Collectors.toList())
-            .forEach(grid.getChildren()::remove);
+        removePlaceholders(GridPane::getColumnIndex, newNum);
       }
     });
     numRows.addListener((__, prev, cur) -> {
       int oldNum = prev.intValue();
       int newNum = cur.intValue();
       if (newNum > oldNum) {
-        for (int row = oldNum; row < newNum; row++) {
-          for (int col = 0; col < numColumns.get(); col++) {
-            Placeholder placeholder = new Placeholder(col, row);
-            if (nodesInCol(col).count() == 0) {
-              placeholder.prefWidthProperty().bind(grid.widthProperty().divide(numColumns));
-            }
-            if (nodesInRow(row).count() == 0) {
-              placeholder.prefHeightProperty().bind(grid.heightProperty().divide(numRows));
-            }
-            ListUtils.addIfNotPresent(grid.getChildren(), 0, placeholder);
-          }
-        }
+        addPlaceholders(0, numColumns.get(), oldNum, newNum);
       } else {
-        grid.getChildren().stream()
-            .filter(child -> child instanceof Placeholder)
-            .filter(child -> GridPane.getRowIndex(child) > newNum)
-            .collect(Collectors.toList())
-            .forEach(grid.getChildren()::remove);
+        removePlaceholders(GridPane::getRowIndex, newNum);
       }
     });
     setupDropHighlight();
   }
 
+  /**
+   * Adds placeholders for all the positions in the range [minCol, maxCol] -> [minRow, maxRow].
+   *
+   * @param minCol the index of the leftmost column to add placeholders to
+   * @param maxCol the index of the rightmost column to add placeholders to
+   * @param minRow the index of the leftmost row to add placeholders to
+   * @param maxRow the index of the rightmost row to add placeholders to
+   */
+  private void addPlaceholders(int minCol, int maxCol, int minRow, int maxRow) {
+    for (int col = minCol; col < maxCol; col++) {
+      for (int row = minRow; row < maxRow; row++) {
+        addPlaceholder(col, row);
+      }
+    }
+  }
+
+  /**
+   * Adds a placeholder to the given position if one is not already present.
+   *
+   * @param col the column to add the placeholder to
+   * @param row the row to add the placeholder to
+   */
+  private void addPlaceholder(int col, int row) {
+    Placeholder placeholder = new Placeholder(col, row);
+    boolean added = ListUtils.addIfNotPresent(grid.getChildren(), 0, placeholder);
+    if (added) {
+      if (nodesInCol(col).count() == 0) {
+        placeholder.prefWidthProperty().bind(grid.widthProperty().divide(numColumns));
+      }
+      if (nodesInRow(row).count() == 0) {
+        placeholder.prefHeightProperty().bind(grid.heightProperty().divide(numRows));
+      }
+    }
+  }
+
+  /**
+   * Removes all placeholders whose position (column or row index) is greater than the maximum.
+   *
+   * @param positionGetter the getter for the index to compare
+   * @param max            the maximum allowable index
+   */
+  private void removePlaceholders(ToDoubleFunction<Node> positionGetter, int max) {
+    grid.getChildren().stream()
+        .filter(child -> child instanceof Placeholder)
+        .filter(child -> positionGetter.applyAsDouble(child) > max)
+        .collect(Collectors.toList())
+        .forEach(grid.getChildren()::remove);
+  }
+
+  /**
+   * Sets up the highlight pane used to preview the positions of dropping components.
+   */
   private void setupDropHighlight() {
     grid.setOnDragEntered(e -> {
       ListUtils.addIfNotPresent(grid.getChildren(), highlight);
