@@ -7,14 +7,12 @@ import edu.wpi.first.shuffleboard.api.components.ExtendedPropertySheet;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import javafx.geometry.Side;
 import javafx.scene.Node;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
@@ -28,7 +26,8 @@ public abstract class LayoutBase implements Layout {
 
   private final List<Component> children = new ArrayList<>();
   private final StringProperty title = new SimpleStringProperty(this, "title", getName());
-  private final Property<Side> labelSide = new SimpleObjectProperty<>(this, "labelSide", Side.BOTTOM);
+  private final Property<LabelPosition> labelPosition =
+      new SimpleObjectProperty<>(this, "labelPosition", LabelPosition.BOTTOM);
 
   /**
    * Adds a component to this layout's view.
@@ -71,20 +70,19 @@ public abstract class LayoutBase implements Layout {
   /**
    * Gets the side on which labels for components should be displayed.
    */
-  public final Side getLabelSide() {
-    return labelSide.getValue();
+  public final LabelPosition getLabelPosition() {
+    return labelPosition.getValue();
   }
 
-  public final Property<Side> labelSideProperty() {
-    return labelSide;
+  public final Property<LabelPosition> labelPositionProperty() {
+    return labelPosition;
   }
 
   /**
    * Sets the side on which labels for children should be displayed.
    */
-  public final void setLabelSide(Side labelSide) {
-    Objects.requireNonNull(labelSide, "Label side cannot be null");
-    this.labelSide.setValue(labelSide);
+  public final void setLabelPosition(LabelPosition labelPosition) {
+    this.labelPosition.setValue(labelPosition);
   }
 
   /**
@@ -166,15 +164,25 @@ public abstract class LayoutBase implements Layout {
     return actions;
   }
 
+  public enum LabelPosition {
+    TOP,
+    LEFT,
+    RIGHT,
+    BOTTOM,
+    HIDDEN
+  }
+
   /**
    * A container for an individual component inside a layout. This contains an {@link EditableLabel} to display and edit
-   * the title of the child. The position of this label can be configured with {@link #labelSideProperty()}. API
-   * consumers should usually bind this property to the layout's own {@link LayoutBase#labelSideProperty() label side}.
+   * the title of the child. The position of this label can be configured with {@link #labelPositionProperty()}. API
+   * consumers should usually bind this property to the layout's own {@link LayoutBase#labelPositionProperty() label
+   * position}.
    */
   public static final class ChildContainer extends BorderPane {
 
     private final EditableLabel label = new EditableLabel();
-    private final Property<Side> labelSide = new SimpleObjectProperty<>(this, "labelSide", Side.BOTTOM);
+    private final Property<LabelPosition> labelPosition =
+        new SimpleObjectProperty<>(this, "labelPosition", LabelPosition.BOTTOM);
     private final Property<Component> child = new SimpleObjectProperty<>(this, "child", null);
 
     /**
@@ -196,7 +204,7 @@ public abstract class LayoutBase implements Layout {
           setCenter(child.getView());
         }
       });
-      labelSide.addListener((__, oldSide, newSide) -> move(oldSide, newSide));
+      labelPosition.addListener((__, oldSide, newSide) -> move(oldSide, newSide));
       set(getLabelSide(), label);
     }
 
@@ -210,13 +218,13 @@ public abstract class LayoutBase implements Layout {
       setChild(child);
     }
 
-    private void move(Side oldSide, Side newSide) {
-      set(oldSide, null);
-      set(newSide, label);
+    private void move(LabelPosition oldPosition, LabelPosition newPosition) {
+      set(oldPosition, null);
+      set(newPosition, label);
     }
 
-    private void set(Side side, Node node) {
-      switch (side) {
+    private void set(LabelPosition position, Node node) {
+      switch (position) {
         case TOP:
           setTop(node);
           break;
@@ -229,21 +237,24 @@ public abstract class LayoutBase implements Layout {
         case BOTTOM:
           setBottom(node);
           break;
+        case HIDDEN:
+          // Don't set it
+          break;
         default:
-          throw new AssertionError("Unknown side: " + side);
+          throw new AssertionError("Unknown position: " + position);
       }
     }
 
-    public Side getLabelSide() {
-      return labelSide.getValue();
+    public LabelPosition getLabelSide() {
+      return labelPosition.getValue();
     }
 
-    public Property<Side> labelSideProperty() {
-      return labelSide;
+    public Property<LabelPosition> labelPositionProperty() {
+      return labelPosition;
     }
 
-    public void setLabelSide(Side labelSide) {
-      this.labelSide.setValue(labelSide);
+    public void setLabelSide(LabelPosition labelPosition) {
+      this.labelPosition.setValue(labelPosition);
     }
 
     public Component getChild() {

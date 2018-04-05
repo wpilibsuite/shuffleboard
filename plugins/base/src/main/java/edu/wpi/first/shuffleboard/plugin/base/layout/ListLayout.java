@@ -39,7 +39,7 @@ public class ListLayout extends LayoutBase {
       return panes.get(component);
     }
     ChildContainer pane = new ChildContainer(component);
-    pane.labelSideProperty().bindBidirectional(labelSideProperty());
+    pane.labelPositionProperty().bindBidirectional(this.labelPositionProperty());
     ActionList.registerSupplier(pane, () -> actionsForComponent(component));
     panes.put(component, pane);
     return pane;
@@ -97,7 +97,7 @@ public class ListLayout extends LayoutBase {
   @Override
   public List<? extends Property<?>> getProperties() {
     return ImmutableList.of(
-        labelSideProperty()
+        labelPositionProperty()
     );
   }
 

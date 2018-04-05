@@ -221,7 +221,7 @@ public final class GridLayout extends LayoutBase {
       return panes.get(component);
     }
     ChildContainer pane = new ChildContainer(component);
-    pane.labelSideProperty().bindBidirectional(this.labelSideProperty());
+    pane.labelPositionProperty().bindBidirectional(this.labelPositionProperty());
     GridPane.setHgrow(pane, Priority.ALWAYS);
     GridPane.setVgrow(pane, Priority.ALWAYS);
     ActionList.registerSupplier(pane, () -> actionsForComponent(component));
@@ -291,7 +291,7 @@ public final class GridLayout extends LayoutBase {
     return ImmutableList.of(
         numColumns,
         numRows,
-        labelSideProperty()
+        labelPositionProperty()
     );
   }
 
