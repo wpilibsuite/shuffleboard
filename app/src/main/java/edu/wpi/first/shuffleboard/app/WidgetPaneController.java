@@ -33,6 +33,7 @@ import org.fxmisc.easybind.EasyBind;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,6 +56,7 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
+import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.image.WritableImage;
@@ -298,6 +300,17 @@ public class WidgetPaneController {
   }
 
   private void createPaneContextMenu(ContextMenuEvent e) {
+    // Menu for adding new empty layouts
+    // As an alternative to adding a component, then having to add that to a new layout
+    // This reduces the complexity of creating new layouts
+    Menu addLayouts = new Menu("Add layout...");
+    Components.getDefault().allComponents()
+        .flatMap(TypeUtils.castStream(LayoutType.class))
+        .sorted(Comparator.comparing(LayoutType::getName))
+        .map(t -> FxUtils.menuItem(t.getName(), __ -> pane.addComponent((Layout) t.get())))
+        .forEach(addLayouts.getItems()::add);
+
+    // Removes all the tiles from the pane. Destructive operation!
     MenuItem clear = FxUtils.menuItem("Clear", __ -> {
       List<Tile> tiles = new ArrayList<>(pane.getTiles());
       tiles.stream()
@@ -306,7 +319,7 @@ public class WidgetPaneController {
           .flatMap(TypeUtils.castStream(Sourced.class))
           .forEach(Sourced::removeAllSources);
     });
-    ContextMenu contextMenu = new ContextMenu(clear);
+    ContextMenu contextMenu = new ContextMenu(addLayouts, new SeparatorMenuItem(), clear);
     contextMenu.show(pane.getScene().getWindow(), e.getScreenX(), e.getScreenY());
   }
 
