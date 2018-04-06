@@ -15,10 +15,12 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.WeakHashMap;
+import java.util.function.Predicate;
 import java.util.function.ToDoubleFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javafx.beans.binding.DoubleBinding;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -37,19 +39,21 @@ public final class GridLayout extends LayoutBase {
   @FXML
   private GridPane grid;
 
-  private final IntegerProperty numColumns = new SimpleIntegerProperty(this, "columns", 1);
-  private final IntegerProperty numRows = new SimpleIntegerProperty(this, "rows", 1);
+  private static final Predicate<Node> isPlaceholder = n -> n instanceof Placeholder;
+
+  private final IntegerProperty numColumns = new SimpleIntegerProperty(this, "columns", 3);
+  private final IntegerProperty numRows = new SimpleIntegerProperty(this, "rows", 3);
   private final Map<Component, ChildContainer> panes = new WeakHashMap<>();
   private final Pane highlight = new Pane();
+  private DoubleBinding placeholderWidth;
+  private DoubleBinding placeholderHeight;
 
   @FXML
   private void initialize() {
     highlight.getStyleClass().add("grid-highlight");
-    for (int col = 0; col < numColumns.get(); col++) {
-      for (int row = 0; row < numRows.get(); row++) {
-        grid.getChildren().add(0, new Placeholder(col, row));
-      }
-    }
+    placeholderWidth = grid.widthProperty().divide(numColumns);
+    placeholderHeight = grid.heightProperty().divide(numRows);
+    addPlaceholders(0, numColumns.get(), 0, numRows.get());
     numColumns.addListener((__, prev, cur) -> {
       int oldNum = prev.intValue();
       int newNum = cur.intValue();
@@ -97,11 +101,11 @@ public final class GridLayout extends LayoutBase {
     Placeholder placeholder = new Placeholder(col, row);
     boolean added = ListUtils.addIfNotPresent(grid.getChildren(), 0, placeholder);
     if (added) {
-      if (nodesInCol(col).count() == 0) {
-        placeholder.prefWidthProperty().bind(grid.widthProperty().divide(numColumns));
+      if (nodesInCol(col).allMatch(isPlaceholder)) {
+        placeholder.prefWidthProperty().bind(placeholderWidth);
       }
-      if (nodesInRow(row).count() == 0) {
-        placeholder.prefHeightProperty().bind(grid.heightProperty().divide(numRows));
+      if (nodesInRow(row).allMatch(isPlaceholder)) {
+        placeholder.prefHeightProperty().bind(placeholderHeight);
       }
     }
   }
@@ -291,7 +295,20 @@ public final class GridLayout extends LayoutBase {
   @Override
   protected void removeComponentFromView(Component component) {
     ChildContainer container = panes.remove(component);
+    GridPoint point = GridPoint.fromNode(container);
     grid.getChildren().remove(container);
+
+    // Rebind placeholder sizes if this was the only component in its column or row
+    if (nodesInCol(point.col).allMatch(isPlaceholder)) {
+      nodesInCol(point.col)
+          .flatMap(TypeUtils.castStream(Placeholder.class))
+          .forEach(placeholder -> placeholder.prefWidthProperty().bind(placeholderWidth));
+    }
+    if (nodesInRow(point.row).allMatch(isPlaceholder)) {
+      nodesInRow(point.row)
+          .flatMap(TypeUtils.castStream(Placeholder.class))
+          .forEach(placeholder -> placeholder.prefHeightProperty().bind(placeholderHeight));
+    }
   }
 
   @Override
