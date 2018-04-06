@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleObjectProperty;
@@ -91,30 +92,45 @@ public abstract class LayoutBase implements Layout {
   protected final ActionList createChangeMenusForWidget(Widget widget) {
     ActionList actionList = ActionList.withName("Show as...");
 
-    widget.getSources().stream()
-        .map(Components.getDefault()::componentNamesForSource)
-        .flatMap(Collection::stream)
+    Stream<List<String>> componentNames;
+
+    if (widget.getSources().isEmpty()) {
+      // No sources; use all widgets compatible with all supported data types
+      componentNames = widget.getDataTypes().stream()
+          .map(Components.getDefault()::componentNamesForType);
+    } else {
+      componentNames = widget.getSources().stream()
+          .map(Components.getDefault()::componentNamesForSource);
+    }
+    componentNames.flatMap(Collection::stream)
         .sorted()
         .distinct()
-        .forEach(name -> {
-          boolean isSameWidget = name.equals(widget.getName());
-          actionList.addAction(
-              name,
-              isSameWidget ? new Label("✓") : null,
-              () -> {
-                if (!isSameWidget) {
-                  Components.getDefault()
-                      .createWidget(name, widget.getSources())
-                      .ifPresent(replacement -> {
-                        replacement.setTitle(widget.getTitle());
-                        replaceInPlace(widget, replacement);
-                        children.set(children.indexOf(widget), replacement); // NOPMD - there is no inner/outer class!
-                      });
-                }
-              });
-        });
+        .map(name -> createChangeAction(widget, name))
+        .forEach(actionList::addAction);
 
     return actionList;
+  }
+
+  private ActionList.Action createChangeAction(Widget widget, String name) {
+    boolean isSameWidget = name.equals(widget.getName());
+    return ActionList.createAction(
+        name,
+        () -> change(widget, name),
+        isSameWidget ? new Label("✓") : null
+    );
+  }
+
+  private void change(Widget widget, String name) {
+    boolean isSameWidget = name.equals(widget.getName());
+    if (!isSameWidget) {
+      Components.getDefault()
+          .createWidget(name, widget.getSources())
+          .ifPresent(replacement -> {
+            replacement.setTitle(widget.getTitle());
+            replaceInPlace(widget, replacement);
+            children.set(children.indexOf(widget), replacement); // NOPMD - there is no inner/outer class!
+          });
+    }
   }
 
   /**
