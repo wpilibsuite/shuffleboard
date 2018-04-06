@@ -239,7 +239,7 @@ public final class GridLayout extends LayoutBase {
   private boolean isOpen(int col, int row) {
     return grid.getChildren().stream()
         .filter(this::isManaged)
-        .filter(n -> !(n instanceof Placeholder))
+        .filter(isPlaceholder.negate())
         .noneMatch(n -> GridPane.getColumnIndex(n) == col && GridPane.getRowIndex(n) == row);
   }
 
@@ -299,13 +299,13 @@ public final class GridLayout extends LayoutBase {
     grid.getChildren().remove(container);
 
     // Rebind placeholder sizes if this was the only component in its column or row
-    if (nodesInCol(point.col).allMatch(isPlaceholder)) {
-      nodesInCol(point.col)
+    if (nodesInCol(point.getCol()).allMatch(isPlaceholder)) {
+      nodesInCol(point.getCol())
           .flatMap(TypeUtils.castStream(Placeholder.class))
           .forEach(placeholder -> placeholder.prefWidthProperty().bind(placeholderWidth));
     }
-    if (nodesInRow(point.row).allMatch(isPlaceholder)) {
-      nodesInRow(point.row)
+    if (nodesInRow(point.getRow()).allMatch(isPlaceholder)) {
+      nodesInRow(point.getRow())
           .flatMap(TypeUtils.castStream(Placeholder.class))
           .forEach(placeholder -> placeholder.prefHeightProperty().bind(placeholderHeight));
     }

@@ -128,7 +128,7 @@ public abstract class LayoutBase implements Layout {
           .ifPresent(replacement -> {
             replacement.setTitle(widget.getTitle());
             replaceInPlace(widget, replacement);
-            children.set(children.indexOf(widget), replacement); // NOPMD - there is no inner/outer class!
+            getChildren().set(getChildren().indexOf(widget), replacement);
           });
     }
   }
