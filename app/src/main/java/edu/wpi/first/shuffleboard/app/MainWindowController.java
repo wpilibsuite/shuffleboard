@@ -14,6 +14,8 @@ import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
 import edu.wpi.first.shuffleboard.api.sources.UiHints;
 import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
+import edu.wpi.first.shuffleboard.api.sources.recording.Recording;
+import edu.wpi.first.shuffleboard.api.sources.recording.Serialization;
 import edu.wpi.first.shuffleboard.api.tab.TabInfo;
 import edu.wpi.first.shuffleboard.api.theme.Theme;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
@@ -27,6 +29,7 @@ import edu.wpi.first.shuffleboard.app.components.WidgetGallery;
 import edu.wpi.first.shuffleboard.app.json.JsonBuilder;
 import edu.wpi.first.shuffleboard.app.plugin.PluginLoader;
 import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
+import edu.wpi.first.shuffleboard.app.sources.recording.CsvExporter;
 import edu.wpi.first.shuffleboard.app.sources.recording.Playback;
 import edu.wpi.first.shuffleboard.app.tab.TabInfoRegistry;
 
@@ -44,6 +47,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -89,6 +93,7 @@ import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -575,6 +580,34 @@ public class MainWindowController {
     }
     Playback playback = Playback.load(selected.getAbsolutePath());
     playback.start();
+  }
+
+  @FXML
+  private void convertRecording() throws IOException {
+    FileChooser sourceChooser = new FileChooser();
+    sourceChooser.setInitialDirectory(Storage.getRecordingDir());
+    sourceChooser.setTitle("Choose recording file");
+    sourceChooser.getExtensionFilters().setAll(
+        new FileChooser.ExtensionFilter("Shuffleboard Data Recording", "*.sbr"));
+    List<File> files = sourceChooser.showOpenMultipleDialog(root.getScene().getWindow());
+    if (files == null || files.isEmpty()) {
+      return;
+    }
+    DirectoryChooser destinationChooser = new DirectoryChooser();
+    sourceChooser.setInitialDirectory(Storage.getRecordingDir());
+    destinationChooser.setTitle("Choose export folder");
+    File destination = destinationChooser.showDialog(root.getScene().getWindow());
+    if (destination != null) {
+      CsvExporter exporter = new CsvExporter();
+      for (File file : files) {
+        try {
+          Recording recording = Serialization.loadRecording(file.toPath());
+          exporter.export(recording, Paths.get(destination.getAbsolutePath(), file.getName().replace(".sbr", ".csv")));
+        } catch (IOException e) {
+          log.log(Level.WARNING, "Could not convert recording file " + file, e);
+        }
+      }
+    }
   }
 
   @FXML
