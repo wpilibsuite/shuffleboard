@@ -67,7 +67,6 @@ import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Accordion;
 import javafx.scene.control.Alert;
@@ -203,13 +202,18 @@ public class MainWindowController {
       }
     });
 
+    generateConnectionIndicators(SourceTypes.getDefault().getItems());
     SourceTypes.getDefault().getItems().addListener((InvalidationListener) items -> {
-      List<? extends Node> collect = ((ObservableList<SourceType>) items).stream()
-          .filter(s -> !optOutOfConnectionIndicator(s))
-          .map(this::generateConnectionLabel)
-          .collect(joining(this::generateSeparatorLabel));
-      connectionIndicatorArea.getChildren().setAll(collect);
+      generateConnectionIndicators((ObservableList<SourceType>) items);
     });
+  }
+
+  private void generateConnectionIndicators(List<SourceType> sourceTypes) {
+    connectionIndicatorArea.getChildren().setAll(
+        sourceTypes.stream()
+            .filter(s -> !optOutOfConnectionIndicator(s))
+            .map(this::generateConnectionLabel)
+            .collect(joining(this::generateSeparatorLabel)));
   }
 
   private Label generateSeparatorLabel() {
