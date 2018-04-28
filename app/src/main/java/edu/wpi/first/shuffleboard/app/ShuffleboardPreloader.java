@@ -28,6 +28,7 @@ public class ShuffleboardPreloader extends Preloader {
 
     Scene scene = new Scene(preloaderPane);
     scene.getStylesheets().setAll(AppPreferences.getInstance().getTheme().getStyleSheets());
+
     stage.setScene(scene);
     stage.initStyle(StageStyle.UNDECORATED);
     stage.show();
