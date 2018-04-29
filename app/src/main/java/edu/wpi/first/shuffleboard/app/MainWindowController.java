@@ -17,6 +17,7 @@ import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
 import edu.wpi.first.shuffleboard.api.tab.TabInfo;
 import edu.wpi.first.shuffleboard.api.theme.Theme;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
+import edu.wpi.first.shuffleboard.api.util.LazyInit;
 import edu.wpi.first.shuffleboard.api.util.Storage;
 import edu.wpi.first.shuffleboard.api.util.ThreadUtils;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
@@ -64,6 +65,7 @@ import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Accordion;
@@ -125,16 +127,15 @@ public class MainWindowController {
   private Pane updateFooter;
   @FXML
   private HBox connectionIndicatorArea;
-  @FXML
-  private Pane pluginPane;
+
+  // Use lazy initialization to reduce load time for the main window
+  private final LazyInit<Pane> pluginPane = LazyInit.of(() -> FxUtils.load(PluginPaneController.class));
+  private final LazyInit<Pane> downloadPane = LazyInit.of(() -> FxUtils.load(DownloadDialogController.class));
+  private final LazyInit<Pane> restartPromptPane =
+      LazyInit.of(() -> FXMLLoader.load(MainWindowController.class.getResource("RestartPrompt.fxml")));
+  private final LazyInit<Pane> aboutPane = LazyInit.of(() -> FxUtils.load(AboutDialogController.class));
   private Stage pluginStage;
-  @FXML
-  private Pane downloadPane;
   private Stage downloadStage;
-  @FXML
-  private Pane restartPromptPane;
-  @FXML
-  private Pane aboutPane;
 
   private SourceEntry selectedEntry;
 
@@ -248,12 +249,12 @@ public class MainWindowController {
         pluginStage.close();
       }
     });
-    pluginStage.setScene(new Scene(pluginPane));
+    pluginStage.setScene(new Scene(pluginPane.get()));
     pluginStage.sizeToScene();
     pluginStage.setMinWidth(675);
     pluginStage.setMinHeight(325);
     pluginStage.setTitle("Loaded Plugins");
-    EasyBind.listBind(pluginPane.getStylesheets(), root.getStylesheets());
+    EasyBind.listBind(pluginPane.get().getStylesheets(), root.getStylesheets());
   }
 
   /**
@@ -609,7 +610,7 @@ public class MainWindowController {
 
   @FXML
   private void showAboutDialog() {
-    ShuffleboardDialog dialog = new ShuffleboardDialog(aboutPane, true);
+    ShuffleboardDialog dialog = new ShuffleboardDialog(aboutPane.get(), true);
     dialog.setHeaderText("WPILib Shuffleboard");
     dialog.setSubheaderText(Shuffleboard.getVersion());
     FxUtils.bind(dialog.getDialogPane().getStylesheets(), stylesheets);
@@ -654,14 +655,14 @@ public class MainWindowController {
   public void checkForUpdates() {
     if (downloadStage == null) {
       downloadStage = new Stage();
-      setUpDialogStage(downloadStage, downloadPane);
+      setUpDialogStage(downloadStage, downloadPane.get());
       downloadStage.setOnCloseRequest(event -> {
         // TODO move the progress bar to the footer?
       });
     }
 
     AtomicBoolean firstShow = new AtomicBoolean(true);
-    DownloadDialogController controller = FxUtils.getController(downloadPane);
+    DownloadDialogController controller = FxUtils.getController(downloadPane.get());
     final DoubleConsumer progressNotifier = value -> {
       FxUtils.runOnFxThread(() -> {
         // Show the dialog on the first update
@@ -692,7 +693,7 @@ public class MainWindowController {
   }
 
   private void showRestartPrompt() {
-    ShuffleboardDialog dialog = new ShuffleboardDialog(restartPromptPane);
+    ShuffleboardDialog dialog = new ShuffleboardDialog(restartPromptPane.get());
     dialog.setHeaderText("Update Downloaded");
     dialog.initOwner(root.getScene().getWindow());
     FxUtils.bind(dialog.getDialogPane().getStylesheets(), stylesheets);

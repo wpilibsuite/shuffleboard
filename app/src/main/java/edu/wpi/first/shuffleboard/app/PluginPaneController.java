@@ -3,6 +3,7 @@ package edu.wpi.first.shuffleboard.app;
 import edu.wpi.first.shuffleboard.api.plugin.Plugin;
 import edu.wpi.first.shuffleboard.api.util.Storage;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
+import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 import edu.wpi.first.shuffleboard.app.plugin.PluginCache;
 import edu.wpi.first.shuffleboard.app.plugin.PluginLoader;
 
@@ -38,6 +39,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
 
+@ParametrizedController("PluginPane.fxml")
 public class PluginPaneController {
 
   private static final Logger log = Logger.getLogger(PluginPaneController.class.getName());
