@@ -60,7 +60,7 @@ public final class GridLayout extends LayoutBase {
       if (newNum > oldNum) {
         addPlaceholders(oldNum, newNum, 0, numRows.get());
       } else {
-        removePlaceholders(GridPane::getColumnIndex, newNum);
+        removePlaceholders(GridPane::getColumnIndex, newNum - 1);
       }
     });
     numRows.addListener((__, prev, cur) -> {
@@ -69,7 +69,7 @@ public final class GridLayout extends LayoutBase {
       if (newNum > oldNum) {
         addPlaceholders(0, numColumns.get(), oldNum, newNum);
       } else {
-        removePlaceholders(GridPane::getRowIndex, newNum);
+        removePlaceholders(GridPane::getRowIndex, newNum - 1);
       }
     });
     setupDropHighlight();
@@ -353,13 +353,37 @@ public final class GridLayout extends LayoutBase {
         .collect(ListUtils.toImmutableList());
   }
 
+  public int getNumColumns() {
+    return numColumns.get();
+  }
+
+  public IntegerProperty numColumnsProperty() {
+    return numColumns;
+  }
+
+  public void setNumColumns(int numColumns) {
+    this.numColumns.set(numColumns);
+  }
+
+  public int getNumRows() {
+    return numRows.get();
+  }
+
+  public IntegerProperty numRowsProperty() {
+    return numRows;
+  }
+
+  public void setNumRows(int numRows) {
+    this.numRows.set(numRows);
+  }
+
   /**
    * A placeholder for use in the grid. Placeholders are invisible and are behind all other components, and therefore
    * do not modify the UI or UX. These are used to simplify the computations for mapping drag points to grid coordinates
    * and for forcing empty columns and rows to have size (without placeholders, they would have zero width or height
    * until child components are added).
    */
-  private static final class Placeholder extends Pane {
+  static final class Placeholder extends Pane {
 
     private final int col;
     private final int row;
