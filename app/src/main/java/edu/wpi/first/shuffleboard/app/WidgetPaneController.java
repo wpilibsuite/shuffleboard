@@ -38,6 +38,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.WeakHashMap;
 import java.util.function.Function;
 import java.util.logging.Level;
@@ -508,6 +509,22 @@ public class WidgetPaneController {
             .findAny()
             .flatMap(name -> Components.getDefault().createWidget(name, source))
             .ifPresent(w -> add(container, w, event));
+        event.consume();
+
+        return;
+      }
+
+      // Dragging a component out of a layout
+      if (dragboard.hasContent(DataFormats.tilelessComponent)) {
+        UUID componentId = (UUID) dragboard.getContent(DataFormats.tilelessComponent);
+        Components.getDefault().getByUuid(componentId)
+            .ifPresent(component -> {
+              if (tile instanceof LayoutTile) {
+                add(((LayoutTile) tile).getContent(), component, event);
+              } else {
+                tile.setContent(component);
+              }
+            });
         event.consume();
 
         return;

@@ -3,10 +3,12 @@ package edu.wpi.first.shuffleboard.api.widget;
 import edu.wpi.first.shuffleboard.api.components.ActionList;
 import edu.wpi.first.shuffleboard.api.components.EditableLabel;
 import edu.wpi.first.shuffleboard.api.components.ExtendedPropertySheet;
+import edu.wpi.first.shuffleboard.api.dnd.DataFormats;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -15,10 +17,16 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.scene.Node;
+import javafx.scene.SnapshotParameters;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
+import javafx.scene.image.WritableImage;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.paint.Color;
 
 /**
  * A base class for layouts that provides helpful methods for interacting with components inside the layout.
@@ -128,7 +136,7 @@ public abstract class LayoutBase implements Layout {
           .ifPresent(replacement -> {
             replacement.setTitle(widget.getTitle());
             replaceInPlace(widget, replacement);
-            getChildren().set(getChildren().indexOf(widget), replacement);
+            getChildren().set(getChildren().indexOf(widget), replacement); // NOPMD - there's no enclosing class!
           });
     }
   }
@@ -180,11 +188,29 @@ public abstract class LayoutBase implements Layout {
     return actions;
   }
 
+  /**
+   * An enumeration of the possible positions for labels of components inside a layout.
+   */
   public enum LabelPosition {
+    /**
+     * Labels will located above the component they label.
+     */
     TOP,
+    /**
+     * Labels will located to the left of the component they label.
+     */
     LEFT,
+    /**
+     * Labels will located to the right of the component they label.
+     */
     RIGHT,
+    /**
+     * Labels will located below the component they label.
+     */
     BOTTOM,
+    /**
+     * Labels will not be displayed.
+     */
     HIDDEN
   }
 
@@ -222,6 +248,24 @@ public abstract class LayoutBase implements Layout {
       });
       labelPosition.addListener((__, oldSide, newSide) -> move(oldSide, newSide));
       set(getLabelSide(), label);
+      setOnDragDetected(e -> {
+        Component child = getChild();
+        UUID uuid = Components.getDefault().uuidForComponent(child);
+        ClipboardContent clipboardContent = new ClipboardContent();
+        clipboardContent.put(DataFormats.tilelessComponent, uuid);
+        Dragboard dragboard = this.startDragAndDrop(TransferMode.MOVE);
+        dragboard.setContent(clipboardContent);
+        WritableImage preview =
+            new WritableImage(
+                (int) getBoundsInParent().getWidth(),
+                (int) getBoundsInParent().getHeight()
+            );
+        SnapshotParameters parameters = new SnapshotParameters();
+        parameters.setFill(Color.TRANSPARENT);
+        snapshot(parameters, preview);
+        dragboard.setDragView(preview);
+        e.consume();
+      });
     }
 
     /**

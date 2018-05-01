@@ -169,6 +169,10 @@ public final class GridLayout extends LayoutBase {
         .map(GridPoint::fromNode)
         .noneMatch(p -> Objects.equals(point, p));
 
+    // If the component has been moved via drag-and-drop, make sure to remove it from the grid
+    // before re-adding it in the new location
+    grid.getChildren().remove(paneFor(component));
+
     if (point != null && isPointOpen) {
       ChildContainer pane = paneFor(component);
       point.applyTo(pane);
