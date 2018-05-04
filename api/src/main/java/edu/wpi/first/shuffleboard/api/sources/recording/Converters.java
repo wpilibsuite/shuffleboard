@@ -22,6 +22,9 @@ public final class Converters extends Registry<Converter> {
     if (isRegistered(item)) {
       throw new IllegalArgumentException("Converter is already registered: " + item);
     }
+    if (converters.containsKey(item.formatName())) {
+      throw new IllegalArgumentException("A converter is already registered for format '" + item.formatName() + "'");
+    }
     converters.put(item.formatName(), item);
     addItem(item);
   }
