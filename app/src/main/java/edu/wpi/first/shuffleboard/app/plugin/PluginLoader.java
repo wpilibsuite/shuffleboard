@@ -9,6 +9,8 @@ import edu.wpi.first.shuffleboard.api.plugin.Requirements;
 import edu.wpi.first.shuffleboard.api.plugin.Requires;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
+import edu.wpi.first.shuffleboard.api.sources.recording.Converter;
+import edu.wpi.first.shuffleboard.api.sources.recording.Converters;
 import edu.wpi.first.shuffleboard.api.sources.recording.serialization.Serializers;
 import edu.wpi.first.shuffleboard.api.theme.Themes;
 import edu.wpi.first.shuffleboard.api.widget.Components;
@@ -59,8 +61,8 @@ public class PluginLoader {
           SourceTypes.getDefault(),
           Components.getDefault(),
           Themes.getDefault(),
-          TabInfoRegistry.getDefault()
-      );
+          TabInfoRegistry.getDefault(),
+          Converters.getDefault());
 
   private final ObservableSet<Plugin> loadedPlugins = FXCollections.observableSet(new LinkedHashSet<>());
   private final Set<Class<? extends Plugin>> knownPluginClasses = new HashSet<>();
@@ -70,6 +72,7 @@ public class PluginLoader {
   private final Components components;
   private final Themes themes;
   private final TabInfoRegistry tabInfoRegistry;
+  private final Converters converters;
 
   /**
    * Creates a new plugin loader object. For app use, use {@link #getDefault() the default instance}; this should only
@@ -80,6 +83,7 @@ public class PluginLoader {
    * @param components      the component registry to use for registering components from plugins
    * @param themes          the theme registry to use for registering themes from plugins
    * @param tabInfoRegistry the registry for tab information provided by plugins
+   * @param converters      the registry for custom recording file converters
    *
    * @throws NullPointerException if any of the parameters is {@code null}
    */
@@ -87,12 +91,14 @@ public class PluginLoader {
                       SourceTypes sourceTypes,
                       Components components,
                       Themes themes,
-                      TabInfoRegistry tabInfoRegistry) {
+                      TabInfoRegistry tabInfoRegistry,
+                      Converters converters) {
     this.dataTypes = Objects.requireNonNull(dataTypes, "dataTypes");
     this.sourceTypes = Objects.requireNonNull(sourceTypes, "sourceTypes");
     this.components = Objects.requireNonNull(components, "components");
     this.themes = Objects.requireNonNull(themes, "themes");
     this.tabInfoRegistry = Objects.requireNonNull(tabInfoRegistry, "tabInfoRegistry");
+    this.converters = converters;
   }
 
   /**
@@ -254,7 +260,7 @@ public class PluginLoader {
    * @param plugin the plugin to load
    *
    * @return true if the plugin was loaded, false if it wasn't. This could happen if the plugin were already loaded,
-   *         or if the plugin requires other plugins that are not loaded.
+   * or if the plugin requires other plugins that are not loaded.
    *
    * @throws IllegalArgumentException if a plugin already exists with the same ID
    */
@@ -298,6 +304,7 @@ public class PluginLoader {
         });
     plugin.getThemes().forEach(themes::register);
     tabInfoRegistry.registerAll(plugin.getDefaultTabInfo());
+    converters.registerAll(plugin.getRecordingConverters());
 
     plugin.onLoad();
     plugin.setLoaded(true);
@@ -484,6 +491,7 @@ public class PluginLoader {
     // TODO figure out a good way to remember the theme & reapply it when reloading the plugin
     themes.unregisterAll(plugin.getThemes());
     tabInfoRegistry.unregisterAll(plugin.getDefaultTabInfo());
+    converters.unregisterAll(plugin.getRecordingConverters());
 
     plugin.onUnload();
     plugin.setLoaded(false);

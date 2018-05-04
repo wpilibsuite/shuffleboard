@@ -7,6 +7,7 @@ import edu.wpi.first.shuffleboard.api.plugin.Plugin;
 import edu.wpi.first.shuffleboard.api.plugin.Requires;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
+import edu.wpi.first.shuffleboard.api.sources.recording.Converters;
 import edu.wpi.first.shuffleboard.api.tab.TabInfo;
 import edu.wpi.first.shuffleboard.api.theme.Theme;
 import edu.wpi.first.shuffleboard.api.theme.Themes;
@@ -49,6 +50,7 @@ public class PluginLoaderTest {
   private Components components;
   private Themes themes;
   private TabInfoRegistry tabInfoRegistry;
+  private Converters converters;
 
   @BeforeEach
   public void setup() {
@@ -57,7 +59,8 @@ public class PluginLoaderTest {
     components = new Components();
     themes = new Themes();
     tabInfoRegistry = new TabInfoRegistry();
-    loader = new PluginLoader(dataTypes, sourceTypes, components, themes, tabInfoRegistry);
+    converters = new Converters();
+    loader = new PluginLoader(dataTypes, sourceTypes, components, themes, tabInfoRegistry, converters);
   }
 
   @Test

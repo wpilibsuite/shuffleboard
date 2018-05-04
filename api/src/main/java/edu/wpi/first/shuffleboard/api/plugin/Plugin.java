@@ -2,6 +2,7 @@ package edu.wpi.first.shuffleboard.api.plugin;
 
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
+import edu.wpi.first.shuffleboard.api.sources.recording.Converter;
 import edu.wpi.first.shuffleboard.api.sources.recording.serialization.TypeAdapter;
 import edu.wpi.first.shuffleboard.api.tab.TabInfo;
 import edu.wpi.first.shuffleboard.api.theme.Theme;
@@ -210,6 +211,13 @@ public class Plugin {
    * Gets a list of information about any default tabs that shuffleboard should use.
    */
   public List<TabInfo> getDefaultTabInfo() {
+    return ImmutableList.of();
+  }
+
+  /**
+   * Gets a list of converters used to convert Shuffleboard recording files to other formats.
+   */
+  public List<Converter> getRecordingConverters() {
     return ImmutableList.of();
   }
 
