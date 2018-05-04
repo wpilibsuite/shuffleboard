@@ -50,7 +50,6 @@ public class PluginLoaderTest {
   private Components components;
   private Themes themes;
   private TabInfoRegistry tabInfoRegistry;
-  private Converters converters;
 
   @BeforeEach
   public void setup() {
@@ -59,8 +58,7 @@ public class PluginLoaderTest {
     components = new Components();
     themes = new Themes();
     tabInfoRegistry = new TabInfoRegistry();
-    converters = new Converters();
-    loader = new PluginLoader(dataTypes, sourceTypes, components, themes, tabInfoRegistry, converters);
+    loader = new PluginLoader(dataTypes, sourceTypes, components, themes, tabInfoRegistry, new Converters());
   }
 
   @Test

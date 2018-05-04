@@ -5,11 +5,15 @@ import edu.wpi.first.shuffleboard.api.sources.recording.Recording;
 import edu.wpi.first.shuffleboard.api.sources.recording.TimestampedData;
 import edu.wpi.first.shuffleboard.api.util.AlphanumComparator;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,12 +36,14 @@ public final class CsvConverter implements Converter {
   }
 
   @Override
+  @SuppressWarnings("LocalVariableName")
+  @SuppressFBWarnings(value = "UC_USELESS_OBJECT", justification = "False positive with List.forEach")
   public void export(Recording recording, Path destination) throws IOException {
     ArrayList<String> header = new ArrayList<>(recording.getSourceIds());
     header.sort(AlphanumComparator.INSTANCE);
     header.add(0, "Timestamp");
     CSVFormat csvFormat = CSVFormat.DEFAULT.withHeader(header.toArray(new String[header.size()]));
-    try (FileWriter writer = new FileWriter(destination.toFile());
+    try (Writer writer = new OutputStreamWriter(new FileOutputStream(destination.toFile()), "UTF-8");
          CSVPrinter printer = new CSVPrinter(writer, csvFormat)) {
       List<TimestampedData> data = recording.getData();
       for (int i = 0; i < data.size(); ) {

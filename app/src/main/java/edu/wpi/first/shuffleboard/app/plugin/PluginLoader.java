@@ -9,7 +9,6 @@ import edu.wpi.first.shuffleboard.api.plugin.Requirements;
 import edu.wpi.first.shuffleboard.api.plugin.Requires;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
-import edu.wpi.first.shuffleboard.api.sources.recording.Converter;
 import edu.wpi.first.shuffleboard.api.sources.recording.Converters;
 import edu.wpi.first.shuffleboard.api.sources.recording.serialization.Serializers;
 import edu.wpi.first.shuffleboard.api.theme.Themes;
@@ -260,7 +259,7 @@ public class PluginLoader {
    * @param plugin the plugin to load
    *
    * @return true if the plugin was loaded, false if it wasn't. This could happen if the plugin were already loaded,
-   * or if the plugin requires other plugins that are not loaded.
+   *         or if the plugin requires other plugins that are not loaded.
    *
    * @throws IllegalArgumentException if a plugin already exists with the same ID
    */
