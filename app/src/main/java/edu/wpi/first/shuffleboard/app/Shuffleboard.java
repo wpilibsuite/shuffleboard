@@ -1,6 +1,6 @@
 package edu.wpi.first.shuffleboard.app;
 
-import edu.wpi.first.shuffleboard.api.sources.recording.Exporters;
+import edu.wpi.first.shuffleboard.api.sources.recording.Converters;
 import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
 import edu.wpi.first.shuffleboard.api.theme.Themes;
 import edu.wpi.first.shuffleboard.api.util.ShutdownHooks;
@@ -9,7 +9,7 @@ import edu.wpi.first.shuffleboard.api.util.Time;
 import edu.wpi.first.shuffleboard.app.plugin.PluginCache;
 import edu.wpi.first.shuffleboard.app.plugin.PluginLoader;
 import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
-import edu.wpi.first.shuffleboard.app.sources.recording.CsvExporter;
+import edu.wpi.first.shuffleboard.app.sources.recording.CsvConverter;
 import edu.wpi.first.shuffleboard.plugin.base.BasePlugin;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.CameraServerPlugin;
 import edu.wpi.first.shuffleboard.plugin.networktables.NetworkTablesPlugin;
@@ -113,7 +113,7 @@ public class Shuffleboard extends Application {
       return;
     }
 
-    Exporters.getDefault().register(CsvExporter.Instance);
+    Converters.getDefault().register(CsvConverter.Instance);
 
     notifyPreloader(new ShuffleboardPreloader.StateNotification("Loading base plugin", 0.125));
     PluginLoader.getDefault().load(new BasePlugin());

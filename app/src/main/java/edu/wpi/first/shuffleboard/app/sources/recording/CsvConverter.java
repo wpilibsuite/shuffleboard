@@ -1,6 +1,6 @@
 package edu.wpi.first.shuffleboard.app.sources.recording;
 
-import edu.wpi.first.shuffleboard.api.sources.recording.Exporter;
+import edu.wpi.first.shuffleboard.api.sources.recording.Converter;
 import edu.wpi.first.shuffleboard.api.sources.recording.Recording;
 import edu.wpi.first.shuffleboard.api.sources.recording.TimestampedData;
 import edu.wpi.first.shuffleboard.api.util.AlphanumComparator;
@@ -14,11 +14,11 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class CsvExporter implements Exporter {
+public final class CsvConverter implements Converter {
 
-  public static final CsvExporter Instance = new CsvExporter();
+  public static final CsvConverter Instance = new CsvConverter();
 
-  private CsvExporter() {
+  private CsvConverter() {
   }
 
   @Override

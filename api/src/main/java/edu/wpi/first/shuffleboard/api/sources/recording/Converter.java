@@ -4,12 +4,12 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 /**
- * Handles exporting of recording files to a file. These are useful for making it easier to analyze recorded data with
+ * Handles converting of recording files to a file. These are useful for making it easier to analyze recorded data with
  * third-party tools like Excel or other spreadsheet applications.
  *
- * <p>Exporters can use any format, human-readable or not.
+ * <p>Converters can use any format, human-readable or not.
  */
-public interface Exporter {
+public interface Converter {
 
   /**
    * Gets the name of the format that recordings are exported to.
@@ -22,7 +22,7 @@ public interface Exporter {
   String fileExtension();
 
   /**
-   * Exports a recording to a file.
+   * Converts a recording, then exports the result to a file.
    *
    * @param recording   the recording to export
    * @param destination the destination file to export to

@@ -1,7 +1,7 @@
 package edu.wpi.first.shuffleboard.app;
 
-import edu.wpi.first.shuffleboard.api.sources.recording.Exporter;
-import edu.wpi.first.shuffleboard.api.sources.recording.Exporters;
+import edu.wpi.first.shuffleboard.api.sources.recording.Converter;
+import edu.wpi.first.shuffleboard.api.sources.recording.Converters;
 import edu.wpi.first.shuffleboard.api.sources.recording.Recording;
 import edu.wpi.first.shuffleboard.api.sources.recording.Serialization;
 import edu.wpi.first.shuffleboard.api.util.PreferencesUtils;
@@ -49,7 +49,7 @@ public final class ExportRecordingPaneController {
   @FXML
   private ListView<File> fileList;
   @FXML
-  private ComboBox<Exporter> formatDropdown;
+  private ComboBox<Converter> formatDropdown;
   @FXML
   private TextField destinationDirField;
   @FXML
@@ -89,23 +89,23 @@ public final class ExportRecordingPaneController {
       return cell;
     });
 
-    formatDropdown.setConverter(new StringConverter<Exporter>() {
+    formatDropdown.setConverter(new StringConverter<Converter>() {
       @Override
-      public String toString(Exporter exporter) {
-        return exporter.formatName();
+      public String toString(Converter converter) {
+        return converter.formatName();
       }
 
       @Override
-      public Exporter fromString(String formatName) {
-        return Exporters.getDefault().getItems()
+      public Converter fromString(String formatName) {
+        return Converters.getDefault().getItems()
             .stream()
             .filter(e -> e.formatName().equals(formatName))
             .findFirst()
             .orElseThrow(() -> new IllegalArgumentException("No exporter for format '" + formatName + "'"));
       }
     });
-    formatDropdown.getItems().setAll(Exporters.getDefault().getItems());
-    formatDropdown.getItems().sort(Comparator.comparing(Exporter::formatName));
+    formatDropdown.getItems().setAll(Converters.getDefault().getItems());
+    formatDropdown.getItems().sort(Comparator.comparing(Converter::formatName));
     formatDropdown.getSelectionModel().select(0);
     destinationDirField.textProperty().bind(EasyBind.monadic(outputDir).map(File::getPath));
   }
@@ -175,17 +175,17 @@ public final class ExportRecordingPaneController {
 
   @FXML
   private void export() {
-    Exporter exporter = formatDropdown.getSelectionModel().getSelectedItem();
+    Converter converter = formatDropdown.getSelectionModel().getSelectedItem();
     for (File file : sourceFiles) {
       try {
         Recording recording = Serialization.loadRecording(file.toPath());
-        String dstFileName = file.getName().replace(".sbr", exporter.fileExtension());
+        String dstFileName = file.getName().replace(".sbr", converter.fileExtension());
         Path dst = Paths.get(outputDir.getValue().getAbsolutePath(), dstFileName);
         log.info("Exporting " + file + " to " + dst);
-        exporter.export(recording, dst);
+        converter.export(recording, dst);
       } catch (IOException e) {
         log.log(Level.WARNING,
-            "Could not export recording file " + file + " with exporter " + exporter.formatName(), e);
+            "Could not export recording file " + file + " with converter " + converter.formatName(), e);
       }
     }
     sourceFiles.clear();
