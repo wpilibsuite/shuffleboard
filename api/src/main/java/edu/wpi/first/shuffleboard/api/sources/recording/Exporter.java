@@ -17,6 +17,11 @@ public interface Exporter {
   String formatName();
 
   /**
+   * The file extension for the output files, including the dot. For example, ".csv" or ".txt" for textual output files.
+   */
+  String fileExtension();
+
+  /**
    * Exports a recording to a file.
    *
    * @param recording   the recording to export
