@@ -82,6 +82,6 @@
         <fx:include source="DownloadDialogPane.fxml" fx:id="downloadPane"/>
         <fx:include source="AboutDialogPane.fxml" fx:id="aboutPane"/>
         <fx:include source="RestartPrompt.fxml" fx:id="restartPromptPane"/>
-        <fx:include source="ExportRecordingPane.fxml" fx:id="exportRecordingPane"/>
+        <fx:include source="ConvertRecordingPane.fxml" fx:id="exportRecordingPane"/>
     </fx:define>
 </VBox>

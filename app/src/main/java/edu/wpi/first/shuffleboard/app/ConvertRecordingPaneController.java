@@ -40,9 +40,9 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.util.StringConverter;
 
-public final class ExportRecordingPaneController {
+public final class ConvertRecordingPaneController {
 
-  private static final Logger log = Logger.getLogger(ExportRecordingPaneController.class.getName());
+  private static final Logger log = Logger.getLogger(ConvertRecordingPaneController.class.getName());
 
   @FXML
   private Pane root;
@@ -55,9 +55,9 @@ public final class ExportRecordingPaneController {
   @FXML
   private Label changeDestinationLabel;
   @FXML
-  private Button exportButton;
+  private Button convertButton;
 
-  private final Preferences prefs = Preferences.userNodeForPackage(ExportRecordingPaneController.class);
+  private final Preferences prefs = Preferences.userNodeForPackage(ConvertRecordingPaneController.class);
 
   private final Property<File> sourceFileDir = new SimpleObjectProperty<>(this, "sourceFileDir", null);
   private final Property<File> outputDir = new SimpleObjectProperty<>(this, "outputDir", null);
@@ -101,7 +101,7 @@ public final class ExportRecordingPaneController {
             .stream()
             .filter(e -> e.formatName().equals(formatName))
             .findFirst()
-            .orElseThrow(() -> new IllegalArgumentException("No exporter for format '" + formatName + "'"));
+            .orElseThrow(() -> new IllegalArgumentException("No converter for format '" + formatName + "'"));
       }
     });
     formatDropdown.getItems().setAll(Converters.getDefault().getItems());
@@ -179,7 +179,7 @@ public final class ExportRecordingPaneController {
   }
 
   @FXML
-  private void export() {
+  private void convert() {
     Converter converter = formatDropdown.getSelectionModel().getSelectedItem();
     for (File file : sourceFiles) {
       try {

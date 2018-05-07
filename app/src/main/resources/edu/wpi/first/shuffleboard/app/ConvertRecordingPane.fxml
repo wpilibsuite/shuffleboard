@@ -13,10 +13,10 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
-<HBox fx:id="root" spacing="8.0" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="edu.wpi.first.shuffleboard.app.ExportRecordingPaneController">
+<HBox fx:id="root" spacing="8.0" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="edu.wpi.first.shuffleboard.app.ConvertRecordingPaneController">
     <BorderPane>
         <top>
-            <Label text="Files to Export" BorderPane.alignment="CENTER" styleClass="h5"/>
+            <Label text="Files to Convert" BorderPane.alignment="CENTER" styleClass="h5"/>
         </top>
         <center>
             <ListView fx:id="fileList" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
@@ -52,7 +52,7 @@
                 <BorderPane.margin>
                     <Insets bottom="8.0" left="8.0" right="8.0" top="8.0"/>
                 </BorderPane.margin>
-                <Label text="Export as"/>
+                <Label text="Convert to"/>
                 <ComboBox fx:id="formatDropdown" prefWidth="150.0" promptText="Choose format"/>
             </HBox>
         </top>
@@ -69,7 +69,7 @@
             <Insets bottom="8.0" left="8.0" right="8.0" top="8.0"/>
         </HBox.margin>
         <bottom>
-            <Button fx:id="exportButton" mnemonicParsing="false" onAction="#export" text="Export" BorderPane.alignment="CENTER" disable="${!controller.exportable}"/>
+            <Button fx:id="exportButton" mnemonicParsing="false" onAction="#export" text="Convert" BorderPane.alignment="CENTER" disable="${!controller.exportable}"/>
         </bottom>
     </BorderPane>
 </HBox>
