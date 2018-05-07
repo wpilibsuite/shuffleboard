@@ -163,10 +163,15 @@ public final class ExportRecordingPaneController {
   }
 
   @FXML
-  private void chooseDestinationDir() {
+  private void chooseDestinationDir() throws IOException {
     DirectoryChooser chooser = new DirectoryChooser();
     chooser.setTitle("Choose output folder");
-    chooser.setInitialDirectory(outputDir.getValue());
+    File initialDir = outputDir.getValue();
+    if (!initialDir.isDirectory() || !initialDir.exists()) {
+      chooser.setInitialDirectory(Storage.getRecordingDir());
+    } else {
+      chooser.setInitialDirectory(initialDir);
+    }
     File dir = chooser.showDialog(null);
     if (dir != null) {
       outputDir.setValue(dir);
