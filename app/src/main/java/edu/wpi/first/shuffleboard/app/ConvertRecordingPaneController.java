@@ -167,10 +167,10 @@ public final class ConvertRecordingPaneController {
     DirectoryChooser chooser = new DirectoryChooser();
     chooser.setTitle("Choose output folder");
     File initialDir = outputDir.getValue();
-    if (!initialDir.isDirectory() || !initialDir.exists()) {
-      chooser.setInitialDirectory(Storage.getRecordingDir());
-    } else {
+    if (initialDir.isDirectory()) {
       chooser.setInitialDirectory(initialDir);
+    } else {
+      chooser.setInitialDirectory(Storage.getRecordingDir());
     }
     File dir = chooser.showDialog(null);
     if (dir != null) {
