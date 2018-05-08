@@ -94,8 +94,6 @@ public class NetworkTablesPlugin extends Plugin {
           });
     }, 0xFF);
 
-    inst.startClient();
-    inst.startDSClient();
     serverChangeListener.changed(null, null, serverId.get());
     serverId.addListener(serverChangeListener);
   }
