@@ -4,8 +4,6 @@ import edu.wpi.first.shuffleboard.api.util.FxUtils;
 
 import org.controlsfx.tools.Utils;
 
-import java.util.Random;
-
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
@@ -39,7 +37,6 @@ public class PreloaderController {
     versionLabel.setText(Shuffleboard.getVersion());
 
     // Hexagon grid background
-    Random random = new Random(System.currentTimeMillis() ^ (System.currentTimeMillis() >> 16));
     HexagonGrid hexagonGrid = new HexagonGrid(
         (int) (root.getPrefWidth() / HEXAGON_RADIUS),
         (int) (root.getPrefHeight() / HEXAGON_RADIUS),
@@ -48,7 +45,7 @@ public class PreloaderController {
 
     // Set colors randomly
     hexagonGrid.hexagons().forEach(hexagon -> {
-      hexagon.setFill(primaryColor.interpolate(secondaryColor, random.nextDouble()));
+      hexagon.setFill(primaryColor.interpolate(secondaryColor, Math.random()));
     });
     backgroundContainer.getChildren().setAll(hexagonGrid);
 

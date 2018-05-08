@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.fail;
 
 public class LazyInitTest {
 
@@ -25,15 +24,13 @@ public class LazyInitTest {
   @Test
   public void testInitializerThrows() {
     LazyInit<Object> throwing = LazyInit.of(() -> {
-      throw new UnsupportedOperationException();
+      throw new UnsupportedOperationException("Exception message");
     });
-    try {
-      throwing.get();
-      fail("No exception was thrown");
-    } catch (RuntimeException e) {
-      assertNotNull(e.getCause());
-      assertEquals(UnsupportedOperationException.class, e.getCause().getClass());
-    }
+    RuntimeException thrown = assertThrows(RuntimeException.class, throwing::get);
+    Throwable cause = thrown.getCause();
+    assertNotNull(cause);
+    assertEquals(UnsupportedOperationException.class, cause.getClass());
+    assertEquals("Exception message", cause.getMessage());
   }
 
 }
