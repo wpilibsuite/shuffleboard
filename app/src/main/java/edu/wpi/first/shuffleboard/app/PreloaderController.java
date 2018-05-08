@@ -12,7 +12,7 @@ import javafx.scene.paint.Color;
 
 public class PreloaderController {
 
-  private static final Color primaryColor = Color.rgb(39, 39, 247);
+  private static final Color primaryColor = Color.rgb(38, 38, 247); // YInMn blue
   private static final Color secondaryColor = Color.rgb(64, 64, 255);
 
   private static final double HEXAGON_RADIUS = 10;

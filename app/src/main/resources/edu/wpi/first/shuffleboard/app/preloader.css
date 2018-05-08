@@ -1,5 +1,6 @@
 #root {
-    -fx-background-color: derive(#2727f7, 20%);
+    /* YInMn blue */
+    -fx-background-color: #2626f7;
 }
 
 #stateLabel {
