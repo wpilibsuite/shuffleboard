@@ -104,7 +104,7 @@ public final class ConvertRecordingPaneController {
             .orElseThrow(() -> new IllegalArgumentException("No converter for format '" + formatName + "'"));
       }
     });
-    formatDropdown.getItems().setAll(Converters.getDefault().getItems());
+    EasyBind.listBind(formatDropdown.getItems(), Converters.getDefault().getItems());
     formatDropdown.getItems().sort(Comparator.comparing(Converter::formatName));
     formatDropdown.getSelectionModel().select(0);
     destinationDirField.textProperty().bind(EasyBind.monadic(outputDir).map(File::getPath));
