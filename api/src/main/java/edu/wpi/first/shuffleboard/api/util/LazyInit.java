@@ -1,6 +1,7 @@
 package edu.wpi.first.shuffleboard.api.util;
 
 import java.util.Objects;
+import java.util.concurrent.Callable;
 import java.util.function.Supplier;
 
 /**
@@ -23,14 +24,14 @@ public final class LazyInit<T> implements Supplier<T> {
 
   private volatile boolean initialized = false;
   private T value = null;
-  private final ThrowingSupplier<? extends T, ?> initializer;
+  private final Callable<? extends T> initializer;
 
   /**
    * Creates a new lazy initializer.
    *
    * @param initializer the function to use to initialize the value when it is first accessed
    */
-  public LazyInit(ThrowingSupplier<? extends T, ?> initializer) {
+  public LazyInit(Callable<? extends T> initializer) {
     this.initializer = Objects.requireNonNull(initializer, "Initializer cannot be null");
   }
 
@@ -42,7 +43,7 @@ public final class LazyInit<T> implements Supplier<T> {
    *
    * @return a new lazy initializer
    */
-  public static <T> LazyInit<T> of(ThrowingSupplier<? extends T, ?> initializer) {
+  public static <T> LazyInit<T> of(Callable<? extends T> initializer) {
     return new LazyInit<>(initializer);
   }
 
@@ -58,7 +59,7 @@ public final class LazyInit<T> implements Supplier<T> {
   public T get() {
     if (!initialized) {
       try {
-        value = initializer.get();
+        value = initializer.call();
       } catch (Exception e) {
         throw new RuntimeException("Could not initialize", e);
       }
