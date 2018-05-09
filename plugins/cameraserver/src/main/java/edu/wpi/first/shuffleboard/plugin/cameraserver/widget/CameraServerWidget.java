@@ -7,6 +7,7 @@ import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 import edu.wpi.first.shuffleboard.api.widget.SimpleAnnotatedWidget;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.data.CameraServerData;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.data.Resolution;
+import edu.wpi.first.shuffleboard.plugin.cameraserver.recording.serialization.ImageConverter;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.source.CameraServerSource;
 
 import javafx.beans.property.BooleanProperty;
@@ -54,6 +55,8 @@ public class CameraServerWidget extends SimpleAnnotatedWidget<CameraServerData> 
   @FXML
   private Node crosshairs;
 
+  private final ImageConverter converter = new ImageConverter();
+
   private final BooleanProperty showControls = new SimpleBooleanProperty(this, "showControls", true);
   private final BooleanProperty showCrosshair = new SimpleBooleanProperty(this, "showCrosshair", true);
   private final Property<Color> crosshairColor = new SimpleObjectProperty<>(this, "crosshairColor", Color.WHITE);
@@ -69,7 +72,10 @@ public class CameraServerWidget extends SimpleAnnotatedWidget<CameraServerData> 
 
   @FXML
   private void initialize() {
-    imageView.imageProperty().bind(dataOrDefault.map(CameraServerData::getImage).orElse(emptyImage));
+    imageView.imageProperty().bind(dataOrDefault
+        .map(CameraServerData::getImage)
+        .map(converter::convert)
+        .orElse(emptyImage));
     fpsLabel.textProperty().bind(dataOrDefault.map(CameraServerData::getFps).map(fps -> {
       if (fps < 0) {
         return "--- FPS";

@@ -13,7 +13,6 @@ import edu.wpi.first.shuffleboard.api.util.ThreadUtils;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.data.CameraServerData;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.data.Resolution;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.data.type.CameraServerDataType;
-import edu.wpi.first.shuffleboard.plugin.cameraserver.recording.serialization.ImageConverter;
 
 import edu.wpi.cscore.CameraServerJNI;
 import edu.wpi.cscore.CvSink;
@@ -45,7 +44,6 @@ import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.Property;
 import javafx.beans.value.ChangeListener;
-import javafx.scene.image.Image;
 
 @SuppressWarnings("PMD.GodClass")
 public final class CameraServerSource extends AbstractDataSource<CameraServerData> {
@@ -61,8 +59,7 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
   private final int eventListenerId;
   private HttpCamera camera;
   private final CvSink videoSink;
-  private final Mat imageStorage = new Mat();
-  private final ImageConverter imageConverter = new ImageConverter();
+  private final Mat image = new Mat();
 
   private final ExecutorService frameGrabberService = Executors.newSingleThreadExecutor(ThreadUtils::makeDaemonThread);
   private final BooleanBinding enabled = active.and(connected);
@@ -258,12 +255,11 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
    * @return true if a frame was successfully grabbed, false if an error occurred
    */
   private boolean grabOnceBlocking() {
-    long frameTime = videoSink.grabFrameNoTimeout(imageStorage);
+    long frameTime = videoSink.grabFrameNoTimeout(image);
     if (frameTime == 0) {
       log.warning("Error when grabbing frame from camera '" + getName() + "': " + videoSink.getError());
       return false;
     } else {
-      Image image = imageConverter.convert(imageStorage);
       if (getData() == null) {
         setData(new CameraServerData(getName(), image, -1, -1));
       } else {
