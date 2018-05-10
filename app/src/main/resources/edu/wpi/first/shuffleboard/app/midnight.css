@@ -22,7 +22,7 @@
 
     -swatch-dark-gray: rgb(16, 16, 24);
     -swatch-gray: derive(-swatch-dark-gray, +10%);
-    -swatch-light-gray: derive(-swatch-gray, +10%);
+    -swatch-light-gray: derive(-swatch-gray, +33%);
     -fx-background: -swatch-gray;
     -fx-color: -swatch-gray;
 }
@@ -79,6 +79,7 @@
 .text-field, .text-area {
     -fx-text-fill: -fx-text-base-color;
     -underline-color: -swatch-gray;
+    -fx-border-color: -swatch-light-gray;
 }
 
 .text-field:focused, .text-area:focused {
