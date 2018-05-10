@@ -9,6 +9,7 @@ import edu.wpi.first.shuffleboard.api.plugin.Plugin;
 import edu.wpi.first.shuffleboard.api.prefs.FlushableProperty;
 import edu.wpi.first.shuffleboard.api.sources.ConnectionStatus;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
+import edu.wpi.first.shuffleboard.api.sources.DataSourceUtils;
 import edu.wpi.first.shuffleboard.api.sources.SourceEntry;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
@@ -300,13 +301,16 @@ public class MainWindowController {
         });
         sourceType.getAvailableSources().addListener((MapChangeListener<String, Object>) change -> {
           SourceEntry entry = sourceType.createSourceEntryForUri(change.getKey());
-          if (change.wasAdded()) {
-            tree.updateEntry(entry);
-          } else if (change.wasRemoved()) {
-            tree.removeEntry(entry);
+          if (DataSourceUtils.isNotMetadata(entry.getName())) {
+            if (change.wasAdded()) {
+              tree.updateEntry(entry);
+            } else if (change.wasRemoved()) {
+              tree.removeEntry(entry);
+            }
           }
         });
         sourceType.getAvailableSourceUris().stream()
+            .filter(DataSourceUtils::isNotMetadata)
             .map(sourceType::createSourceEntryForUri)
             .forEach(tree::updateEntry);
         TitledPane titledPane = new TitledPane(sourceType.getName(), tree);
