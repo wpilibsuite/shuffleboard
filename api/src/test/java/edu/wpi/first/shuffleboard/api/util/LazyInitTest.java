@@ -2,6 +2,7 @@ package edu.wpi.first.shuffleboard.api.util;
 
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -23,14 +24,17 @@ public class LazyInitTest {
 
   @Test
   public void testInitializerThrows() {
+    String message = "Exception message";
     LazyInit<Object> throwing = LazyInit.of(() -> {
-      throw new UnsupportedOperationException("Exception message");
+      throw new UnsupportedOperationException(message);
     });
     RuntimeException thrown = assertThrows(RuntimeException.class, throwing::get);
     Throwable cause = thrown.getCause();
     assertNotNull(cause);
-    assertEquals(UnsupportedOperationException.class, cause.getClass());
-    assertEquals("Exception message", cause.getMessage());
+    assertAll(
+        () -> assertEquals(UnsupportedOperationException.class, cause.getClass()),
+        () -> assertEquals(message, cause.getMessage())
+    );
   }
 
 }
