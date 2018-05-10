@@ -291,11 +291,10 @@ public class MainWindowController {
 
           ContextMenu menu = new ContextMenu();
           if (source.getDataType().isComplex()) {
-            String id = source.getId();
             menu.getItems().add(FxUtils.menuItem("Create tab", __ -> {
               DashboardTab newTab = dashboard.addNewTab();
               newTab.setTitle(entry.getViewName());
-              newTab.setSourcePrefix(id);
+              newTab.setSourcePrefix(source.getId() + "/");
               newTab.setAutoPopulate(true);
               dashboard.getSelectionModel().select(newTab);
             }));

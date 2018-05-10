@@ -292,9 +292,15 @@ public class DashboardTab extends Tab implements HandledTab, Populatable {
           .ifPresent(c -> {
             // Remove redundant source name information from the title, if necessary
             String sourcePrefix = getSourcePrefix();
-            sourcePrefix = sourcePrefix.endsWith("/") ? sourcePrefix : sourcePrefix + "/";
-            if (!"/".equals(sourcePrefix) && c.getTitle().startsWith(sourcePrefix)) {
-              c.setTitle(c.getTitle().substring(sourcePrefix.length()));
+            sourcePrefix = source.getType().removeProtocol(sourcePrefix);
+            sourcePrefix = NetworkTable.normalizeKey(sourcePrefix, false);
+            String title = c.getTitle();
+            if (!"/".equals(sourcePrefix) && !sourcePrefix.isEmpty()) {
+              if (title.startsWith(sourcePrefix)) {
+                c.setTitle(title.substring(sourcePrefix.length()));
+              } else if (title.equals(sourcePrefix)) {
+                c.setTitle(NetworkTable.basenameKey(sourcePrefix));
+              }
             }
             getWidgetPane().addComponent(c);
             if (c instanceof Populatable) {
