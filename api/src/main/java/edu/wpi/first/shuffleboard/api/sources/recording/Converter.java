@@ -26,9 +26,10 @@ public interface Converter {
    *
    * @param recording   the recording to export
    * @param destination the destination file to export to
+   * @param settings    a container object for additional settings to use in the conversion
    *
    * @throws IOException if the file could not be written
    */
-  void export(Recording recording, Path destination) throws IOException;
+  void export(Recording recording, Path destination, ConversionSettings settings) throws IOException;
 
 }

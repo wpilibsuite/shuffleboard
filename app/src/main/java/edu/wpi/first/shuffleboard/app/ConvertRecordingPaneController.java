@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.app;
 
+import edu.wpi.first.shuffleboard.api.sources.recording.ConversionSettings;
 import edu.wpi.first.shuffleboard.api.sources.recording.Converter;
 import edu.wpi.first.shuffleboard.api.sources.recording.Converters;
 import edu.wpi.first.shuffleboard.api.sources.recording.Recording;
@@ -7,6 +8,7 @@ import edu.wpi.first.shuffleboard.api.sources.recording.Serialization;
 import edu.wpi.first.shuffleboard.api.util.PreferencesUtils;
 import edu.wpi.first.shuffleboard.api.util.Storage;
 
+import org.controlsfx.control.ToggleSwitch;
 import org.fxmisc.easybind.EasyBind;
 
 import java.io.File;
@@ -50,6 +52,8 @@ public final class ConvertRecordingPaneController {
   private ListView<File> fileList;
   @FXML
   private ComboBox<Converter> formatDropdown;
+  @FXML
+  private ToggleSwitch includeMetadata;
   @FXML
   private TextField destinationDirField;
   @FXML
@@ -181,13 +185,14 @@ public final class ConvertRecordingPaneController {
   @FXML
   private void convert() {
     Converter converter = formatDropdown.getSelectionModel().getSelectedItem();
+    ConversionSettings settings = new ConversionSettings(includeMetadata.isSelected());
     for (File file : sourceFiles) {
       try {
         Recording recording = Serialization.loadRecording(file.toPath());
         String dstFileName = file.getName().replace(".sbr", converter.fileExtension());
         Path dst = Paths.get(outputDir.getValue().getAbsolutePath(), dstFileName);
         log.info("Exporting " + file + " to " + dst);
-        converter.export(recording, dst);
+        converter.export(recording, dst, settings);
       } catch (IOException e) {
         log.log(Level.WARNING,
             "Could not export recording file " + file + " with converter " + converter.formatName(), e);
