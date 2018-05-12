@@ -77,7 +77,6 @@
     -fx-padding: 0 0 0 10px;
 }
 
-
 /*******************************************************************************
  *                                                                             *
  * Tiles                                                                       *
@@ -89,7 +88,12 @@
 }
 
 .tile:selected {
-    -fx-effect: dropshadow(gaussian, -swatch-500, 6, 0.1, 0, 4);
+    -fx-effect: dropshadow(gaussian, indigo, 8, 0.00005, 0, 4);
+    -fx-background-color: #f0f0f0;
+}
+
+.tile:selected .tile-title-bar {
+    -fx-background-color: -swatch-500;
 }
 
 .tile-title-bar {
@@ -138,6 +142,17 @@
 .grid-highlight:colliding {
     -fx-border-color: rgba(255, 0, 0, 0.75);
     -fx-background-color: rgba(255, 0, 0, 0.1);
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Grid Selection                                                              *
+ *                                                                             *
+ ******************************************************************************/
+.grid-selection {
+    -fx-fill: rgba(0, 255, 0, 0.1);
+    -fx-stroke: rgba(0, 255, 0, 0.75);
+    -fx-stroke-width: 0.25em;
 }
 
 /*******************************************************************************

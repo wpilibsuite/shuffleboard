@@ -48,6 +48,8 @@ import java.util.stream.Stream;
 import javafx.beans.binding.Binding;
 import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
+import javafx.geometry.Bounds;
+import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.control.ButtonType;
@@ -60,11 +62,14 @@ import javafx.scene.image.WritableImage;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.Dragboard;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 
 // needs refactoring to split out per-widget interaction
 @SuppressWarnings("PMD.GodClass")
@@ -74,6 +79,7 @@ public class WidgetPaneController {
 
   @FXML
   private WidgetPane pane;
+  private Pane dragHighlightContainer = new Pane();
 
   private final Map<Node, Boolean> tilesAlreadySetup = new WeakHashMap<>();
 
@@ -84,8 +90,16 @@ public class WidgetPaneController {
    */
   private TileSize tilePreviewSize = null;
 
+  private boolean dragSelection = false;
+  private Point2D dragStart = null;
+  private Rectangle dragHighlight;
+
+  private final List<Tile<?>> selectedTiles = new ArrayList<>();
+
   @FXML
   private void initialize() {
+    pane.getChildren().add(0, dragHighlightContainer);
+    dragHighlightContainer.setStyle("-fx-background-color: transparent;");
 
     pane.getTiles().addListener((ListChangeListener<Tile>) changes -> {
       while (changes.next()) {
@@ -279,6 +293,64 @@ public class WidgetPaneController {
         }
       }
     });
+
+    setupMultiselectDrag();
+  }
+
+  private void setupMultiselectDrag() {
+    pane.addEventHandler(MouseEvent.MOUSE_PRESSED, e -> {
+      Optional<Tile> clickedTile = pane.getTiles().stream()
+          .filter(t -> t.getBoundsInLocal().contains(t.sceneToLocal(e.getSceneX(), e.getSceneY())))
+          .findFirst();
+      dragSelection = !clickedTile.isPresent();
+      if (dragSelection) {
+        dragStart = new Point2D(e.getX(), e.getY());
+      } else {
+        dragStart = null;
+      }
+    });
+
+    pane.addEventHandler(MouseEvent.MOUSE_DRAGGED, e -> {
+      if (dragSelection) {
+        double minX = Math.min(dragStart.getX(), e.getX());
+        double minY = Math.min(dragStart.getY(), e.getY());
+        double maxX = Math.max(dragStart.getX(), e.getX());
+        double maxY = Math.max(dragStart.getY(), e.getY());
+        dragHighlightContainer.getChildren().remove(dragHighlight);
+        dragHighlight = new Rectangle(minX, minY, maxX - minX, maxY - minY);
+        dragHighlight.getStyleClass().add("grid-selection");
+        dragHighlightContainer.getChildren().add(dragHighlight);
+        dragHighlightContainer.toFront();
+        updateSelections();
+      }
+    });
+
+    pane.addEventHandler(MouseEvent.MOUSE_RELEASED, __ -> {
+      if (dragSelection) {
+        updateSelections();
+        dragHighlightContainer.getChildren().remove(dragHighlight);
+        dragSelection = false;
+        dragHighlight = null;
+        dragStart = null;
+        dragHighlightContainer.toBack();
+      }
+    });
+  }
+
+  private void updateSelections() {
+    if (dragHighlight == null) {
+      selectedTiles.forEach(tile -> tile.setSelected(false));
+      selectedTiles.clear();
+    } else {
+      Bounds dragBounds = dragHighlight.localToScene(dragHighlight.getBoundsInLocal());
+      for (Tile<?> tile : pane.getTiles()) {
+        boolean intersects = tile.localToScene(tile.getBoundsInLocal()).intersects(dragBounds);
+        tile.setSelected(intersects);
+        if (intersects) {
+          selectedTiles.add(tile);
+        }
+      }
+    }
   }
 
   private void createPaneContextMenu(ContextMenuEvent e) {
@@ -364,10 +436,10 @@ public class WidgetPaneController {
    */
   private void dropSource(DataSource<?> source, GridPoint point) {
     Components.getDefault().pickComponentNameFor(source.getDataType())
-           .flatMap(name -> Components.getDefault().createComponent(name, source))
-           .filter(widget -> pane.isOpen(point, pane.sizeOfWidget(widget), n -> widget == n))
-           .map(pane::addComponentToTile)
-           .ifPresent(tile -> pane.moveNode(tile, point));
+        .flatMap(name -> Components.getDefault().createComponent(name, source))
+        .filter(widget -> pane.isOpen(point, pane.sizeOfWidget(widget), n -> widget == n))
+        .map(pane::addComponentToTile)
+        .ifPresent(tile -> pane.moveNode(tile, point));
   }
 
   /**
@@ -389,15 +461,12 @@ public class WidgetPaneController {
       ActionList widgetPaneActions = ActionList
           .withName(tile.getContent().getTitle())
           .addAction("Remove", () -> {
-            Component removed = pane.removeTile(tile);
-            if (removed instanceof Sourced) {
-              ((Sourced) removed).removeAllSources();
+            if (selectedTiles.contains(tile)) {
+              selectedTiles.forEach(this::removeTile);
+            } else {
+              removeTile(tile);
             }
-            if (removed instanceof Layout) {
-              ((Layout) removed).allComponents()
-                  .flatMap(TypeUtils.castStream(Sourced.class))
-                  .forEach(Sourced::removeAllSources);
-            }
+            selectedTiles.clear();
           })
           .addNested(createLayoutMenus(tile));
 
@@ -484,6 +553,15 @@ public class WidgetPaneController {
         return;
       }
     });
+  }
+
+  private void removeTile(Tile<?> tile) {
+    if (pane.getTiles().contains(tile)) {
+      Component removed = pane.removeTile(tile);
+      removed.allComponents()
+          .flatMap(TypeUtils.castStream(Sourced.class))
+          .forEach(Sourced::removeAllSources);
+    }
   }
 
   /**
@@ -592,7 +670,8 @@ public class WidgetPaneController {
    * Creates the menu for editing the properties of a widget.
    *
    * @param tile the tile to pull properties from
-   * @return     the edit property menu
+   *
+   * @return the edit property menu
    */
   private void showPropertySheet(Tile<?> tile) {
     ExtendedPropertySheet propertySheet = new ExtendedPropertySheet();
