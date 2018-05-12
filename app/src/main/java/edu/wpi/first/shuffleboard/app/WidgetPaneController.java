@@ -630,7 +630,17 @@ public class WidgetPaneController {
             Component content = pane.removeTile(tile);
             Layout layout = layoutType.get();
             layout.addChild(content);
+            if (selectedTiles.size() > 1) {
+              for (Tile<?> t : selectedTiles) {
+                if (t == tile) {
+                  continue;
+                }
+                layout.addChild(pane.removeTile(t));
+              }
+            }
             pane.addComponent(layout, was.origin, was.size);
+            selectedTiles.forEach(t -> t.setSelected(false));
+            selectedTiles.clear();
           });
         });
 
