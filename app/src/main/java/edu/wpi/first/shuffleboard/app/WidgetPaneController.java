@@ -33,10 +33,12 @@ import org.fxmisc.easybind.EasyBind;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.function.Function;
 import java.util.logging.Level;
@@ -94,7 +96,7 @@ public class WidgetPaneController {
   private Point2D dragStart = null;
   private Rectangle dragHighlight;
 
-  private final List<Tile<?>> selectedTiles = new ArrayList<>();
+  private final Set<Tile<?>> selectedTiles = new HashSet<>();
 
   @FXML
   private void initialize() {
