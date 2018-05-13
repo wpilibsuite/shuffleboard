@@ -33,12 +33,10 @@ import org.fxmisc.easybind.EasyBind;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.function.Function;
 import java.util.logging.Level;
@@ -50,8 +48,6 @@ import java.util.stream.Stream;
 import javafx.beans.binding.Binding;
 import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
-import javafx.geometry.Bounds;
-import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.control.ButtonType;
@@ -64,14 +60,11 @@ import javafx.scene.image.WritableImage;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.Dragboard;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
 
 // needs refactoring to split out per-widget interaction
 @SuppressWarnings("PMD.GodClass")
@@ -81,7 +74,6 @@ public class WidgetPaneController {
 
   @FXML
   private WidgetPane pane;
-  private Pane dragHighlightContainer = new Pane();
 
   private final Map<Node, Boolean> tilesAlreadySetup = new WeakHashMap<>();
 
@@ -92,22 +84,17 @@ public class WidgetPaneController {
    */
   private TileSize tilePreviewSize = null;
 
-  private boolean dragSelection = false;
-  private Point2D dragStart = null;
-  private Rectangle dragHighlight;
-
-  private final Set<Tile<?>> selectedTiles = new HashSet<>();
+  private TileDragSelector selector;
 
   @FXML
   private void initialize() {
-    pane.getChildren().add(0, dragHighlightContainer);
-    dragHighlightContainer.setStyle("-fx-background-color: transparent;");
-
     pane.getTiles().addListener((ListChangeListener<Tile>) changes -> {
       while (changes.next()) {
         changes.getAddedSubList().forEach(this::setupTile);
       }
     });
+
+    selector = new TileDragSelector(pane);
 
     // Add a context menu for pane-related actions
     pane.setOnContextMenuRequested(this::createPaneContextMenu);
@@ -295,64 +282,6 @@ public class WidgetPaneController {
         }
       }
     });
-
-    setupMultiselectDrag();
-  }
-
-  private void setupMultiselectDrag() {
-    pane.addEventHandler(MouseEvent.MOUSE_PRESSED, e -> {
-      Optional<Tile> clickedTile = pane.getTiles().stream()
-          .filter(t -> t.getBoundsInLocal().contains(t.sceneToLocal(e.getSceneX(), e.getSceneY())))
-          .findFirst();
-      dragSelection = !clickedTile.isPresent();
-      if (dragSelection) {
-        dragStart = new Point2D(e.getX(), e.getY());
-      } else {
-        dragStart = null;
-      }
-    });
-
-    pane.addEventHandler(MouseEvent.MOUSE_DRAGGED, e -> {
-      if (dragSelection) {
-        double minX = Math.min(dragStart.getX(), e.getX());
-        double minY = Math.min(dragStart.getY(), e.getY());
-        double maxX = Math.max(dragStart.getX(), e.getX());
-        double maxY = Math.max(dragStart.getY(), e.getY());
-        dragHighlightContainer.getChildren().remove(dragHighlight);
-        dragHighlight = new Rectangle(minX, minY, maxX - minX, maxY - minY);
-        dragHighlight.getStyleClass().add("grid-selection");
-        dragHighlightContainer.getChildren().add(dragHighlight);
-        dragHighlightContainer.toFront();
-        updateSelections();
-      }
-    });
-
-    pane.addEventHandler(MouseEvent.MOUSE_RELEASED, __ -> {
-      if (dragSelection) {
-        updateSelections();
-        dragHighlightContainer.getChildren().remove(dragHighlight);
-        dragSelection = false;
-        dragHighlight = null;
-        dragStart = null;
-        dragHighlightContainer.toBack();
-      }
-    });
-  }
-
-  private void updateSelections() {
-    if (dragHighlight == null) {
-      selectedTiles.forEach(tile -> tile.setSelected(false));
-      selectedTiles.clear();
-    } else {
-      Bounds dragBounds = dragHighlight.localToScene(dragHighlight.getBoundsInLocal());
-      for (Tile<?> tile : pane.getTiles()) {
-        boolean intersects = tile.localToScene(tile.getBoundsInLocal()).intersects(dragBounds);
-        tile.setSelected(intersects);
-        if (intersects) {
-          selectedTiles.add(tile);
-        }
-      }
-    }
   }
 
   private void createPaneContextMenu(ContextMenuEvent e) {
@@ -463,12 +392,12 @@ public class WidgetPaneController {
       ActionList widgetPaneActions = ActionList
           .withName(tile.getContent().getTitle())
           .addAction("Remove", () -> {
-            if (selectedTiles.contains(tile)) {
-              selectedTiles.forEach(this::removeTile);
+            if (selector.isSelected(tile)) {
+              selector.getSelectedTiles().forEach(this::removeTile);
             } else {
               removeTile(tile);
             }
-            selectedTiles.clear();
+            selector.deselectAll();
           })
           .addNested(createLayoutMenus(tile));
 
@@ -630,8 +559,8 @@ public class WidgetPaneController {
             Component content = pane.removeTile(tile);
             Layout layout = layoutType.get();
             layout.addChild(content);
-            if (selectedTiles.size() > 1) {
-              for (Tile<?> t : selectedTiles) {
+            if (selector.getSelectedTiles().size() > 1) {
+              for (Tile<?> t : selector.getSelectedTiles()) {
                 if (t == tile) {
                   continue;
                 }
@@ -639,8 +568,7 @@ public class WidgetPaneController {
               }
             }
             pane.addComponent(layout, was.origin, was.size);
-            selectedTiles.forEach(t -> t.setSelected(false));
-            selectedTiles.clear();
+            selector.deselectAll();
           });
         });
 
