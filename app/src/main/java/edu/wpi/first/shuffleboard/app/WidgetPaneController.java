@@ -60,6 +60,7 @@ import javafx.scene.image.WritableImage;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.Dragboard;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
@@ -84,7 +85,7 @@ public class WidgetPaneController {
    */
   private TileSize tilePreviewSize = null;
 
-  private TileDragSelector selector;
+  private TileSelector selector;
 
   @FXML
   private void initialize() {
@@ -94,7 +95,7 @@ public class WidgetPaneController {
       }
     });
 
-    selector = new TileDragSelector(pane);
+    selector = new TileSelector(pane);
 
     // Add a context menu for pane-related actions
     pane.setOnContextMenuRequested(this::createPaneContextMenu);
@@ -424,6 +425,12 @@ public class WidgetPaneController {
           pane.roundHeightToNearestTile(event.getY()) - 1);
       dragWidget(tile, dragPoint);
       event.consume();
+    });
+
+    tile.addEventHandler(MouseEvent.MOUSE_PRESSED, e -> {
+      if (e.isControlDown() && e.isPrimaryButtonDown()) {
+        selector.select(tile);
+      }
     });
 
     tile.setOnDragDropped(event -> {

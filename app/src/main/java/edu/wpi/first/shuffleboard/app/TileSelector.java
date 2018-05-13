@@ -18,7 +18,7 @@ import javafx.scene.shape.Rectangle;
 /**
  * A helper class for selecting tiles in a {@link WidgetPane}.
  */
-public final class TileDragSelector {
+public final class TileSelector {
 
   private final WidgetPane pane;
   private Pane dragHighlightContainer = new Pane();
@@ -32,14 +32,14 @@ public final class TileDragSelector {
   /**
    * Creates a new tile selector.
    */
-  public TileDragSelector(WidgetPane pane) {
+  public TileSelector(WidgetPane pane) {
     this.pane = Objects.requireNonNull(pane, "Pane cannot be null");
 
     pane.getChildren().add(0, dragHighlightContainer);
     dragHighlightContainer.setStyle("-fx-background-color: transparent;");
 
     setupMultiselectDrag();
-    selectedTiles.addListener(TileDragSelector::updateTileState);
+    selectedTiles.addListener(TileSelector::updateTileState);
   }
 
   private static void updateTileState(SetChangeListener.Change<? extends Tile<?>> change) {
@@ -101,7 +101,7 @@ public final class TileDragSelector {
         boolean intersects = tile.localToScene(tile.getBoundsInLocal()).intersects(dragBounds);
         tile.setSelected(intersects);
         if (intersects) {
-          selectedTiles.add(tile);
+          select(tile);
         }
       }
     } else {
@@ -132,6 +132,15 @@ public final class TileDragSelector {
    */
   public void deselectAll() {
     selectedTiles.clear();
+  }
+
+  /**
+   * Manually selects a specific tile.
+   *
+   * @param tile the tile to select
+   */
+  public void select(Tile<?> tile) {
+    selectedTiles.add(tile);
   }
 
 }
