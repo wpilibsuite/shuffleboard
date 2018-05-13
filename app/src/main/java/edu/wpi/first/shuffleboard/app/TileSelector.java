@@ -95,7 +95,7 @@ public final class TileSelector {
    * tile.
    */
   private void updateSelections() {
-    if (dragSelection) {
+    if (dragSelection && dragArea != null) {
       Bounds dragBounds = dragArea.localToScene(dragArea.getBoundsInLocal());
       for (Tile<?> tile : pane.getTiles()) {
         boolean intersects = tile.localToScene(tile.getBoundsInLocal()).intersects(dragBounds);
