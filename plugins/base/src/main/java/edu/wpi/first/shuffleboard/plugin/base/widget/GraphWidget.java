@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.plugin.base.widget;
 
+import edu.wpi.first.shuffleboard.api.components.ActionList;
 import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
 import edu.wpi.first.shuffleboard.api.data.types.NumberArrayType;
 import edu.wpi.first.shuffleboard.api.data.types.NumberType;
@@ -231,6 +232,18 @@ public class GraphWidget implements AnnotatedWidget {
         });
       }
     });
+
+    ActionList.registerSupplier(root, () -> {
+      return ActionList.withName(getTitle())
+          .addAction("Clear", () -> {
+            synchronized (queueLock) {
+              chart.getData().forEach(s -> s.getData().clear());
+              queuedData.forEach((s, q) -> q.clear());
+              realData.forEach((s, d) -> d.clear());
+            }
+          });
+    });
+
   }
 
   @SuppressWarnings("unchecked")
@@ -483,6 +496,11 @@ public class GraphWidget implements AnnotatedWidget {
 
     public Data<Number, Number> asData(int index) {
       return new Data<>(xValues.get(index), yValues.get(index));
+    }
+
+    public void clear() {
+      xValues.clear();
+      yValues.clear();
     }
   }
 
