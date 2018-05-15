@@ -21,7 +21,7 @@ import javafx.scene.shape.Rectangle;
 public final class TileSelector {
 
   private final WidgetPane pane;
-  private Pane dragHighlightContainer = new Pane();
+  private final Pane dragHighlightContainer = new Pane();
 
   private boolean dragSelection = false;
   private Point2D dragStart = null;
