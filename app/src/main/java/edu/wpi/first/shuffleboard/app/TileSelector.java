@@ -127,6 +127,10 @@ public final class TileSelector {
     return selectedTiles.contains(tile);
   }
 
+  public boolean areTilesSelected() {
+    return !selectedTiles.isEmpty();
+  }
+
   /**
    * Deselects all tiles.
    */

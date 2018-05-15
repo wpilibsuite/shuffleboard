@@ -2,6 +2,7 @@ package edu.wpi.first.shuffleboard.app;
 
 import edu.wpi.first.shuffleboard.api.components.ActionList;
 import edu.wpi.first.shuffleboard.api.components.ExtendedPropertySheet;
+import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.dnd.DataFormats;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.DummySource;
@@ -33,10 +34,12 @@ import org.fxmisc.easybind.EasyBind;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.function.Function;
 import java.util.logging.Level;
@@ -66,6 +69,8 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
+
+import static java.util.stream.Collectors.toSet;
 
 // needs refactoring to split out per-widget interaction
 @SuppressWarnings("PMD.GodClass")
@@ -568,7 +573,7 @@ public class WidgetPaneController {
             layout.addChild(content);
             if (selector.getSelectedTiles().size() > 1) {
               for (Tile<?> t : selector.getSelectedTiles()) {
-                if (t == tile) {
+                if (tile.equals(t)) {
                   continue;
                 }
                 layout.addChild(pane.removeTile(t));
@@ -583,6 +588,31 @@ public class WidgetPaneController {
   }
 
   /**
+   * Returns the set of items that are shared between the source collection and all the tests.
+   *
+   * @param source the source collection containing the items to check
+   * @param tests  the collections to check
+   * @param <T>    the type of the items to check.
+   *
+   * @return the set of items that are shared between all the provided collections
+   */
+  private static <T> Set<T> allContain(Collection<T> source, Collection<? extends Collection<T>> tests) {
+    Set<T> items = new HashSet<>();
+    for (T item : source) {
+      if (tests.stream().allMatch(c -> c.contains(item))) {
+        items.add(item);
+      }
+    }
+    return items;
+  }
+
+  private static Set<DataType> getDataTypes(Sourced sourced) {
+    return sourced.getSources().stream()
+        .map(DataSource::getDataType)
+        .collect(toSet());
+  }
+
+  /**
    * Creates all the menus needed for changing a widget to a different type.
    *
    * @param tile the tile for the widget to create the change menus for
@@ -591,25 +621,66 @@ public class WidgetPaneController {
     Widget widget = tile.getContent();
     ActionList list = ActionList.withName("Show as...");
 
-    widget.getSources().stream()
-        .map(s -> Components.getDefault().componentNamesForSource(s))
-        .flatMap(List::stream)
-        .sorted()
-        .distinct()
-        .forEach(name -> list.addAction(
-            name,
-            name.equals(widget.getName()) ? new Label("✓") : null,
-            () -> {
-              // no need to change it if it's already the same type
-              if (!name.equals(widget.getName())) {
-                Components.getDefault()
-                    .createWidget(name, widget.getSources())
-                    .ifPresent(newWidget -> {
-                      newWidget.setTitle(widget.getTitle());
-                      tile.setContent(newWidget);
-                    });
-              }
-            }));
+    if (selector.areTilesSelected() && selector.isSelected(tile)) {
+      boolean allWidgets = selector.getSelectedTiles().stream().allMatch(t -> t.getContent() instanceof Widget);
+      if (allWidgets) {
+        List<Set<DataType>> collect = selector.getSelectedTiles().stream()
+            .map(Tile::getContent)
+            .flatMap(TypeUtils.castStream(Widget.class))
+            .map(w -> getDataTypes(w))
+            .collect(Collectors.toList());
+        Set<DataType> commonDataTypes = allContain(tile.getContent().getDataTypes(), collect);
+        if (commonDataTypes.isEmpty()) {
+          return ActionList.withName(null);
+        }
+        commonDataTypes.stream()
+            .map(Components.getDefault()::componentNamesForType)
+            .flatMap(List::stream)
+            .distinct()
+            .sorted()
+            .forEach(name -> list.addAction(
+                name,
+                name.equals(widget.getName()) ? new Label("✓") : null,
+                () -> {
+                  selector.getSelectedTiles()
+                      .stream()
+                      .map(t -> (WidgetTile) t)
+                      .forEach(t -> {
+                        Components.getDefault()
+                            .createWidget(name, t.getContent().getSources())
+                            .ifPresent(newWidget -> {
+                              newWidget.setTitle(t.getContent().getTitle());
+                              t.setContent(newWidget);
+                            });
+                      });
+                  selector.deselectAll();
+                }
+            ));
+        return list;
+      } else {
+        return ActionList.withName(null);
+      }
+    } else {
+      widget.getSources().stream()
+          .map(s -> Components.getDefault().componentNamesForSource(s))
+          .flatMap(List::stream)
+          .sorted()
+          .distinct()
+          .forEach(name -> list.addAction(
+              name,
+              name.equals(widget.getName()) ? new Label("✓") : null,
+              () -> {
+                // no need to change it if it's already the same type
+                if (!name.equals(widget.getName())) {
+                  Components.getDefault()
+                      .createWidget(name, widget.getSources())
+                      .ifPresent(newWidget -> {
+                        newWidget.setTitle(widget.getTitle());
+                        tile.setContent(newWidget);
+                      });
+                }
+              }));
+    }
     return list;
   }
 
