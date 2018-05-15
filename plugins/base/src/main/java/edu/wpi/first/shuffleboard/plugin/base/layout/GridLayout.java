@@ -31,6 +31,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 
+@SuppressWarnings("PMD.GodClass")
 @ParametrizedController("GridLayout.fxml")
 public final class GridLayout extends LayoutBase {
 

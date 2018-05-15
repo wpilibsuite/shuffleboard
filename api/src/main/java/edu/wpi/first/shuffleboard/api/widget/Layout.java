@@ -21,13 +21,6 @@ public interface Layout extends Component, ComponentContainer {
   void addChild(Component component);
 
   /**
-   * Removes a child component from ths layout.
-   *
-   * @param component the component to remove
-   */
-  void removeChild(Component component);
-
-  /**
    * Adds a new component to this layout from a drag-and-drop operation. By default, this will ignore the drop point
    * and simply call {@link #addChild(Component)}. Whether or not the drop coordinates are used is up to the specific
    * layout implementation.
@@ -39,6 +32,13 @@ public interface Layout extends Component, ComponentContainer {
   default void addChild(Component component, double x, double y) {
     addChild(component);
   }
+
+  /**
+   * Removes a child component from ths layout.
+   *
+   * @param component the component to remove
+   */
+  void removeChild(Component component);
 
   @Override
   default void addComponent(Component component) {
