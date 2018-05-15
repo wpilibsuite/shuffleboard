@@ -108,6 +108,7 @@ public class WidgetPaneController {
       boolean isWidgetTile = event.getDragboard().hasContent(DataFormats.widgetTile);
       boolean isSource = event.getDragboard().hasContent(DataFormats.source);
       boolean isWidget = event.getDragboard().hasContent(DataFormats.widgetType);
+      boolean isTilelessComponent = event.getDragboard().hasContent(DataFormats.tilelessComponent);
 
       // preview the location of the widget if one is being dragged
       if (isWidgetTile) {
@@ -173,6 +174,25 @@ public class WidgetPaneController {
           pane.setHighlightPoint(point);
           pane.setHighlightSize(tilePreviewSize);
         }
+      } else if (isTilelessComponent) {
+        if (!pane.isOpen(point, new TileSize(1, 1), n -> false)) {
+          // Dragged a widget onto a tile, can't drop
+          pane.setHighlight(false);
+          return;
+        }
+        Optional<Component> component = Components.getDefault()
+            .getByUuid((UUID) event.getDragboard().getContent(DataFormats.tilelessComponent));
+        if (tilePreviewSize == null) {
+          component.map(pane::sizeOfWidget)
+              .ifPresent(size -> tilePreviewSize = size);
+        }
+        if (tilePreviewSize == null) {
+          pane.setHighlight(false);
+        } else {
+          pane.setHighlight(true);
+          pane.setHighlightPoint(point);
+          pane.setHighlightSize(tilePreviewSize);
+        }
       }
 
       event.consume();
@@ -211,6 +231,22 @@ public class WidgetPaneController {
         });
       }
 
+      // Dragging a component out of a layout
+      if (dragboard.hasContent(DataFormats.tilelessComponent)) {
+        UUID componentId = (UUID) dragboard.getContent(DataFormats.tilelessComponent);
+        Optional<Component> component = Components.getDefault().getByUuid(componentId);
+        Optional<LayoutTile> parent = pane.getTiles().stream()
+            .flatMap(TypeUtils.castStream(LayoutTile.class))
+            .filter(t -> t.getContent().getChildren().contains(component.orElse(null)))
+            .findFirst();
+        component.ifPresent(c -> {
+          parent.ifPresent(t -> t.getContent().removeChild(c));
+          pane.addComponent(c, point);
+        });
+        event.consume();
+
+        return;
+      }
       cleanupWidgetDrag();
       tilePreviewSize = null;
       event.consume();
