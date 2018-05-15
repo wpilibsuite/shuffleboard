@@ -72,6 +72,12 @@ public abstract class LayoutBase implements Layout {
   }
 
   @Override
+  public void removeChild(Component component) {
+    children.remove(component);
+    removeComponentFromView(component);
+  }
+
+  @Override
   public Property<String> titleProperty() {
     return title;
   }

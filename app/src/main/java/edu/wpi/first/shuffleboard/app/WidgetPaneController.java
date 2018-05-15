@@ -517,14 +517,19 @@ public class WidgetPaneController {
       // Dragging a component out of a layout
       if (dragboard.hasContent(DataFormats.tilelessComponent)) {
         UUID componentId = (UUID) dragboard.getContent(DataFormats.tilelessComponent);
-        Components.getDefault().getByUuid(componentId)
-            .ifPresent(component -> {
-              if (tile instanceof LayoutTile) {
-                add(((LayoutTile) tile).getContent(), component, event);
-              } else {
-                tile.setContent(component);
-              }
-            });
+        Optional<Component> component = Components.getDefault().getByUuid(componentId);
+        Optional<LayoutTile> parent = pane.getTiles().stream()
+            .flatMap(TypeUtils.castStream(LayoutTile.class))
+            .filter(t -> t.getContent().getChildren().contains(component.orElse(null)))
+            .findFirst();
+        component.ifPresent(c -> {
+          if (tile instanceof LayoutTile) {
+            parent.ifPresent(t -> t.getContent().removeChild(c));
+            add(((LayoutTile) tile).getContent(), c, event);
+          } else {
+            tile.setContent(c);
+          }
+        });
         event.consume();
 
         return;
