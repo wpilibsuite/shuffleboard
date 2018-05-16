@@ -147,4 +147,26 @@ public final class TileSelector {
     selectedTiles.add(tile);
   }
 
+  /**
+   * Manually deselects a specific tile.
+   *
+   * @param tile the tile to deselect
+   */
+  public void deselect(Tile<?> tile) {
+    selectedTiles.remove(tile);
+  }
+
+  /**
+   * Toggles the selection state of a tile.
+   *
+   * @param tile the tile to toggle.
+   */
+  public void toggleSelect(Tile<?> tile) {
+    if (isSelected(tile)) {
+      deselect(tile);
+    } else {
+      select(tile);
+    }
+  }
+
 }

@@ -434,7 +434,13 @@ public class WidgetPaneController {
 
     tile.addEventHandler(MouseEvent.MOUSE_PRESSED, e -> {
       if (e.isControlDown() && e.isPrimaryButtonDown()) {
-        selector.select(tile);
+        if (selector.areTilesSelected()) {
+          selector.toggleSelect(tile);
+        } else {
+          selector.select(tile);
+        }
+      } else if (!selector.isSelected(tile)) {
+        selector.deselectAll();
       }
     });
 
