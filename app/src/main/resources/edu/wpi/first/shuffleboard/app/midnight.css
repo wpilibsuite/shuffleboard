@@ -285,6 +285,38 @@
 /*-fx-background-color: -swatch-light-gray;*/
 /*-fx-text-fill: -fx-text-base-color;*/
 /*}*/
+/*******************************************************************************
+ *                                                                             *
+ * Combobox                                                                    *
+ *                                                                             *
+ ******************************************************************************/
+.combo-box-base, .choice-box {
+    -fx-border-color: -swatch-light-gray;
+}
+
+.combo-box-popup {
+    -fx-border-color: orange;
+}
+
+.combo-box-popup .list-view {
+    -fx-border-color: -swatch-300;
+    -fx-border-width: 1px;
+    -fx-background-color: -swatch-dark-gray;
+}
+
+.combo-box-popup .list-view .list-cell {
+    -fx-background-color: transparent;
+    -fx-border-color: none;
+}
+
+.combo-box-popup .list-view .list-cell:hover {
+    -fx-background-color: -swatch-gray;
+}
+
+.combo-box-popup .list-view .list-cell:selected {
+    -fx-background-color: -swatch-500;
+    -fx-text-fill: yellow;
+}
 
 /*******************************************************************************
  *                                                                             *
