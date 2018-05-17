@@ -5,8 +5,10 @@ import edu.wpi.first.shuffleboard.api.sources.recording.Converter;
 import edu.wpi.first.shuffleboard.api.sources.recording.Converters;
 import edu.wpi.first.shuffleboard.api.sources.recording.Recording;
 import edu.wpi.first.shuffleboard.api.sources.recording.Serialization;
+import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.PreferencesUtils;
 import edu.wpi.first.shuffleboard.api.util.Storage;
+import edu.wpi.first.shuffleboard.api.util.ThreadUtils;
 
 import org.controlsfx.control.ToggleSwitch;
 import org.fxmisc.easybind.EasyBind;
@@ -18,6 +20,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -60,6 +64,8 @@ public final class ConvertRecordingPaneController {
   private Label changeDestinationLabel;
   @FXML
   private Button convertButton;
+
+  private final ExecutorService conversionExecutor = Executors.newSingleThreadExecutor(ThreadUtils::makeDaemonThread);
 
   private final Preferences prefs = Preferences.userNodeForPackage(ConvertRecordingPaneController.class);
 
@@ -186,19 +192,21 @@ public final class ConvertRecordingPaneController {
   private void convert() {
     Converter converter = formatDropdown.getSelectionModel().getSelectedItem();
     ConversionSettings settings = new ConversionSettings(includeMetadata.isSelected());
-    for (File file : sourceFiles) {
-      try {
-        Recording recording = Serialization.loadRecording(file.toPath());
-        String dstFileName = file.getName().replace(".sbr", converter.fileExtension());
-        Path dst = Paths.get(outputDir.getValue().getAbsolutePath(), dstFileName);
-        log.info("Exporting " + file + " to " + dst);
-        converter.export(recording, dst, settings);
-      } catch (IOException e) {
-        log.log(Level.WARNING,
-            "Could not export recording file " + file + " with converter " + converter.formatName(), e);
+    conversionExecutor.submit(() -> {
+      for (File file : sourceFiles) {
+        try {
+          Recording recording = Serialization.loadRecording(file.toPath());
+          String dstFileName = file.getName().replace(".sbr", converter.fileExtension());
+          Path dst = Paths.get(outputDir.getValue().getAbsolutePath(), dstFileName);
+          log.info("Exporting " + file + " to " + dst);
+          converter.export(recording, dst, settings);
+        } catch (IOException e) {
+          log.log(Level.WARNING,
+              "Could not export recording file " + file + " with converter " + converter.formatName(), e);
+        }
       }
-    }
-    sourceFiles.clear();
+      FxUtils.runOnFxThread(sourceFiles::clear);
+    });
   }
 
   public boolean isExportable() {
