@@ -24,6 +24,13 @@ public final class CsvConverter implements Converter {
 
   public static final CsvConverter Instance = new CsvConverter();
 
+  // How far apart data points can be (in milliseconds) to group them all into a single row
+  // We do this because data may be sent at the same time from the source, but high CPU usage
+  // or network issues can cause them to arrive over the course of several milliseconds.
+  // This value is set to be able to collate data that gets updated 100 times per second without
+  // pulling data from two separate update events into a single row
+  private static final int TIME_WINDOW = 7; // milliseconds
+
   private CsvConverter() {
   }
 
@@ -62,7 +69,7 @@ public final class CsvConverter implements Converter {
         // Collate data within a certain delta time to the same row, since there may be some time jitter
         // for multiple recorded data points that were updated at the same time, but network latencies
         // or CPU usage caused the timestamps to be slightly different
-        for (; j < data.size() && data.get(j).getTimestamp() <= point.getTimestamp() + 7; j++) {
+        for (; j < data.size() && data.get(j).getTimestamp() <= point.getTimestamp() + TIME_WINDOW; j++) {
           TimestampedData d = data.get(j);
           if (!(skipMetadata && DataSourceUtils.isMetadata(d.getSourceId()))) {
             row.add(d);
