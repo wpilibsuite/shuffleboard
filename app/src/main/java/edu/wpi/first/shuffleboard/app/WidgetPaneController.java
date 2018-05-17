@@ -497,6 +497,7 @@ public class WidgetPaneController {
     tile.setOnDragDetected(event -> {
       if (resizer.isDragging()) {
         // don't drag the widget while it's being resized
+        selector.deselectAll();
         return;
       }
       if (selector.isSelected(tile) && selector.getSelectedTiles().size() > 1) {
