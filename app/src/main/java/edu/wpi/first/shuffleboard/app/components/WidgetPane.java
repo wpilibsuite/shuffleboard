@@ -1,7 +1,5 @@
 package edu.wpi.first.shuffleboard.app.components;
 
-import com.google.common.collect.ImmutableList;
-
 import edu.wpi.first.shuffleboard.api.css.SimpleColorCssMetaData;
 import edu.wpi.first.shuffleboard.api.css.SimpleCssMetaData;
 import edu.wpi.first.shuffleboard.api.util.GridImage;
@@ -15,6 +13,8 @@ import edu.wpi.first.shuffleboard.api.widget.Widget;
 import edu.wpi.first.shuffleboard.app.dnd.DragUtils;
 import edu.wpi.first.shuffleboard.app.dnd.ResizeUtils;
 
+import com.google.common.collect.ImmutableList;
+
 import org.fxmisc.easybind.EasyBind;
 
 import java.io.IOException;
@@ -27,6 +27,7 @@ import java.util.stream.Stream;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -465,6 +466,57 @@ public class WidgetPane extends TilePane implements ComponentContainer {
       return new Background(makeTiledBackgroundImage(makeGridImage(getTileSize(), getHgap(), getVgap())));
     } else {
       return null;
+    }
+  }
+
+  public Highlight addHighlight() {
+    Highlight highlight = new Highlight();
+    getChildren().add(highlight);
+    setSize(highlight, highlight.getSize());
+    moveNode(highlight, highlight.getLocation());
+    highlight.sizeProperty().addListener((__, old, size) -> setSize(highlight, size));
+    highlight.locationProperty().addListener((__, old, location) -> moveNode(highlight, location));
+    highlight.toFront();
+    return highlight;
+  }
+
+  public void removeHighlight(Highlight highlight) {
+    getChildren().remove(highlight);
+  }
+
+  public static final class Highlight extends Pane {
+
+    private final ObjectProperty<TileSize> size = new SimpleObjectProperty<>(this, "size", new TileSize(1, 1));
+    private final ObjectProperty<GridPoint> location = new SimpleObjectProperty<>(this, "location", new GridPoint(0, 0));
+
+    Highlight() {
+      getStyleClass().add("grid-highlight");
+    }
+
+    public Highlight setSize(TileSize size) {
+      this.size.setValue(size);
+      return this;
+    }
+
+    public Highlight setLocation(GridPoint location) {
+      this.location.setValue(location);
+      return this;
+    }
+
+    public TileSize getSize() {
+      return size.get();
+    }
+
+    public GridPoint getLocation() {
+      return location.get();
+    }
+
+    public ObjectProperty<TileSize> sizeProperty() {
+      return size;
+    }
+
+    public ObjectProperty<GridPoint> locationProperty() {
+      return location;
     }
   }
 

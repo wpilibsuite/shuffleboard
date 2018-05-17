@@ -42,6 +42,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -50,6 +51,7 @@ import java.util.stream.Stream;
 
 import javafx.beans.binding.Binding;
 import javafx.collections.ListChangeListener;
+import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
 import javafx.geometry.Point2D;
 import javafx.scene.Node;
@@ -83,6 +85,7 @@ public class WidgetPaneController {
   private WidgetPane pane;
 
   private final Map<Node, Boolean> tilesAlreadySetup = new WeakHashMap<>();
+  private final Map<Tile<?>, WidgetPane.Highlight> highlights = new WeakHashMap<>();
 
   /**
    * Memoizes the size of a tile that would be added when dropping a source or widget. Memoizing prevents calling
@@ -92,6 +95,9 @@ public class WidgetPaneController {
   private TileSize tilePreviewSize = null;
 
   private TileSelector selector;
+  private final Predicate<Node> ignoreMultiTileDrag =
+      n -> selector.getSelectedTiles().contains(n)
+          || n instanceof WidgetPane.Highlight;
 
   @FXML
   private void initialize() {
@@ -128,19 +134,34 @@ public class WidgetPaneController {
         int dx = point.col - data.getInitialPoint().col;
         int dy = point.row - data.getInitialPoint().row;
         boolean movable = data.getTileIds().stream()
-            .map(id -> pane.tileMatching(t -> t.getId().equals(id)))
+            .map(id -> pane.tileMatching(tile -> tile.getId().equals(id)))
             .flatMap(TypeUtils.optionalStream())
-            .map(tile -> pane.getTileLayout(tile))
-            .map(l -> l.origin)
-            .anyMatch(origin -> {
-              int newCol = origin.col + dx;
-              int newRow = origin.row + dy;
-              return newCol >= 0 && newRow >= 0
-                  && newCol < pane.getNumColumns() && newRow < pane.getNumRows();
+            .map(pane::getTileLayout)
+            .allMatch(layout -> {
+              return layout.origin.getCol() + dx >= 0
+                  && layout.origin.getRow() + dy >= 0
+                  && pane.isOpen(layout.origin.add(dx, dy), layout.size, ignoreMultiTileDrag);
             });
 
-//        pane.setHighlight(true);
-//        pane.setHighlightPoint(point);
+        if (movable) {
+          data.getTileIds().stream()
+              .map(id -> pane.tileMatching(t -> t.getId().equals(id)))
+              .flatMap(TypeUtils.optionalStream())
+              .forEach(tile -> {
+                TileLayout layout = pane.getTileLayout(tile);
+                int newCol = layout.origin.col + dx;
+                int newRow = layout.origin.row + dy;
+                WidgetPane.Highlight highlight = highlights.computeIfAbsent(tile, t -> pane.addHighlight());
+                highlight.setLocation(new GridPoint(newCol, newRow));
+                highlight.setSize(layout.size);
+                highlights.put(tile, highlight);
+                boolean open = pane.isOpen(highlight.getLocation(), highlight.getSize(), ignoreMultiTileDrag);
+                highlight.pseudoClassStateChanged(PseudoClass.getPseudoClass("colliding"), !open);
+              });
+        } else {
+          highlights.values().forEach(pane::removeHighlight);
+          highlights.clear();
+        }
       } else if (isSource) {
         if (!pane.isOpen(point, new TileSize(1, 1), n -> false)) {
           // Dragged a source onto a tile, let the tile handle the drag and drop
@@ -215,18 +236,22 @@ public class WidgetPaneController {
         DataFormats.MultipleTileData data = (DataFormats.MultipleTileData) dragboard.getContent(DataFormats.multipleTiles);
         int dx = point.col - data.getInitialPoint().col;
         int dy = point.row - data.getInitialPoint().row;
-        boolean allMovable = pane.getTiles().stream()
+        boolean allMovable = data.getTileIds().stream()
+            .map(id -> pane.tileMatching(tile -> tile.getId().equals(id)))
+            .flatMap(TypeUtils.optionalStream())
             .map(pane::getTileLayout)
             .allMatch(layout -> {
               return layout.origin.getCol() + dx >= 0
                   && layout.origin.getRow() + dy >= 0
-                  && pane.isOpen(layout.origin.add(dx, dy), layout.size, selector.getSelectedTiles()::contains);
+                  && pane.isOpen(layout.origin.add(dx, dy), layout.size, ignoreMultiTileDrag);
             });
         if (allMovable) {
           pane.getTiles().stream()
               .filter(tile -> data.getTileIds().contains(tile.getId()))
               .forEach(tile -> pane.moveNode(tile, pane.getTileLayout(tile).origin.add(dx, dy)));
         }
+        highlights.values().forEach(pane::removeHighlight);
+        highlights.clear();
       }
 
       // Dropping a widget from the gallery
