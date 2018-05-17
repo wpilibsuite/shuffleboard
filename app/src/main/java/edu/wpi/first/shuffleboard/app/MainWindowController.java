@@ -75,6 +75,7 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
@@ -285,14 +286,26 @@ public class MainWindowController {
             return;
           }
 
-          DataSource<?> source = selectedItem.getValue().get();
+          SourceEntry entry = selectedItem.getValue();
+          DataSource<?> source = entry.get();
           List<String> componentNames = Components.getDefault().componentNamesForSource(source);
-          if (componentNames.isEmpty()) {
-            // No known components that can show this data
-            return;
-          }
 
           ContextMenu menu = new ContextMenu();
+          if (source.getDataType().isComplex()) {
+            menu.getItems().add(FxUtils.menuItem("Create tab", __ -> {
+              DashboardTab newTab = dashboard.addNewTab();
+              newTab.setTitle(entry.getViewName());
+              newTab.setSourcePrefix(source.getId() + "/");
+              newTab.setAutoPopulate(true);
+              dashboard.getSelectionModel().select(newTab);
+            }));
+            if (!componentNames.isEmpty()) {
+              menu.getItems().add(new SeparatorMenuItem());
+            }
+          } else if (componentNames.isEmpty()) {
+            // Can't create a tab, and no components can display the source
+            return;
+          }
           componentNames.stream()
               .map(name -> createShowAsMenuItem(name, source))
               .forEach(menu.getItems()::add);
