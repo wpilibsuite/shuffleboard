@@ -137,6 +137,9 @@ public class MainWindowController {
   private Pane restartPromptPane;
   @FXML
   private Pane aboutPane;
+  @FXML
+  private Pane exportRecordingPane;
+  private Stage exportRecordingStage;
 
   private SourceEntry selectedEntry;
 
@@ -592,6 +595,19 @@ public class MainWindowController {
     }
     Playback playback = Playback.load(selected.getAbsolutePath());
     playback.start();
+  }
+
+  @FXML
+  private void exportRecordings() {
+    if (exportRecordingStage == null) {
+      exportRecordingStage = new Stage();
+      exportRecordingStage.setTitle("Export Recording Files");
+      exportRecordingStage.setScene(new Scene(exportRecordingPane));
+      exportRecordingStage.setResizable(false);
+      FxUtils.bind(exportRecordingStage.getScene().getStylesheets(), stylesheets);
+      exportRecordingStage.initModality(Modality.APPLICATION_MODAL);
+    }
+    exportRecordingStage.show();
   }
 
   @FXML
