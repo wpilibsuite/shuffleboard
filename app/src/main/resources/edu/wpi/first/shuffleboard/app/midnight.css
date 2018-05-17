@@ -268,23 +268,25 @@
  *                                                                             *
  ******************************************************************************/
 .list-view {
-    -fx-border-width: 0;
-    -fx-border-color: orange;
+    -fx-background-color: transparent;
+    -fx-border-color: -swatch-light-gray;
+    -fx-border-width: 1;
 }
 
-.list-view:focused .list-cell:filled {
+.list-view .list-cell {
     -fx-background-color: -swatch-dark-gray;
 }
 
-/*.list-view:focused .list-cell:filled:focused:selected {*/
-/*-fx-background-color: -swatch-gray;*/
-/*-fx-text-fill: -swatch-100;*/
-/*}*/
+.list-view:focused .list-cell:filled:focused:selected {
+    -fx-background-color: -swatch500;
+    -fx-text-fill: yellow;
+}
 
-/*.list-view:hover .list-cell:filled:hover {*/
-/*-fx-background-color: -swatch-light-gray;*/
-/*-fx-text-fill: -fx-text-base-color;*/
-/*}*/
+.list-view:hover .list-cell:filled:hover {
+    -fx-background-color: -swatch-light-gray;
+    -fx-text-fill: -fx-text-base-color;
+}
+
 /*******************************************************************************
  *                                                                             *
  * Combobox                                                                    *

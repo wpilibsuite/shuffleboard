@@ -41,8 +41,8 @@
                 <rowConstraints>
                     <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
                 </rowConstraints>
-                <Button maxWidth="90.0" mnemonicParsing="false" onAction="#addFiles" text="Add Files"/>
-                <Button maxWidth="90.0" mnemonicParsing="false" onAction="#addDirectory" text="Add Directory" GridPane.columnIndex="1"/>
+                <Button minWidth="90.0" mnemonicParsing="false" onAction="#addFiles" text="Add Files"/>
+                <Button minWidth="90.0" mnemonicParsing="false" onAction="#addDirectory" text="Add Directory" GridPane.columnIndex="1"/>
             </GridPane>
         </bottom>
     </BorderPane>
