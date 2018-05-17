@@ -130,7 +130,8 @@ public class WidgetPaneController {
         pane.tileMatching(tile -> tile.getId().equals(data.getId()))
             .ifPresent(tile -> previewTile(tile, point.subtract(data.getLocalDragPoint())));
       } else if (isManyTiles) {
-        DataFormats.MultipleTileData data = (DataFormats.MultipleTileData) dragboard.getContent(DataFormats.multipleTiles);
+        DataFormats.MultipleTileData data = (DataFormats.MultipleTileData)
+            dragboard.getContent(DataFormats.multipleTiles);
         int dx = point.col - data.getInitialPoint().col;
         int dy = point.row - data.getInitialPoint().row;
         boolean inBounds = data.getTileIds().stream()
@@ -229,7 +230,8 @@ public class WidgetPaneController {
 
       // Dropping multiple tiles after moving them around
       if (dragboard.hasContent(DataFormats.multipleTiles)) {
-        DataFormats.MultipleTileData data = (DataFormats.MultipleTileData) dragboard.getContent(DataFormats.multipleTiles);
+        DataFormats.MultipleTileData data = (DataFormats.MultipleTileData)
+            dragboard.getContent(DataFormats.multipleTiles);
         int dx = point.col - data.getInitialPoint().col;
         int dy = point.row - data.getInitialPoint().row;
         boolean allMovable = data.getTileIds().stream()

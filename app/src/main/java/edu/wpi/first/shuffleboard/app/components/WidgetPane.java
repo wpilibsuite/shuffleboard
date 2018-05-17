@@ -469,6 +469,12 @@ public class WidgetPane extends TilePane implements ComponentContainer {
     }
   }
 
+  /**
+   * Creates a new highlight object and adds it to this pane at (0, 0) with size (1, 1). The location and size of the
+   * highlight can be configured with {@link Highlight#setLocation} and {@link Highlight#setSize}, respectively.
+   *
+   * @return a new highlight object
+   */
   public Highlight addHighlight() {
     Highlight highlight = new Highlight();
     getChildren().add(highlight);
@@ -486,8 +492,10 @@ public class WidgetPane extends TilePane implements ComponentContainer {
 
   public static final class Highlight extends Pane {
 
-    private final ObjectProperty<TileSize> size = new SimpleObjectProperty<>(this, "size", new TileSize(1, 1));
-    private final ObjectProperty<GridPoint> location = new SimpleObjectProperty<>(this, "location", new GridPoint(0, 0));
+    private final ObjectProperty<TileSize> size =
+        new SimpleObjectProperty<>(this, "size", new TileSize(1, 1));
+    private final ObjectProperty<GridPoint> location =
+        new SimpleObjectProperty<>(this, "location", new GridPoint(0, 0));
 
     Highlight() {
       getStyleClass().add("grid-highlight");
