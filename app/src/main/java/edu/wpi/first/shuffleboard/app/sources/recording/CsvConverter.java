@@ -1,11 +1,11 @@
 package edu.wpi.first.shuffleboard.app.sources.recording;
 
+import edu.wpi.first.shuffleboard.api.sources.DataSourceUtils;
 import edu.wpi.first.shuffleboard.api.sources.recording.ConversionSettings;
 import edu.wpi.first.shuffleboard.api.sources.recording.Converter;
 import edu.wpi.first.shuffleboard.api.sources.recording.Recording;
 import edu.wpi.first.shuffleboard.api.sources.recording.TimestampedData;
 import edu.wpi.first.shuffleboard.api.util.AlphanumComparator;
-import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
@@ -53,7 +53,7 @@ public final class CsvConverter implements Converter {
 
       for (int i = 0; i < data.size(); ) {
         TimestampedData point = data.get(i);
-        if (skipMetadata && NetworkTableUtils.isMetadata(point.getSourceId())) {
+        if (skipMetadata && DataSourceUtils.isMetadata(point.getSourceId())) {
           i++;
           continue;
         }
@@ -64,7 +64,7 @@ public final class CsvConverter implements Converter {
         // or CPU usage caused the timestamps to be slightly different
         for (; j < data.size() && data.get(j).getTimestamp() <= point.getTimestamp() + 7; j++) {
           TimestampedData d = data.get(j);
-          if (!(skipMetadata && NetworkTableUtils.isMetadata(d.getSourceId()))) {
+          if (!(skipMetadata && DataSourceUtils.isMetadata(d.getSourceId()))) {
             row.add(d);
           }
         }
@@ -80,7 +80,7 @@ public final class CsvConverter implements Converter {
   private List<String> makeHeader(Recording recording, ConversionSettings settings) {
     List<String> header = new ArrayList<>(recording.getSourceIds());
     if (!settings.isConvertMetadata()) {
-      header.removeIf(NetworkTableUtils::isMetadata);
+      header.removeIf(DataSourceUtils::isMetadata);
     }
     header.sort(AlphanumComparator.INSTANCE);
     header.add(0, "Timestamp");

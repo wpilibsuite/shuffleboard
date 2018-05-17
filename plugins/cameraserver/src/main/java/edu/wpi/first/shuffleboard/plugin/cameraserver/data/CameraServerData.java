@@ -6,17 +6,17 @@ import com.google.common.collect.ImmutableMap;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
+import org.opencv.core.Mat;
+
 import java.io.Serializable;
 import java.util.Map;
-
-import javafx.scene.image.Image;
 
 // serialversion UID doesn't matter since this is only used in one JVM at a time
 @SuppressFBWarnings("SE_NO_SERIALVERSIONID")
 public final class CameraServerData extends ComplexData<CameraServerData> implements Serializable {
 
   private final String name;
-  private final transient Image image;
+  private final transient Mat image;
   private final double fps;
   private final double bandwidth;
 
@@ -28,7 +28,7 @@ public final class CameraServerData extends ComplexData<CameraServerData> implem
    * @param fps       the current FPS of the stream. If the FPS is unknown, set to -1
    * @param bandwidth the current bandwidth of the stream, in bytes per second. If the bandwidth is unknown, set to -1
    */
-  public CameraServerData(String name, Image image, double fps, double bandwidth) {
+  public CameraServerData(String name, Mat image, double fps, double bandwidth) {
     this.name = name;
     this.image = image;
     this.fps = fps;
@@ -39,7 +39,7 @@ public final class CameraServerData extends ComplexData<CameraServerData> implem
     return name;
   }
 
-  public Image getImage() {
+  public Mat getImage() {
     return image;
   }
 
@@ -72,7 +72,7 @@ public final class CameraServerData extends ComplexData<CameraServerData> implem
    *
    * @param image the image for the new data object
    */
-  public CameraServerData withImage(Image image) {
+  public CameraServerData withImage(Mat image) {
     return new CameraServerData(name, image, fps, bandwidth);
   }
 
