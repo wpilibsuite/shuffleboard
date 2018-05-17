@@ -133,17 +133,13 @@ public class WidgetPaneController {
         DataFormats.MultipleTileData data = (DataFormats.MultipleTileData) dragboard.getContent(DataFormats.multipleTiles);
         int dx = point.col - data.getInitialPoint().col;
         int dy = point.row - data.getInitialPoint().row;
-        boolean movable = data.getTileIds().stream()
+        boolean inBounds = data.getTileIds().stream()
             .map(id -> pane.tileMatching(tile -> tile.getId().equals(id)))
             .flatMap(TypeUtils.optionalStream())
             .map(pane::getTileLayout)
-            .allMatch(layout -> {
-              return layout.origin.getCol() + dx >= 0
-                  && layout.origin.getRow() + dy >= 0
-                  && pane.isOpen(layout.origin.add(dx, dy), layout.size, ignoreMultiTileDrag);
-            });
+            .allMatch(layout -> layout.origin.col + dx >= 0 && layout.origin.row + dy >= 0);
 
-        if (movable) {
+        if (inBounds) {
           data.getTileIds().stream()
               .map(id -> pane.tileMatching(t -> t.getId().equals(id)))
               .flatMap(TypeUtils.optionalStream())
