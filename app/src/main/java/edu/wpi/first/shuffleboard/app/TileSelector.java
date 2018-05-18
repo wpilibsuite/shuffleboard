@@ -69,11 +69,17 @@ public final class TileSelector {
         double minY = Math.min(dragStart.getY(), e.getY());
         double maxX = Math.max(dragStart.getX(), e.getX());
         double maxY = Math.max(dragStart.getY(), e.getY());
-        dragHighlightContainer.getChildren().remove(dragArea);
-        dragArea = new Rectangle(minX, minY, maxX - minX, maxY - minY);
-        dragArea.getStyleClass().add("grid-selection");
-        dragHighlightContainer.getChildren().add(dragArea);
-        dragHighlightContainer.toFront();
+        if (dragArea == null) {
+          dragArea = new Rectangle(minX, minY, maxX - minX, maxY - minY);
+          dragArea.getStyleClass().add("grid-selection");
+          dragHighlightContainer.getChildren().add(dragArea);
+          dragHighlightContainer.toFront();
+        } else {
+          dragArea.setX(minX);
+          dragArea.setY(minY);
+          dragArea.setWidth(maxX - minX);
+          dragArea.setHeight(maxY - minY);
+        }
         updateSelections();
       }
     });
