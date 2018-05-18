@@ -6,6 +6,7 @@ import edu.wpi.first.shuffleboard.app.components.Tile;
 import edu.wpi.first.shuffleboard.app.components.WidgetPane;
 import edu.wpi.first.shuffleboard.app.components.WidgetTile;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.testfx.framework.junit5.ApplicationTest;
 
@@ -59,6 +60,7 @@ public class TileSelectorTest extends ApplicationTest {
   }
 
   @Test
+  @Tag("NonHeadlessTests")
   public void testDragToSelectSingle() {
     clickOn(pane.localToScreen(128, 256))
         .drag()
@@ -123,6 +125,7 @@ public class TileSelectorTest extends ApplicationTest {
   }
 
   @Test
+  @Tag("NonHeadlessTests")
   public void testCtrlClickToSelect() {
     press(KeyCode.CONTROL);
     clickOn(firstTile);
@@ -132,6 +135,7 @@ public class TileSelectorTest extends ApplicationTest {
   }
 
   @Test
+  @Tag("NonHeadlessTests")
   public void testCtrlClickToAddToSelection() {
     testDragToSelectMultiple();
     press(KeyCode.CONTROL);

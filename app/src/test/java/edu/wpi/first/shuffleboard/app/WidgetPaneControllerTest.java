@@ -9,6 +9,7 @@ import edu.wpi.first.shuffleboard.app.components.WidgetTile;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.testfx.framework.junit5.ApplicationTest;
 
@@ -54,6 +55,7 @@ public class WidgetPaneControllerTest extends ApplicationTest {
   }
 
   @Test
+  @Tag("NonHeadlessTests")
   public void testAddMultipleTilesToLayout() {
     drag(pane.localToScreen(150, 150))
         .drag()
