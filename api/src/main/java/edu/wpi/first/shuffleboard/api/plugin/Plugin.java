@@ -218,7 +218,7 @@ public class Plugin {
   /**
    * Gets the custom JSON serializers that this plugin requires to properly save and load custom components.
    */
-  public List<ElementTypeAdapter<?>> getSavers() {
+  public List<ElementTypeAdapter<?>> getCustomTypeAdapters() {
     return ImmutableList.of();
   }
 

@@ -36,7 +36,7 @@ public final class JsonBuilder {
       }
       PluginLoader.getDefault().getLoadedPlugins()
           .stream()
-          .map(plugin -> plugin.getSavers())
+          .map(plugin -> plugin.getCustomTypeAdapters())
           .flatMap(adapters -> adapters.stream())
           .forEach(adapter -> {
             builder.registerTypeHierarchyAdapter(

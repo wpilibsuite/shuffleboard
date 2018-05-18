@@ -179,7 +179,7 @@ public class BasePlugin extends Plugin {
   }
 
   @Override
-  public List<ElementTypeAdapter<?>> getSavers() {
+  public List<ElementTypeAdapter<?>> getCustomTypeAdapters() {
     return ImmutableList.of(
         GridLayoutSaver.Instance
     );
