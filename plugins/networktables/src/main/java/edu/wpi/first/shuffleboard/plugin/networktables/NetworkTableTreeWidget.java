@@ -3,6 +3,7 @@ package edu.wpi.first.shuffleboard.plugin.networktables;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.shuffleboard.api.components.SourceTreeTable;
 import edu.wpi.first.shuffleboard.api.data.MapData;
+import edu.wpi.first.shuffleboard.api.sources.DataSourceUtils;
 import edu.wpi.first.shuffleboard.api.sources.SourceEntry;
 import edu.wpi.first.shuffleboard.api.widget.Description;
 import edu.wpi.first.shuffleboard.api.widget.SimpleAnnotatedWidget;
@@ -48,9 +49,12 @@ public class NetworkTableTreeWidget extends SimpleAnnotatedWidget<MapData> {
       }
 
       newData.changesFrom(oldData)
-          .forEach((key, value) ->
+          .forEach((key, value) -> {
+            if (DataSourceUtils.isNotMetadata(key)) {
               tree.updateEntry(new NetworkTableSourceEntry(
-                  NetworkTable.normalizeKey(key), value)));
+                  NetworkTable.normalizeKey(key), value));
+            }
+          });
     });
   }
 
