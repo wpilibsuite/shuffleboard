@@ -171,4 +171,14 @@ public final class TileSelector {
     }
   }
 
+  /**
+   * Selects only a specific tile. Any tiles that are selected when this is called will be deselected.
+   *
+   * @param tile the tile to select
+   */
+  public void selectOnly(Tile<?> tile) {
+    selectedTiles.removeIf(t -> !t.equals(tile));
+    select(tile);
+  }
+
 }

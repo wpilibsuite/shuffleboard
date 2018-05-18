@@ -66,6 +66,7 @@ import javafx.scene.image.WritableImage;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.Dragboard;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
@@ -465,6 +466,13 @@ public class WidgetPaneController {
       ContextMenu contextMenu = createContextMenu(event);
       contextMenu.show(pane.getScene().getWindow(), event.getScreenX(), event.getScreenY());
       event.consume();
+    });
+
+    // Allow users to double-click on a tile to select it.
+    tile.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
+      if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2) {
+        selector.selectOnly(tile);
+      }
     });
 
     ActionList.registerSupplier(tile, () -> {
