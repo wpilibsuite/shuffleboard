@@ -364,3 +364,21 @@
     -fx-fill: -fx-stroke;
     -fx-stroke-width: 1.5;
 }
+
+/*******************************************************************************
+ *                                                                             *
+ * Link labels                                                                 *
+ *                                                                             *
+ ******************************************************************************/
+.link-label {
+    -fx-underline: true;
+    -fx-cursor: hand;
+}
+
+.link-label:hover {
+    -fx-text-fill: #6dbdff;
+}
+
+.link-label:pressed {
+    -fx-text-fill: #6b8acb
+}

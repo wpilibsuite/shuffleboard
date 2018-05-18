@@ -1,8 +1,8 @@
 package edu.wpi.first.shuffleboard.plugin.base.widget;
 
 import edu.wpi.first.shuffleboard.api.components.ExtendedPropertySheet;
+import edu.wpi.first.shuffleboard.api.sources.DataSourceUtils;
 import edu.wpi.first.shuffleboard.api.util.AlphanumComparator;
-import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.api.widget.Description;
 import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 import edu.wpi.first.shuffleboard.api.widget.SimpleAnnotatedWidget;
@@ -55,10 +55,9 @@ public class RobotPreferencesWidget extends SimpleAnnotatedWidget<RobotPreferenc
             .forEach(wrapperProperties::remove);
       }
       updated.forEach((key, value) -> {
-        if (NetworkTableUtils.isMetadata(key)) {
-          return;
+        if (DataSourceUtils.isNotMetadata(key)) {
+          wrapperProperties.computeIfAbsent(key, k -> generateWrapper(k, value)).setValue(value);
         }
-        wrapperProperties.computeIfAbsent(key, k -> generateWrapper(k, value)).setValue(value);
       });
     });
 

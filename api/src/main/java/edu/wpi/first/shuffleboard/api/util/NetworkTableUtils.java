@@ -8,8 +8,6 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 
-import java.util.regex.Pattern;
-
 /**
  * Utility class for working with network tables.
  */
@@ -20,9 +18,6 @@ public final class NetworkTableUtils {
    */
   public static final NetworkTableInstance inst = NetworkTableInstance.getDefault();
   public static final NetworkTable rootTable = inst.getTable("");
-
-  private static final Pattern oldMetadataPattern = Pattern.compile("(^|/)~\\w+~($|/)");
-  private static final Pattern newMetadataPattern = Pattern.compile("(^|/)\\.");
 
   private NetworkTableUtils() {
     throw new UnsupportedOperationException("This is a utility class!");
@@ -51,14 +46,6 @@ public final class NetworkTableUtils {
    */
   public static boolean isDelete(int flags) {
     return BitUtils.flagMatches(flags, EntryListenerFlags.kDelete);
-  }
-
-  /**
-   * Checks if the given key is metadata, eg matches the format "~METADATA~" or ".metadata"
-   */
-  public static boolean isMetadata(String key) {
-    return oldMetadataPattern.matcher(key).find()
-        || newMetadataPattern.matcher(key).find();
   }
 
   /**

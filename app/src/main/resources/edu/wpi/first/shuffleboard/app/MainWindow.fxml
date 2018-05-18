@@ -36,6 +36,8 @@
             <MenuItem text="Start recording" fx:id="recordingMenu" onAction="#toggleRecording"
                       accelerator="SHORTCUT+SHIFT+R"/>
             <MenuItem text="Load playback..." onAction="#loadPlayback" accelerator="SHORTCUT+SHIFT+P"/>
+            <SeparatorMenuItem/>
+            <MenuItem text="Convert recordings" onAction="#exportRecordings"/>
         </Menu>
         <Menu text="Tab">
             <MenuItem text="New tab" onAction="#newTab" accelerator="SHORTCUT+T"/>
@@ -80,5 +82,6 @@
         <fx:include source="DownloadDialogPane.fxml" fx:id="downloadPane"/>
         <fx:include source="AboutDialogPane.fxml" fx:id="aboutPane"/>
         <fx:include source="RestartPrompt.fxml" fx:id="restartPromptPane"/>
+        <fx:include source="ConvertRecordingPane.fxml" fx:id="exportRecordingPane"/>
     </fx:define>
 </VBox>

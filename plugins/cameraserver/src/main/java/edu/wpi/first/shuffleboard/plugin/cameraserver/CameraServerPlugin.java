@@ -5,11 +5,9 @@ import edu.wpi.first.shuffleboard.api.plugin.Description;
 import edu.wpi.first.shuffleboard.api.plugin.Plugin;
 import edu.wpi.first.shuffleboard.api.plugin.Requires;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
-import edu.wpi.first.shuffleboard.api.sources.recording.serialization.TypeAdapter;
 import edu.wpi.first.shuffleboard.api.widget.ComponentType;
 import edu.wpi.first.shuffleboard.api.widget.WidgetType;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.data.type.CameraServerDataType;
-import edu.wpi.first.shuffleboard.plugin.cameraserver.recording.serialization.CameraServerDataSerializer;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.source.CameraServerSourceType;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.widget.CameraServerWidget;
 
@@ -68,13 +66,6 @@ public class CameraServerPlugin extends Plugin {
   public List<DataType> getDataTypes() {
     return ImmutableList.of(
         CameraServerDataType.Instance
-    );
-  }
-
-  @Override
-  public List<TypeAdapter> getTypeAdapters() {
-    return ImmutableList.of(
-        new CameraServerDataSerializer()
     );
   }
 

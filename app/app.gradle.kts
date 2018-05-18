@@ -29,6 +29,7 @@ dependencies {
     compile(group = "de.huxhorn.lilith", name = "de.huxhorn.lilith.3rdparty.junique", version = "1.0.4")
     compile(group = "com.github.samcarlberg", name = "update-checker", version = "+")
     compile(group = "com.github.zafarkhaja", name = "java-semver", version = "0.9.0")
+    compile(group = "org.apache.commons", name = "commons-csv", version = "1.5")
     testCompile(project("test_plugins"))
 }
 
