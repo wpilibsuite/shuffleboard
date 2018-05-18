@@ -9,6 +9,7 @@ import edu.wpi.first.shuffleboard.api.plugin.Plugin;
 import edu.wpi.first.shuffleboard.api.prefs.FlushableProperty;
 import edu.wpi.first.shuffleboard.api.sources.ConnectionStatus;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
+import edu.wpi.first.shuffleboard.api.sources.DataSourceUtils;
 import edu.wpi.first.shuffleboard.api.sources.SourceEntry;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
@@ -74,6 +75,7 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
@@ -135,6 +137,9 @@ public class MainWindowController {
   private Pane restartPromptPane;
   @FXML
   private Pane aboutPane;
+  @FXML
+  private Pane exportRecordingPane;
+  private Stage exportRecordingStage;
 
   private SourceEntry selectedEntry;
 
@@ -284,14 +289,26 @@ public class MainWindowController {
             return;
           }
 
-          DataSource<?> source = selectedItem.getValue().get();
+          SourceEntry entry = selectedItem.getValue();
+          DataSource<?> source = entry.get();
           List<String> componentNames = Components.getDefault().componentNamesForSource(source);
-          if (componentNames.isEmpty()) {
-            // No known components that can show this data
-            return;
-          }
 
           ContextMenu menu = new ContextMenu();
+          if (source.getDataType().isComplex()) {
+            menu.getItems().add(FxUtils.menuItem("Create tab", __ -> {
+              DashboardTab newTab = dashboard.addNewTab();
+              newTab.setTitle(entry.getViewName());
+              newTab.setSourcePrefix(source.getId() + "/");
+              newTab.setAutoPopulate(true);
+              dashboard.getSelectionModel().select(newTab);
+            }));
+            if (!componentNames.isEmpty()) {
+              menu.getItems().add(new SeparatorMenuItem());
+            }
+          } else if (componentNames.isEmpty()) {
+            // Can't create a tab, and no components can display the source
+            return;
+          }
           componentNames.stream()
               .map(name -> createShowAsMenuItem(name, source))
               .forEach(menu.getItems()::add);
@@ -300,13 +317,16 @@ public class MainWindowController {
         });
         sourceType.getAvailableSources().addListener((MapChangeListener<String, Object>) change -> {
           SourceEntry entry = sourceType.createSourceEntryForUri(change.getKey());
-          if (change.wasAdded()) {
-            tree.updateEntry(entry);
-          } else if (change.wasRemoved()) {
-            tree.removeEntry(entry);
+          if (DataSourceUtils.isNotMetadata(entry.getName())) {
+            if (change.wasAdded()) {
+              tree.updateEntry(entry);
+            } else if (change.wasRemoved()) {
+              tree.removeEntry(entry);
+            }
           }
         });
         sourceType.getAvailableSourceUris().stream()
+            .filter(DataSourceUtils::isNotMetadata)
             .map(sourceType::createSourceEntryForUri)
             .forEach(tree::updateEntry);
         TitledPane titledPane = new TitledPane(sourceType.getName(), tree);
@@ -575,6 +595,19 @@ public class MainWindowController {
     }
     Playback playback = Playback.load(selected.getAbsolutePath());
     playback.start();
+  }
+
+  @FXML
+  private void exportRecordings() {
+    if (exportRecordingStage == null) {
+      exportRecordingStage = new Stage();
+      exportRecordingStage.setTitle("Export Recording Files");
+      exportRecordingStage.setScene(new Scene(exportRecordingPane));
+      exportRecordingStage.setResizable(false);
+      FxUtils.bind(exportRecordingStage.getScene().getStylesheets(), stylesheets);
+      exportRecordingStage.initModality(Modality.APPLICATION_MODAL);
+    }
+    exportRecordingStage.show();
   }
 
   @FXML

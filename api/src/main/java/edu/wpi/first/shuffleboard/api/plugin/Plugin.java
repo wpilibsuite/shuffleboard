@@ -3,6 +3,7 @@ package edu.wpi.first.shuffleboard.api.plugin;
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.json.ElementTypeAdapter;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
+import edu.wpi.first.shuffleboard.api.sources.recording.Converter;
 import edu.wpi.first.shuffleboard.api.sources.recording.serialization.TypeAdapter;
 import edu.wpi.first.shuffleboard.api.tab.TabInfo;
 import edu.wpi.first.shuffleboard.api.theme.Theme;
@@ -218,6 +219,13 @@ public class Plugin {
    * Gets the custom JSON serializers that this plugin requires to properly save and load custom components.
    */
   public List<ElementTypeAdapter<?>> getSavers() {
+    return ImmutableList.of();
+  }
+
+  /**
+   * Gets a list of converters used to convert Shuffleboard recording files to other formats.
+   */
+  public List<Converter> getRecordingConverters() {
     return ImmutableList.of();
   }
 
