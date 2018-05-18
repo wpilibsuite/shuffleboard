@@ -102,6 +102,8 @@ public final class TileSelector {
         tile.setSelected(intersects);
         if (intersects) {
           select(tile);
+        } else {
+          deselect(tile);
         }
       }
     } else {
