@@ -1,5 +1,7 @@
 package edu.wpi.first.shuffleboard.api.util;
 
+import com.google.common.collect.ImmutableList;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -19,6 +21,87 @@ public final class ListUtils {
 
   private ListUtils() {
     throw new UnsupportedOperationException("This is a utility class!");
+  }
+
+  /**
+   * Gets the first index of an element matching a predicate.
+   *
+   * @param list      the list to search
+   * @param predicate the predicate to use
+   * @param <T>       the type of elements in the list
+   *
+   * @return the index of the first element to pass the predicate, or <tt>-1</tt> if no element matched
+   *
+   * @throws NullPointerException if either <tt>list</tt> or <tt>predicate</tt> is <tt>null</tt>
+   */
+  public static <T> int firstIndexOf(List<? extends T> list, Predicate<? super T> predicate) {
+    Objects.requireNonNull(list, "list");
+    Objects.requireNonNull(predicate, "predicate");
+    for (int i = 0; i < list.size(); i++) {
+      if (predicate.test(list.get(i))) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  /**
+   * Adds an element to a list if the list does not already contain it.
+   *
+   * @param list    the list to add to
+   * @param element the element to add
+   * @param <T>     the type of values in the list
+   *
+   * @return true if the element was added to the list, false if not
+   */
+  public static <T> boolean addIfNotPresent(List<? super T> list, T element) {
+    if (!list.contains(element)) {
+      return list.add(element);
+    }
+    return false;
+  }
+
+  /**
+   * Adds an element to a list if the list does not already contain it.
+   *
+   * @param list    the list to add to
+   * @param index   the index in the list to add the element to
+   * @param element the element to add
+   * @param <T>     the type of values in the list
+   *
+   * @return true if the element was added, false if not
+   */
+  public static <T> boolean addIfNotPresent(List<? super T> list, int index, T element) {
+    if (!list.contains(element)) {
+      list.add(index, element);
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Creates a new collector for immutable lists.
+   *
+   * <p>For example:
+   * <pre>{@code
+   * ImmutableList<T> list = values.stream()
+   *   .filter(...)
+   *   .map(...)
+   *   .collect(toImmutableList());
+   * }</pre>
+   *
+   * @param <T> the type of elements to collect
+   */
+  public static <T> Collector<T, ?, ImmutableList<T>> toImmutableList() {
+    return Collector.<T, List<T>, ImmutableList<T>>of(
+        ArrayList::new,
+        List::add,
+        (left, right) -> {
+          left.addAll(right);
+          return left;
+        },
+        ImmutableList::copyOf
+    );
   }
 
   public static <T> Collector<T, ?, List<T>> joining(Supplier<? extends T> separator) {

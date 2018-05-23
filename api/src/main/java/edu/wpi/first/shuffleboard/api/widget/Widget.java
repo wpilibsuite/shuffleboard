@@ -3,10 +3,7 @@ package edu.wpi.first.shuffleboard.api.widget;
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 
-import java.util.List;
 import java.util.stream.Stream;
-
-import javafx.beans.property.Property;
 
 /**
  * A widget is a UI element that displays data from {@link DataSource data sources} and has the ability to
@@ -42,11 +39,6 @@ import javafx.beans.property.Property;
  * handles. More information about data sources can be found {@link DataSource here}.
  */
 public interface Widget extends Component, Sourced {
-
-  /**
-   * Gets the user-configurable properties for this widget.
-   */
-  List<? extends Property<?>> getProperties();
 
   @Override
   default Stream<Component> allComponents() {

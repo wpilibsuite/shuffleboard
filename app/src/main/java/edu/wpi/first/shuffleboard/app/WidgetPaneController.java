@@ -33,10 +33,12 @@ import org.fxmisc.easybind.EasyBind;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.WeakHashMap;
 import java.util.function.Function;
 import java.util.logging.Level;
@@ -48,17 +50,20 @@ import java.util.stream.Stream;
 import javafx.beans.binding.Binding;
 import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
+import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
+import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.ContextMenuEvent;
+import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
@@ -103,9 +108,24 @@ public class WidgetPaneController {
       boolean isWidgetTile = event.getDragboard().hasContent(DataFormats.widgetTile);
       boolean isSource = event.getDragboard().hasContent(DataFormats.source);
       boolean isWidget = event.getDragboard().hasContent(DataFormats.widgetType);
+      boolean isTilelessComponent = event.getDragboard().hasContent(DataFormats.tilelessComponent);
 
       // preview the location of the widget if one is being dragged
       if (isWidgetTile) {
+        if (!pane.isOpen(point, new TileSize(1, 1), n -> false)
+            && pane.tileAt(point).map(Tile::getContent).filter(c -> c instanceof Layout).isPresent()) {
+          if (((DataFormats.WidgetData) event.getDragboard().getContent(DataFormats.widgetTile)).getId()
+              .equals(pane.tileAt(point)
+                  .map(Node::getId)
+                  .orElse(null))) {
+            // Dragged a layout tile onto itself
+            event.consume();
+          } else {
+            // Dragged a tile onto a layout, let the layout handle the drag and drop
+            pane.setHighlight(false);
+            return;
+          }
+        }
         pane.setHighlight(true);
         pane.setHighlightPoint(point);
         DataFormats.WidgetData data = (DataFormats.WidgetData) event.getDragboard().getContent(DataFormats.widgetTile);
@@ -154,6 +174,25 @@ public class WidgetPaneController {
           pane.setHighlightPoint(point);
           pane.setHighlightSize(tilePreviewSize);
         }
+      } else if (isTilelessComponent) {
+        if (!pane.isOpen(point, new TileSize(1, 1), n -> false)) {
+          // Dragged a widget onto a tile, can't drop
+          pane.setHighlight(false);
+          return;
+        }
+        Optional<Component> component = Components.getDefault()
+            .getByUuid((UUID) event.getDragboard().getContent(DataFormats.tilelessComponent));
+        if (tilePreviewSize == null) {
+          component.map(pane::sizeOfWidget)
+              .ifPresent(size -> tilePreviewSize = size);
+        }
+        if (tilePreviewSize == null) {
+          pane.setHighlight(false);
+        } else {
+          pane.setHighlight(true);
+          pane.setHighlightPoint(point);
+          pane.setHighlightSize(tilePreviewSize);
+        }
       }
 
       event.consume();
@@ -192,6 +231,22 @@ public class WidgetPaneController {
         });
       }
 
+      // Dragging a component out of a layout
+      if (dragboard.hasContent(DataFormats.tilelessComponent)) {
+        UUID componentId = (UUID) dragboard.getContent(DataFormats.tilelessComponent);
+        Optional<Component> component = Components.getDefault().getByUuid(componentId);
+        Optional<LayoutTile> parent = pane.getTiles().stream()
+            .flatMap(TypeUtils.castStream(LayoutTile.class))
+            .filter(t -> t.getContent().getChildren().contains(component.orElse(null)))
+            .findFirst();
+        component.ifPresent(c -> {
+          parent.ifPresent(t -> t.getContent().removeChild(c));
+          pane.addComponent(c, point);
+        });
+        event.consume();
+
+        return;
+      }
       cleanupWidgetDrag();
       tilePreviewSize = null;
       event.consume();
@@ -282,6 +337,17 @@ public class WidgetPaneController {
   }
 
   private void createPaneContextMenu(ContextMenuEvent e) {
+    // Menu for adding new empty layouts
+    // As an alternative to adding a component, then having to add that to a new layout
+    // This reduces the complexity of creating new layouts
+    Menu addLayouts = new Menu("Add layout...");
+    Components.getDefault().allComponents()
+        .flatMap(TypeUtils.castStream(LayoutType.class))
+        .sorted(Comparator.comparing(LayoutType::getName))
+        .map(t -> FxUtils.menuItem(t.getName(), __ -> pane.addComponent((Layout) t.get())))
+        .forEach(addLayouts.getItems()::add);
+
+    // Removes all the tiles from the pane. Destructive operation!
     MenuItem clear = FxUtils.menuItem("Clear", __ -> {
       List<Tile> tiles = new ArrayList<>(pane.getTiles());
       tiles.stream()
@@ -290,7 +356,7 @@ public class WidgetPaneController {
           .flatMap(TypeUtils.castStream(Sourced.class))
           .forEach(Sourced::removeAllSources);
     });
-    ContextMenu contextMenu = new ContextMenu(clear);
+    ContextMenu contextMenu = new ContextMenu(addLayouts, new SeparatorMenuItem(), clear);
     contextMenu.show(pane.getScene().getWindow(), e.getScreenX(), e.getScreenY());
   }
 
@@ -364,10 +430,10 @@ public class WidgetPaneController {
    */
   private void dropSource(DataSource<?> source, GridPoint point) {
     Components.getDefault().pickComponentNameFor(source.getDataType())
-           .flatMap(name -> Components.getDefault().createComponent(name, source))
-           .filter(widget -> pane.isOpen(point, pane.sizeOfWidget(widget), n -> widget == n))
-           .map(pane::addComponentToTile)
-           .ifPresent(tile -> pane.moveNode(tile, point));
+        .flatMap(name -> Components.getDefault().createComponent(name, source))
+        .filter(widget -> pane.isOpen(point, pane.sizeOfWidget(widget), n -> widget == n))
+        .map(pane::addComponentToTile)
+        .ifPresent(tile -> pane.moveNode(tile, point));
   }
 
   /**
@@ -394,7 +460,7 @@ public class WidgetPaneController {
               ((Sourced) removed).removeAllSources();
             }
             if (removed instanceof Layout) {
-              ((Layout) removed).allComponents()
+              removed.allComponents()
                   .flatMap(TypeUtils.castStream(Sourced.class))
                   .forEach(Sourced::removeAllSources);
             }
@@ -407,9 +473,9 @@ public class WidgetPaneController {
         if (changeMenus.hasItems()) {
           widgetPaneActions.addNested(changeMenus);
         }
-        widgetPaneActions.addAction("Edit Properties",
-            () -> showPropertySheet(widgetTile));
       }
+      widgetPaneActions.addAction("Edit Properties",
+          () -> showPropertySheet(tile));
       return widgetPaneActions;
     });
 
@@ -449,7 +515,7 @@ public class WidgetPaneController {
         pane.tileMatching(t -> t.getId().equals(data.getId()))
             .ifPresent(t -> {
               Component content = pane.removeTile(t);
-              ((LayoutTile) tile).getContent().addChild(content);
+              add((Layout) tile.getContent(), content, event);
             });
         event.consume();
 
@@ -461,7 +527,7 @@ public class WidgetPaneController {
         String widgetType = (String) dragboard.getContent(DataFormats.widgetType);
 
         Components.getDefault().createWidget(widgetType).ifPresent(widget -> {
-          ((LayoutTile) tile).getContent().addChild(widget);
+          add((Layout) tile.getContent(), widget, event);
         });
         event.consume();
 
@@ -478,12 +544,38 @@ public class WidgetPaneController {
             .stream()
             .findAny()
             .flatMap(name -> Components.getDefault().createWidget(name, source))
-            .ifPresent(container::addChild);
+            .ifPresent(w -> add(container, w, event));
+        event.consume();
+
+        return;
+      }
+
+      // Dragging a component out of a layout
+      if (dragboard.hasContent(DataFormats.tilelessComponent)) {
+        UUID componentId = (UUID) dragboard.getContent(DataFormats.tilelessComponent);
+        Optional<Component> component = Components.getDefault().getByUuid(componentId);
+        Optional<LayoutTile> parent = pane.getTiles().stream()
+            .flatMap(TypeUtils.castStream(LayoutTile.class))
+            .filter(t -> t.getContent().getChildren().contains(component.orElse(null)))
+            .findFirst();
+        component.ifPresent(c -> {
+          if (tile instanceof LayoutTile) {
+            parent.ifPresent(t -> t.getContent().removeChild(c));
+            add(((LayoutTile) tile).getContent(), c, event);
+          } else {
+            tile.setContent(c);
+          }
+        });
         event.consume();
 
         return;
       }
     });
+  }
+
+  private static void add(Layout layout, Component component, DragEvent event) {
+    Point2D point = layout.getView().screenToLocal(event.getScreenX(), event.getScreenY());
+    layout.addChild(component, point.getX(), point.getY());
   }
 
   /**
@@ -592,19 +684,16 @@ public class WidgetPaneController {
    * Creates the menu for editing the properties of a widget.
    *
    * @param tile the tile to pull properties from
-   * @return     the edit property menu
    */
   private void showPropertySheet(Tile<?> tile) {
     ExtendedPropertySheet propertySheet = new ExtendedPropertySheet();
     propertySheet.getItems().add(new ExtendedPropertySheet.PropertyItem<>(tile.getContent().titleProperty()));
     Dialog<ButtonType> dialog = new Dialog<>();
-    if (tile.getContent() instanceof Widget) {
-      ((Widget) tile.getContent()).getProperties().stream()
-          .map(ExtendedPropertySheet.PropertyItem::new)
-          .forEachOrdered(propertySheet.getItems()::add);
-    }
+    tile.getContent().getProperties().stream()
+        .map(ExtendedPropertySheet.PropertyItem::new)
+        .forEachOrdered(propertySheet.getItems()::add);
 
-    dialog.setTitle("Edit widget properties");
+    dialog.setTitle("Edit properties");
     dialog.getDialogPane().getStylesheets().setAll(AppPreferences.getInstance().getTheme().getStyleSheets());
     dialog.getDialogPane().setContent(new BorderPane(propertySheet));
     dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CLOSE);

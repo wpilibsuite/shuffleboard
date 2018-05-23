@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.api.widget;
 
+import java.util.List;
 import java.util.stream.Stream;
 
 import javafx.beans.property.Property;
@@ -45,4 +46,9 @@ public interface Component {
    * class-intrinsic.
    */
   String getName();
+
+  /**
+   * Gets the user-configurable properties for this component.
+   */
+  List<? extends Property<?>> getProperties();
 }

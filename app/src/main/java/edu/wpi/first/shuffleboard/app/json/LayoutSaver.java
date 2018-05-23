@@ -1,6 +1,9 @@
 package edu.wpi.first.shuffleboard.app.json;
 
 import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
+import edu.wpi.first.shuffleboard.api.json.AnnotatedTypeAdapter;
+import edu.wpi.first.shuffleboard.api.json.ElementTypeAdapter;
+import edu.wpi.first.shuffleboard.api.json.PropertySaver;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.Sources;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
@@ -28,6 +31,7 @@ import javafx.collections.ObservableList;
 public class LayoutSaver implements ElementTypeAdapter<Layout> {
 
   private final SourcedRestorer sourcedRestorer = new SourcedRestorer();
+  private final PropertySaver propertySaver = new PropertySaver();
 
   @Override
   public JsonElement serialize(Layout src, JsonSerializationContext context) {
@@ -42,6 +46,8 @@ public class LayoutSaver implements ElementTypeAdapter<Layout> {
     }
 
     object.addProperty("_title", src.getTitle());
+
+    propertySaver.saveAllProperties(src, context, object);
 
     Collection<Component> components = src.getChildren();
     JsonArray children = new JsonArray(components.size());
@@ -59,6 +65,8 @@ public class LayoutSaver implements ElementTypeAdapter<Layout> {
 
     Layout layout = Components.getDefault().createComponent(name).flatMap(TypeUtils.optionalCast(Layout.class))
         .orElseThrow(() -> new JsonParseException("Can't find layout name " + name));
+
+    propertySaver.readAllProperties(layout, context, obj);
 
     if (layout instanceof Sourced) {
       Sourced sourcedLayout = (Sourced) layout;

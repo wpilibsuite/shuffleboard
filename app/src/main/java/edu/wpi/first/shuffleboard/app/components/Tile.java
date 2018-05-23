@@ -123,13 +123,13 @@ public class Tile<T extends Component> extends BorderPane {
   /**
    * Create a tile for an arbitrary component.
    */
-  public static Tile<?> tileFor(Component component, TileSize size) {
+  public static <C extends Component> Tile<C> tileFor(C component, TileSize size) {
     if (component instanceof Widget) {
-      return new WidgetTile((Widget) component, size);
+      return (Tile<C>) new WidgetTile((Widget) component, size);
     } else if (component instanceof Layout) {
-      return new LayoutTile((Layout) component, size);
+      return (Tile<C>) new LayoutTile((Layout) component, size);
     } else {
-      Tile<Component> tile = new Tile<>();
+      Tile<C> tile = new Tile<>();
       tile.setContent(component);
       tile.setSize(size);
       return tile;

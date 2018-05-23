@@ -29,6 +29,75 @@ public class ActionList {
   private final String name;
   private final List<Supplier<MenuItem>> actions;
 
+  public static final class Action {
+    private final String name;
+    private final Runnable action;
+    private final Node graphic;
+
+    private Action(String name, Runnable action, Node graphic) {
+      this.name = name;
+      this.action = action;
+      this.graphic = graphic;
+    }
+
+    /**
+     * Creates an action.
+     *
+     * @param name   the name of the action
+     * @param action the code that the action should run
+     *
+     * @return a new action
+     */
+    public static Action of(String name, Runnable action) {
+      return new Action(name, action, null);
+    }
+
+    /**
+     * Creates an action.
+     *
+     * @param name    the name of the action
+     * @param action  the code that the action should run
+     * @param graphic an optional graphic that should be displayed in the action's menu. If null, no graphic will be
+     *                displayed
+     *
+     * @return a new action
+     */
+    public static Action of(String name, Runnable action, Node graphic) {
+      return new Action(name, action, graphic);
+    }
+
+    /**
+     * Gets the name of this action.
+     */
+    public String getName() {
+      return name;
+    }
+
+    /**
+     * Gets the code that this action runs.
+     */
+    public Runnable getAction() {
+      return action;
+    }
+
+    /**
+     * Gets the graphic used to display this action.
+     */
+    public Node getGraphic() {
+      return graphic;
+    }
+
+    /**
+     * Creates a new menu item for this action.
+     */
+    public MenuItem asMenuItem() {
+      MenuItem menuItem = FxUtils.menuItem(name, __ -> action.run());
+      menuItem.setGraphic(graphic);
+      return menuItem;
+    }
+
+  }
+
   protected ActionList(String name) {
     this.name = name;
     this.actions = new ArrayList<>();
@@ -38,21 +107,34 @@ public class ActionList {
     return !actions.isEmpty();
   }
 
-  public ActionList addAction(String name, Runnable r) {
-    actions.add(() -> FxUtils.menuItem(name, _e -> r.run()));
+  /**
+   * Creates a new action. This is shorthand for {@link Action#of(String, Runnable)}.
+   */
+  public static Action createAction(String name, Runnable action) {
+    return Action.of(name, action);
+  }
+
+  /**
+   * Creates a new action. This is shorthand for {@link Action#of(String, Runnable, Node)}.
+   */
+  public static Action createAction(String name, Runnable action, Node graphic) {
+    return Action.of(name, action, graphic);
+  }
+
+  public ActionList addAction(Action action) {
+    actions.add(action::asMenuItem);
     return this;
+  }
+
+  public ActionList addAction(String name, Runnable r) {
+    return addAction(Action.of(name, r));
   }
 
   /**
    * Add an action with an associated graphic, such as a checkmark or icon.
    */
   public ActionList addAction(String name, Node graphic, Runnable r) {
-    actions.add(() -> {
-      MenuItem item = FxUtils.menuItem(name, _e -> r.run());
-      item.setGraphic(graphic);
-      return item;
-    });
-    return this;
+    return addAction(Action.of(name, r, graphic));
   }
 
   /**
