@@ -48,6 +48,17 @@
 
 /*******************************************************************************
  *                                                                             *
+ * Grid Selection                                                              *
+ *                                                                             *
+ ******************************************************************************/
+.grid-selection {
+    -fx-fill: #FFFFFF08;
+    -fx-stroke: #A7A7F7;
+    -fx-stroke-width: 0.25em;
+}
+
+/*******************************************************************************
+ *                                                                             *
  * Menus                                                                       *
  *                                                                             *
  ******************************************************************************/
@@ -238,6 +249,15 @@
 .tile {
     -fx-background-color: -swatch-dark-gray;
     -fx-effect: dropshadow(gaussian, #101010, 6, 0.1, 0, 4);
+}
+
+.tile:selected {
+    -fx-background-color: #10102F;
+    -fx-effect: dropshadow(gaussian, -swatch-100, 6, 0.1, 0, 4);
+}
+
+.tile:selected .tile-title-bar {
+    -fx-background-color: -swatch-500;
 }
 
 .tile-title-bar {

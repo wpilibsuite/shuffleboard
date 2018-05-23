@@ -66,6 +66,25 @@ public class GridPoint implements Serializable {
     return new GridPoint(Math.max(0, this.col - other.col), Math.max(0, this.row - other.row));
   }
 
+  /**
+   * Adds another grid point to this one and returns the result.
+   *
+   * @param other the point to add to this one
+   */
+  public GridPoint add(GridPoint other) {
+    return new GridPoint(this.col + other.col, this.row + other.row);
+  }
+
+  /**
+   * Adds a column and a row delta to this point and returns the result.
+   *
+   * @param columnDelta the change in the column index
+   * @param rowDelta    the change in the row index
+   */
+  public GridPoint add(int columnDelta, int rowDelta) {
+    return new GridPoint(this.col + columnDelta, this.row + rowDelta);
+  }
+
   public int getCol() {
     return col;
   }

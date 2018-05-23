@@ -2,6 +2,7 @@ package edu.wpi.first.shuffleboard.app;
 
 import edu.wpi.first.shuffleboard.api.components.ActionList;
 import edu.wpi.first.shuffleboard.api.components.ExtendedPropertySheet;
+import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.dnd.DataFormats;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.DummySource;
@@ -34,13 +35,16 @@ import org.fxmisc.easybind.EasyBind;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.WeakHashMap;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -49,6 +53,7 @@ import java.util.stream.Stream;
 
 import javafx.beans.binding.Binding;
 import javafx.collections.ListChangeListener;
+import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
 import javafx.geometry.Point2D;
 import javafx.scene.Node;
@@ -65,11 +70,15 @@ import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
+
+import static java.util.stream.Collectors.toSet;
 
 // needs refactoring to split out per-widget interaction
 @SuppressWarnings("PMD.GodClass")
@@ -81,6 +90,7 @@ public class WidgetPaneController {
   private WidgetPane pane;
 
   private final Map<Node, Boolean> tilesAlreadySetup = new WeakHashMap<>();
+  private final Map<Tile<?>, WidgetPane.Highlight> highlights = new WeakHashMap<>();
 
   /**
    * Memoizes the size of a tile that would be added when dropping a source or widget. Memoizing prevents calling
@@ -89,14 +99,20 @@ public class WidgetPaneController {
    */
   private TileSize tilePreviewSize = null;
 
+  private TileSelector selector;
+  private final Predicate<Node> ignoreMultiTileDrag =
+      n -> selector.getSelectedTiles().contains(n)
+          || n instanceof WidgetPane.Highlight;
+
   @FXML
   private void initialize() {
-
     pane.getTiles().addListener((ListChangeListener<Tile>) changes -> {
       while (changes.next()) {
         changes.getAddedSubList().forEach(this::setupTile);
       }
     });
+
+    selector = new TileSelector(pane);
 
     // Add a context menu for pane-related actions
     pane.setOnContextMenuRequested(this::createPaneContextMenu);
@@ -105,16 +121,17 @@ public class WidgetPaneController {
     pane.setOnDragOver(event -> {
       event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
       GridPoint point = pane.pointAt(event.getX(), event.getY());
-      boolean isWidgetTile = event.getDragboard().hasContent(DataFormats.widgetTile);
-      boolean isSource = event.getDragboard().hasContent(DataFormats.source);
-      boolean isWidget = event.getDragboard().hasContent(DataFormats.widgetType);
-      boolean isTilelessComponent = event.getDragboard().hasContent(DataFormats.tilelessComponent);
+      Dragboard dragboard = event.getDragboard();
+      boolean isSingleTile = dragboard.hasContent(DataFormats.singleTile);
+      boolean isManyTiles = dragboard.hasContent(DataFormats.multipleTiles);
+      boolean isSource = dragboard.hasContent(DataFormats.source);
+      boolean isWidget = dragboard.hasContent(DataFormats.widgetType);
+      boolean isTilelessComponent = dragboard.hasContent(DataFormats.tilelessComponent);
 
-      // preview the location of the widget if one is being dragged
-      if (isWidgetTile) {
-        if (!pane.isOpen(point, new TileSize(1, 1), n -> false)
-            && pane.tileAt(point).map(Tile::getContent).filter(c -> c instanceof Layout).isPresent()) {
-          if (((DataFormats.WidgetData) event.getDragboard().getContent(DataFormats.widgetTile)).getId()
+      // preview the location of the tile if one is being dragged
+      if (isSingleTile) {
+        if (isLayoutTile(point)) {
+          if (((DataFormats.TileData) dragboard.getContent(DataFormats.singleTile)).getId()
               .equals(pane.tileAt(point)
                   .map(Node::getId)
                   .orElse(null))) {
@@ -128,16 +145,53 @@ public class WidgetPaneController {
         }
         pane.setHighlight(true);
         pane.setHighlightPoint(point);
-        DataFormats.WidgetData data = (DataFormats.WidgetData) event.getDragboard().getContent(DataFormats.widgetTile);
+        DataFormats.TileData data = (DataFormats.TileData) dragboard.getContent(DataFormats.singleTile);
         pane.tileMatching(tile -> tile.getId().equals(data.getId()))
-            .ifPresent(tile -> previewTile(tile, point.subtract(data.getDragPoint())));
+            .ifPresent(tile -> previewTile(tile, point.subtract(data.getLocalDragPoint())));
+      } else if (isManyTiles) {
+        if (isLayoutTile(point)) {
+          // Dragged onto a layout tile, let it handle the drag and drop
+          highlights.forEach((t, h) -> pane.removeHighlight(h));
+          highlights.clear();
+          pane.setHighlight(false);
+          return;
+        }
+        DataFormats.MultipleTileData data = (DataFormats.MultipleTileData)
+            dragboard.getContent(DataFormats.multipleTiles);
+        int dx = point.col - data.getInitialPoint().col;
+        int dy = point.row - data.getInitialPoint().row;
+        boolean inBounds = data.getTileIds().stream()
+            .map(id -> pane.tileMatching(tile -> tile.getId().equals(id)))
+            .flatMap(TypeUtils.optionalStream())
+            .map(pane::getTileLayout)
+            .allMatch(layout -> layout.origin.col + dx >= 0 && layout.origin.row + dy >= 0);
+
+        if (inBounds) {
+          data.getTileIds().stream()
+              .map(id -> pane.tileMatching(t -> t.getId().equals(id)))
+              .flatMap(TypeUtils.optionalStream())
+              .forEach(tile -> {
+                TileLayout layout = pane.getTileLayout(tile);
+                int newCol = layout.origin.col + dx;
+                int newRow = layout.origin.row + dy;
+                WidgetPane.Highlight highlight = highlights.computeIfAbsent(tile, t -> pane.addHighlight());
+                highlight.setLocation(new GridPoint(newCol, newRow));
+                highlight.setSize(layout.size);
+                highlights.put(tile, highlight);
+                boolean open = pane.isOpen(highlight.getLocation(), highlight.getSize(), ignoreMultiTileDrag);
+                highlight.pseudoClassStateChanged(PseudoClass.getPseudoClass("colliding"), !open);
+              });
+        } else {
+          highlights.values().forEach(pane::removeHighlight);
+          highlights.clear();
+        }
       } else if (isSource) {
         if (!pane.isOpen(point, new TileSize(1, 1), n -> false)) {
           // Dragged a source onto a tile, let the tile handle the drag and drop
           pane.setHighlight(false);
           return;
         }
-        SourceEntry entry = (SourceEntry) event.getDragboard().getContent(DataFormats.source);
+        SourceEntry entry = (SourceEntry) dragboard.getContent(DataFormats.source);
         DataSource source = entry.get();
         Optional<String> componentName = Components.getDefault().pickComponentNameFor(source.getDataType());
         Optional<DataSource<?>> dummySource = DummySource.forTypes(source.getDataType());
@@ -161,7 +215,7 @@ public class WidgetPaneController {
           pane.setHighlight(false);
           return;
         }
-        String componentType = (String) event.getDragboard().getContent(DataFormats.widgetType);
+        String componentType = (String) dragboard.getContent(DataFormats.widgetType);
         if (tilePreviewSize == null) {
           Components.getDefault().createComponent(componentType)
               .map(pane::sizeOfWidget)
@@ -181,7 +235,7 @@ public class WidgetPaneController {
           return;
         }
         Optional<Component> component = Components.getDefault()
-            .getByUuid((UUID) event.getDragboard().getContent(DataFormats.tilelessComponent));
+            .getByUuid((UUID) dragboard.getContent(DataFormats.tilelessComponent));
         if (tilePreviewSize == null) {
           component.map(pane::sizeOfWidget)
               .ifPresent(size -> tilePreviewSize = size);
@@ -213,10 +267,34 @@ public class WidgetPaneController {
       }
 
       // Dropping a tile onto the pane after moving it around
-      if (dragboard.hasContent(DataFormats.widgetTile)) {
-        DataFormats.WidgetData data = (DataFormats.WidgetData) dragboard.getContent(DataFormats.widgetTile);
+      if (dragboard.hasContent(DataFormats.singleTile)) {
+        DataFormats.TileData data = (DataFormats.TileData) dragboard.getContent(DataFormats.singleTile);
         pane.tileMatching(tile -> tile.getId().equals(data.getId()))
-            .ifPresent(tile -> moveTile(tile, point.subtract(data.getDragPoint())));
+            .ifPresent(tile -> moveTile(tile, point.subtract(data.getLocalDragPoint())));
+      }
+
+      // Dropping multiple tiles after moving them around
+      if (dragboard.hasContent(DataFormats.multipleTiles)) {
+        DataFormats.MultipleTileData data = (DataFormats.MultipleTileData)
+            dragboard.getContent(DataFormats.multipleTiles);
+        int dx = point.col - data.getInitialPoint().col;
+        int dy = point.row - data.getInitialPoint().row;
+        boolean allMovable = data.getTileIds().stream()
+            .map(id -> pane.tileMatching(tile -> tile.getId().equals(id)))
+            .flatMap(TypeUtils.optionalStream())
+            .map(pane::getTileLayout)
+            .allMatch(layout -> {
+              return layout.origin.getCol() + dx >= 0
+                  && layout.origin.getRow() + dy >= 0
+                  && pane.isOpen(layout.origin.add(dx, dy), layout.size, ignoreMultiTileDrag);
+            });
+        if (allMovable) {
+          pane.getTiles().stream()
+              .filter(tile -> data.getTileIds().contains(tile.getId()))
+              .forEach(tile -> pane.moveNode(tile, pane.getTileLayout(tile).origin.add(dx, dy)));
+        }
+        highlights.values().forEach(pane::removeHighlight);
+        highlights.clear();
       }
 
       // Dropping a widget from the gallery
@@ -360,6 +438,13 @@ public class WidgetPaneController {
     contextMenu.show(pane.getScene().getWindow(), e.getScreenX(), e.getScreenY());
   }
 
+  private boolean isLayoutTile(GridPoint point) {
+    return pane.tileAt(point)
+        .map(Tile::getContent)
+        .filter(c -> c instanceof Layout)
+        .isPresent();
+  }
+
   /**
    * Replaces removed sources with destroyed versions that can be restored later if they become
    * available again.
@@ -388,10 +473,20 @@ public class WidgetPaneController {
     pane.setHighlight(false);
   }
 
+  private void dragMultipleTiles(Set<Tile<?>> tiles, GridPoint initialPoint) {
+    Dragboard dragboard = pane.startDragAndDrop(TransferMode.MOVE);
+    ClipboardContent content = new ClipboardContent();
+    Set<String> tileIds = tiles.stream()
+        .map(Tile::getId)
+        .collect(toSet());
+    content.put(DataFormats.multipleTiles, new DataFormats.MultipleTileData(tileIds, initialPoint));
+    dragboard.setContent(content);
+  }
+
   /**
    * Starts the drag of the given widget tile.
    */
-  private void dragWidget(Tile tile, GridPoint point) {
+  private void dragSingleTile(Tile<?> tile, GridPoint point) {
     Dragboard dragboard = tile.startDragAndDrop(TransferMode.MOVE);
     WritableImage preview =
         new WritableImage(
@@ -403,7 +498,7 @@ public class WidgetPaneController {
     tile.snapshot(parameters, preview);
     dragboard.setDragView(preview);
     ClipboardContent content = new ClipboardContent();
-    content.put(DataFormats.widgetTile, new DataFormats.WidgetData(tile.getId(), point));
+    content.put(DataFormats.singleTile, new DataFormats.TileData(tile.getId(), point));
     dragboard.setContent(content);
   }
 
@@ -451,19 +546,23 @@ public class WidgetPaneController {
       event.consume();
     });
 
+    // Allow users to double-click on a tile to select it.
+    tile.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
+      if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2) {
+        selector.selectOnly(tile);
+      }
+    });
+
     ActionList.registerSupplier(tile, () -> {
       ActionList widgetPaneActions = ActionList
           .withName(tile.getContent().getTitle())
           .addAction("Remove", () -> {
-            Component removed = pane.removeTile(tile);
-            if (removed instanceof Sourced) {
-              ((Sourced) removed).removeAllSources();
+            if (selector.isSelected(tile)) {
+              selector.getSelectedTiles().forEach(this::removeTile);
+            } else {
+              removeTile(tile);
             }
-            if (removed instanceof Layout) {
-              removed.allComponents()
-                  .flatMap(TypeUtils.castStream(Sourced.class))
-                  .forEach(Sourced::removeAllSources);
-            }
+            selector.deselectAll();
           })
           .addNested(createLayoutMenus(tile));
 
@@ -484,12 +583,34 @@ public class WidgetPaneController {
     tile.setOnDragDetected(event -> {
       if (resizer.isDragging()) {
         // don't drag the widget while it's being resized
+        selector.deselectAll();
         return;
       }
-      GridPoint dragPoint = new GridPoint(pane.roundWidthToNearestTile(event.getX()) - 1,
-          pane.roundHeightToNearestTile(event.getY()) - 1);
-      dragWidget(tile, dragPoint);
+      if (selector.isSelected(tile) && selector.getSelectedTiles().size() > 1) {
+        // Drag point is a point in the pane
+        Point2D localPoint = pane.screenToLocal(event.getScreenX(), event.getScreenY());
+        GridPoint dragPoint = pane.pointAt(localPoint.getX(), localPoint.getY());
+        dragMultipleTiles(selector.getSelectedTiles(), dragPoint);
+      } else {
+        selector.deselectAll();
+        // Drag point is a point on the tile
+        GridPoint dragPoint = new GridPoint(pane.roundWidthToNearestTile(event.getX()) - 1,
+            pane.roundHeightToNearestTile(event.getY()) - 1);
+        dragSingleTile(tile, dragPoint);
+      }
       event.consume();
+    });
+
+    tile.addEventHandler(MouseEvent.MOUSE_PRESSED, e -> {
+      if (e.isControlDown() && e.isPrimaryButtonDown()) {
+        if (selector.areTilesSelected()) {
+          selector.toggleSelect(tile);
+        } else {
+          selector.select(tile);
+        }
+      } else if (!selector.isSelected(tile)) {
+        selector.deselectAll();
+      }
     });
 
     tile.setOnDragDropped(event -> {
@@ -506,8 +627,8 @@ public class WidgetPaneController {
       }
 
       // Moving a layout tile around
-      if (dragboard.hasContent(DataFormats.widgetTile) && tile instanceof LayoutTile) {
-        DataFormats.WidgetData data = (DataFormats.WidgetData) event.getDragboard().getContent(DataFormats.widgetTile);
+      if (dragboard.hasContent(DataFormats.singleTile) && tile instanceof LayoutTile) {
+        DataFormats.TileData data = (DataFormats.TileData) event.getDragboard().getContent(DataFormats.singleTile);
 
         if (tile.getId().equals(data.getId())) {
           return;
@@ -520,6 +641,23 @@ public class WidgetPaneController {
         event.consume();
 
         return;
+      }
+
+      // Dropping multiple tiles onto a layout
+      if (dragboard.hasContent(DataFormats.multipleTiles) && tile instanceof LayoutTile) {
+        DataFormats.MultipleTileData data =
+            (DataFormats.MultipleTileData) event.getDragboard().getContent(DataFormats.multipleTiles);
+        if (data.getTileIds().contains(tile.getId())) {
+          return;
+        }
+        data.getTileIds().stream()
+            .map(id -> pane.tileMatching(t -> t.getId().equals(id)))
+            .flatMap(TypeUtils.optionalStream())
+            .forEach(t -> {
+              Component content = pane.removeTile(t);
+              add((Layout) tile.getContent(), content, event);
+            });
+        event.consume();
       }
 
       // Dragging a widget from the gallery
@@ -571,6 +709,15 @@ public class WidgetPaneController {
         return;
       }
     });
+  }
+
+  private void removeTile(Tile<?> tile) {
+    if (pane.getTiles().contains(tile)) {
+      Component removed = pane.removeTile(tile);
+      removed.allComponents()
+          .flatMap(TypeUtils.castStream(Sourced.class))
+          .forEach(Sourced::removeAllSources);
+    }
   }
 
   private static void add(Layout layout, Component component, DragEvent event) {
@@ -642,11 +789,45 @@ public class WidgetPaneController {
             Component content = pane.removeTile(tile);
             Layout layout = layoutType.get();
             layout.addChild(content);
+            if (selector.getSelectedTiles().size() > 1) {
+              for (Tile<?> t : selector.getSelectedTiles()) {
+                if (tile.equals(t)) {
+                  continue;
+                }
+                layout.addChild(pane.removeTile(t));
+              }
+            }
             pane.addComponent(layout, was.origin, was.size);
+            selector.deselectAll();
           });
         });
 
     return list;
+  }
+
+  /**
+   * Returns the set of items that are shared between the source collection and all the tests.
+   *
+   * @param source the source collection containing the items to check
+   * @param tests  the collections to check
+   * @param <T>    the type of the items to check.
+   *
+   * @return the set of items that are shared between all the provided collections
+   */
+  private static <T> Set<T> allContain(Collection<T> source, Collection<? extends Collection<T>> tests) {
+    Set<T> items = new HashSet<>();
+    for (T item : source) {
+      if (tests.stream().allMatch(c -> c.contains(item))) {
+        items.add(item);
+      }
+    }
+    return items;
+  }
+
+  private static Set<DataType> getDataTypes(Sourced sourced) {
+    return sourced.getSources().stream()
+        .map(DataSource::getDataType)
+        .collect(toSet());
   }
 
   /**
@@ -658,25 +839,66 @@ public class WidgetPaneController {
     Widget widget = tile.getContent();
     ActionList list = ActionList.withName("Show as...");
 
-    widget.getSources().stream()
-        .map(s -> Components.getDefault().componentNamesForSource(s))
-        .flatMap(List::stream)
-        .sorted()
-        .distinct()
-        .forEach(name -> list.addAction(
-            name,
-            name.equals(widget.getName()) ? new Label("✓") : null,
-            () -> {
-              // no need to change it if it's already the same type
-              if (!name.equals(widget.getName())) {
-                Components.getDefault()
-                    .createWidget(name, widget.getSources())
-                    .ifPresent(newWidget -> {
-                      newWidget.setTitle(widget.getTitle());
-                      tile.setContent(newWidget);
-                    });
-              }
-            }));
+    if (selector.areTilesSelected() && selector.isSelected(tile)) {
+      boolean allWidgets = selector.getSelectedTiles().stream().allMatch(t -> t.getContent() instanceof Widget);
+      if (allWidgets) {
+        List<Set<DataType>> collect = selector.getSelectedTiles().stream()
+            .map(Tile::getContent)
+            .flatMap(TypeUtils.castStream(Widget.class))
+            .map(w -> getDataTypes(w))
+            .collect(Collectors.toList());
+        Set<DataType> commonDataTypes = allContain(tile.getContent().getDataTypes(), collect);
+        if (commonDataTypes.isEmpty()) {
+          return ActionList.withName(null);
+        }
+        commonDataTypes.stream()
+            .map(Components.getDefault()::componentNamesForType)
+            .flatMap(List::stream)
+            .distinct()
+            .sorted()
+            .forEach(name -> list.addAction(
+                name,
+                name.equals(widget.getName()) ? new Label("✓") : null,
+                () -> {
+                  selector.getSelectedTiles()
+                      .stream()
+                      .map(t -> (WidgetTile) t)
+                      .forEach(t -> {
+                        Components.getDefault()
+                            .createWidget(name, t.getContent().getSources())
+                            .ifPresent(newWidget -> {
+                              newWidget.setTitle(t.getContent().getTitle());
+                              t.setContent(newWidget);
+                            });
+                      });
+                  selector.deselectAll();
+                }
+            ));
+        return list;
+      } else {
+        return ActionList.withName(null);
+      }
+    } else {
+      widget.getSources().stream()
+          .map(s -> Components.getDefault().componentNamesForSource(s))
+          .flatMap(List::stream)
+          .sorted()
+          .distinct()
+          .forEach(name -> list.addAction(
+              name,
+              name.equals(widget.getName()) ? new Label("✓") : null,
+              () -> {
+                // no need to change it if it's already the same type
+                if (!name.equals(widget.getName())) {
+                  Components.getDefault()
+                      .createWidget(name, widget.getSources())
+                      .ifPresent(newWidget -> {
+                        newWidget.setTitle(widget.getTitle());
+                        tile.setContent(newWidget);
+                      });
+                }
+              }));
+    }
     return list;
   }
 

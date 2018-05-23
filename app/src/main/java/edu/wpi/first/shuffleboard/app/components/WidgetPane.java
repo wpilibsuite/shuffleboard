@@ -27,6 +27,7 @@ import java.util.stream.Stream;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -476,6 +477,65 @@ public class WidgetPane extends TilePane implements ComponentContainer {
       return new Background(makeTiledBackgroundImage(makeGridImage(getTileSize(), getHgap(), getVgap())));
     } else {
       return null;
+    }
+  }
+
+  /**
+   * Creates a new highlight object and adds it to this pane at (0, 0) with size (1, 1). The location and size of the
+   * highlight can be configured with {@link Highlight#setLocation} and {@link Highlight#setSize}, respectively.
+   *
+   * @return a new highlight object
+   */
+  public Highlight addHighlight() {
+    Highlight highlight = new Highlight();
+    getChildren().add(highlight);
+    setSize(highlight, highlight.getSize());
+    moveNode(highlight, highlight.getLocation());
+    highlight.sizeProperty().addListener((__, old, size) -> setSize(highlight, size));
+    highlight.locationProperty().addListener((__, old, location) -> moveNode(highlight, location));
+    highlight.toFront();
+    return highlight;
+  }
+
+  public void removeHighlight(Highlight highlight) {
+    getChildren().remove(highlight);
+  }
+
+  public static final class Highlight extends Pane {
+
+    private final ObjectProperty<TileSize> size =
+        new SimpleObjectProperty<>(this, "size", new TileSize(1, 1));
+    private final ObjectProperty<GridPoint> location =
+        new SimpleObjectProperty<>(this, "location", new GridPoint(0, 0));
+
+    Highlight() {
+      getStyleClass().add("grid-highlight");
+    }
+
+    public Highlight setSize(TileSize size) {
+      this.size.setValue(size);
+      return this;
+    }
+
+    public Highlight setLocation(GridPoint location) {
+      this.location.setValue(location);
+      return this;
+    }
+
+    public TileSize getSize() {
+      return size.get();
+    }
+
+    public GridPoint getLocation() {
+      return location.get();
+    }
+
+    public ObjectProperty<TileSize> sizeProperty() {
+      return size;
+    }
+
+    public ObjectProperty<GridPoint> locationProperty() {
+      return location;
     }
   }
 
