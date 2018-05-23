@@ -5,6 +5,7 @@ import edu.wpi.first.shuffleboard.api.widget.Layout;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import javafx.beans.property.Property;
@@ -30,6 +31,11 @@ public final class MockLayout implements Layout {
   }
 
   @Override
+  public void removeChild(Component component) {
+    children.remove(component);
+  }
+
+  @Override
   public Pane getView() {
     return view;
   }
@@ -42,5 +48,10 @@ public final class MockLayout implements Layout {
   @Override
   public String getName() {
     return "Mock Layout";
+  }
+
+  @Override
+  public List<? extends Property<?>> getProperties() {
+    return Collections.emptyList();
   }
 }

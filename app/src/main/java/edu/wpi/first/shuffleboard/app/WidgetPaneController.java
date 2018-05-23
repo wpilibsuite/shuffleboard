@@ -130,8 +130,7 @@ public class WidgetPaneController {
 
       // preview the location of the tile if one is being dragged
       if (isSingleTile) {
-        if (!pane.isOpen(point, new TileSize(1, 1), n -> false)
-            && pane.tileAt(point).map(Tile::getContent).filter(c -> c instanceof Layout).isPresent()) {
+        if (isLayoutTile(point)) {
           if (((DataFormats.TileData) dragboard.getContent(DataFormats.singleTile)).getId()
               .equals(pane.tileAt(point)
                   .map(Node::getId)
@@ -150,6 +149,13 @@ public class WidgetPaneController {
         pane.tileMatching(tile -> tile.getId().equals(data.getId()))
             .ifPresent(tile -> previewTile(tile, point.subtract(data.getLocalDragPoint())));
       } else if (isManyTiles) {
+        if (isLayoutTile(point)) {
+          // Dragged onto a layout tile, let it handle the drag and drop
+          highlights.forEach((t, h) -> pane.removeHighlight(h));
+          highlights.clear();
+          pane.setHighlight(false);
+          return;
+        }
         DataFormats.MultipleTileData data = (DataFormats.MultipleTileData)
             dragboard.getContent(DataFormats.multipleTiles);
         int dx = point.col - data.getInitialPoint().col;
@@ -432,6 +438,13 @@ public class WidgetPaneController {
     contextMenu.show(pane.getScene().getWindow(), e.getScreenX(), e.getScreenY());
   }
 
+  private boolean isLayoutTile(GridPoint point) {
+    return pane.tileAt(point)
+        .map(Tile::getContent)
+        .filter(c -> c instanceof Layout)
+        .isPresent();
+  }
+
   /**
    * Replaces removed sources with destroyed versions that can be restored later if they become
    * available again.
@@ -628,6 +641,23 @@ public class WidgetPaneController {
         event.consume();
 
         return;
+      }
+
+      // Dropping multiple tiles onto a layout
+      if (dragboard.hasContent(DataFormats.multipleTiles) && tile instanceof LayoutTile) {
+        DataFormats.MultipleTileData data =
+            (DataFormats.MultipleTileData) event.getDragboard().getContent(DataFormats.multipleTiles);
+        if (data.getTileIds().contains(tile.getId())) {
+          return;
+        }
+        data.getTileIds().stream()
+            .map(id -> pane.tileMatching(t -> t.getId().equals(id)))
+            .flatMap(TypeUtils.optionalStream())
+            .forEach(t -> {
+              Component content = pane.removeTile(t);
+              add((Layout) tile.getContent(), content, event);
+            });
+        event.consume();
       }
 
       // Dragging a widget from the gallery
