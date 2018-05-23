@@ -23,6 +23,11 @@ public final class DataFormats {
   public static final DataFormat singleTile = new DataFormat(APP_PREFIX + "/single-tile");
 
   /**
+   * The data format for multiple tiles being dragged at once.
+   */
+  public static final DataFormat multipleTiles = new DataFormat(APP_PREFIX + "/multiple-tiles");
+
+  /**
    * The data format for sources being dragged.
    */
   public static final DataFormat source = new DataFormat(APP_PREFIX + "/data-source");
@@ -32,7 +37,10 @@ public final class DataFormats {
    */
   public static final DataFormat widgetType = new DataFormat(APP_PREFIX + "/widget-type");
 
-  public static final DataFormat multipleTiles = new DataFormat(APP_PREFIX + "/multiple-tiles");
+  /**
+   * The data format for components that do not exist inside a tile.
+   */
+  public static final DataFormat tilelessComponent = new DataFormat(APP_PREFIX + "/tileless-component");
 
   private DataFormats() {
   }

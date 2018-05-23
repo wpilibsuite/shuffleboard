@@ -1,4 +1,4 @@
-package edu.wpi.first.shuffleboard.app.json;
+package edu.wpi.first.shuffleboard.api.json;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

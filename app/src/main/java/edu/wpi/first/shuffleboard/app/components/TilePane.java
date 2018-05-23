@@ -425,7 +425,7 @@ public class TilePane extends GridPane {
    * Gets the layout of a tile in this tile pane.
    */
   public TileLayout getTileLayout(Tile<?> tile) {
-    return new TileLayout(new GridPoint(getColumnIndex(tile), getRowIndex(tile)), tile.getSize());
+    return new TileLayout(GridPoint.fromNode(tile), tile.getSize());
   }
 
 }

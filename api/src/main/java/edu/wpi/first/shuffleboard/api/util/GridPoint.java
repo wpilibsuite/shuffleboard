@@ -3,6 +3,9 @@ package edu.wpi.first.shuffleboard.api.util;
 import java.io.Serializable;
 import java.util.Objects;
 
+import javafx.scene.Node;
+import javafx.scene.layout.GridPane;
+
 import static com.google.common.base.Preconditions.checkArgument;
 
 /**
@@ -23,6 +26,34 @@ public class GridPoint implements Serializable {
     checkArgument(row >= 0, "Row index must be non-negative, was " + row);
     this.col = col;
     this.row = row;
+  }
+
+  /**
+   * Creates a new point from a node. The node must have both {@link GridPane#setColumnIndex GridPane.columnIndex}
+   * and {@link GridPane#setRowIndex GridPane.rowIndex} set.
+   *
+   * @param node the node to get the grid point of
+   *
+   * @throws IllegalArgumentException if either columnIndex or rowIndex has not been set
+   */
+  public static GridPoint fromNode(Node node) {
+    Integer columnIndex = GridPane.getColumnIndex(node);
+    Integer rowIndex = GridPane.getRowIndex(node);
+    if (columnIndex == null || rowIndex == null) {
+      throw new IllegalArgumentException(
+          "Invalid grid constraints: columnIndex=" + columnIndex + ", rowIndex=" + rowIndex);
+    }
+    return new GridPoint(columnIndex, rowIndex);
+  }
+
+  /**
+   * Sets the column and row indices of a node to this point.
+   *
+   * @param node the node to set the position of
+   */
+  public void applyTo(Node node) {
+    GridPane.setColumnIndex(node, col);
+    GridPane.setRowIndex(node, row);
   }
 
   /**

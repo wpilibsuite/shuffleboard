@@ -1,4 +1,4 @@
-package edu.wpi.first.shuffleboard.app.json;
+package edu.wpi.first.shuffleboard.api.json;
 
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
@@ -9,6 +9,11 @@ import com.google.gson.JsonSerializer;
 
 import java.lang.reflect.Type;
 
+/**
+ * Serializes values to and from JSON. Implementing classes <i>must</i> be annotated with {@link AnnotatedTypeAdapter}.
+ *
+ * @param <T> the type of values to serialize and deserialize
+ */
 public interface ElementTypeAdapter<T> extends JsonSerializer<T>, JsonDeserializer<T> {
 
   JsonElement serialize(T src, JsonSerializationContext context);

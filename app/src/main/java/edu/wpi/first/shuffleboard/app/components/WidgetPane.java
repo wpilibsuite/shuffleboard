@@ -267,11 +267,22 @@ public class WidgetPane extends TilePane implements ComponentContainer {
    * @param component the component to add
    * @param size      the size of the tile used to display the component
    */
-  public Tile<?> addComponent(Component component, GridPoint location, TileSize size) {
-    Tile<?> tile = Tile.tileFor(component, size);
+  public <C extends Component> Tile<C> addComponent(C component, GridPoint location, TileSize size) {
+    Tile<C> tile = Tile.tileFor(component, size);
     tile.sizeProperty().addListener(__ -> setSize(tile, tile.getSize()));
     addTile(tile, location, size);
     return tile;
+  }
+
+  /**
+   * Add an arbitrary component to the WidgetPane in the specified location. The tile's size will be calculated with
+   * {@link #sizeOfWidget(Component)}.
+   *
+   * @param component the component to add
+   * @param location  the location of the component
+   */
+  public <C extends Component> Tile<C> addComponent(C component, GridPoint location) {
+    return addComponent(component, location, sizeOfWidget(component));
   }
 
   @Override

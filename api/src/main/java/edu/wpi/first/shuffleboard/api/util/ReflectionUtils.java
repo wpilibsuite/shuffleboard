@@ -1,6 +1,7 @@
 package edu.wpi.first.shuffleboard.api.util;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 /**
  * Utility class for working with reflection.
@@ -43,6 +44,43 @@ public final class ReflectionUtils {
       return get(instance, field);
     } catch (ReflectiveOperationException e) {
       throw new RuntimeException("Could not read field: " + field.toGenericString(), e);
+    }
+  }
+
+  /**
+   * Gets the output of a method.
+   *
+   * @param instance te instance of the class to call the method on
+   * @param method   the method to call
+   * @param args     the arguments to the method
+   * @param <T>      the return type of the method
+   *
+   * @return the output of the method
+   *
+   * @throws ReflectiveOperationException if the method could not be called
+   */
+  public static <T> T invoke(Object instance, Method method, Object... args) throws ReflectiveOperationException {
+    method.setAccessible(true);
+    return (T) method.invoke(instance, args);
+  }
+
+  /**
+   * Gets the output value of a method. Reflective exceptions are wrapped and re-thrown as a runtime exception.
+   *
+   * @param instance the instance of the class to call the method on
+   * @param method   the method to call
+   * @param args     the arguments to the method
+   * @param <T>      the return type of the method
+   *
+   * @return the output of the method
+   *
+   * @throws RuntimeException if a reflective exception was thrown while attempting to call the method
+   */
+  public static <T> T invokeUnchecked(Object instance, Method method, Object... args) {
+    try {
+      return invoke(instance, method, args);
+    } catch (ReflectiveOperationException e) {
+      throw new RuntimeException("Could not invoke method; " + method.toGenericString(), e);
     }
   }
 
