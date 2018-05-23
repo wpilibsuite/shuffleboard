@@ -9,6 +9,7 @@ import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.PreferencesUtils;
 import edu.wpi.first.shuffleboard.api.util.Storage;
 import edu.wpi.first.shuffleboard.api.util.ThreadUtils;
+import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 
 import org.controlsfx.control.ToggleSwitch;
 import org.fxmisc.easybind.EasyBind;
@@ -46,6 +47,7 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.util.StringConverter;
 
+@ParametrizedController("ConvertRecordingPane.fxml")
 public final class ConvertRecordingPaneController {
 
   private static final Logger log = Logger.getLogger(ConvertRecordingPaneController.class.getName());

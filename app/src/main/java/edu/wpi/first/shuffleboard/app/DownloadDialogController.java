@@ -1,6 +1,7 @@
 package edu.wpi.first.shuffleboard.app;
 
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
+import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 
 import org.fxmisc.easybind.EasyBind;
 
@@ -9,6 +10,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.Pane;
 
+@ParametrizedController("DownloadDialogPane.fxml")
 public final class DownloadDialogController {
 
   @FXML

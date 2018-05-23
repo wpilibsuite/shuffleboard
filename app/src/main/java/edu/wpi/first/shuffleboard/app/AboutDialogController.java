@@ -2,6 +2,7 @@ package edu.wpi.first.shuffleboard.app;
 
 import edu.wpi.first.shuffleboard.api.util.OsDetector;
 import edu.wpi.first.shuffleboard.api.util.SystemProperties;
+import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -20,6 +21,7 @@ import javafx.scene.layout.Pane;
 /**
  * Controller for the "About" dialog.
  */
+@ParametrizedController("AboutDialogPane.fxml")
 public final class AboutDialogController {
 
   @FXML
