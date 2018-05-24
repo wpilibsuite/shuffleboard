@@ -578,7 +578,14 @@ public class WidgetPaneController {
 
       // Layout unwrapping
       if (tile instanceof LayoutTile) {
-        widgetPaneActions.addAction("Unwrap", () -> unwrapLayout(tile));
+        widgetPaneActions.addAction("Unwrap", () -> {
+          if (selector.getSelectedTiles().stream().allMatch(t -> t instanceof LayoutTile)) {
+            selector.getSelectedTiles().forEach(t -> unwrapLayout((LayoutTile) t));
+          } else {
+            unwrapLayout(tile);
+          }
+          selector.deselectAll();
+        });
       }
       return widgetPaneActions;
     });
