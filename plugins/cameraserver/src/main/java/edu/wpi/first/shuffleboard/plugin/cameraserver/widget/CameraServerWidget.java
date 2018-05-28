@@ -35,6 +35,8 @@ public class CameraServerWidget extends SimpleAnnotatedWidget<CameraServerData> 
   @FXML
   private Label bandwidthLabel;
   @FXML
+  private Pane imageContainer;
+  @FXML
   private ImageView imageView;
   @FXML
   private Image emptyImage;
@@ -60,6 +62,7 @@ public class CameraServerWidget extends SimpleAnnotatedWidget<CameraServerData> 
   private final BooleanProperty showControls = new SimpleBooleanProperty(this, "showControls", true);
   private final BooleanProperty showCrosshair = new SimpleBooleanProperty(this, "showCrosshair", true);
   private final Property<Color> crosshairColor = new SimpleObjectProperty<>(this, "crosshairColor", Color.WHITE);
+  private final Property<Rotation> rotation = new SimpleObjectProperty<>(this, "rotation", Rotation.NONE);
   private final ChangeListener<Number> sourceCompressionListener =
       (__, old, compression) -> compressionSlider.setValue(compression.doubleValue());
   private final ChangeListener<Number> numberChangeListener =
@@ -116,8 +119,27 @@ public class CameraServerWidget extends SimpleAnnotatedWidget<CameraServerData> 
         oldSource.targetResolutionProperty().removeListener(resolutionChangeListener);
       }
     });
+    rotation.addListener((__, old, rotation) -> {
+      imageContainer.setRotate(rotation.degrees());
+      if (((rotation == Rotation.QUARTER_CW) && (old == Rotation.QUARTER_CCW))
+          || ((rotation == Rotation.QUARTER_CCW) && (old == Rotation.QUARTER_CW))
+          || ((rotation == Rotation.HALF) && (old == Rotation.NONE))
+          || ((rotation == Rotation.NONE) && (old == Rotation.HALF))) {
+        // No change
+        return;
+      }
+      if (rotation.degrees() % 180 == 0) {
+        // Reset
+        imageContainer.setMaxWidth(-1);
+        imageContainer.setMaxHeight(-1);
+      } else {
+        // Constrain width and height to avoid overflowing widget bounds
+        imageContainer.setMaxWidth(imageContainer.getHeight());
+        imageContainer.setMaxHeight(imageContainer.getWidth());
+      }
+    });
 
-    exportProperties(showControls, showCrosshair, crosshairColor);
+    exportProperties(rotation, showControls, showCrosshair, crosshairColor);
   }
 
   @Override
@@ -147,6 +169,30 @@ public class CameraServerWidget extends SimpleAnnotatedWidget<CameraServerData> 
       } else {
         source.setTargetResolution(Resolution.EMPTY);
       }
+    }
+  }
+
+  public enum Rotation {
+    NONE("None", 0),
+    QUARTER_CW("90 degrees clockwise", 270),
+    QUARTER_CCW("90 degrees counter-clockwise", 90),
+    HALF("180 degrees", 180);
+
+    private final String humanReadable;
+    private final double degrees;
+
+    Rotation(String humanReadable, double degrees) {
+      this.humanReadable = humanReadable;
+      this.degrees = degrees;
+    }
+
+    @Override
+    public String toString() {
+      return humanReadable;
+    }
+
+    public double degrees() {
+      return degrees;
     }
   }
 

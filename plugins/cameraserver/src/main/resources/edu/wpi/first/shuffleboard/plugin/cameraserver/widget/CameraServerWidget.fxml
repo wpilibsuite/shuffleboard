@@ -28,7 +28,7 @@
         <Label fx:id="fpsLabel" AnchorPane.leftAnchor="0" text="--- FPS"/>
         <Label fx:id="bandwidthLabel" AnchorPane.rightAnchor="0" text="--- Mbps"/>
     </AnchorPane>
-    <StackPane VBox.vgrow="ALWAYS">
+    <StackPane fx:id="imageContainer" VBox.vgrow="ALWAYS">
         <ResizableImageView fx:id="imageView" preserveRatio="true"/>
         <Pane fx:id="crosshairs" visible="${controller.showCrosshair}" StackPane.alignment="CENTER" maxWidth="-Infinity" maxHeight="-Infinity">
             <Line startX="0" endX="${imageView.boundsInParent.width}" startY="${imageView.boundsInParent.height / 2}" endY="${imageView.boundsInParent.height / 2}" stroke="${controller.crosshairColor}" strokeDashArray="4, 4"/>
