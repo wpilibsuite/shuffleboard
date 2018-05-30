@@ -579,7 +579,8 @@ public class WidgetPaneController {
       // Layout unwrapping
       if (tile instanceof LayoutTile) {
         widgetPaneActions.addAction("Unwrap", () -> {
-          if (selector.getSelectedTiles().stream().allMatch(t -> t instanceof LayoutTile)) {
+          if (selector.areTilesSelected()
+              && selector.getSelectedTiles().stream().allMatch(t -> t instanceof LayoutTile)) {
             selector.getSelectedTiles().forEach(t -> unwrapLayout((LayoutTile) t));
           } else {
             unwrapLayout(tile);
