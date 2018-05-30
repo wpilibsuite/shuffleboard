@@ -575,6 +575,18 @@ public class WidgetPaneController {
       }
       widgetPaneActions.addAction("Edit Properties",
           () -> showPropertySheet(tile));
+
+      // Layout unwrapping
+      if (tile instanceof LayoutTile) {
+        widgetPaneActions.addAction("Unwrap", () -> {
+          if (selector.getSelectedTiles().stream().allMatch(t -> t instanceof LayoutTile)) {
+            selector.getSelectedTiles().forEach(t -> unwrapLayout((LayoutTile) t));
+          } else {
+            unwrapLayout(tile);
+          }
+          selector.deselectAll();
+        });
+      }
       return widgetPaneActions;
     });
 
@@ -723,6 +735,22 @@ public class WidgetPaneController {
   private static void add(Layout layout, Component component, DragEvent event) {
     Point2D point = layout.getView().screenToLocal(event.getScreenX(), event.getScreenY());
     layout.addChild(component, point.getX(), point.getY());
+  }
+
+  private void unwrapLayout(Tile<? extends Layout> tile) {
+    Layout layout = tile.getContent();
+    layout.components()
+        .collect(Collectors.toList()) // Collect into temporary list to prevent ConcurrentModificationExceptions
+        .stream()
+        .filter(pane::canAdd)
+        .forEach(component -> {
+          layout.removeComponent(component);
+          pane.addComponent(component);
+        });
+    if (layout.components().count() == 0) {
+      // No point in keeping the empty layout around, remove it
+      pane.removeTile(tile);
+    }
   }
 
   /**

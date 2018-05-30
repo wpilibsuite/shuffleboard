@@ -17,6 +17,13 @@ public interface ComponentContainer {
   void addComponent(Component component);
 
   /**
+   * Removes a component from this container.
+   *
+   * @param component the component to remove
+   */
+  void removeComponent(Component component);
+
+  /**
    * Gets a stream of all the first-level components in this container.
    */
   Stream<Component> components();
