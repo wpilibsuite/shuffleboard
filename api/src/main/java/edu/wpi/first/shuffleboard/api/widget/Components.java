@@ -244,7 +244,7 @@ public class Components extends Registry<ComponentType> {
    * @param component the component to set
    */
   private void setId(Component component) {
-    allActiveComponents.put(component, UUID.randomUUID());
+    allActiveComponents.putIfAbsent(component, UUID.randomUUID());
   }
 
   public Optional<Type> javaTypeFor(String name) {

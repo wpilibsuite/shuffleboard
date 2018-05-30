@@ -232,11 +232,15 @@ public abstract class LayoutBase implements Layout {
     private final Property<LabelPosition> labelPosition =
         new SimpleObjectProperty<>(this, "labelPosition", LabelPosition.BOTTOM);
     private final Property<Component> child = new SimpleObjectProperty<>(this, "child", null);
+    private final Layout layout;
 
     /**
      * Creates a new empty container.
+     *
+     * @param layout the layout containing this container
      */
-    public ChildContainer() {
+    public ChildContainer(Layout layout) {
+      this.layout = layout;
       setMaxWidth(Double.POSITIVE_INFINITY);
       getStyleClass().add("layout-stack");
       label.getStyleClass().add("layout-label");
@@ -256,9 +260,10 @@ public abstract class LayoutBase implements Layout {
       set(getLabelSide(), label);
       setOnDragDetected(e -> {
         Component child = getChild();
-        UUID uuid = Components.getDefault().uuidForComponent(child);
+        UUID parentId = Components.getDefault().uuidForComponent(this.layout);
+        UUID childId = Components.getDefault().uuidForComponent(child);
         ClipboardContent clipboardContent = new ClipboardContent();
-        clipboardContent.put(DataFormats.tilelessComponent, uuid);
+        clipboardContent.put(DataFormats.tilelessComponent, new DataFormats.TilelessComponentData(parentId, childId));
         Dragboard dragboard = this.startDragAndDrop(TransferMode.MOVE);
         dragboard.setContent(clipboardContent);
         WritableImage preview =
@@ -277,10 +282,11 @@ public abstract class LayoutBase implements Layout {
     /**
      * Creates a container for the given component.
      *
-     * @param child the component to be contained
+     * @param child  the component to be contained
+     * @param layout the layout containing this container
      */
-    public ChildContainer(Component child) {
-      this();
+    public ChildContainer(Component child, Layout layout) {
+      this(layout);
       setChild(child);
     }
 
