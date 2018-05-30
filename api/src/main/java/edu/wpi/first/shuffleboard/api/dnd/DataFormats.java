@@ -4,6 +4,7 @@ import edu.wpi.first.shuffleboard.api.util.GridPoint;
 
 import java.io.Serializable;
 import java.util.Set;
+import java.util.UUID;
 
 import javafx.scene.input.DataFormat;
 
@@ -91,6 +92,28 @@ public final class DataFormats {
 
     public GridPoint getLocalDragPoint() {
       return localDragPoint;
+    }
+  }
+
+  /**
+   * Holds the information about a tileless component.
+   */
+  public static final class TilelessComponentData implements Serializable {
+
+    private final UUID parentId;
+    private final UUID componentId;
+
+    public TilelessComponentData(UUID parentId, UUID componentId) {
+      this.parentId = parentId;
+      this.componentId = componentId;
+    }
+
+    public UUID getParentId() {
+      return parentId;
+    }
+
+    public UUID getComponentId() {
+      return componentId;
     }
   }
 

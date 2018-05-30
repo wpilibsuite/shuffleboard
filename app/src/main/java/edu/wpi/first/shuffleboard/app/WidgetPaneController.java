@@ -4,6 +4,7 @@ import edu.wpi.first.shuffleboard.api.components.ActionList;
 import edu.wpi.first.shuffleboard.api.components.ExtendedPropertySheet;
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.dnd.DataFormats;
+import edu.wpi.first.shuffleboard.api.dnd.DragUtils;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.DummySource;
 import edu.wpi.first.shuffleboard.api.sources.SourceEntry;
@@ -14,6 +15,7 @@ import edu.wpi.first.shuffleboard.api.util.RoundingMode;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.ComponentContainer;
+import edu.wpi.first.shuffleboard.api.widget.ComponentType;
 import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.api.widget.Layout;
 import edu.wpi.first.shuffleboard.api.widget.LayoutType;
@@ -34,7 +36,6 @@ import org.fxmisc.easybind.EasyBind;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -91,6 +92,8 @@ public class WidgetPaneController {
 
   private final Map<Node, Boolean> tilesAlreadySetup = new WeakHashMap<>();
   private final Map<Tile<?>, WidgetPane.Highlight> highlights = new WeakHashMap<>();
+
+  private final UUID paneId = UUID.randomUUID();
 
   /**
    * Memoizes the size of a tile that would be added when dropping a source or widget. Memoizing prevents calling
@@ -234,8 +237,9 @@ public class WidgetPaneController {
           pane.setHighlight(false);
           return;
         }
+        DataFormats.TilelessComponentData data = DragUtils.getData(dragboard, DataFormats.tilelessComponent);
         Optional<Component> component = Components.getDefault()
-            .getByUuid((UUID) dragboard.getContent(DataFormats.tilelessComponent));
+            .getByUuid(data.getComponentId());
         if (tilePreviewSize == null) {
           component.map(pane::sizeOfWidget)
               .ifPresent(size -> tilePreviewSize = size);
@@ -311,14 +315,14 @@ public class WidgetPaneController {
 
       // Dragging a component out of a layout
       if (dragboard.hasContent(DataFormats.tilelessComponent)) {
-        UUID componentId = (UUID) dragboard.getContent(DataFormats.tilelessComponent);
+        DataFormats.TilelessComponentData data = DragUtils.getData(dragboard, DataFormats.tilelessComponent);
+        UUID parentId = data.getParentId();
+        UUID componentId = data.getComponentId();
         Optional<Component> component = Components.getDefault().getByUuid(componentId);
-        Optional<LayoutTile> parent = pane.getTiles().stream()
-            .flatMap(TypeUtils.castStream(LayoutTile.class))
-            .filter(t -> t.getContent().getChildren().contains(component.orElse(null)))
-            .findFirst();
+        Optional<Layout> parent = Components.getDefault().getByUuid(parentId)
+            .flatMap(TypeUtils.optionalCast(Layout.class));
         component.ifPresent(c -> {
-          parent.ifPresent(t -> t.getContent().removeChild(c));
+          parent.ifPresent(l -> l.removeChild(c));
           pane.addComponent(c, point);
         });
         event.consume();
@@ -421,8 +425,9 @@ public class WidgetPaneController {
     Menu addLayouts = new Menu("Add layout...");
     Components.getDefault().allComponents()
         .flatMap(TypeUtils.castStream(LayoutType.class))
-        .sorted(Comparator.comparing(LayoutType::getName))
-        .map(t -> FxUtils.menuItem(t.getName(), __ -> pane.addComponent((Layout) t.get())))
+        .map(ComponentType::getName)
+        .sorted()
+        .map(c -> FxUtils.menuItem(c, __ -> pane.addComponent(Components.getDefault().createComponent(c).get())))
         .forEach(addLayouts.getItems()::add);
 
     // Removes all the tiles from the pane. Destructive operation!
@@ -703,15 +708,15 @@ public class WidgetPaneController {
 
       // Dragging a component out of a layout
       if (dragboard.hasContent(DataFormats.tilelessComponent)) {
-        UUID componentId = (UUID) dragboard.getContent(DataFormats.tilelessComponent);
+        DataFormats.TilelessComponentData data = DragUtils.getData(dragboard, DataFormats.tilelessComponent);
+        UUID parentId = data.getParentId();
+        UUID componentId = data.getComponentId();
         Optional<Component> component = Components.getDefault().getByUuid(componentId);
-        Optional<LayoutTile> parent = pane.getTiles().stream()
-            .flatMap(TypeUtils.castStream(LayoutTile.class))
-            .filter(t -> t.getContent().getChildren().contains(component.orElse(null)))
-            .findFirst();
+        Optional<Layout> parent = Components.getDefault().getByUuid(parentId)
+            .flatMap(TypeUtils.optionalCast(Layout.class));
         component.ifPresent(c -> {
           if (tile instanceof LayoutTile) {
-            parent.ifPresent(t -> t.getContent().removeChild(c));
+            parent.ifPresent(l -> l.removeChild(c));
             add(((LayoutTile) tile).getContent(), c, event);
           } else {
             tile.setContent(c);
@@ -811,12 +816,12 @@ public class WidgetPaneController {
     Components.getDefault()
         .allComponents()
         .flatMap(TypeUtils.castStream(LayoutType.class))
-        .map(t -> (LayoutType<?>) t)
-        .forEach(layoutType -> {
-          list.addAction(layoutType.getName(), () -> {
+        .map(ComponentType::getName)
+        .forEach(name -> {
+          list.addAction(name, () -> {
             TileLayout was = pane.getTileLayout(tile);
             Component content = pane.removeTile(tile);
-            Layout layout = layoutType.get();
+            Layout layout = (Layout) Components.getDefault().createComponent(name).get();
             layout.addChild(content);
             if (selector.getSelectedTiles().size() > 1) {
               for (Tile<?> t : selector.getSelectedTiles()) {

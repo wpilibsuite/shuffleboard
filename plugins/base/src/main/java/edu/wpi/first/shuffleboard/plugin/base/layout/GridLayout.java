@@ -252,7 +252,7 @@ public final class GridLayout extends LayoutBase {
     if (panes.containsKey(component)) {
       return panes.get(component);
     }
-    ChildContainer pane = new ChildContainer(component);
+    ChildContainer pane = new ChildContainer(component, this);
     pane.labelPositionProperty().bindBidirectional(this.labelPositionProperty());
     GridPane.setHgrow(pane, Priority.ALWAYS);
     GridPane.setVgrow(pane, Priority.ALWAYS);
