@@ -1,10 +1,6 @@
 package edu.wpi.first.shuffleboard.app;
 
 import edu.wpi.first.shuffleboard.api.plugin.Plugin;
-import edu.wpi.first.shuffleboard.api.sources.ConnectionStatus;
-import edu.wpi.first.shuffleboard.api.sources.SourceType;
-import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
-import edu.wpi.first.shuffleboard.api.sources.UiHints;
 import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
 import edu.wpi.first.shuffleboard.api.tab.TabInfo;
 import edu.wpi.first.shuffleboard.api.theme.Theme;
@@ -38,14 +34,10 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import javafx.application.Platform;
-import javafx.beans.InvalidationListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
-import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
-import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.Tab;
@@ -54,13 +46,9 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
 
-import static edu.wpi.first.shuffleboard.api.util.ListUtils.joining;
-
-
 /**
  * Controller for the main UI window.
  */
-@SuppressWarnings("PMD.GodClass") // TODO refactor this class
 public class MainWindowController {
 
   private static final Logger log = Logger.getLogger(MainWindowController.class.getName());
@@ -125,11 +113,6 @@ public class MainWindowController {
       }
     });
 
-    generateConnectionIndicators(SourceTypes.getDefault().getItems());
-    SourceTypes.getDefault().getItems().addListener((InvalidationListener) items -> {
-      generateConnectionIndicators((ObservableList<SourceType>) items);
-    });
-
     setLeftDrawerCallbacks();
   }
 
@@ -145,48 +128,6 @@ public class MainWindowController {
     LeftDrawerController leftDrawerController = FxUtils.getController(leftDrawer);
     leftDrawerController.setAddComponentToActivePane(dashboard::addComponentToActivePane);
     leftDrawerController.setCreateTabForSource(dashboard::createTabForSource);
-  }
-
-  private void generateConnectionIndicators(List<SourceType> sourceTypes) {
-    connectionIndicatorArea.getChildren().setAll(
-        sourceTypes.stream()
-            .filter(s -> !optOutOfConnectionIndicator(s))
-            .map(this::generateConnectionLabel)
-            .collect(joining(this::generateSeparatorLabel)));
-  }
-
-  private Label generateSeparatorLabel() {
-    Label label = new Label(" | ");
-    label.getStyleClass().add("connection-indicator-separator");
-    return label;
-  }
-
-  /**
-   * Checks if a source type has opted out of displaying a connection indicator.
-   */
-  private boolean optOutOfConnectionIndicator(SourceType sourceType) {
-    Class<? extends SourceType> clazz = sourceType.getClass();
-    UiHints hints = clazz.getAnnotation(UiHints.class);
-    return hints != null && !hints.showConnectionIndicator();
-  }
-
-  private Label generateConnectionLabel(SourceType sourceType) {
-    Label label = new Label();
-    label.getStyleClass().add("connection-indicator");
-    label.textProperty().bind(
-        EasyBind.monadic(sourceType.connectionStatusProperty())
-            .map(ConnectionStatus::isConnected)
-            .map(connected -> sourceType.getName() + ": " + (connected ? "connected" : "not connected")));
-    sourceType.connectionStatusProperty().addListener((__, old, status) -> {
-      updateConnectionLabel(label, status.isConnected());
-    });
-    updateConnectionLabel(label, sourceType.getConnectionStatus().isConnected());
-    return label;
-  }
-
-  private void updateConnectionLabel(Label label, boolean connected) {
-    label.pseudoClassStateChanged(PseudoClass.getPseudoClass("connected"), connected);
-    label.pseudoClassStateChanged(PseudoClass.getPseudoClass("disconnected"), !connected);
   }
 
   /**
