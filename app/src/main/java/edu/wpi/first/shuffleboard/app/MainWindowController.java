@@ -9,7 +9,6 @@ import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
 import edu.wpi.first.shuffleboard.api.tab.TabInfo;
 import edu.wpi.first.shuffleboard.api.theme.Theme;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
-import edu.wpi.first.shuffleboard.api.util.LazyInit;
 import edu.wpi.first.shuffleboard.api.util.Storage;
 import edu.wpi.first.shuffleboard.api.util.ThreadUtils;
 import edu.wpi.first.shuffleboard.api.widget.Components;
@@ -22,6 +21,7 @@ import edu.wpi.first.shuffleboard.app.dialogs.ExportRecordingDialog;
 import edu.wpi.first.shuffleboard.app.dialogs.PluginDialog;
 import edu.wpi.first.shuffleboard.app.dialogs.PrefsDialog;
 import edu.wpi.first.shuffleboard.app.dialogs.RestartPromptDialog;
+import edu.wpi.first.shuffleboard.app.dialogs.UpdateDownloadDialog;
 import edu.wpi.first.shuffleboard.app.json.JsonBuilder;
 import edu.wpi.first.shuffleboard.app.plugin.PluginLoader;
 import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
@@ -36,9 +36,7 @@ import org.fxmisc.easybind.EasyBind;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.Reader;
-import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
@@ -61,23 +59,17 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
-import javafx.scene.Scene;
 import javafx.scene.control.Accordion;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.Tab;
-import javafx.scene.control.TextArea;
 import javafx.scene.control.TitledPane;
-import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 
 import static edu.wpi.first.shuffleboard.api.util.ListUtils.joining;
 
@@ -110,11 +102,9 @@ public class MainWindowController {
   private final PluginDialog pluginDialog = new PluginDialog();
   private final AboutDialog aboutDialog = new AboutDialog();
   private final ExportRecordingDialog exportRecordingDialog = new ExportRecordingDialog();
+  private final UpdateDownloadDialog updateDownloadDialog = new UpdateDownloadDialog();
   private final RestartPromptDialog restartPromptDialog = new RestartPromptDialog();
   private final PrefsDialog prefsDialog = new PrefsDialog();
-  // Use lazy initialization to reduce load time for the main window
-  private final LazyInit<Pane> downloadPane = LazyInit.of(() -> FxUtils.load(DownloadDialogController.class));
-  private Stage downloadStage;
 
   private File currentFile = null;
 
@@ -458,24 +448,6 @@ public class MainWindowController {
     aboutDialog.show();
   }
 
-  private void setUpDialogStage(Stage stage, Pane rootNode) {
-    stage.initOwner(root.getScene().getWindow());
-    stage.initModality(Modality.APPLICATION_MODAL);
-    stage.initStyle(StageStyle.UNDECORATED);
-    stage.setScene(new Scene(rootNode));
-    FxUtils.bind(stage.getScene().getStylesheets(), stylesheets);
-    rootNode.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
-      if (event.getCode() == KeyCode.ESCAPE) {
-        stage.close();
-      }
-    });
-    stage.focusedProperty().addListener((__, was, is) -> {
-      if (!is) {
-        stage.close();
-      }
-    });
-  }
-
   /**
    * Checks for updates to shuffleboard and prompts the user to update, if an update is available. The prompt
    * is displayed as a small footer bar across the bottom of the scene. If the check fails, no notifications are shown.
@@ -493,28 +465,19 @@ public class MainWindowController {
    */
   @FXML
   public void checkForUpdates() {
-    if (downloadStage == null) {
-      downloadStage = new Stage();
-      setUpDialogStage(downloadStage, downloadPane.get());
-      downloadStage.setOnCloseRequest(event -> {
-        // TODO move the progress bar to the footer?
-      });
-    }
-
     AtomicBoolean firstShow = new AtomicBoolean(true);
-    DownloadDialogController controller = FxUtils.getController(downloadPane.get());
     final DoubleConsumer progressNotifier = value -> {
       FxUtils.runOnFxThread(() -> {
         // Show the dialog on the first update
         // Close the dialog when the download completes
         // If the user closes the dialog before then, don't re-open it
         if (value == 1) {
-          downloadStage.hide();
-        } else if (!downloadStage.isShowing() && firstShow.get()) {
-          downloadStage.show();
+          updateDownloadDialog.close();
+        } else if (!updateDownloadDialog.isShowing() && firstShow.get()) {
+          updateDownloadDialog.show();
           firstShow.set(false);
         }
-        controller.setDownloadProgress(value);
+        updateDownloadDialog.setDownloadProgress(value);
       });
     };
     updateCheckingExecutor.submit(() ->
@@ -536,14 +499,7 @@ public class MainWindowController {
     Alert failureAlert = new Alert(Alert.AlertType.ERROR);
     FxUtils.bind(failureAlert.getDialogPane().getStylesheets(), stylesheets);
     failureAlert.setTitle("Update failed");
-    TextArea area = new TextArea();
-    StringWriter writer = new StringWriter();
-    PrintWriter pw = new PrintWriter(writer);
-    result.getError().printStackTrace(pw);
-    area.setText(writer.toString());
-    area.setEditable(false);
-    failureAlert.getDialogPane().setContentText("The exception stack trace was:");
-    failureAlert.getDialogPane().setExpandableContent(area);
+    failureAlert.setContentText("Error: " + result.getError().getMessage() + "\nSee the log for detailed information");
     failureAlert.showAndWait();
   }
 
