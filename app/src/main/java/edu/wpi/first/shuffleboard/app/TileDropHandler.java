@@ -1,6 +1,7 @@
 package edu.wpi.first.shuffleboard.app;
 
 import edu.wpi.first.shuffleboard.api.dnd.DataFormats;
+import edu.wpi.first.shuffleboard.api.dnd.DragUtils;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceEntry;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
@@ -13,7 +14,6 @@ import edu.wpi.first.shuffleboard.app.components.Tile;
 import edu.wpi.first.shuffleboard.app.components.WidgetPane;
 
 import java.util.Optional;
-import java.util.UUID;
 
 import javafx.event.EventHandler;
 import javafx.geometry.Point2D;
@@ -93,8 +93,8 @@ final class TileDropHandler implements EventHandler<DragEvent> {
 
     // Dragging a component out of a layout
     if (dragboard.hasContent(DataFormats.tilelessComponent)) {
-      UUID componentId = (UUID) dragboard.getContent(DataFormats.tilelessComponent);
-      dropComponentOutOfLayout(componentId, eventPos);
+      DataFormats.TilelessComponentData data = DragUtils.getData(dragboard, DataFormats.tilelessComponent);
+      dropComponentOutOfLayout(data, eventPos);
       event.consume();
 
       return;
@@ -104,18 +104,16 @@ final class TileDropHandler implements EventHandler<DragEvent> {
   /**
    * Drops a component that was dragged out of a layout onto the tile, if it contains a layout.
    *
-   * @param componentId the ID of the component being dragged
-   * @param screenPos   the screen coordinates where the component was dropped
+   * @param data      the data of the component being dragged
+   * @param screenPos the screen coordinates where the component was dropped
    */
-  private void dropComponentOutOfLayout(UUID componentId, Point2D screenPos) {
-    Optional<Component> component = Components.getDefault().getByUuid(componentId);
-    Optional<LayoutTile> parent = pane.getTiles().stream()
-        .flatMap(TypeUtils.castStream(LayoutTile.class))
-        .filter(t -> t.getContent().getChildren().contains(component.orElse(null)))
-        .findFirst();
+  private void dropComponentOutOfLayout(DataFormats.TilelessComponentData data, Point2D screenPos) {
+    Optional<Component> component = Components.getDefault().getByUuid(data.getComponentId());
+    Optional<Layout> parent = Components.getDefault().getByUuid(data.getParentId())
+        .flatMap(TypeUtils.optionalCast(Layout.class));
     component.ifPresent(c -> {
       if (tile.getContent() instanceof Layout) {
-        parent.ifPresent(t -> t.getContent().removeChild(c));
+        parent.ifPresent(l -> l.removeChild(c));
         add((Layout) tile.getContent(), c, screenPos);
       } else {
         ((Tile) tile).setContent(c);

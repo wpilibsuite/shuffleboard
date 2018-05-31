@@ -1,6 +1,7 @@
 package edu.wpi.first.shuffleboard.app;
 
 import edu.wpi.first.shuffleboard.api.dnd.DataFormats;
+import edu.wpi.first.shuffleboard.api.dnd.DataFormats.TilelessComponentData;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.DummySource;
 import edu.wpi.first.shuffleboard.api.sources.SourceEntry;
@@ -10,14 +11,12 @@ import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.api.widget.Layout;
 import edu.wpi.first.shuffleboard.api.widget.TileSize;
-import edu.wpi.first.shuffleboard.app.components.LayoutTile;
 import edu.wpi.first.shuffleboard.app.components.Tile;
 import edu.wpi.first.shuffleboard.app.components.TileLayout;
 import edu.wpi.first.shuffleboard.app.components.WidgetPane;
 
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.WeakHashMap;
 
 import javafx.css.PseudoClass;
@@ -109,7 +108,7 @@ final class WidgetPaneDragHandler implements EventHandler<DragEvent> {
       return false;
     }
     Optional<Component> component = Components.getDefault()
-        .getByUuid((UUID) dragboard.getContent(DataFormats.tilelessComponent));
+        .getByUuid(((TilelessComponentData) dragboard.getContent(DataFormats.tilelessComponent)).getComponentId());
     if (tilePreviewSize == null) {
       component.map(pane::sizeOfWidget)
           .ifPresent(size -> tilePreviewSize = size);
@@ -276,7 +275,7 @@ final class WidgetPaneDragHandler implements EventHandler<DragEvent> {
 
     // Dragging a component out of a layout
     if (dragboard.hasContent(DataFormats.tilelessComponent)) {
-      dropTilelessComponent((UUID) dragboard.getContent(DataFormats.tilelessComponent), point);
+      dropTilelessComponent((TilelessComponentData) dragboard.getContent(DataFormats.tilelessComponent), point);
     }
     cleanupWidgetDrag();
     tilePreviewSize = null;
@@ -345,14 +344,12 @@ final class WidgetPaneDragHandler implements EventHandler<DragEvent> {
     });
   }
 
-  private void dropTilelessComponent(UUID componentId, GridPoint point) {
-    Optional<Component> component = Components.getDefault().getByUuid(componentId);
-    Optional<LayoutTile> parent = pane.getTiles().stream()
-        .flatMap(TypeUtils.castStream(LayoutTile.class))
-        .filter(t -> t.getContent().getChildren().contains(component.orElse(null)))
-        .findFirst();
+  private void dropTilelessComponent(TilelessComponentData data, GridPoint point) {
+    Optional<Component> component = Components.getDefault().getByUuid(data.getComponentId());
+    Optional<Layout> parent = Components.getDefault().getByUuid(data.getParentId())
+        .flatMap(TypeUtils.optionalCast(Layout.class));
     component.ifPresent(c -> {
-      parent.ifPresent(t -> t.getContent().removeChild(c));
+      parent.ifPresent(l -> l.removeChild(c));
       pane.addComponent(c, point);
     });
   }

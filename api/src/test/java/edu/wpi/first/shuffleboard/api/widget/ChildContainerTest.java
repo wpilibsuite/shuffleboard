@@ -28,7 +28,7 @@ public class ChildContainerTest extends ApplicationTest {
 
   @Test
   public void testTitleUpdates() {
-    ChildContainer container = new ChildContainer();
+    ChildContainer container = new ChildContainer(null);
     MockWidget firstChild = new MockWidget();
     MockWidget secondChild = new MockWidget();
     firstChild.setTitle("First child");
@@ -45,7 +45,7 @@ public class ChildContainerTest extends ApplicationTest {
 
   @Test
   public void testMoveLabel() {
-    ChildContainer container = new ChildContainer();
+    ChildContainer container = new ChildContainer(null);
     Node label = container.getBottom();
 
     container.setLabelSide(LayoutBase.LabelPosition.TOP);

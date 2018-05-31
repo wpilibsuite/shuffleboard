@@ -38,7 +38,7 @@ public class ListLayout extends LayoutBase {
     if (panes.containsKey(component)) {
       return panes.get(component);
     }
-    ChildContainer pane = new ChildContainer(component);
+    ChildContainer pane = new ChildContainer(component, this);
     pane.labelPositionProperty().bindBidirectional(this.labelPositionProperty());
     ActionList.registerSupplier(pane, () -> actionsForComponent(component));
     panes.put(component, pane);

@@ -12,6 +12,7 @@ import edu.wpi.first.shuffleboard.api.util.RoundingMode;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.ComponentContainer;
+import edu.wpi.first.shuffleboard.api.widget.ComponentType;
 import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.api.widget.Layout;
 import edu.wpi.first.shuffleboard.api.widget.LayoutType;
@@ -32,7 +33,6 @@ import org.fxmisc.easybind.EasyBind;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -205,8 +205,9 @@ public class WidgetPaneController {
     Menu addLayouts = new Menu("Add layout...");
     Components.getDefault().allComponents()
         .flatMap(TypeUtils.castStream(LayoutType.class))
-        .sorted(Comparator.comparing(LayoutType::getName))
-        .map(t -> FxUtils.menuItem(t.getName(), __ -> pane.addComponent((Layout) t.get())))
+        .map(ComponentType::getName)
+        .sorted()
+        .map(c -> FxUtils.menuItem(c, __ -> pane.addComponent(Components.getDefault().createComponent(c).get())))
         .forEach(addLayouts.getItems()::add);
 
     // Removes all the tiles from the pane. Destructive operation!
@@ -353,7 +354,8 @@ public class WidgetPaneController {
       // Layout unwrapping
       if (tile instanceof LayoutTile) {
         widgetPaneActions.addAction("Unwrap", () -> {
-          if (selector.getSelectedTiles().stream().allMatch(t -> t instanceof LayoutTile)) {
+          if (selector.areTilesSelected()
+              && selector.getSelectedTiles().stream().allMatch(t -> t instanceof LayoutTile)) {
             selector.getSelectedTiles().forEach(t -> unwrapLayout((LayoutTile) t));
           } else {
             unwrapLayout(tile);
@@ -441,12 +443,12 @@ public class WidgetPaneController {
     Components.getDefault()
         .allComponents()
         .flatMap(TypeUtils.castStream(LayoutType.class))
-        .map(t -> (LayoutType<?>) t)
-        .forEach(layoutType -> {
-          list.addAction(layoutType.getName(), () -> {
+        .map(ComponentType::getName)
+        .forEach(name -> {
+          list.addAction(name, () -> {
             TileLayout was = pane.getTileLayout(tile);
             Component content = pane.removeTile(tile);
-            Layout layout = layoutType.get();
+            Layout layout = (Layout) Components.getDefault().createComponent(name).get();
             layout.addChild(content);
             if (selector.getSelectedTiles().size() > 1) {
               for (Tile<?> t : selector.getSelectedTiles()) {
