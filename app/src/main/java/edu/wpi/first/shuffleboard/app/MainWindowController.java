@@ -22,6 +22,9 @@ import edu.wpi.first.shuffleboard.app.components.DashboardTab;
 import edu.wpi.first.shuffleboard.app.components.DashboardTabPane;
 import edu.wpi.first.shuffleboard.app.components.InteractiveSourceTree;
 import edu.wpi.first.shuffleboard.app.components.WidgetGallery;
+import edu.wpi.first.shuffleboard.app.dialogs.AboutDialog;
+import edu.wpi.first.shuffleboard.app.dialogs.ExportRecordingDialog;
+import edu.wpi.first.shuffleboard.app.dialogs.PluginDialog;
 import edu.wpi.first.shuffleboard.app.json.JsonBuilder;
 import edu.wpi.first.shuffleboard.app.plugin.PluginLoader;
 import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
@@ -115,17 +118,14 @@ public class MainWindowController {
   @FXML
   private HBox connectionIndicatorArea;
 
+  private final PluginDialog pluginDialog = new PluginDialog();
+  private final AboutDialog aboutDialog = new AboutDialog();
+  private final ExportRecordingDialog exportRecordingDialog = new ExportRecordingDialog();
   // Use lazy initialization to reduce load time for the main window
-  private final LazyInit<Pane> pluginPane = LazyInit.of(() -> FxUtils.load(PluginPaneController.class));
   private final LazyInit<Pane> downloadPane = LazyInit.of(() -> FxUtils.load(DownloadDialogController.class));
   private final LazyInit<Pane> restartPromptPane =
       LazyInit.of(() -> FXMLLoader.load(MainWindowController.class.getResource("RestartPrompt.fxml")));
-  private final LazyInit<Pane> aboutPane = LazyInit.of(() -> FxUtils.load(AboutDialogController.class));
-  private final LazyInit<Pane> exportRecordingPane =
-      LazyInit.of(() -> FxUtils.load(ConvertRecordingPaneController.class));
-  private Stage pluginStage;
   private Stage downloadStage;
-  private Stage exportRecordingStage;
 
   private File currentFile = null;
 
@@ -232,22 +232,6 @@ public class MainWindowController {
   private void updateConnectionLabel(Label label, boolean connected) {
     label.pseudoClassStateChanged(PseudoClass.getPseudoClass("connected"), connected);
     label.pseudoClassStateChanged(PseudoClass.getPseudoClass("disconnected"), !connected);
-  }
-
-  private void setUpPluginsStage() {
-    pluginStage = new Stage();
-    pluginStage.initModality(Modality.WINDOW_MODAL);
-    pluginStage.addEventHandler(KeyEvent.KEY_PRESSED, e -> {
-      if (e.getCode() == KeyCode.ESCAPE) {
-        pluginStage.close();
-      }
-    });
-    pluginStage.setScene(new Scene(pluginPane.get()));
-    pluginStage.sizeToScene();
-    pluginStage.setMinWidth(675);
-    pluginStage.setMinHeight(325);
-    pluginStage.setTitle("Loaded Plugins");
-    EasyBind.listBind(pluginPane.get().getStylesheets(), root.getStylesheets());
   }
 
   /**
@@ -494,15 +478,7 @@ public class MainWindowController {
 
   @FXML
   private void exportRecordings() {
-    if (exportRecordingStage == null) {
-      exportRecordingStage = new Stage();
-      exportRecordingStage.setTitle("Export Recording Files");
-      exportRecordingStage.setScene(new Scene(exportRecordingPane.get()));
-      exportRecordingStage.setResizable(false);
-      FxUtils.bind(exportRecordingStage.getScene().getStylesheets(), stylesheets);
-      exportRecordingStage.initModality(Modality.APPLICATION_MODAL);
-    }
-    exportRecordingStage.show();
+    exportRecordingDialog.show();
   }
 
   @FXML
@@ -526,23 +502,12 @@ public class MainWindowController {
 
   @FXML
   private void showPlugins() {
-    if (pluginStage == null) {
-      setUpPluginsStage();
-    }
-    if (pluginStage.getOwner() == null) {
-      pluginStage.initOwner(root.getScene().getWindow());
-    }
-    pluginStage.show();
+    pluginDialog.show();
   }
 
   @FXML
   private void showAboutDialog() {
-    ShuffleboardDialog dialog = new ShuffleboardDialog(aboutPane.get(), true);
-    dialog.setHeaderText("WPILib Shuffleboard");
-    dialog.setSubheaderText(Shuffleboard.getVersion());
-    FxUtils.bind(dialog.getDialogPane().getStylesheets(), stylesheets);
-    Platform.runLater(dialog.getDialogPane()::requestFocus);
-    dialog.showAndWait();
+    aboutDialog.show();
   }
 
   private void setUpDialogStage(Stage stage, Pane rootNode) {
