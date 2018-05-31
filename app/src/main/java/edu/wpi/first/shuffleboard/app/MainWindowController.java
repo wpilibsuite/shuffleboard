@@ -1,10 +1,6 @@
 package edu.wpi.first.shuffleboard.app;
 
-import edu.wpi.first.shuffleboard.api.DashboardMode;
-import edu.wpi.first.shuffleboard.api.components.ExtendedPropertySheet;
-import edu.wpi.first.shuffleboard.api.components.ShuffleboardDialog;
 import edu.wpi.first.shuffleboard.api.plugin.Plugin;
-import edu.wpi.first.shuffleboard.api.prefs.FlushableProperty;
 import edu.wpi.first.shuffleboard.api.sources.ConnectionStatus;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
@@ -16,7 +12,6 @@ import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.LazyInit;
 import edu.wpi.first.shuffleboard.api.util.Storage;
 import edu.wpi.first.shuffleboard.api.util.ThreadUtils;
-import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.app.components.DashboardTab;
 import edu.wpi.first.shuffleboard.app.components.DashboardTabPane;
@@ -25,6 +20,8 @@ import edu.wpi.first.shuffleboard.app.components.WidgetGallery;
 import edu.wpi.first.shuffleboard.app.dialogs.AboutDialog;
 import edu.wpi.first.shuffleboard.app.dialogs.ExportRecordingDialog;
 import edu.wpi.first.shuffleboard.app.dialogs.PluginDialog;
+import edu.wpi.first.shuffleboard.app.dialogs.PrefsDialog;
+import edu.wpi.first.shuffleboard.app.dialogs.RestartPromptDialog;
 import edu.wpi.first.shuffleboard.app.json.JsonBuilder;
 import edu.wpi.first.shuffleboard.app.plugin.PluginLoader;
 import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
@@ -64,31 +61,23 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.Accordion;
 import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonBar;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TitledPane;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import javafx.stage.Window;
-import javafx.stage.WindowEvent;
 
 import static edu.wpi.first.shuffleboard.api.util.ListUtils.joining;
 
@@ -121,10 +110,10 @@ public class MainWindowController {
   private final PluginDialog pluginDialog = new PluginDialog();
   private final AboutDialog aboutDialog = new AboutDialog();
   private final ExportRecordingDialog exportRecordingDialog = new ExportRecordingDialog();
+  private final RestartPromptDialog restartPromptDialog = new RestartPromptDialog();
+  private final PrefsDialog prefsDialog = new PrefsDialog();
   // Use lazy initialization to reduce load time for the main window
   private final LazyInit<Pane> downloadPane = LazyInit.of(() -> FxUtils.load(DownloadDialogController.class));
-  private final LazyInit<Pane> restartPromptPane =
-      LazyInit.of(() -> FXMLLoader.load(MainWindowController.class.getResource("RestartPrompt.fxml")));
   private Stage downloadStage;
 
   private File currentFile = null;
@@ -300,8 +289,7 @@ public class MainWindowController {
 
     // Attempt to close the main window. This lets window closing handlers run. Calling System.exit() or Platform.exit()
     // will more-or-less immediately terminate the application without calling these handlers.
-    Window window = root.getScene().getWindow();
-    window.fireEvent(new WindowEvent(window, WindowEvent.WINDOW_CLOSE_REQUEST));
+    FxUtils.requestClose(root.getScene().getWindow());
   }
 
   /**
@@ -408,49 +396,9 @@ public class MainWindowController {
     AppPreferences.getInstance().setSaveFile(currentFile);
   }
 
-  /**
-   * Shows the preferences window.
-   */
-  @SuppressWarnings("unchecked")
   @FXML
   public void showPrefs() {
-    TabPane tabs = new TabPane();
-    tabs.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
-
-    tabs.getTabs().add(new Tab("Application", new ExtendedPropertySheet(AppPreferences.getInstance().getProperties())));
-
-    for (Plugin plugin : PluginLoader.getDefault().getLoadedPlugins()) {
-      if (plugin.getProperties().isEmpty()) {
-        continue;
-      }
-      Tab tab = new Tab(plugin.getName());
-      tab.setContent(new ExtendedPropertySheet(plugin.getProperties()));
-
-      tab.setDisable(DashboardMode.getCurrentMode() == DashboardMode.PLAYBACK);
-      tabs.getTabs().add(tab);
-    }
-
-    Dialog<Boolean> dialog = new Dialog<>();
-    EasyBind.listBind(dialog.getDialogPane().getStylesheets(), root.getStylesheets());
-    dialog.getDialogPane().setContent(new BorderPane(tabs));
-    dialog.initOwner(root.getScene().getWindow());
-    dialog.initModality(Modality.APPLICATION_MODAL);
-    dialog.initStyle(StageStyle.UTILITY);
-    dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CANCEL, ButtonType.OK);
-    dialog.setTitle("Shuffleboard Preferences");
-    dialog.setResizable(true);
-    dialog.setResultConverter(button -> !button.getButtonData().isCancelButton());
-    if (dialog.showAndWait().orElse(false)) {
-      tabs.getTabs().stream()
-          .map(t -> (ExtendedPropertySheet) t.getContent())
-          .flatMap(p -> p.getItems().stream())
-          .flatMap(TypeUtils.castStream(ExtendedPropertySheet.PropertyItem.class))
-          .map(i -> (Optional<ObservableValue>) i.getObservableValue())
-          .flatMap(TypeUtils.optionalStream())
-          .flatMap(TypeUtils.castStream(FlushableProperty.class))
-          .filter(FlushableProperty::isChanged)
-          .forEach(FlushableProperty::flush);
-    }
+    prefsDialog.show();
   }
 
   @FXML
@@ -577,24 +525,11 @@ public class MainWindowController {
     // Make sure this runs on the JavaFX thread -- this method is not guaranteed to be called from it
     FxUtils.runOnFxThread(() -> {
       if (result.succeeded()) {
-        showRestartPrompt();
+        restartPromptDialog.show(root.getScene().getWindow());
       } else {
         showFailureAlert(result);
       }
     });
-  }
-
-  private void showRestartPrompt() {
-    ShuffleboardDialog dialog = new ShuffleboardDialog(restartPromptPane.get());
-    dialog.setHeaderText("Update Downloaded");
-    dialog.initOwner(root.getScene().getWindow());
-    FxUtils.bind(dialog.getDialogPane().getStylesheets(), stylesheets);
-    ButtonType restartNow = new ButtonType("Restart now", ButtonBar.ButtonData.YES);
-    ButtonType later = new ButtonType("Later", ButtonBar.ButtonData.NO);
-    dialog.getDialogPane().getButtonTypes().addAll(restartNow, later);
-    dialog.showAndWait()
-        .filter(restartNow::equals)
-        .ifPresent(__ -> close());
   }
 
   private void showFailureAlert(ShuffleboardUpdateChecker.Result<Path> result) {

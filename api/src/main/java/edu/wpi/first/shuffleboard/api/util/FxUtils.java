@@ -27,6 +27,8 @@ import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
+import javafx.stage.Window;
+import javafx.stage.WindowEvent;
 
 import static java.util.Objects.requireNonNull;
 
@@ -222,6 +224,16 @@ public final class FxUtils {
       throw new IllegalArgumentException("FXML controller class has no @ParametrizedController: " + controllerClass);
     }
     return FXMLLoader.load(controllerClass.getResource(annotation.value()));
+  }
+
+  /**
+   * Fires a close request on a window. This is useful to call on the main application window to allow shutdown
+   * listeners to run, since they are not run when <tt>System.exit()</tt> or <tt>Platform.exit()</tt> are called.
+   *
+   * @param window the window to request to close
+   */
+  public static void requestClose(Window window) {
+    window.fireEvent(new WindowEvent(window, WindowEvent.WINDOW_CLOSE_REQUEST));
   }
 
 }
