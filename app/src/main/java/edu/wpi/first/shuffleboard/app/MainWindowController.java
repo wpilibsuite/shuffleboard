@@ -22,7 +22,6 @@ import edu.wpi.first.shuffleboard.app.dialogs.PluginDialog;
 import edu.wpi.first.shuffleboard.app.dialogs.PrefsDialog;
 import edu.wpi.first.shuffleboard.app.dialogs.RestartPromptDialog;
 import edu.wpi.first.shuffleboard.app.dialogs.UpdateDownloadDialog;
-import edu.wpi.first.shuffleboard.app.json.JsonBuilder;
 import edu.wpi.first.shuffleboard.app.plugin.PluginLoader;
 import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
 import edu.wpi.first.shuffleboard.app.sources.recording.Playback;
@@ -30,24 +29,18 @@ import edu.wpi.first.shuffleboard.app.tab.TabInfoRegistry;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
-import com.google.common.io.Files;
 
 import org.fxmisc.easybind.EasyBind;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
-import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.DoubleConsumer;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -106,7 +99,7 @@ public class MainWindowController {
   private final RestartPromptDialog restartPromptDialog = new RestartPromptDialog();
   private final PrefsDialog prefsDialog = new PrefsDialog();
 
-  private File currentFile = null;
+  private final SaveFileHandler saveFileHandler = new SaveFileHandler();
 
   private final ObservableValue<List<String>> stylesheets
       = EasyBind.map(AppPreferences.getInstance().themeProperty(), Theme::getStyleSheets);
@@ -262,12 +255,25 @@ public class MainWindowController {
   /**
    * Set the currently loaded dashboard.
    */
-  public void setDashboard(DashboardTabPane dashboard) {
+  private void setDashboard(DashboardTabPane dashboard) {
     dashboard.setId("dashboard");
     centerSplitPane.getItems().remove(this.dashboard);
     this.dashboard.getTabs().clear(); // Lets tabs get cleaned up (e.g. cancelling deferred autopopulation calls)
     this.dashboard = dashboard;
     centerSplitPane.getItems().add(dashboard);
+  }
+
+  /**
+   * Sets the dashboard.
+   */
+  public void setDashboard(DashboardData dashboardData) {
+    if (dashboardData == null) {
+      return;
+    }
+    setDashboard(dashboardData.getTabPane());
+    Platform.runLater(() -> {
+      centerSplitPane.setDividerPositions(dashboardData.getDividerPosition());
+    });
   }
 
   /**
@@ -282,17 +288,17 @@ public class MainWindowController {
     FxUtils.requestClose(root.getScene().getWindow());
   }
 
+  private DashboardData getData() {
+    return new DashboardData(centerSplitPane.getDividerPositions()[0], dashboard);
+  }
+
   /**
    * Save the dashboard to an existing file, if one exists.
    * Otherwise is identical to #saveAs.
    */
   @FXML
   public void save() throws IOException {
-    if (currentFile == null) {
-      saveAs();
-    } else {
-      saveFile(currentFile);
-    }
+    saveFileHandler.save(getData());
   }
 
   /**
@@ -300,35 +306,7 @@ public class MainWindowController {
    */
   @FXML
   private void saveAs() throws IOException {
-    FileChooser chooser = new FileChooser();
-    chooser.getExtensionFilters().setAll(
-        new FileChooser.ExtensionFilter("Shuffleboard Save File (.json)", "*.json"));
-    if (currentFile == null) {
-      chooser.setInitialDirectory(Storage.getStorageDir());
-      chooser.setInitialFileName("shuffleboard.json");
-    } else {
-      chooser.setInitialDirectory(currentFile.getAbsoluteFile().getParentFile());
-      chooser.setInitialFileName(currentFile.getName());
-    }
-
-    Optional.ofNullable(chooser.showSaveDialog(root.getScene().getWindow()))
-        .ifPresent(this::saveFile);
-  }
-
-  private void saveFile(File selected) {
-    try {
-      Writer writer = Files.newWriter(selected, Charset.forName("UTF-8"));
-
-      DashboardData dashboardData = new DashboardData(centerSplitPane.getDividerPositions()[0], dashboard);
-      JsonBuilder.forSaveFile().toJson(dashboardData, writer);
-      writer.flush();
-    } catch (Exception e) {
-      log.log(Level.WARNING, "Couldn't save", e);
-      return;
-    }
-
-    currentFile = selected;
-    AppPreferences.getInstance().setSaveFile(currentFile);
+    saveFileHandler.saveAs(getData());
   }
 
   /**
@@ -336,7 +314,6 @@ public class MainWindowController {
    */
   @FXML
   public void newLayout() {
-    currentFile = null;
     double[] dividerPositions = centerSplitPane.getDividerPositions();
     List<TabInfo> tabInfo = TabInfoRegistry.getDefault().getItems();
     if (tabInfo.isEmpty()) {
@@ -353,37 +330,7 @@ public class MainWindowController {
    */
   @FXML
   public void load() throws IOException {
-    FileChooser chooser = new FileChooser();
-    chooser.setInitialDirectory(Storage.getStorageDir());
-    chooser.getExtensionFilters().setAll(
-        new FileChooser.ExtensionFilter("Shuffleboard Save File (.json)", "*.json"));
-
-    final File selected = chooser.showOpenDialog(root.getScene().getWindow());
-    load(selected);
-  }
-
-  /**
-   * Loads a saved dashboard layout.
-   *
-   * @param saveFile the save file to load
-   */
-  public void load(File saveFile) throws IOException {
-    if (saveFile == null) {
-      return;
-    }
-    Reader reader = Files.newReader(saveFile, Charset.forName("UTF-8"));
-
-    DashboardData dashboardData = JsonBuilder.forSaveFile().fromJson(reader, DashboardData.class);
-    if (dashboardData == null) {
-      throw new IOException("Save file could not be read: " + saveFile);
-    }
-    setDashboard(dashboardData.getTabPane());
-    Platform.runLater(() -> {
-      centerSplitPane.setDividerPositions(dashboardData.getDividerPosition());
-    });
-
-    currentFile = saveFile;
-    AppPreferences.getInstance().setSaveFile(currentFile);
+    setDashboard(saveFileHandler.load());
   }
 
   @FXML
