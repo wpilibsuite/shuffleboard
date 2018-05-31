@@ -49,18 +49,7 @@
         </Menu>
     </MenuBar>
     <SplitPane fx:id="centerSplitPane" dividerPositions="0.02">
-        <TabPane tabClosingPolicy="UNAVAILABLE" prefWidth="400">
-            <Tab text="Sources">
-                <ScrollPane fitToWidth="true" fitToHeight="true">
-                    <Accordion fx:id="sourcesAccordion"/>
-                </ScrollPane>
-            </Tab>
-            <Tab text="Widgets">
-                <ScrollPane fitToWidth="true">
-                    <WidgetGallery vgap="10" hgap="10" prefColumns="3" fx:id="widgetGallery"/>
-                </ScrollPane>
-            </Tab>
-        </TabPane>
+        <fx:include source="LeftDrawer.fxml" fx:id="leftDrawer"/>
         <DashboardTabPane fx:id="dashboard"/>
     </SplitPane>
     <VBox>

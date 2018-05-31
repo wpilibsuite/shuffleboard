@@ -11,11 +11,8 @@ import edu.wpi.first.shuffleboard.api.theme.Theme;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.Storage;
 import edu.wpi.first.shuffleboard.api.util.ThreadUtils;
-import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.app.components.DashboardTab;
 import edu.wpi.first.shuffleboard.app.components.DashboardTabPane;
-import edu.wpi.first.shuffleboard.app.components.InteractiveSourceTree;
-import edu.wpi.first.shuffleboard.app.components.WidgetGallery;
 import edu.wpi.first.shuffleboard.app.dialogs.AboutDialog;
 import edu.wpi.first.shuffleboard.app.dialogs.ExportRecordingDialog;
 import edu.wpi.first.shuffleboard.app.dialogs.PluginDialog;
@@ -27,15 +24,11 @@ import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
 import edu.wpi.first.shuffleboard.app.sources.recording.Playback;
 import edu.wpi.first.shuffleboard.app.tab.TabInfoRegistry;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
-
 import org.fxmisc.easybind.EasyBind;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -47,18 +40,15 @@ import java.util.stream.Collectors;
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
-import javafx.scene.control.Accordion;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.Tab;
-import javafx.scene.control.TitledPane;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -78,15 +68,13 @@ public class MainWindowController {
   @FXML
   private MenuItem recordingMenu;
   @FXML
-  private WidgetGallery widgetGallery;
-  @FXML
   private Pane root;
   @FXML
   private SplitPane centerSplitPane;
   @FXML
-  private DashboardTabPane dashboard;
+  private Pane leftDrawer;
   @FXML
-  private Accordion sourcesAccordion;
+  private DashboardTabPane dashboard;
   @FXML
   private Pane updateFooter;
   @FXML
@@ -104,13 +92,12 @@ public class MainWindowController {
   private final ObservableValue<List<String>> stylesheets
       = EasyBind.map(AppPreferences.getInstance().themeProperty(), Theme::getStyleSheets);
 
-  private final Multimap<Plugin, TitledPane> sourcePanes = ArrayListMultimap.create();
   private final ShuffleboardUpdateChecker shuffleboardUpdateChecker = new ShuffleboardUpdateChecker();
   private final ExecutorService updateCheckingExecutor
       = Executors.newSingleThreadExecutor(ThreadUtils::makeDaemonThread);
 
   @FXML
-  private void initialize() throws IOException {
+  private void initialize() {
     recordingMenu.textProperty().bind(
         EasyBind.map(
             Recorder.getInstance().runningProperty(),
@@ -118,32 +105,12 @@ public class MainWindowController {
     FxUtils.bind(root.getStylesheets(), stylesheets);
 
     log.info("Setting up plugins in the UI");
-    PluginLoader.getDefault().getLoadedPlugins().forEach(plugin -> {
-      plugin.loadedProperty().addListener((__, was, is) -> {
-        if (is) {
-          setup(plugin);
-        } else {
-          tearDown(plugin);
-        }
-      });
-      setup(plugin);
-    });
-    sourcesAccordion.getPanes().sort(Comparator.comparing(TitledPane::getText));
+    PluginLoader.getDefault().getLoadedPlugins().forEach(this::tearDownPluginWhenUnloaded);
     PluginLoader.getDefault().getKnownPlugins().addListener((ListChangeListener<Plugin>) c -> {
       while (c.next()) {
         if (c.wasAdded()) {
-          c.getAddedSubList().forEach(plugin -> {
-            plugin.loadedProperty().addListener((__, was, is) -> {
-              if (is) {
-                setup(plugin);
-              } else {
-                tearDown(plugin);
-              }
-            });
-            setup(plugin);
-          });
+          c.getAddedSubList().forEach(this::tearDownPluginWhenUnloaded);
         }
-        sourcesAccordion.getPanes().sort(Comparator.comparing(TitledPane::getText));
       }
     });
 
@@ -162,6 +129,22 @@ public class MainWindowController {
     SourceTypes.getDefault().getItems().addListener((InvalidationListener) items -> {
       generateConnectionIndicators((ObservableList<SourceType>) items);
     });
+
+    setLeftDrawerCallbacks();
+  }
+
+  private void tearDownPluginWhenUnloaded(Plugin plugin) {
+    plugin.loadedProperty().addListener((__, was, is) -> {
+      if (!is) {
+        tearDown(plugin);
+      }
+    });
+  }
+
+  private void setLeftDrawerCallbacks() {
+    LeftDrawerController leftDrawerController = FxUtils.getController(leftDrawer);
+    leftDrawerController.setAddComponentToActivePane(dashboard::addComponentToActivePane);
+    leftDrawerController.setCreateTabForSource(dashboard::createTabForSource);
   }
 
   private void generateConnectionIndicators(List<SourceType> sourceTypes) {
@@ -207,36 +190,10 @@ public class MainWindowController {
   }
 
   /**
-   * Sets up UI components to represent the sources that a plugin defines.
-   */
-  private void setup(Plugin plugin) {
-    FxUtils.runOnFxThread(() -> {
-      plugin.getSourceTypes().forEach(sourceType -> {
-        InteractiveSourceTree tree =
-            new InteractiveSourceTree(sourceType, dashboard::addComponentToActivePane, dashboard::createTabForSource);
-
-        TitledPane titledPane = new TitledPane(sourceType.getName(), tree);
-        sourcePanes.put(plugin, titledPane);
-        sourcesAccordion.getPanes().add(titledPane);
-        FXCollections.sort(sourcesAccordion.getPanes(), Comparator.comparing(TitledPane::getText));
-        if (sourcesAccordion.getExpandedPane() == null) {
-          sourcesAccordion.setExpandedPane(titledPane);
-        }
-      });
-
-      // Add widgets to the gallery as well
-      widgetGallery.setWidgets(Components.getDefault().allWidgets().collect(Collectors.toList()));
-    });
-  }
-
-  /**
    * Removes all traces from a plugin from the application window. Source trees will be removed and all widgets
    * defined by the plugin will be removed from all dashboard tabs.
    */
   private void tearDown(Plugin plugin) {
-    // Remove the source panes
-    sourcesAccordion.getPanes().removeAll(sourcePanes.removeAll(plugin));
-    FXCollections.sort(sourcesAccordion.getPanes(), Comparator.comparing(TitledPane::getText));
     // Remove widgets
     dashboard.getTabs().stream()
         .filter(tab -> tab instanceof DashboardTab)
@@ -248,8 +205,6 @@ public class MainWindowController {
                     .anyMatch(t -> tile.getContent().getName().equals(t.getName())))
                 .collect(Collectors.toList()) // collect into temporary list to prevent comodification
                 .forEach(tile -> pane.getChildren().remove(tile)));
-    // ... and from the gallery
-    widgetGallery.setWidgets(Components.getDefault().allWidgets().collect(Collectors.toList()));
   }
 
   /**
