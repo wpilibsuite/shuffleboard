@@ -210,6 +210,7 @@ public class MainWindowController {
    */
   @FXML
   public void newLayout() {
+    saveFileHandler.clear();
     double[] dividerPositions = centerSplitPane.getDividerPositions();
     List<TabInfo> tabInfo = TabInfoRegistry.getDefault().getItems();
     if (tabInfo.isEmpty()) {

@@ -121,4 +121,11 @@ public final class SaveFileHandler {
     return dashboardData;
   }
 
+  /**
+   * Clears the current file status.
+   */
+  public void clear() {
+    currentFile = null;
+  }
+
 }
