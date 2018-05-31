@@ -3,14 +3,9 @@ package edu.wpi.first.shuffleboard.app;
 import edu.wpi.first.shuffleboard.api.DashboardMode;
 import edu.wpi.first.shuffleboard.api.components.ExtendedPropertySheet;
 import edu.wpi.first.shuffleboard.api.components.ShuffleboardDialog;
-import edu.wpi.first.shuffleboard.api.components.SourceTreeTable;
-import edu.wpi.first.shuffleboard.api.dnd.DataFormats;
 import edu.wpi.first.shuffleboard.api.plugin.Plugin;
 import edu.wpi.first.shuffleboard.api.prefs.FlushableProperty;
 import edu.wpi.first.shuffleboard.api.sources.ConnectionStatus;
-import edu.wpi.first.shuffleboard.api.sources.DataSource;
-import edu.wpi.first.shuffleboard.api.sources.DataSourceUtils;
-import edu.wpi.first.shuffleboard.api.sources.SourceEntry;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
 import edu.wpi.first.shuffleboard.api.sources.UiHints;
@@ -25,6 +20,7 @@ import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.app.components.DashboardTab;
 import edu.wpi.first.shuffleboard.app.components.DashboardTabPane;
+import edu.wpi.first.shuffleboard.app.components.InteractiveSourceTree;
 import edu.wpi.first.shuffleboard.app.components.WidgetGallery;
 import edu.wpi.first.shuffleboard.app.json.JsonBuilder;
 import edu.wpi.first.shuffleboard.app.plugin.PluginLoader;
@@ -62,7 +58,6 @@ import javafx.beans.InvalidationListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
-import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
@@ -72,23 +67,16 @@ import javafx.scene.control.Accordion;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
-import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
-import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TitledPane;
-import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeTableRow;
-import javafx.scene.input.ClipboardContent;
-import javafx.scene.input.Dragboard;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -99,8 +87,6 @@ import javafx.stage.StageStyle;
 import javafx.stage.Window;
 import javafx.stage.WindowEvent;
 
-import static edu.wpi.first.shuffleboard.api.components.SourceTreeTable.alphabetical;
-import static edu.wpi.first.shuffleboard.api.components.SourceTreeTable.branchesFirst;
 import static edu.wpi.first.shuffleboard.api.util.ListUtils.joining;
 
 
@@ -140,8 +126,6 @@ public class MainWindowController {
   private Stage pluginStage;
   private Stage downloadStage;
   private Stage exportRecordingStage;
-
-  private SourceEntry selectedEntry;
 
   private File currentFile = null;
 
@@ -272,68 +256,9 @@ public class MainWindowController {
   private void setup(Plugin plugin) {
     FxUtils.runOnFxThread(() -> {
       plugin.getSourceTypes().forEach(sourceType -> {
-        SourceTreeTable<SourceEntry, ?> tree = new SourceTreeTable<>();
-        tree.setSourceType(sourceType);
-        tree.setRoot(new TreeItem<>(sourceType.createRootSourceEntry()));
-        tree.setShowRoot(false);
-        tree.setSortPolicy(__ -> {
-          sortTree(tree.getRoot());
-          return true;
-        });
-        tree.getSelectionModel().selectedItemProperty().addListener((__, oldItem, newItem) -> {
-          selectedEntry = newItem == null ? null : newItem.getValue();
-        });
-        tree.setRowFactory(__ -> {
-          TreeTableRow<SourceEntry> row = new TreeTableRow<>();
-          makeSourceRowDraggable(row);
-          return row;
-        });
-        tree.setOnContextMenuRequested(e -> {
-          TreeItem<SourceEntry> selectedItem = tree.getSelectionModel().getSelectedItem();
-          if (selectedItem == null) {
-            return;
-          }
+        InteractiveSourceTree tree =
+            new InteractiveSourceTree(sourceType, dashboard::addComponentToActivePane, dashboard::createTabForSource);
 
-          SourceEntry entry = selectedItem.getValue();
-          DataSource<?> source = entry.get();
-          List<String> componentNames = Components.getDefault().componentNamesForSource(source);
-
-          ContextMenu menu = new ContextMenu();
-          if (source.getDataType().isComplex()) {
-            menu.getItems().add(FxUtils.menuItem("Create tab", __ -> {
-              DashboardTab newTab = dashboard.addNewTab();
-              newTab.setTitle(entry.getViewName());
-              newTab.setSourcePrefix(source.getId() + "/");
-              newTab.setAutoPopulate(true);
-              dashboard.getSelectionModel().select(newTab);
-            }));
-            if (!componentNames.isEmpty()) {
-              menu.getItems().add(new SeparatorMenuItem());
-            }
-          } else if (componentNames.isEmpty()) {
-            // Can't create a tab, and no components can display the source
-            return;
-          }
-          componentNames.stream()
-              .map(name -> createShowAsMenuItem(name, source))
-              .forEach(menu.getItems()::add);
-
-          menu.show(tree.getScene().getWindow(), e.getScreenX(), e.getScreenY());
-        });
-        sourceType.getAvailableSources().addListener((MapChangeListener<String, Object>) change -> {
-          SourceEntry entry = sourceType.createSourceEntryForUri(change.getKey());
-          if (DataSourceUtils.isNotMetadata(entry.getName())) {
-            if (change.wasAdded()) {
-              tree.updateEntry(entry);
-            } else if (change.wasRemoved()) {
-              tree.removeEntry(entry);
-            }
-          }
-        });
-        sourceType.getAvailableSourceUris().stream()
-            .filter(DataSourceUtils::isNotMetadata)
-            .map(sourceType::createSourceEntryForUri)
-            .forEach(tree::updateEntry);
         TitledPane titledPane = new TitledPane(sourceType.getName(), tree);
         sourcePanes.put(plugin, titledPane);
         sourcesAccordion.getPanes().add(titledPane);
@@ -369,41 +294,6 @@ public class MainWindowController {
                 .forEach(tile -> pane.getChildren().remove(tile)));
     // ... and from the gallery
     widgetGallery.setWidgets(Components.getDefault().allWidgets().collect(Collectors.toList()));
-  }
-
-  /**
-   * Sorts tree nodes recursively in order of branches before leaves, then alphabetically.
-   *
-   * @param root the root node to sort
-   */
-  private void sortTree(TreeItem<? extends SourceEntry> root) {
-    if (!root.isLeaf()) {
-      FXCollections.sort(root.getChildren(),
-          branchesFirst.thenComparing(alphabetical));
-      root.getChildren().forEach(this::sortTree);
-    }
-  }
-
-  private void makeSourceRowDraggable(TreeTableRow<? extends SourceEntry> row) {
-    row.setOnDragDetected(event -> {
-      if (selectedEntry == null) {
-        return;
-      }
-      Dragboard dragboard = row.startDragAndDrop(TransferMode.COPY_OR_MOVE);
-      ClipboardContent content = new ClipboardContent();
-      content.put(DataFormats.source, selectedEntry);
-      dragboard.setContent(content);
-      event.consume();
-    });
-  }
-
-  private MenuItem createShowAsMenuItem(String componentName, DataSource<?> source) {
-    MenuItem menuItem = new MenuItem("Show as: " + componentName);
-    menuItem.setOnAction(action -> {
-      Components.getDefault().createComponent(componentName, source)
-          .ifPresent(dashboard::addComponentToActivePane);
-    });
-    return menuItem;
   }
 
   /**
