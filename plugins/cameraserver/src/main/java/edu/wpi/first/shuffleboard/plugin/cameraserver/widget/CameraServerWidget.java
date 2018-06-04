@@ -10,6 +10,10 @@ import edu.wpi.first.shuffleboard.plugin.cameraserver.data.Resolution;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.recording.serialization.ImageConverter;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.source.CameraServerSource;
 
+import org.fxmisc.easybind.EasyBind;
+import org.opencv.core.Core;
+import org.opencv.core.Mat;
+
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -57,6 +61,7 @@ public class CameraServerWidget extends SimpleAnnotatedWidget<CameraServerData> 
   @FXML
   private Node crosshairs;
 
+  private final Mat displayMat = new Mat();
   private final ImageConverter converter = new ImageConverter();
 
   private final BooleanProperty showControls = new SimpleBooleanProperty(this, "showControls", true);
@@ -75,10 +80,15 @@ public class CameraServerWidget extends SimpleAnnotatedWidget<CameraServerData> 
 
   @FXML
   private void initialize() {
-    imageView.imageProperty().bind(dataOrDefault
-        .map(CameraServerData::getImage)
-        .map(converter::convert)
-        .orElse(emptyImage));
+    imageView.imageProperty().bind(EasyBind.combine(dataOrDefault, rotation, (data, rotation) -> {
+      if (data.getImage() == null) {
+        return emptyImage;
+      } else {
+        data.getImage().copyTo(displayMat);
+        rotation.rotate(displayMat);
+        return converter.convert(displayMat);
+      }
+    }));
     fpsLabel.textProperty().bind(dataOrDefault.map(CameraServerData::getFps).map(fps -> {
       if (fps < 0) {
         return "--- FPS";
@@ -119,25 +129,6 @@ public class CameraServerWidget extends SimpleAnnotatedWidget<CameraServerData> 
         oldSource.targetResolutionProperty().removeListener(resolutionChangeListener);
       }
     });
-    rotation.addListener((__, old, rotation) -> {
-      imageContainer.setRotate(rotation.degrees());
-      if (((rotation == Rotation.QUARTER_CW) && (old == Rotation.QUARTER_CCW))
-          || ((rotation == Rotation.QUARTER_CCW) && (old == Rotation.QUARTER_CW))
-          || ((rotation == Rotation.HALF) && (old == Rotation.NONE))
-          || ((rotation == Rotation.NONE) && (old == Rotation.HALF))) {
-        // No change
-        return;
-      }
-      if (rotation.degrees() % 180 == 0) {
-        // Reset
-        imageContainer.setMaxWidth(-1);
-        imageContainer.setMaxHeight(-1);
-      } else {
-        // Constrain width and height to avoid overflowing widget bounds
-        imageContainer.setMaxWidth(imageContainer.getHeight());
-        imageContainer.setMaxHeight(imageContainer.getWidth());
-      }
-    });
 
     exportProperties(rotation, showControls, showCrosshair, crosshairColor);
   }
@@ -173,17 +164,17 @@ public class CameraServerWidget extends SimpleAnnotatedWidget<CameraServerData> 
   }
 
   public enum Rotation {
-    NONE("None", 0),
-    QUARTER_CW("90 degrees clockwise", 270),
-    QUARTER_CCW("90 degrees counter-clockwise", 90),
-    HALF("180 degrees", 180);
+    NONE("None", image -> {}),
+    QUARTER_CW("90 degrees clockwise", image -> Core.rotate(image, image, Core.ROTATE_90_CLOCKWISE)),
+    QUARTER_CCW("90 degrees counter-clockwise", image -> Core.rotate(image, image, Core.ROTATE_90_COUNTERCLOCKWISE)),
+    HALF("180 degrees", image -> Core.rotate(image, image, Core.ROTATE_180));
 
     private final String humanReadable;
-    private final double degrees;
+    private final RotationStrategy rotationStrategy;
 
-    Rotation(String humanReadable, double degrees) {
+    Rotation(String humanReadable, RotationStrategy rotationStrategy) {
       this.humanReadable = humanReadable;
-      this.degrees = degrees;
+      this.rotationStrategy = rotationStrategy;
     }
 
     @Override
@@ -191,9 +182,13 @@ public class CameraServerWidget extends SimpleAnnotatedWidget<CameraServerData> 
       return humanReadable;
     }
 
-    public double degrees() {
-      return degrees;
+    void rotate(Mat image) {
+      rotationStrategy.rotate(image);
     }
+  }
+
+  private interface RotationStrategy {
+    void rotate(Mat src);
   }
 
   public boolean isShowControls() {
