@@ -39,7 +39,7 @@ public final class AppPreferences {
           Setting.of("Theme", "The theme to display Shuffleboard with", theme)
       ),
       Group.of("Tab Settings",
-          Setting.of("Default tile size", "The tile size of new tabs", defaultTileSize)
+          Setting.of("Default tile size", "The tile size of new tabs (existing tabs are unaffected)", defaultTileSize)
       ),
       Group.of("Startup",
           Setting.of("Load last save file", "Load the most recent save file at startup", autoLoadLastSaveFile),
