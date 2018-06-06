@@ -4,6 +4,8 @@ import edu.wpi.first.shuffleboard.api.components.ActionList;
 import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
 import edu.wpi.first.shuffleboard.api.data.types.NumberArrayType;
 import edu.wpi.first.shuffleboard.api.data.types.NumberType;
+import edu.wpi.first.shuffleboard.api.prefs.Group;
+import edu.wpi.first.shuffleboard.api.prefs.Setting;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.util.AlphanumComparator;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
@@ -107,7 +109,7 @@ public class GraphWidget implements AnnotatedWidget {
   private final Map<Series<Number, Number>, SimpleData> realData = new HashMap<>();
 
   private final Function<Series<Number, Number>, BooleanProperty> createVisibleProperty = s -> {
-    SimpleBooleanProperty visible = new SimpleBooleanProperty(this, s.getName() + " visible", true);
+    SimpleBooleanProperty visible = new SimpleBooleanProperty(this, s.getName(), true);
     visible.addListener((__, was, is) -> {
       if (is) {
         if (!chart.getData().contains(s)) {
@@ -425,13 +427,23 @@ public class GraphWidget implements AnnotatedWidget {
 
   @Override
   public List<Property<?>> getProperties() {
-    return ImmutableList.<Property<?>>builder()
-        .add(visibleTime)
-        .addAll(visibleSeries.values()
-            .stream()
-            .sorted(Comparator.comparing(Property::getName, AlphanumComparator.INSTANCE))
-            .collect(Collectors.toList()))
-        .build();
+    throw new UnsupportedOperationException("getSettings() should have been called instead of this method!");
+  }
+
+  @Override
+  public List<Group> getSettings() {
+    return ImmutableList.of(
+        Group.of("Graph",
+            Setting.of("Visible time", visibleTime)
+        ),
+        Group.of("Visible data",
+            visibleSeries.values()
+                .stream()
+                .sorted(Comparator.comparing(Property::getName, AlphanumComparator.INSTANCE))
+                .map(p -> Setting.of(p.getName(), p))
+                .collect(Collectors.toList())
+        )
+    );
   }
 
   public double getVisibleTime() {

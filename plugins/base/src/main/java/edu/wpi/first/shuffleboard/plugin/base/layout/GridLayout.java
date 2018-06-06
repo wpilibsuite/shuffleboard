@@ -1,6 +1,8 @@
 package edu.wpi.first.shuffleboard.plugin.base.layout;
 
 import edu.wpi.first.shuffleboard.api.components.ActionList;
+import edu.wpi.first.shuffleboard.api.prefs.Group;
+import edu.wpi.first.shuffleboard.api.prefs.Setting;
 import edu.wpi.first.shuffleboard.api.util.GridPoint;
 import edu.wpi.first.shuffleboard.api.util.ListUtils;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
@@ -333,10 +335,17 @@ public final class GridLayout extends LayoutBase {
 
   @Override
   public List<Property<?>> getProperties() {
+    throw new UnsupportedOperationException("getSettings() should have been called instead of this method!");
+  }
+
+  @Override
+  public List<Group> getSettings() {
     return ImmutableList.of(
-        numColumns,
-        numRows,
-        labelPositionProperty()
+        Group.of("Layout",
+            Setting.of("Number of columns", numColumns),
+            Setting.of("Number of rows", numRows),
+            Setting.of("Label position", labelPositionProperty())
+        )
     );
   }
 

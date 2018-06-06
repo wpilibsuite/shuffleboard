@@ -1,6 +1,8 @@
 package edu.wpi.first.shuffleboard.plugin.base.layout;
 
 import edu.wpi.first.shuffleboard.api.components.ActionList;
+import edu.wpi.first.shuffleboard.api.prefs.Group;
+import edu.wpi.first.shuffleboard.api.prefs.Setting;
 import edu.wpi.first.shuffleboard.api.util.ListUtils;
 import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.LayoutBase;
@@ -101,8 +103,15 @@ public class ListLayout extends LayoutBase {
 
   @Override
   public List<? extends Property<?>> getProperties() {
+    throw new UnsupportedOperationException("getSettings() should have been called instead of this method!");
+  }
+
+  @Override
+  public List<Group> getSettings() {
     return ImmutableList.of(
-        labelPositionProperty()
+        Group.of("Layout",
+            Setting.of("Label position", labelPositionProperty())
+        )
     );
   }
 
