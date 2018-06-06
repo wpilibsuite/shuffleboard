@@ -1,6 +1,5 @@
 package edu.wpi.first.shuffleboard.app;
 
-import edu.wpi.first.shuffleboard.api.DashboardMode;
 import edu.wpi.first.shuffleboard.api.components.ExtendedPropertySheet;
 import edu.wpi.first.shuffleboard.api.components.ShuffleboardDialog;
 import edu.wpi.first.shuffleboard.api.components.SourceTreeTable;
@@ -78,23 +77,24 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableRow;
+import javafx.scene.control.cell.TextFieldListCell;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.TransferMode;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Screen;
@@ -102,6 +102,7 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
 import javafx.stage.WindowEvent;
+import javafx.util.StringConverter;
 
 import static edu.wpi.first.shuffleboard.api.components.SourceTreeTable.alphabetical;
 import static edu.wpi.first.shuffleboard.api.components.SourceTreeTable.branchesFirst;
@@ -544,26 +545,55 @@ public class MainWindowController {
   @SuppressWarnings("unchecked")
   @FXML
   public void showPrefs() {
-    TabPane tabs = new TabPane();
-    tabs.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
+    SplitPane p = new SplitPane();
+    p.getStyleClass().add("settings-pane");
 
-    tabs.getTabs().add(new Tab("Application", AppPreferences.getInstance().getSettings().createPropertySheet()));
+    ListView<Category> categories = new ListView<>();
+    categories.getStyleClass().add("settings-categories");
+    categories.setCellFactory(v -> {
+      TextFieldListCell<Category> cell = new TextFieldListCell<>();
+      cell.setConverter(new StringConverter<Category>() {
+        @Override
+        public String toString(Category category) {
+          return category.getName();
+        }
+
+        @Override
+        public Category fromString(String string) {
+          throw new UnsupportedOperationException();
+        }
+      });
+      return cell;
+    });
+    categories.setMinWidth(180);
+    StackPane view = new StackPane();
+    p.getItems().add(categories);
+    p.getItems().add(view);
+    Platform.runLater(() -> {
+      p.setDividerPositions(0.125);
+    });
+
+    categories.getItems().add(AppPreferences.getInstance().getSettings());
+    view.getChildren().add(AppPreferences.getInstance().getSettings().createPropertySheet());
+    categories.getSelectionModel().selectedIndexProperty().addListener((__, old, index) -> {
+      if (index.intValue() < 0) {
+        index = 0;
+      }
+      view.getChildren().setAll(categories.getItems().get(index.intValue()).createPropertySheet());
+    });
+    categories.getSelectionModel().select(0);
 
     for (Plugin plugin : PluginLoader.getDefault().getLoadedPlugins()) {
       if (plugin.getSettings().isEmpty()) {
         continue;
       }
       Category category = Category.of(plugin.getName(), plugin.getSettings());
-      Tab tab = new Tab(plugin.getName());
-      tab.setContent(category.createPropertySheet());
-
-      tab.setDisable(DashboardMode.getCurrentMode() == DashboardMode.PLAYBACK);
-      tabs.getTabs().add(tab);
+      categories.getItems().add(category);
     }
 
     Dialog<Boolean> dialog = new Dialog<>();
     EasyBind.listBind(dialog.getDialogPane().getStylesheets(), root.getStylesheets());
-    dialog.getDialogPane().setContent(new BorderPane(tabs));
+    dialog.getDialogPane().setContent(p);
     dialog.initOwner(root.getScene().getWindow());
     dialog.initModality(Modality.APPLICATION_MODAL);
     dialog.initStyle(StageStyle.UTILITY);
@@ -577,9 +607,9 @@ public class MainWindowController {
     );
     dialog.setResultConverter(button -> !button.getButtonData().isCancelButton());
     if (dialog.showAndWait().orElse(false)) {
-      tabs.getTabs().stream()
-          .map(t -> (ExtendedPropertySheet) t.getContent())
-          .flatMap(p -> p.getItems().stream())
+      view.getChildren().stream()
+          .map(t -> (ExtendedPropertySheet) t)
+          .flatMap(t -> t.getItems().stream())
           .map(PropertySheet.Item::getObservableValue)
           .flatMap(TypeUtils.optionalStream())
           .flatMap(TypeUtils.castStream(FlushableProperty.class))

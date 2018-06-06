@@ -382,3 +382,30 @@
 .link-label:pressed {
     -fx-text-fill: #6b8acb
 }
+
+/*******************************************************************************
+ *                                                                             *
+ * Settings dialogs                                                            *
+ *                                                                             *
+ ******************************************************************************/
+.settings-pane {
+
+}
+
+.settings-pane .settings-categories {
+    -fx-border-color: null;
+}
+
+.settings-pane .settings-categories .list-cell {
+    -fx-background-color: null;
+}
+
+.settings-pane .settings-categories:focused .list-cell:selected {
+    -fx-background-color: -swatch-100;
+    -fx-text-fill: -fx-text-base-color;
+}
+
+.settings-pane .settings-categories .list-cell:selected {
+    -fx-background-color: -swatch-500;
+    -fx-text-fill: -fx-text-base-color;
+}
