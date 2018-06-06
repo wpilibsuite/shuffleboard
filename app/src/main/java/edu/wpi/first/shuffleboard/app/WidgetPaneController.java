@@ -476,6 +476,8 @@ public class WidgetPaneController {
    */
   private void cleanupWidgetDrag() {
     pane.setHighlight(false);
+    highlights.forEach((t, h) -> pane.removeHighlight(h));
+    highlights.clear();
   }
 
   private void dragMultipleTiles(Set<Tile<?>> tiles, GridPoint initialPoint) {
