@@ -2,14 +2,12 @@ package edu.wpi.first.shuffleboard.api.widget;
 
 import edu.wpi.first.shuffleboard.api.components.ActionList;
 import edu.wpi.first.shuffleboard.api.components.EditableLabel;
-import edu.wpi.first.shuffleboard.api.components.ExtendedPropertySheet;
 import edu.wpi.first.shuffleboard.api.dnd.DataFormats;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javafx.beans.property.Property;
@@ -18,8 +16,6 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.scene.Node;
 import javafx.scene.SnapshotParameters;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.ClipboardContent;
@@ -164,21 +160,6 @@ public abstract class LayoutBase implements Layout {
    */
   protected final ActionList baseActionsForComponent(Component component) {
     ActionList actions = ActionList.withName(component.getTitle());
-    actions.addAction("Edit properties", () -> {
-      ExtendedPropertySheet propertySheet = new ExtendedPropertySheet();
-      propertySheet.getItems().add(new ExtendedPropertySheet.PropertyItem<>(component.titleProperty()));
-      propertySheet.getItems().addAll(
-          component.getProperties().stream()
-              .map(ExtendedPropertySheet.PropertyItem::new)
-              .collect(Collectors.toList()));
-      Dialog<ButtonType> dialog = new Dialog<>();
-      dialog.setTitle("Edit properties");
-      dialog.getDialogPane().getStylesheets().setAll(getView().getScene().getRoot().getStylesheets());
-      dialog.getDialogPane().setContent(new BorderPane(propertySheet));
-      dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CLOSE);
-      dialog.setResultConverter(button -> button);
-      dialog.showAndWait();
-    });
     if (component instanceof Widget) {
       actions.addNested(createChangeMenusForWidget((Widget) component));
     }

@@ -2,6 +2,8 @@ package edu.wpi.first.shuffleboard.api.plugin;
 
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.json.ElementTypeAdapter;
+import edu.wpi.first.shuffleboard.api.prefs.Group;
+import edu.wpi.first.shuffleboard.api.prefs.Setting;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.recording.Converter;
 import edu.wpi.first.shuffleboard.api.sources.recording.serialization.TypeAdapter;
@@ -14,6 +16,7 @@ import com.cedarsoft.version.Version;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -203,9 +206,24 @@ public class Plugin {
    * changes (for example, a server URI that will attempt a connection on a change) should be wrapped in a
    * {@link edu.wpi.first.shuffleboard.api.prefs.FlushableProperty FlushableProperty} to ensure that a change will only
    * occur when a user manually confirms the change.
+   *
+   * @deprecated use {@link #getSettings()} instead
    */
+  @Deprecated
   public List<Property<?>> getProperties() {
     return ImmutableList.of();
+  }
+
+  public List<Group> getSettings() {
+    if (getProperties().isEmpty()) {
+      return ImmutableList.of();
+    }
+    // Default implementation for backwards compatibility
+    List<Setting<?>> settings = new ArrayList<>();
+    for (Property<?> property : getProperties()) {
+      settings.add(Setting.of(property.getName(), property));
+    }
+    return ImmutableList.of(Group.of("Miscellaneous", settings));
   }
 
   /**

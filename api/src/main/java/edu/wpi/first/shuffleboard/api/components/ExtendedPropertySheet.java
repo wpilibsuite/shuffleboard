@@ -21,6 +21,7 @@ import javafx.beans.property.Property;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Control;
+import javafx.scene.control.Skin;
 import javafx.scene.control.TextField;
 import javafx.util.StringConverter;
 
@@ -169,6 +170,13 @@ public class ExtendedPropertySheet extends PropertySheet {
       return Optional.of(property);
     }
 
+  }
+
+  @Override
+  protected Skin<?> createDefaultSkin() {
+    // Very similar to PropertySheetSkin, but changes the Category view to put everything in a single pane with headers
+    // for each category instead of an accordion view (which is very MEH in our context)
+    return new ExtendedPropertySheetSkin(this);
   }
 
   private abstract static class DebouncedPropertyEditor<T, C extends Control> extends AbstractPropertyEditor<T, C> {

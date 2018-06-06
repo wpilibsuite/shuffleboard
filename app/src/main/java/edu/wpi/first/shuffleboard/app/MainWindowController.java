@@ -6,6 +6,7 @@ import edu.wpi.first.shuffleboard.api.components.ShuffleboardDialog;
 import edu.wpi.first.shuffleboard.api.components.SourceTreeTable;
 import edu.wpi.first.shuffleboard.api.dnd.DataFormats;
 import edu.wpi.first.shuffleboard.api.plugin.Plugin;
+import edu.wpi.first.shuffleboard.api.prefs.Category;
 import edu.wpi.first.shuffleboard.api.prefs.FlushableProperty;
 import edu.wpi.first.shuffleboard.api.sources.ConnectionStatus;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
@@ -36,6 +37,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.io.Files;
 
+import org.controlsfx.control.PropertySheet;
 import org.fxmisc.easybind.EasyBind;
 
 import java.io.File;
@@ -67,6 +69,7 @@ import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.control.Accordion;
 import javafx.scene.control.Alert;
@@ -94,6 +97,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
@@ -543,14 +547,15 @@ public class MainWindowController {
     TabPane tabs = new TabPane();
     tabs.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
 
-    tabs.getTabs().add(new Tab("Application", new ExtendedPropertySheet(AppPreferences.getInstance().getProperties())));
+    tabs.getTabs().add(new Tab("Application", AppPreferences.getInstance().getSettings().createPropertySheet()));
 
     for (Plugin plugin : PluginLoader.getDefault().getLoadedPlugins()) {
-      if (plugin.getProperties().isEmpty()) {
+      if (plugin.getSettings().isEmpty()) {
         continue;
       }
+      Category category = Category.of(plugin.getName(), plugin.getSettings());
       Tab tab = new Tab(plugin.getName());
-      tab.setContent(new ExtendedPropertySheet(plugin.getProperties()));
+      tab.setContent(category.createPropertySheet());
 
       tab.setDisable(DashboardMode.getCurrentMode() == DashboardMode.PLAYBACK);
       tabs.getTabs().add(tab);
@@ -565,13 +570,17 @@ public class MainWindowController {
     dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CANCEL, ButtonType.OK);
     dialog.setTitle("Shuffleboard Preferences");
     dialog.setResizable(true);
+    Rectangle2D visualBounds = Screen.getPrimary().getVisualBounds(); // TODO use the screen the app is displayed on
+    dialog.getDialogPane().setPrefSize(
+        Math.max(600, visualBounds.getWidth() / 2),
+        Math.max(400, visualBounds.getHeight() / 2)
+    );
     dialog.setResultConverter(button -> !button.getButtonData().isCancelButton());
     if (dialog.showAndWait().orElse(false)) {
       tabs.getTabs().stream()
           .map(t -> (ExtendedPropertySheet) t.getContent())
           .flatMap(p -> p.getItems().stream())
-          .flatMap(TypeUtils.castStream(ExtendedPropertySheet.PropertyItem.class))
-          .map(i -> (Optional<ObservableValue>) i.getObservableValue())
+          .map(PropertySheet.Item::getObservableValue)
           .flatMap(TypeUtils.optionalStream())
           .flatMap(TypeUtils.castStream(FlushableProperty.class))
           .filter(FlushableProperty::isChanged)
