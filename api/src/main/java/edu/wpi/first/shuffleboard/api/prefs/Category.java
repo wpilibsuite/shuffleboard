@@ -67,11 +67,7 @@ public final class Category {
    */
   public PropertySheet createPropertySheet() {
     ExtendedPropertySheet propertySheet = new ExtendedPropertySheet();
-    if (groups.size() > 1) {
-      propertySheet.setMode(PropertySheet.Mode.CATEGORY);
-      propertySheet.setModeSwitcherVisible(true);
-    }
-    propertySheet.setSearchBoxVisible(true);
+    propertySheet.setMode(PropertySheet.Mode.CATEGORY);
     for (Group group : groups) {
       for (Setting<?> setting : group.getSettings()) {
         PropertySheet.Item item = new PropertySheet.Item() {
