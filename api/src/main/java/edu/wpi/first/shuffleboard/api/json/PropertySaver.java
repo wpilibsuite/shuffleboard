@@ -1,5 +1,7 @@
 package edu.wpi.first.shuffleboard.api.json;
 
+import edu.wpi.first.shuffleboard.api.prefs.Group;
+import edu.wpi.first.shuffleboard.api.prefs.Setting;
 import edu.wpi.first.shuffleboard.api.properties.SavePropertyFrom;
 import edu.wpi.first.shuffleboard.api.properties.SaveThisProperty;
 import edu.wpi.first.shuffleboard.api.util.ReflectionUtils;
@@ -29,7 +31,7 @@ public final class PropertySaver {
   /**
    * Saves all properties from a component. Properties are saved in this order:
    * <ol>
-   * <li>Properties exported via {@link Component#getProperties()}</li>
+   * <li>Properties exported via {@link Component#getSettings()}</li>
    * <li>Properties from fields annotated with {@link SaveThisProperty} in the component's class hierarchy</li>
    * <li>Properties from fields annotated with {@link SavePropertyFrom} in the component's class hierarchy</li>
    * </ol>
@@ -43,10 +45,13 @@ public final class PropertySaver {
         .map(f -> ReflectionUtils.<Property<?>>getUnchecked(object, f))
         .collect(Collectors.toList());
 
-    // Save exported properties
-    for (Property p : object.getProperties()) {
-      if (!savedProperties.contains(p)) {
-        PropertySaver.serializeProperty(context, jsonObject, p, p.getName());
+    // Save settings
+    for (Group group : object.getSettings()) {
+      for (Setting<?> setting : group.getSettings()) {
+        Property p = setting.getProperty();
+        if (!savedProperties.contains(p)) {
+          PropertySaver.serializeProperty(context, jsonObject, p, setting.getName());
+        }
       }
     }
 
@@ -103,7 +108,7 @@ public final class PropertySaver {
   /**
    * Read all properties from a component. Properties are loaded in this order:
    * <ol>
-   * <li>Properties exported via {@link Component#getProperties()}</li>
+   * <li>Properties exported via {@link Component#getSettings()}</li>
    * <li>Properties from fields annotated with {@link SaveThisProperty} in the component's class hierarchy</li>
    * <li>Properties from fields annotated with {@link SavePropertyFrom} in the component's class hierarchy</li>
    * </ol>
@@ -117,14 +122,17 @@ public final class PropertySaver {
         .map(f -> ReflectionUtils.<Property<?>>getUnchecked(object, f))
         .collect(Collectors.toList());
 
-    // Load exported properties
-    for (Property p : object.getProperties()) {
-      if (savedProperties.contains(p)) {
-        continue;
-      }
-      Object deserialized = context.deserialize(jsonObject.get(p.getName()), p.getValue().getClass());
-      if (deserialized != null) {
-        p.setValue(deserialized);
+    // Load settings
+    for (Group group : object.getSettings()) {
+      for (Setting<?> setting : group.getSettings()) {
+        Property p = setting.getProperty();
+        if (savedProperties.contains(p)) {
+          continue;
+        }
+        Object deserialized = context.deserialize(jsonObject.get(setting.getName()), p.getValue().getClass());
+        if (deserialized != null) {
+          p.setValue(deserialized);
+        }
       }
     }
 
