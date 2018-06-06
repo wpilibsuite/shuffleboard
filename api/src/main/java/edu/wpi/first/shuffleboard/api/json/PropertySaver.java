@@ -50,7 +50,7 @@ public final class PropertySaver {
       for (Setting<?> setting : group.getSettings()) {
         Property p = setting.getProperty();
         if (!savedProperties.contains(p)) {
-          PropertySaver.serializeProperty(context, jsonObject, p, setting.getName());
+          PropertySaver.serializeProperty(context, jsonObject, p, group.getName() + "/" + setting.getName());
         }
       }
     }
@@ -129,7 +129,7 @@ public final class PropertySaver {
         if (savedProperties.contains(p)) {
           continue;
         }
-        Object deserialized = context.deserialize(jsonObject.get(setting.getName()), p.getValue().getClass());
+        Object deserialized = context.deserialize(jsonObject.get(group.getName() + "/" + setting.getName()), p.getValue().getClass());
         if (deserialized != null) {
           p.setValue(deserialized);
         }
