@@ -214,11 +214,17 @@ public class Plugin {
     return ImmutableList.of();
   }
 
+  /**
+   * Gets the user-configurable settings for this plugin. Properties that are sensitive to rapid
+   * changes (for example, a server URI that will attempt a connection on a change) should be wrapped in a
+   * {@link edu.wpi.first.shuffleboard.api.prefs.FlushableProperty FlushableProperty} to ensure that a change will only
+   * occur when a user manually confirms the change.
+   */
   public List<Group> getSettings() {
+    // Default to use getProperties() for backwards compatibility
     if (getProperties().isEmpty()) {
       return ImmutableList.of();
     }
-    // Default implementation for backwards compatibility
     List<Setting<?>> settings = new ArrayList<>();
     for (Property<?> property : getProperties()) {
       settings.add(Setting.of(property.getName(), property));
