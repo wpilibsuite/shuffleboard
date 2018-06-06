@@ -5,6 +5,8 @@ import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.dnd.DataFormats;
 import edu.wpi.first.shuffleboard.api.dnd.DragUtils;
 import edu.wpi.first.shuffleboard.api.prefs.Category;
+import edu.wpi.first.shuffleboard.api.prefs.Group;
+import edu.wpi.first.shuffleboard.api.prefs.Setting;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.DummySource;
 import edu.wpi.first.shuffleboard.api.sources.SourceEntry;
@@ -943,9 +945,11 @@ public class WidgetPaneController {
    * @param tile the tile to pull properties from
    */
   private void showPropertySheet(Tile<?> tile) {
+    List<Group> groups = new ArrayList<>(tile.getContent().getSettings());
+    groups.add(Group.of("Miscellaneous", Setting.of("Title", tile.getContent().titleProperty())));
     PropertySheet propertySheet = Category.of(
         tile.getContent().getTitle(),
-        tile.getContent().getSettings()
+        groups
     ).createPropertySheet();
 
     Dialog<ButtonType> dialog = new Dialog<>();

@@ -3,7 +3,6 @@ package edu.wpi.first.shuffleboard.api.widget;
 import edu.wpi.first.shuffleboard.api.prefs.Group;
 import edu.wpi.first.shuffleboard.api.prefs.Setting;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -79,7 +78,6 @@ public interface Component {
     List<Setting<?>> settings = getProperties().stream()
         .map(property -> Setting.of(property.getName(), property))
         .collect(Collectors.toList());
-    settings.add(0, Setting.of("Title", titleProperty()));
     return Collections.singletonList(Group.of("Miscellaneous", settings));
   }
 
