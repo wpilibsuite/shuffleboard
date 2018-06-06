@@ -61,6 +61,19 @@ public interface Component {
   @Deprecated
   List<? extends Property<?>> getProperties();
 
+  /**
+   * Gets the settings for this component. Settings are defined in groups. There may be arbitrarily many groups or
+   * settings per group.
+   *
+   * <p>General structure:
+   * <pre>{@code
+   * ImmutableList.of(
+   *   Group.of("Group Name",
+   *     Setting.of("Setting name", settingProperty)
+   *   )
+   * );
+   * }</pre>
+   */
   default List<Group> getSettings() {
     // Default implementation: stick all the properties in a "miscellaneous" group
     List<Setting<?>> settings = getProperties().stream()

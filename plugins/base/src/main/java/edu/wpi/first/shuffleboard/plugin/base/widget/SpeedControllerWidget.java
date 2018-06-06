@@ -3,15 +3,20 @@ package edu.wpi.first.shuffleboard.plugin.base.widget;
 import edu.wpi.first.shuffleboard.api.LiveWindow;
 import edu.wpi.first.shuffleboard.api.components.LinearIndicator;
 import edu.wpi.first.shuffleboard.api.components.NumberField;
+import edu.wpi.first.shuffleboard.api.prefs.Group;
+import edu.wpi.first.shuffleboard.api.prefs.Setting;
 import edu.wpi.first.shuffleboard.api.widget.Description;
 import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 import edu.wpi.first.shuffleboard.api.widget.SimpleAnnotatedWidget;
 import edu.wpi.first.shuffleboard.plugin.base.data.SpeedControllerData;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.SpeedControllerType;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.primitives.Doubles;
 
 import org.fxmisc.easybind.EasyBind;
+
+import java.util.List;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.Property;
@@ -69,8 +74,15 @@ public class SpeedControllerWidget extends SimpleAnnotatedWidget<SpeedController
     });
     control.orientationProperty().bind(orientation);
     view.orientationProperty().bind(orientation);
+  }
 
-    exportProperties(controllable, orientation);
+  @Override
+  public List<Group> getSettings() {
+    return ImmutableList.of(
+        Group.of("Visuals",
+            Setting.of("Orientation", orientation)
+        )
+    );
   }
 
   @Override

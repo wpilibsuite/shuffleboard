@@ -2,10 +2,16 @@ package edu.wpi.first.shuffleboard.plugin.base.widget;
 
 import eu.hansolo.medusa.Gauge;
 
+import edu.wpi.first.shuffleboard.api.prefs.Group;
+import edu.wpi.first.shuffleboard.api.prefs.Setting;
 import edu.wpi.first.shuffleboard.api.widget.Description;
 import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 import edu.wpi.first.shuffleboard.api.widget.SimpleAnnotatedWidget;
 import edu.wpi.first.shuffleboard.plugin.base.data.GyroData;
+
+import com.google.common.collect.ImmutableList;
+
+import java.util.List;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
@@ -26,11 +32,16 @@ public class GyroWidget extends SimpleAnnotatedWidget<GyroData> {
   private void initialize() {
     gauge.valueProperty().bind(dataOrDefault.map(GyroData::getWrappedValue));
     valueLabel.textProperty().bind(dataOrDefault.map(GyroData::getValue).map(d -> String.format("%.2f°", d)));
+  }
 
-    exportProperties(
-        gauge.majorTickSpaceProperty(),
-        gauge.startAngleProperty(),
-        gauge.tickMarkRingVisibleProperty()
+  @Override
+  public List<Group> getSettings() {
+    return ImmutableList.of(
+        Group.of("Visuals",
+            Setting.of("Major tick spacing", gauge.majorTickSpaceProperty()),
+            Setting.of("Starting angle", gauge.startAngleProperty()),
+            Setting.of("Show tick mark ring", gauge.tickMarkRingVisibleProperty())
+        )
     );
   }
 

@@ -1,10 +1,10 @@
 package edu.wpi.first.shuffleboard.app;
 
 import edu.wpi.first.shuffleboard.api.components.ActionList;
-import edu.wpi.first.shuffleboard.api.components.ExtendedPropertySheet;
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.dnd.DataFormats;
 import edu.wpi.first.shuffleboard.api.dnd.DragUtils;
+import edu.wpi.first.shuffleboard.api.prefs.Category;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.DummySource;
 import edu.wpi.first.shuffleboard.api.sources.SourceEntry;
@@ -32,6 +32,7 @@ import edu.wpi.first.shuffleboard.app.json.SourcedRestorer;
 import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
 import edu.wpi.first.shuffleboard.app.sources.DestroyedSource;
 
+import org.controlsfx.control.PropertySheet;
 import org.fxmisc.easybind.EasyBind;
 
 import java.util.ArrayList;
@@ -942,13 +943,12 @@ public class WidgetPaneController {
    * @param tile the tile to pull properties from
    */
   private void showPropertySheet(Tile<?> tile) {
-    ExtendedPropertySheet propertySheet = new ExtendedPropertySheet();
-    propertySheet.getItems().add(new ExtendedPropertySheet.PropertyItem<>(tile.getContent().titleProperty()));
-    Dialog<ButtonType> dialog = new Dialog<>();
-    tile.getContent().getProperties().stream()
-        .map(ExtendedPropertySheet.PropertyItem::new)
-        .forEachOrdered(propertySheet.getItems()::add);
+    PropertySheet propertySheet = Category.of(
+        tile.getContent().getTitle(),
+        tile.getContent().getSettings()
+    ).createPropertySheet();
 
+    Dialog<ButtonType> dialog = new Dialog<>();
     dialog.setTitle("Edit properties");
     dialog.getDialogPane().getStylesheets().setAll(AppPreferences.getInstance().getTheme().getStyleSheets());
     dialog.getDialogPane().setContent(new BorderPane(propertySheet));

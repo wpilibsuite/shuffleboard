@@ -1,10 +1,16 @@
 package edu.wpi.first.shuffleboard.plugin.base.widget;
 
+import eu.hansolo.medusa.Gauge;
+
+import edu.wpi.first.shuffleboard.api.prefs.Group;
+import edu.wpi.first.shuffleboard.api.prefs.Setting;
 import edu.wpi.first.shuffleboard.api.widget.Description;
 import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 import edu.wpi.first.shuffleboard.api.widget.SimpleAnnotatedWidget;
 
-import eu.hansolo.medusa.Gauge;
+import com.google.common.collect.ImmutableList;
+
+import java.util.List;
 
 import javafx.fxml.FXML;
 import javafx.scene.layout.Pane;
@@ -21,8 +27,19 @@ public class SimpleDialWidget extends SimpleAnnotatedWidget<Number> {
   @FXML
   private void initialize() {
     dial.valueProperty().bind(dataOrDefault);
+  }
 
-    exportProperties(dial.minValueProperty(), dial.maxValueProperty(), dial.valueVisibleProperty());
+  @Override
+  public List<Group> getSettings() {
+    return ImmutableList.of(
+        Group.of("Range",
+            Setting.of("Min", dial.minValueProperty()),
+            Setting.of("Max", dial.maxValueProperty())
+        ),
+        Group.of("Visuals",
+            Setting.of("Show value", dial.valueVisibleProperty())
+        )
+    );
   }
 
   @Override

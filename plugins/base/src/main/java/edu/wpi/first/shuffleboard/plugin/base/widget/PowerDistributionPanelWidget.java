@@ -1,12 +1,18 @@
 package edu.wpi.first.shuffleboard.plugin.base.widget;
 
 import edu.wpi.first.shuffleboard.api.components.LinearIndicator;
+import edu.wpi.first.shuffleboard.api.prefs.Group;
+import edu.wpi.first.shuffleboard.api.prefs.Setting;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.UnitStringConverter;
 import edu.wpi.first.shuffleboard.api.widget.Description;
 import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 import edu.wpi.first.shuffleboard.api.widget.SimpleAnnotatedWidget;
 import edu.wpi.first.shuffleboard.plugin.base.data.PowerDistributionData;
+
+import com.google.common.collect.ImmutableList;
+
+import java.util.List;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -107,8 +113,15 @@ public class PowerDistributionPanelWidget extends SimpleAnnotatedWidget<PowerDis
       totalCurrent.setValue(newData.getTotalCurrent());
       totalCurrentText.setText(ampConverter.toString(newData.getTotalCurrent()));
     });
+  }
 
-    exportProperties(showIndicatorText);
+  @Override
+  public List<Group> getSettings() {
+    return ImmutableList.of(
+        Group.of("Visuals",
+            Setting.of("Show voltage and current values", showIndicatorText)
+        )
+    );
   }
 
   @Override

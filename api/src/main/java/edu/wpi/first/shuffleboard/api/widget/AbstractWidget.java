@@ -76,7 +76,10 @@ public abstract class AbstractWidget implements Widget {
    * and maximum values of that slider be configurable by the user.
    *
    * @param properties the properties to export
+   *
+   * @deprecated implement {@link #getSettings()} directly
    */
+  @Deprecated
   protected final void exportProperties(Property<?>... properties) {
     for (Property<?> property : properties) {
       if (!this.properties.contains(property)) {
