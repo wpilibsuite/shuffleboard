@@ -579,7 +579,7 @@ public class WidgetPaneController {
         }
       }
       widgetPaneActions.addAction("Edit Properties",
-          () -> showPropertySheet(tile));
+          () -> showPropertySheet(tile.getContent()));
 
       // Layout unwrapping
       if (tile instanceof LayoutTile) {
@@ -937,24 +937,30 @@ public class WidgetPaneController {
   }
 
   /**
-   * Creates the menu for editing the properties of a widget.
+   * Creates the menu for editing the properties of a component and all of its children.
    *
-   * @param tile the tile to pull properties from
+   * @param component the component to pull properties from
    */
-  private void showPropertySheet(Tile<?> tile) {
-    List<Category> categories = tile.getContent().allComponents()
+  private void showPropertySheet(Component component) {
+    List<Category> categories = component.allComponents()
         .map(c -> {
           List<Group> groups = new ArrayList<>(c.getSettings());
-          groups.add(Group.of("Miscellaneous", Setting.of("Title", c.titleProperty())));
+          groups.add(
+              Group.of("Miscellaneous",
+                  Setting.of(
+                      "Title",
+                      "The title of this " + c.getName().toLowerCase(),
+                      c.titleProperty()
+                  )
+              )
+          );
           return Category.of(c.getTitle(), groups);
         })
         .collect(Collectors.toList());
 
     SettingsDialog dialog = new SettingsDialog(categories);
 
-    dialog.titleProperty().bind(EasyBind.map(tile.getContent().titleProperty(), title -> {
-      return "Edit " + title + " Properties";
-    }));
+    dialog.titleProperty().bind(EasyBind.map(component.titleProperty(), title -> "Edit " + title + " Properties"));
     dialog.getDialogPane().getStylesheets().setAll(AppPreferences.getInstance().getTheme().getStyleSheets());
 
     dialog.showAndWait();
