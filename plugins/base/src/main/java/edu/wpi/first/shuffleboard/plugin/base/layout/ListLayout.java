@@ -13,7 +13,6 @@ import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.WeakHashMap;
 
-import javafx.beans.property.Property;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -99,11 +98,6 @@ public class ListLayout extends LayoutBase {
     // Update the actions for the pane - otherwise, it'll still have the same actions as the original component!
     ActionList.registerSupplier(container, () -> actionsForComponent(replacement));
     panes.put(replacement, container);
-  }
-
-  @Override
-  public List<? extends Property<?>> getProperties() {
-    throw new UnsupportedOperationException("getSettings() should have been called instead of this method!");
   }
 
   @Override

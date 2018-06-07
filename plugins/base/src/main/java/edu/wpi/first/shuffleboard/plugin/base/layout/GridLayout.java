@@ -24,7 +24,6 @@ import java.util.stream.Stream;
 
 import javafx.beans.binding.DoubleBinding;
 import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.Property;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
@@ -331,11 +330,6 @@ public final class GridLayout extends LayoutBase {
   @Override
   public Pane getView() {
     return root;
-  }
-
-  @Override
-  public List<Property<?>> getProperties() {
-    throw new UnsupportedOperationException("getSettings() should have been called instead of this method!");
   }
 
   @Override

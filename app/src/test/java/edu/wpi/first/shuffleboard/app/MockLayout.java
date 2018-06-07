@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.app;
 
+import edu.wpi.first.shuffleboard.api.prefs.Group;
 import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.Layout;
 
@@ -51,7 +52,7 @@ public final class MockLayout implements Layout {
   }
 
   @Override
-  public List<? extends Property<?>> getProperties() {
+  public List<Group> getSettings() {
     return Collections.emptyList();
   }
 }

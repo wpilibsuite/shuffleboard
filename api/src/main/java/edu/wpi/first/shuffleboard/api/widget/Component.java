@@ -1,11 +1,8 @@
 package edu.wpi.first.shuffleboard.api.widget;
 
 import edu.wpi.first.shuffleboard.api.prefs.Group;
-import edu.wpi.first.shuffleboard.api.prefs.Setting;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javafx.beans.property.Property;
@@ -53,14 +50,6 @@ public interface Component {
   String getName();
 
   /**
-   * Gets the user-configurable properties for this component.
-   *
-   * @deprecated use {@link #getSettings()} instead
-   */
-  @Deprecated
-  List<? extends Property<?>> getProperties();
-
-  /**
    * Gets the settings for this component. Settings are defined in groups. There may be arbitrarily many groups or
    * settings per group.
    *
@@ -73,12 +62,6 @@ public interface Component {
    * );
    * }</pre>
    */
-  default List<Group> getSettings() {
-    // Default implementation: stick all the properties in a "miscellaneous" group
-    List<Setting<?>> settings = getProperties().stream()
-        .map(property -> Setting.of(property.getName(), property))
-        .collect(Collectors.toList());
-    return Collections.singletonList(Group.of("Miscellaneous", settings));
-  }
+  List<Group> getSettings();
 
 }

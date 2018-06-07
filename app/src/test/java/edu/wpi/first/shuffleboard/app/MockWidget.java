@@ -1,6 +1,7 @@
 package edu.wpi.first.shuffleboard.app;
 
 import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
+import edu.wpi.first.shuffleboard.api.prefs.Group;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 
@@ -17,7 +18,7 @@ import javafx.scene.layout.Pane;
 public final class MockWidget implements Widget {
 
   @Override
-  public List<? extends Property<?>> getProperties() {
+  public List<Group> getSettings() {
     return ImmutableList.of();
   }
 

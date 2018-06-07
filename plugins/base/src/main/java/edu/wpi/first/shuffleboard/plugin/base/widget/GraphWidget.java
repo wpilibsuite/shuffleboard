@@ -426,11 +426,6 @@ public class GraphWidget implements AnnotatedWidget {
   }
 
   @Override
-  public List<Property<?>> getProperties() {
-    throw new UnsupportedOperationException("getSettings() should have been called instead of this method!");
-  }
-
-  @Override
   public List<Group> getSettings() {
     return ImmutableList.of(
         Group.of("Graph",

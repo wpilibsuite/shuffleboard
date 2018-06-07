@@ -35,7 +35,7 @@ import javafx.scene.layout.VBox;
  */
 class ExtendedPropertySheetSkin extends SkinBase<ExtendedPropertySheet> {
 
-  private static final double MIN_COLUMN_WIDTH = 100;
+  static final double MIN_COLUMN_WIDTH = 100;
   private final BorderPane content = new BorderPane();
   private final ScrollPane scrollPane = new ScrollPane();
 
