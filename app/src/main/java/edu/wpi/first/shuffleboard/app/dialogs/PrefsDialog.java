@@ -4,6 +4,8 @@ import edu.wpi.first.shuffleboard.api.plugin.Plugin;
 import edu.wpi.first.shuffleboard.api.prefs.Category;
 import edu.wpi.first.shuffleboard.api.prefs.Group;
 import edu.wpi.first.shuffleboard.api.prefs.Setting;
+import edu.wpi.first.shuffleboard.api.theme.Theme;
+import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 import edu.wpi.first.shuffleboard.app.components.DashboardTab;
 import edu.wpi.first.shuffleboard.app.components.DashboardTabPane;
@@ -13,10 +15,13 @@ import edu.wpi.first.shuffleboard.app.prefs.SettingsDialog;
 
 import com.google.common.collect.ImmutableList;
 
+import org.fxmisc.easybind.EasyBind;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javafx.beans.value.ObservableValue;
 import javafx.scene.control.Dialog;
 
 /**
@@ -25,6 +30,9 @@ import javafx.scene.control.Dialog;
 public final class PrefsDialog {
 
   private static final String DIALOG_TITLE = "Shuffleboard Preferences";
+
+  private final ObservableValue<List<String>> stylesheets
+      = EasyBind.map(AppPreferences.getInstance().themeProperty(), Theme::getStyleSheets);
 
   /**
    * Shows the preferences dialog.
@@ -57,7 +65,7 @@ public final class PrefsDialog {
         ));
 
     SettingsDialog dialog = new SettingsDialog(appSettings, plugins, tabs);
-    dialog.getDialogPane().getStylesheets().setAll(AppPreferences.getInstance().getTheme().getStyleSheets());
+    FxUtils.bind(dialog.getDialogPane().getStylesheets(), stylesheets);
     dialog.setTitle(DIALOG_TITLE);
     return dialog;
   }
