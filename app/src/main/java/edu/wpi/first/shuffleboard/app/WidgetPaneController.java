@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -579,7 +580,21 @@ public class WidgetPaneController {
         }
       }
       widgetPaneActions.addAction("Edit Properties",
-          () -> showPropertySheet(tile.getContent()));
+          () -> {
+            Set<Tile<?>> tiles = new LinkedHashSet<>();
+            tiles.add(tile);
+            tiles.addAll(selector.getSelectedTiles());
+            if (tiles.size() == 1) {
+              showPropertySheet(createSettingsCategoriesForComponent(tile.getContent()));
+            } else {
+              List<Category> categories = tiles.stream()
+                  .map(t -> t.getContent())
+                  .map(c -> createSettingsCategoriesForComponent(c))
+                  .flatMap(c -> c.stream())
+                  .collect(Collectors.toList());
+              showPropertySheet(categories);
+            }
+          });
 
       // Layout unwrapping
       if (tile instanceof LayoutTile) {
@@ -941,8 +956,17 @@ public class WidgetPaneController {
    *
    * @param component the component to pull properties from
    */
-  private void showPropertySheet(Component component) {
-    List<Category> categories = component.allComponents()
+  private void showPropertySheet(List<Category> categories) {
+    SettingsDialog dialog = new SettingsDialog(categories);
+
+    dialog.setTitle("Edit Properties");
+    dialog.getDialogPane().getStylesheets().setAll(AppPreferences.getInstance().getTheme().getStyleSheets());
+
+    dialog.showAndWait();
+  }
+
+  private List<Category> createSettingsCategoriesForComponent(Component component) {
+    return component.allComponents()
         .map(c -> {
           List<Group> groups = new ArrayList<>(c.getSettings());
           groups.add(
@@ -957,13 +981,6 @@ public class WidgetPaneController {
           return Category.of(c.getTitle(), groups);
         })
         .collect(Collectors.toList());
-
-    SettingsDialog dialog = new SettingsDialog(categories);
-
-    dialog.titleProperty().bind(EasyBind.map(component.titleProperty(), title -> "Edit " + title + " Properties"));
-    dialog.getDialogPane().getStylesheets().setAll(AppPreferences.getInstance().getTheme().getStyleSheets());
-
-    dialog.showAndWait();
   }
 
   private void collapseTile(Tile tile, int count, boolean left) {
