@@ -103,7 +103,7 @@ class ExtendedPropertySheetSkin extends SkinBase<ExtendedPropertySheet> {
 
     // show description as a tooltip
     String description = item.getDescription();
-    if (description != null && description.chars().allMatch(Character::isWhitespace)) {
+    if (description != null && !description.chars().allMatch(Character::isWhitespace)) {
       label.setTooltip(new Tooltip(description));
     }
 
