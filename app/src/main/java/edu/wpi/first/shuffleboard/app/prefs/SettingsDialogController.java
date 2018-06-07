@@ -15,9 +15,11 @@ import java.util.Collection;
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.fxml.FXML;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
+import javafx.scene.control.Label;
 import javafx.scene.control.SplitPane;
+import javafx.scene.control.TreeCell;
+import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeView;
 import javafx.scene.layout.StackPane;
 
 @ParametrizedController("SettingsDialog.fxml")
@@ -26,7 +28,9 @@ public final class SettingsDialogController {
   @FXML
   private SplitPane root;
   @FXML
-  private ListView<Category> categories;
+  private TreeView<Category> categories;
+  @FXML
+  private TreeItem<Category> rootItem;
   @FXML
   private StackPane view;
 
@@ -34,22 +38,24 @@ public final class SettingsDialogController {
   private void initialize() {
     FxUtils.setController(root, this);
 
-    root.getStyleClass().add("settings-pane");
     categories.setCellFactory(v -> {
-      ListCell<Category> cell = new ListCell<>();
+      TreeCell<Category> cell = new TreeCell<>();
+      cell.setPrefWidth(1);
       cell.textProperty().bind(EasyBind.monadic(cell.itemProperty()).map(Category::getName));
       return cell;
     });
 
-    categories.getSelectionModel().selectedIndexProperty().addListener((__, old, index) -> {
-      if (index.intValue() < 0) {
-        index = 0;
+    categories.getSelectionModel().selectedItemProperty().addListener((__, old, item) -> {
+      Category category = item.getValue();
+      if (category.getGroups().isEmpty()) {
+        view.getChildren().setAll(new Label("No settings for " + category.getName()));
+      } else {
+        view.getChildren().setAll(category.createPropertySheet());
       }
-      view.getChildren().setAll(categories.getItems().get(index.intValue()).createPropertySheet());
     });
 
-    categories.getItems().addListener((InvalidationListener) __ -> {
-      if (!categories.getItems().isEmpty()) {
+    rootItem.getChildren().addListener((InvalidationListener) __ -> {
+      if (!rootItem.getChildren().isEmpty()) {
         Platform.runLater(() -> {
           categories.getSelectionModel().select(0);
         });
@@ -59,8 +65,23 @@ public final class SettingsDialogController {
     Platform.runLater(() -> root.setDividerPositions(0));
   }
 
-  public void setCategories(Collection<Category> categories) {
-    this.categories.getItems().setAll(categories);
+  public void setCategories(Collection<Category> rootCategories) {
+    rootItem.getChildren().clear();
+    for (Category rootCategory : rootCategories) {
+      TreeItem<Category> item = new TreeItem<>(rootCategory);
+      addSubcategories(item);
+      rootItem.getChildren().add(item);
+    }
+  }
+
+  private void addSubcategories(TreeItem<Category> rootItem) {
+    rootItem.getValue().getSubcategories()
+        .forEach(category -> {
+          rootItem.setExpanded(true);
+          TreeItem<Category> item = new TreeItem<>(category);
+          addSubcategories(item);
+          rootItem.getChildren().add(item);
+        });
   }
 
   /**
@@ -68,15 +89,21 @@ public final class SettingsDialogController {
    * but flushable properties need to be manually updated.
    */
   public void applySettings() {
-    categories.getItems().stream()
-        .map(Category::getGroups)
-        .flatMap(Collection::stream)
-        .map(Group::getSettings)
-        .flatMap(Collection::stream)
-        .map(Setting::getProperty)
-        .flatMap(TypeUtils.castStream(FlushableProperty.class))
-        .filter(FlushableProperty::isChanged)
-        .forEach(FlushableProperty::flush);
+    applySettings(rootItem);
+  }
+
+  private void applySettings(TreeItem<Category> item) {
+    if (item.getValue() != null) {
+      item.getValue().getGroups()
+          .stream()
+          .map(Group::getSettings)
+          .flatMap(Collection::stream)
+          .map(Setting::getProperty)
+          .flatMap(TypeUtils.castStream(FlushableProperty.class))
+          .filter(FlushableProperty::isChanged)
+          .forEach(FlushableProperty::flush);
+    }
+    item.getChildren().forEach(this::applySettings);
   }
 
 }

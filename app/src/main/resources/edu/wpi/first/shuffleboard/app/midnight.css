@@ -221,7 +221,8 @@
     -fx-background-color: transparent;
 }
 
-.tree-table-row-cell > .tree-disclosure-node > .arrow {
+.tree-table-row-cell > .tree-disclosure-node > .arrow,
+.tree-cell > .tree-disclosure-node > .arrow {
     -fx-background-color: white;
 }
 

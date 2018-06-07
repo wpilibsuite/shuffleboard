@@ -15,6 +15,7 @@ import javafx.beans.value.ObservableValue;
 public final class Category {
 
   private final String name;
+  private final ImmutableList<Category> subcategories;
   private final ImmutableList<Group> groups;
 
   /**
@@ -26,7 +27,7 @@ public final class Category {
    * @return a new category
    */
   public static Category of(String name, Group... groups) {
-    return new Category(name, ImmutableList.copyOf(groups));
+    return Category.of(name, ImmutableList.copyOf(groups));
   }
 
   /**
@@ -38,11 +39,25 @@ public final class Category {
    * @return a new category
    */
   public static Category of(String name, Collection<Group> groups) {
-    return new Category(name, ImmutableList.copyOf(groups));
+    return new Category(name, ImmutableList.of(), ImmutableList.copyOf(groups));
   }
 
-  private Category(String name, ImmutableList<Group> groups) {
+  /**
+   * Creates a new category of settings, with optional subcategories.
+   *
+   * @param name          the name of the category
+   * @param subcategories the subcategories underneath this one
+   * @param groups        the groups of settings in this category
+   *
+   * @return a new category
+   */
+  public static Category of(String name, Collection<Category> subcategories, Collection<Group> groups) {
+    return new Category(name, ImmutableList.copyOf(subcategories), ImmutableList.copyOf(groups));
+  }
+
+  private Category(String name, ImmutableList<Category> subcategories, ImmutableList<Group> groups) {
     this.name = name;
+    this.subcategories = subcategories;
     this.groups = groups;
   }
 
@@ -54,6 +69,13 @@ public final class Category {
   }
 
   /**
+   * Gets the subcategories below this one.
+   */
+  public ImmutableList<Category> getSubcategories() {
+    return subcategories;
+  }
+
+  /**
    * Gets the groups of settings in this category.
    */
   public ImmutableList<Group> getGroups() {
@@ -61,7 +83,8 @@ public final class Category {
   }
 
   /**
-   * Creates a property sheet for editing the settings in this category.
+   * Creates a property sheet for editing the settings in this category. This does <i>not</i> include settings for
+   * subcategories.
    *
    * @return a new property sheet for this category
    */

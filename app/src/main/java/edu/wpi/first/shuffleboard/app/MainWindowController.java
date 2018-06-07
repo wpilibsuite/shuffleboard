@@ -5,6 +5,8 @@ import edu.wpi.first.shuffleboard.api.components.SourceTreeTable;
 import edu.wpi.first.shuffleboard.api.dnd.DataFormats;
 import edu.wpi.first.shuffleboard.api.plugin.Plugin;
 import edu.wpi.first.shuffleboard.api.prefs.Category;
+import edu.wpi.first.shuffleboard.api.prefs.Group;
+import edu.wpi.first.shuffleboard.api.prefs.Setting;
 import edu.wpi.first.shuffleboard.api.sources.ConnectionStatus;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.DataSourceUtils;
@@ -32,6 +34,7 @@ import edu.wpi.first.shuffleboard.app.sources.recording.Playback;
 import edu.wpi.first.shuffleboard.app.tab.TabInfoRegistry;
 
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
 import com.google.common.io.Files;
 
@@ -536,18 +539,28 @@ public class MainWindowController {
   @SuppressWarnings("unchecked")
   @FXML
   public void showPrefs() {
-    List<Category> categories = new ArrayList<>();
-    categories.add(AppPreferences.getInstance().getSettings());
-
+    List<Category> pluginCategories = new ArrayList<>();
     for (Plugin plugin : PluginLoader.getDefault().getLoadedPlugins()) {
       if (plugin.getSettings().isEmpty()) {
         continue;
       }
       Category category = Category.of(plugin.getName(), plugin.getSettings());
-      categories.add(category);
+      pluginCategories.add(category);
     }
+    Category appSettings = AppPreferences.getInstance().getSettings();
+    Category plugins = Category.of("Plugins", pluginCategories, ImmutableList.of());
+    Category tabs = Category.of("Tabs",
+        dashboard.getTabs().stream()
+            .flatMap(TypeUtils.castStream(DashboardTab.class))
+            .map(DashboardTab::getSettings)
+            .collect(Collectors.toList()),
+        ImmutableList.of(
+            Group.of("Default Settings",
+                Setting.of("Default tile size", AppPreferences.getInstance().defaultTileSizeProperty())
+            )
+        ));
 
-    SettingsDialog dialog = new SettingsDialog(categories);
+    SettingsDialog dialog = new SettingsDialog(appSettings, plugins, tabs);
     EasyBind.listBind(dialog.getDialogPane().getStylesheets(), root.getStylesheets());
     dialog.initOwner(root.getScene().getWindow());
     dialog.setTitle("Shuffleboard Preferences");

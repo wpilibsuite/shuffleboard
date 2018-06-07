@@ -403,16 +403,20 @@
     -fx-background-color: transparent;
 }
 
-.settings-pane .settings-categories .list-cell {
+.settings-pane .settings-categories .tree-cell {
     -fx-background-color: transparent;
 }
 
-.settings-pane .settings-categories:focused .list-cell:selected {
+.settings-pane .settings-categories:focused .tree-cell:selected {
     -fx-background-color: -swatch-100;
     -fx-text-fill: -fx-text-base-color;
 }
 
-.settings-pane .settings-categories .list-cell:selected {
+.settings-pane .settings-categories .tree-cell:selected {
     -fx-background-color: -swatch-500;
     -fx-text-fill: -fx-text-base-color;
+}
+
+.settings-pane .settings-categories .tree-cell > .tree-disclosure-node > .arrow {
+    -fx-background-color: -fx-text-base-color;
 }
