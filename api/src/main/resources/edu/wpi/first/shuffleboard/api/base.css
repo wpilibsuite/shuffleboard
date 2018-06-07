@@ -389,15 +389,25 @@
  *                                                                             *
  ******************************************************************************/
 .settings-pane {
+    -fx-border-width: 0 0 2px 0;
+    -fx-border-color: -swatch-light-gray;
+}
 
+.settings-pane > .split-pane-divider {
+    -fx-padding: 0 1 0 1;
+    -fx-background-color: -swatch-light-gray;
+    -fx-background-insets: 0;
 }
 
 .settings-pane .settings-categories {
-    -fx-border-color: null;
+    -fx-border-insets: 1em;
+    -fx-background-color: transparent;
+    -fx-border-color: orange;
+    -fx-border-width: 1em;
 }
 
 .settings-pane .settings-categories .list-cell {
-    -fx-background-color: null;
+    -fx-background-color: transparent;
 }
 
 .settings-pane .settings-categories:focused .list-cell:selected {

@@ -289,12 +289,10 @@
  ******************************************************************************/
 .list-view {
     -fx-background-color: transparent;
-    -fx-border-color: -swatch-light-gray;
-    -fx-border-width: 1;
 }
 
 .list-view .list-cell {
-    -fx-background-color: -swatch-dark-gray;
+    -fx-background-color: -swatch-gray;
 }
 
 .list-view .list-cell:filled:focused:selected {

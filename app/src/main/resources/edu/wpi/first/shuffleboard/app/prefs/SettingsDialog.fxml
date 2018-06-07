@@ -8,5 +8,5 @@
            fx:controller="edu.wpi.first.shuffleboard.app.prefs.SettingsDialogController"
            fx:id="root">
     <ListView fx:id="categories" minWidth="180"/>
-    <StackPane fx:id="view"/>
+    <StackPane fx:id="view" minWidth="340"/>
 </SplitPane>

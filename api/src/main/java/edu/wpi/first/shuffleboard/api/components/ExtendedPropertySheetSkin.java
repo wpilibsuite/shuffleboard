@@ -23,6 +23,7 @@ import javafx.scene.control.SkinBase;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
@@ -137,6 +138,12 @@ class ExtendedPropertySheetSkin extends SkinBase<ExtendedPropertySheet> {
       setPadding(new Insets(5, 15, 5, 15 + nestingLevel * 10));
       getStyleClass().add("property-pane");
       setItems(properties);
+      getColumnConstraints().addAll(
+          new ColumnConstraints(MIN_COLUMN_WIDTH, MIN_COLUMN_WIDTH * 1.5, Double.MAX_VALUE),
+          new ColumnConstraints(MIN_COLUMN_WIDTH, MIN_COLUMN_WIDTH, Double.MAX_VALUE)
+      );
+      setMinWidth(MIN_COLUMN_WIDTH * 2.1);
+      setPrefWidth(MIN_COLUMN_WIDTH * 2.6);
     }
 
     public void setItems(Collection<PropertySheet.Item> properties) {
