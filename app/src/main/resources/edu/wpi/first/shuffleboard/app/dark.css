@@ -120,14 +120,19 @@
  * Toggle switch                                                               *
  *                                                                             *
  ******************************************************************************/
+.tile .toggle-switch > .thumb-area {
+    -fx-background-color: -swatch-light-gray, -swatch-gray;
+}
+
 .toggle-switch > .thumb-area {
-    -fx-background-color: -swatch-gray;
+    -fx-background-color: -swatch-light-gray, -swatch-dark-gray;
 }
 
 .toggle-switch > .thumb {
     -fx-background-color: #AAAAAA;
 }
 
+.tile .toggle-switch:selected > .thumb-area,
 .toggle-switch:selected > .thumb-area {
     -fx-background-color: -swatch-500;
 }
