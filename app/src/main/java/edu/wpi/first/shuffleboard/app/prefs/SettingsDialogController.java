@@ -65,7 +65,13 @@ public final class SettingsDialogController {
     Platform.runLater(() -> root.setDividerPositions(0));
   }
 
-  public void setCategories(Collection<Category> rootCategories) {
+  /**
+   * Sets the root settings categories to display in the settings view. Subcategories will be displayed as subtrees
+   * underneath their parent category.
+   *
+   * @param rootCategories the root categories to display in the settings view
+   */
+  public void setRootCategories(Collection<Category> rootCategories) {
     rootItem.getChildren().clear();
     for (Category rootCategory : rootCategories) {
       TreeItem<Category> item = new TreeItem<>(rootCategory);

@@ -136,6 +136,9 @@ public class DashboardTab extends Tab implements HandledTab, Populatable {
     dialog.showAndWait();
   }
 
+  /**
+   * Gets the category of settings for this tab. This contains autopopulation settings, layout settings, and the tite.
+   */
   public Category getSettings() {
     // Use a flushable property here to prevent a call to populate() on every keystroke in the editor (!)
     FlushableProperty<String> flushableSourcePrefix = new FlushableProperty<>(sourcePrefix);

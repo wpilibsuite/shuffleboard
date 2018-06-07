@@ -22,6 +22,11 @@ import javafx.stage.StageStyle;
  */
 public final class SettingsDialog extends Dialog<Boolean> {
 
+  /**
+   * Creates a new settings dialog.
+   *
+   * @param categories the categories for settings to be edited in the dialog
+   */
   public SettingsDialog(Category... categories) {
     this(Arrays.asList(categories));
   }
@@ -29,14 +34,14 @@ public final class SettingsDialog extends Dialog<Boolean> {
   /**
    * Creates a new settings dialog.
    *
-   * @param categories the categories fo settings to be edited in the dialog
+   * @param categories the categories for settings to be edited in the dialog
    */
   public SettingsDialog(Collection<Category> categories) {
     SettingsDialogController controller;
     try {
       Node root = FxUtils.load(SettingsDialogController.class);
       controller = FxUtils.getController(root);
-      controller.setCategories(categories);
+      controller.setRootCategories(categories);
 
       getDialogPane().setContent(root);
     } catch (IOException e) {
