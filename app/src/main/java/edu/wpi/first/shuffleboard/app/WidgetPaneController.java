@@ -34,6 +34,7 @@ import edu.wpi.first.shuffleboard.app.sources.DestroyedSource;
 import org.fxmisc.easybind.EasyBind;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -356,14 +357,13 @@ public class WidgetPaneController {
             tiles.add(tile);
             tiles.addAll(selector.getSelectedTiles());
             if (tiles.size() == 1) {
-              showPropertySheet(createSettingsCategoriesForComponent(tile.getContent()));
+              showSettingsDialog(createSettingsCategoriesForComponent(tile.getContent()));
             } else {
               List<Category> categories = tiles.stream()
                   .map(t -> t.getContent())
                   .map(c -> createSettingsCategoriesForComponent(c))
-                  .flatMap(c -> c.stream())
                   .collect(Collectors.toList());
-              showPropertySheet(categories);
+              showSettingsDialog(categories);
             }
           });
 
@@ -582,11 +582,11 @@ public class WidgetPaneController {
   }
 
   /**
-   * Creates the menu for editing the properties of a component and all of its children.
+   * Creates and displays a dialog for editing settings.
    *
-   * @param component the component to pull properties from
+   * @param categories the root categories to display in the settings dialog
    */
-  private void showPropertySheet(List<Category> categories) {
+  private void showSettingsDialog(List<Category> categories) {
     SettingsDialog dialog = new SettingsDialog(categories);
 
     dialog.setTitle("Edit Properties");
@@ -595,22 +595,50 @@ public class WidgetPaneController {
     dialog.showAndWait();
   }
 
-  private List<Category> createSettingsCategoriesForComponent(Component component) {
-    return component.allComponents()
-        .map(c -> {
-          List<Group> groups = new ArrayList<>(c.getSettings());
-          groups.add(
-              Group.of("Miscellaneous",
-                  Setting.of(
-                      "Title",
-                      "The title of this " + c.getName().toLowerCase(Locale.US),
-                      c.titleProperty()
-                  )
-              )
-          );
-          return Category.of(c.getTitle(), groups);
-        })
-        .collect(Collectors.toList());
+  /**
+   * Creates and displays a dialog for editing settings.
+   *
+   * @param categories the root categories to display in the settings dialog
+   */
+  private void showSettingsDialog(Category... categories) {
+    showSettingsDialog(Arrays.asList(categories));
+  }
+
+  /**
+   * Creates a category for a component, setting subcategories as necessary if it contains other components.
+   *
+   * @param component the component to create a settings category for
+   *
+   * @return a new settings category
+   */
+  private Category createSettingsCategoriesForComponent(Component component) {
+    List<Group> groups = new ArrayList<>(component.getSettings());
+    groups.add(titleGroup(component));
+    if (component instanceof ComponentContainer) {
+      List<Category> subCategories = ((ComponentContainer) component).components()
+          .map(this::createSettingsCategoriesForComponent)
+          .collect(Collectors.toList());
+      return Category.of(component.getTitle(), subCategories, groups);
+    } else {
+      return Category.of(component.getTitle(), groups);
+    }
+  }
+
+  /**
+   * Creates a settings group for the title property of a component.
+   *
+   * @param component the component to create the settings group for
+   *
+   * @return a new settings group
+   */
+  private Group titleGroup(Component component) {
+    return Group.of("Miscellaneous",
+        Setting.of(
+            "Title",
+            "The title of this " + component.getName().toLowerCase(Locale.US),
+            component.titleProperty()
+        )
+    );
   }
 
   private static void destroyedSourceCouldNotBeRestored(DestroyedSource source, Throwable error) {
