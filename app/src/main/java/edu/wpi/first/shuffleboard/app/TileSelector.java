@@ -3,8 +3,10 @@ package edu.wpi.first.shuffleboard.app;
 import edu.wpi.first.shuffleboard.app.components.Tile;
 import edu.wpi.first.shuffleboard.app.components.WidgetPane;
 
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.WeakHashMap;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableSet;
@@ -29,10 +31,16 @@ public final class TileSelector {
 
   private final ObservableSet<Tile<?>> selectedTiles = FXCollections.observableSet();
 
+  private static final Map<WidgetPane, TileSelector> selectors = new WeakHashMap<>();
+
+  public static TileSelector forPane(WidgetPane pane) {
+    return selectors.computeIfAbsent(pane, TileSelector::new);
+  }
+
   /**
    * Creates a new tile selector.
    */
-  public TileSelector(WidgetPane pane) {
+  private TileSelector(WidgetPane pane) {
     this.pane = Objects.requireNonNull(pane, "Pane cannot be null");
 
     pane.getChildren().add(0, dragHighlightContainer);
