@@ -32,9 +32,9 @@ import edu.wpi.first.shuffleboard.app.components.WidgetTile;
 import edu.wpi.first.shuffleboard.app.dnd.TileDragResizer;
 import edu.wpi.first.shuffleboard.app.json.SourcedRestorer;
 import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
+import edu.wpi.first.shuffleboard.app.prefs.SettingsDialog;
 import edu.wpi.first.shuffleboard.app.sources.DestroyedSource;
 
-import org.controlsfx.control.PropertySheet;
 import org.fxmisc.easybind.EasyBind;
 
 import java.util.ArrayList;
@@ -62,9 +62,7 @@ import javafx.fxml.FXML;
 import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import javafx.scene.SnapshotParameters;
-import javafx.scene.control.ButtonType;
 import javafx.scene.control.ContextMenu;
-import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
@@ -77,7 +75,6 @@ import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
@@ -945,18 +942,20 @@ public class WidgetPaneController {
    * @param tile the tile to pull properties from
    */
   private void showPropertySheet(Tile<?> tile) {
-    List<Group> groups = new ArrayList<>(tile.getContent().getSettings());
-    groups.add(Group.of("Miscellaneous", Setting.of("Title", tile.getContent().titleProperty())));
-    PropertySheet propertySheet = Category.of(
-        tile.getContent().getTitle(),
-        groups
-    ).createPropertySheet();
+    List<Category> categories = tile.getContent().allComponents()
+        .map(c -> {
+          List<Group> groups = new ArrayList<>(c.getSettings());
+          groups.add(Group.of("Miscellaneous", Setting.of("Title", c.titleProperty())));
+          return Category.of(c.getTitle(), groups);
+        })
+        .collect(Collectors.toList());
 
-    Dialog<ButtonType> dialog = new Dialog<>();
-    dialog.setTitle("Edit properties");
+    SettingsDialog dialog = new SettingsDialog(categories);
+
+    dialog.titleProperty().bind(EasyBind.map(tile.getContent().titleProperty(), title -> {
+      return "Edit " + title + " Properties";
+    }));
     dialog.getDialogPane().getStylesheets().setAll(AppPreferences.getInstance().getTheme().getStyleSheets());
-    dialog.getDialogPane().setContent(new BorderPane(propertySheet));
-    dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CLOSE);
 
     dialog.showAndWait();
   }

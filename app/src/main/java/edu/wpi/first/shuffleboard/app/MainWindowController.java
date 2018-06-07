@@ -1,12 +1,10 @@
 package edu.wpi.first.shuffleboard.app;
 
-import edu.wpi.first.shuffleboard.api.components.ExtendedPropertySheet;
 import edu.wpi.first.shuffleboard.api.components.ShuffleboardDialog;
 import edu.wpi.first.shuffleboard.api.components.SourceTreeTable;
 import edu.wpi.first.shuffleboard.api.dnd.DataFormats;
 import edu.wpi.first.shuffleboard.api.plugin.Plugin;
 import edu.wpi.first.shuffleboard.api.prefs.Category;
-import edu.wpi.first.shuffleboard.api.prefs.FlushableProperty;
 import edu.wpi.first.shuffleboard.api.sources.ConnectionStatus;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.DataSourceUtils;
@@ -21,7 +19,6 @@ import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.LazyInit;
 import edu.wpi.first.shuffleboard.api.util.Storage;
 import edu.wpi.first.shuffleboard.api.util.ThreadUtils;
-import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.app.components.DashboardTab;
 import edu.wpi.first.shuffleboard.app.components.DashboardTabPane;
@@ -29,6 +26,7 @@ import edu.wpi.first.shuffleboard.app.components.WidgetGallery;
 import edu.wpi.first.shuffleboard.app.json.JsonBuilder;
 import edu.wpi.first.shuffleboard.app.plugin.PluginLoader;
 import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
+import edu.wpi.first.shuffleboard.app.prefs.SettingsDialog;
 import edu.wpi.first.shuffleboard.app.sources.recording.Playback;
 import edu.wpi.first.shuffleboard.app.tab.TabInfoRegistry;
 
@@ -36,7 +34,6 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.io.Files;
 
-import org.controlsfx.control.PropertySheet;
 import org.fxmisc.easybind.EasyBind;
 
 import java.io.File;
@@ -47,6 +44,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -68,16 +66,13 @@ import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.control.Accordion;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ContextMenu;
-import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.SplitPane;
@@ -86,7 +81,6 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableRow;
-import javafx.scene.control.cell.TextFieldListCell;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.KeyCode;
@@ -94,15 +88,12 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
-import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
 import javafx.stage.WindowEvent;
-import javafx.util.StringConverter;
 
 import static edu.wpi.first.shuffleboard.api.components.SourceTreeTable.alphabetical;
 import static edu.wpi.first.shuffleboard.api.components.SourceTreeTable.branchesFirst;
@@ -545,77 +536,22 @@ public class MainWindowController {
   @SuppressWarnings("unchecked")
   @FXML
   public void showPrefs() {
-    SplitPane p = new SplitPane();
-    p.getStyleClass().add("settings-pane");
-
-    ListView<Category> categories = new ListView<>();
-    categories.getStyleClass().add("settings-categories");
-    categories.setCellFactory(v -> {
-      TextFieldListCell<Category> cell = new TextFieldListCell<>();
-      cell.setConverter(new StringConverter<Category>() {
-        @Override
-        public String toString(Category category) {
-          return category.getName();
-        }
-
-        @Override
-        public Category fromString(String string) {
-          throw new UnsupportedOperationException();
-        }
-      });
-      return cell;
-    });
-    categories.setMinWidth(180);
-    StackPane view = new StackPane();
-    p.getItems().add(categories);
-    p.getItems().add(view);
-    Platform.runLater(() -> {
-      p.setDividerPositions(0.125);
-    });
-
-    categories.getItems().add(AppPreferences.getInstance().getSettings());
-    view.getChildren().add(AppPreferences.getInstance().getSettings().createPropertySheet());
-    categories.getSelectionModel().selectedIndexProperty().addListener((__, old, index) -> {
-      if (index.intValue() < 0) {
-        index = 0;
-      }
-      view.getChildren().setAll(categories.getItems().get(index.intValue()).createPropertySheet());
-    });
-    categories.getSelectionModel().select(0);
+    List<Category> categories = new ArrayList<>();
+    categories.add(AppPreferences.getInstance().getSettings());
 
     for (Plugin plugin : PluginLoader.getDefault().getLoadedPlugins()) {
       if (plugin.getSettings().isEmpty()) {
         continue;
       }
       Category category = Category.of(plugin.getName(), plugin.getSettings());
-      categories.getItems().add(category);
+      categories.add(category);
     }
 
-    Dialog<Boolean> dialog = new Dialog<>();
+    SettingsDialog dialog = new SettingsDialog(categories);
     EasyBind.listBind(dialog.getDialogPane().getStylesheets(), root.getStylesheets());
-    dialog.getDialogPane().setContent(p);
     dialog.initOwner(root.getScene().getWindow());
-    dialog.initModality(Modality.APPLICATION_MODAL);
-    dialog.initStyle(StageStyle.UTILITY);
-    dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CANCEL, ButtonType.OK);
     dialog.setTitle("Shuffleboard Preferences");
-    dialog.setResizable(true);
-    Rectangle2D visualBounds = Screen.getPrimary().getVisualBounds(); // TODO use the screen the app is displayed on
-    dialog.getDialogPane().setPrefSize(
-        Math.max(600, visualBounds.getWidth() / 2),
-        Math.max(400, visualBounds.getHeight() / 2)
-    );
-    dialog.setResultConverter(button -> !button.getButtonData().isCancelButton());
-    if (dialog.showAndWait().orElse(false)) {
-      view.getChildren().stream()
-          .map(t -> (ExtendedPropertySheet) t)
-          .flatMap(t -> t.getItems().stream())
-          .map(PropertySheet.Item::getObservableValue)
-          .flatMap(TypeUtils.optionalStream())
-          .flatMap(TypeUtils.castStream(FlushableProperty.class))
-          .filter(FlushableProperty::isChanged)
-          .forEach(FlushableProperty::flush);
-    }
+    dialog.showAndWait();
   }
 
   @FXML

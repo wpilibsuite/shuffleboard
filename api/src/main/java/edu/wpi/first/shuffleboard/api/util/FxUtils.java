@@ -216,7 +216,7 @@ public final class FxUtils {
    * @throws IllegalArgumentException if the class does not have a {@code ParametrizedController} annotation
    * @throws IOException              if the specified FXML file could not be loaded
    */
-  public static Pane load(Class<?> controllerClass) throws IllegalArgumentException, IOException {
+  public static <N extends Node> N load(Class<?> controllerClass) throws IllegalArgumentException, IOException {
     ParametrizedController annotation = controllerClass.getAnnotation(ParametrizedController.class);
     if (annotation == null) {
       throw new IllegalArgumentException("FXML controller class has no @ParametrizedController: " + controllerClass);
