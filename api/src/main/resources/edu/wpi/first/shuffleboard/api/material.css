@@ -379,13 +379,25 @@
  *                                                                             *
  ******************************************************************************/
 .list-view:focused .list-cell:filled:focused:selected {
-    -fx-background-color: -swatch-light-gray;
-    -fx-text-fill: -swatch-500;
+    -fx-background-color: -swatch-300;
+    -fx-text-fill: -fx-text-base-color;
 }
 
-.list-view:hover .list-cell:hover {
+.list-view:hover .list-cell:filled:hover {
     -fx-background-color: -swatch-light-gray;
     -fx-text-fill: -fx-text-base-color;
+}
+
+.list-view .list-cell:filled:selected {
+    -fx-background-color: -swatch-200;
+}
+
+.list-view {
+    -fx-background-color: transparent;
+}
+
+.list-view .list-cell {
+    -fx-background-color: derive(-fx-base, 26.4%);
 }
 
 /*******************************************************************************
