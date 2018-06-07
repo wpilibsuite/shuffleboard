@@ -390,7 +390,7 @@
  ******************************************************************************/
 .settings-pane {
     -fx-border-width: 0 0 2px 0;
-    -fx-border-color: -swatch-light-gray;
+    -fx-border-color: derive(-swatch-light-gray, 12%);
 }
 
 .settings-pane > .split-pane-divider {
@@ -400,10 +400,7 @@
 }
 
 .settings-pane .settings-categories {
-    -fx-border-insets: 1em;
     -fx-background-color: transparent;
-    -fx-border-color: orange;
-    -fx-border-width: 1em;
 }
 
 .settings-pane .settings-categories .list-cell {
