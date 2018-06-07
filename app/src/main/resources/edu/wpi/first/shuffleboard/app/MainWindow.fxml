@@ -1,20 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import edu.wpi.first.shuffleboard.app.components.DashboardTabPane?>
-<?import edu.wpi.first.shuffleboard.app.components.WidgetGallery?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
-<?import javafx.scene.control.Tab?>
-<?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.SeparatorMenuItem?>
-<?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.control.Accordion?>
-<?import javafx.scene.layout.VBox?>
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.geometry.Insets?>
+<?import javafx.scene.layout.VBox?>
 <VBox fx:id="root" maxHeight="Infinity" maxWidth="Infinity"
       xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="edu.wpi.first.shuffleboard.app.MainWindowController">
@@ -49,18 +43,7 @@
         </Menu>
     </MenuBar>
     <SplitPane fx:id="centerSplitPane" dividerPositions="0.02">
-        <TabPane tabClosingPolicy="UNAVAILABLE" prefWidth="400">
-            <Tab text="Sources">
-                <ScrollPane fitToWidth="true" fitToHeight="true">
-                    <Accordion fx:id="sourcesAccordion"/>
-                </ScrollPane>
-            </Tab>
-            <Tab text="Widgets">
-                <ScrollPane fitToWidth="true">
-                    <WidgetGallery vgap="10" hgap="10" prefColumns="3" fx:id="widgetGallery"/>
-                </ScrollPane>
-            </Tab>
-        </TabPane>
+        <fx:include source="LeftDrawer.fxml" fx:id="leftDrawer"/>
         <DashboardTabPane fx:id="dashboard"/>
     </SplitPane>
     <VBox>
@@ -73,7 +56,7 @@
                 <fx:include source="PlaybackControls.fxml"/>
             </center>
             <right>
-                <HBox fx:id="connectionIndicatorArea" spacing="2" alignment="CENTER" styleClass="connection-indicator-area"/>
+                <fx:include source="ConnectionIndicators.fxml"/>
             </right>
         </BorderPane>
     </VBox>

@@ -31,7 +31,7 @@ public class TileSelectorTest extends ApplicationTest {
   @Override
   public void start(Stage stage) {
     pane = new WidgetPane();
-    selector = new TileSelector(pane);
+    selector = TileSelector.forPane(pane);
     pane.setNumColumns(3);
     pane.setNumRows(2);
     firstTile = pane.addWidget(new MockWidget());
