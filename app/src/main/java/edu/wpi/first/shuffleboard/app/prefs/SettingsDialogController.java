@@ -72,6 +72,10 @@ public final class SettingsDialogController {
     this.categories.getItems().setAll(categories);
   }
 
+  /**
+   * Applies the user-made changes to the settings. Most changes affect their respective properties immediately,
+   * but flushable properties need to be manually updated.
+   */
   public void applySettings() {
     categories.getItems().stream()
         .map(Category::getGroups)

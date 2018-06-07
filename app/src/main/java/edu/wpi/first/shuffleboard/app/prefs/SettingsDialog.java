@@ -21,6 +21,11 @@ import javafx.stage.StageStyle;
  */
 public final class SettingsDialog extends Dialog<Boolean> {
 
+  /**
+   * Creates a new settings dialog.
+   *
+   * @param categories the categories fo settings to be edited in the dialog
+   */
   public SettingsDialog(Collection<Category> categories) {
     SettingsDialogController controller;
     try {

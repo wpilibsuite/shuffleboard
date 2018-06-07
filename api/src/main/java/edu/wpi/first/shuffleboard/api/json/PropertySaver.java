@@ -48,9 +48,9 @@ public final class PropertySaver {
     // Save settings
     for (Group group : object.getSettings()) {
       for (Setting<?> setting : group.getSettings()) {
-        Property p = setting.getProperty();
-        if (!savedProperties.contains(p)) {
-          PropertySaver.serializeProperty(context, jsonObject, p, group.getName() + "/" + setting.getName());
+        Property property = setting.getProperty();
+        if (!savedProperties.contains(property)) {
+          PropertySaver.serializeProperty(context, jsonObject, property, group.getName() + "/" + setting.getName());
         }
       }
     }
@@ -125,13 +125,15 @@ public final class PropertySaver {
     // Load settings
     for (Group group : object.getSettings()) {
       for (Setting<?> setting : group.getSettings()) {
-        Property p = setting.getProperty();
-        if (savedProperties.contains(p)) {
+        Property property = setting.getProperty();
+        if (savedProperties.contains(property)) {
           continue;
         }
-        Object deserialized = context.deserialize(jsonObject.get(group.getName() + "/" + setting.getName()), p.getValue().getClass());
+        Object deserialized = context.deserialize(
+            jsonObject.get(group.getName() + "/" + setting.getName()),
+            property.getValue().getClass());
         if (deserialized != null) {
-          p.setValue(deserialized);
+          property.setValue(deserialized);
         }
       }
     }

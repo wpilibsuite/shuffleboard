@@ -10,6 +10,7 @@ import org.controlsfx.property.editor.PropertyEditor;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Locale;
 
 import javafx.beans.InvalidationListener;
 import javafx.beans.value.ObservableValue;
@@ -86,14 +87,14 @@ class ExtendedPropertySheetSkin extends SkinBase<ExtendedPropertySheet> {
         });
         container.getChildren().add(pane);
         return container;
-      default:
-        // Fallthrough to sort by name, with no group headings
       case NAME:
+        // Fallthrough to sort by name, with no group headings
+      default:
         return new PropertyPane(getSkinnable().getItems());
     }
   }
 
-  private static void addEditorForItem(PropertyPane propertyPane, int row, PropertySheet.Item item) {
+  static void addEditorForItem(PropertyPane propertyPane, int row, PropertySheet.Item item) {
     // setup property label
     Label label = new Label(item.getName());
     label.setMinWidth(MIN_COLUMN_WIDTH);
@@ -101,7 +102,7 @@ class ExtendedPropertySheetSkin extends SkinBase<ExtendedPropertySheet> {
 
     // show description as a tooltip
     String description = item.getDescription();
-    if (description != null && !description.trim().isEmpty()) {
+    if (description != null && description.chars().allMatch(Character::isWhitespace)) {
       label.setTooltip(new Tooltip(description));
     }
 
@@ -142,7 +143,7 @@ class ExtendedPropertySheetSkin extends SkinBase<ExtendedPropertySheet> {
       getChildren().clear();
 
       String filter = getSkinnable().titleFilter().get();
-      filter = filter == null ? "" : filter.trim().toLowerCase();
+      filter = filter == null ? "" : filter.trim().toLowerCase(Locale.getDefault());
 
       int row = 0;
 
@@ -151,7 +152,7 @@ class ExtendedPropertySheetSkin extends SkinBase<ExtendedPropertySheet> {
         // filter properties
         String title = item.getName();
 
-        if (!filter.isEmpty() && !title.toLowerCase().contains(filter)) {
+        if (!filter.isEmpty() && !title.toLowerCase(Locale.getDefault()).contains(filter)) {
           continue;
         }
 
@@ -163,7 +164,7 @@ class ExtendedPropertySheetSkin extends SkinBase<ExtendedPropertySheet> {
     }
 
     @SuppressWarnings("unchecked")
-    private Node getEditor(PropertySheet.Item item) {
+    Node getEditor(PropertySheet.Item item) {
       PropertyEditor editor = getSkinnable().getPropertyEditorFactory().call(item);
       if (editor == null) {
         editor = new DefaultEditor(item);

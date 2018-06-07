@@ -43,6 +43,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -973,7 +974,7 @@ public class WidgetPaneController {
               Group.of("Miscellaneous",
                   Setting.of(
                       "Title",
-                      "The title of this " + c.getName().toLowerCase(),
+                      "The title of this " + c.getName().toLowerCase(Locale.US),
                       c.titleProperty()
                   )
               )

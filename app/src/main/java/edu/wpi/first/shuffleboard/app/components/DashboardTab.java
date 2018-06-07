@@ -1,7 +1,6 @@
 package edu.wpi.first.shuffleboard.app.components;
 
 import edu.wpi.first.shuffleboard.api.Populatable;
-import edu.wpi.first.shuffleboard.api.components.ExtendedPropertySheet;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.prefs.Category;
 import edu.wpi.first.shuffleboard.api.prefs.FlushableProperty;
@@ -24,13 +23,10 @@ import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
 
 import edu.wpi.first.networktables.NetworkTable;
 
-import org.controlsfx.control.PropertySheet;
 import org.fxmisc.easybind.EasyBind;
 
 import java.time.Duration;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -166,9 +162,9 @@ public class DashboardTab extends Tab implements HandledTab, Populatable {
     );
     Dialog<ButtonType> dialog = new Dialog<>();
     dialog.getDialogPane().getStylesheets().setAll(AppPreferences.getInstance().getTheme().getStyleSheets());
+    dialog.getDialogPane().setContent(new BorderPane(category.createPropertySheet()));
     dialog.setResizable(true);
     dialog.titleProperty().bind(EasyBind.map(this.title, t -> t + " Preferences"));
-    dialog.getDialogPane().setContent(new BorderPane(category.createPropertySheet()));
     dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CLOSE);
     dialog.setOnCloseRequest(__ -> {
       flushableSourcePrefix.flush();

@@ -25,7 +25,6 @@ import javafx.scene.AccessibleAttribute;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
-import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 
 import static java.util.Objects.requireNonNull;
