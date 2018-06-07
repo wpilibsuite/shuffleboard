@@ -369,6 +369,8 @@ final class WidgetPaneDragHandler implements EventHandler<DragEvent> {
 
   private void cleanupWidgetDrag() {
     pane.setHighlight(false);
+    highlights.forEach((t, h) -> pane.removeHighlight(h));
+    highlights.clear();
   }
 
   private boolean ignoreIfDragArtifact(Node node) {
