@@ -147,7 +147,7 @@
 }
 
 .toggle-switch > .thumb-area {
-    -fx-background-color: -swatch-light-gray, -swatch-dark-gray;
+    -fx-background-color: derive(-swatch-light-gray, -25%), -swatch-dark-gray;
 }
 
 .toggle-switch > .thumb {
