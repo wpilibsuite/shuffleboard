@@ -20,6 +20,7 @@ import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.api.widget.Sourced;
 import edu.wpi.first.shuffleboard.app.Autopopulator;
 import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
+import edu.wpi.first.shuffleboard.app.prefs.SettingsDialog;
 
 import edu.wpi.first.networktables.NetworkTable;
 
@@ -37,12 +38,9 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.ListChangeListener;
-import javafx.scene.control.ButtonType;
 import javafx.scene.control.ContextMenu;
-import javafx.scene.control.Dialog;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tab;
-import javafx.scene.layout.BorderPane;
 
 public class DashboardTab extends Tab implements HandledTab, Populatable {
 
@@ -131,11 +129,19 @@ public class DashboardTab extends Tab implements HandledTab, Populatable {
    * Shows a dialog for editing the properties of this tab.
    */
   public void showPrefsDialog() {
+    Category category = getSettings();
+    SettingsDialog dialog = new SettingsDialog(category);
+    dialog.getDialogPane().getStylesheets().setAll(AppPreferences.getInstance().getTheme().getStyleSheets());
+    dialog.titleProperty().bind(EasyBind.map(this.title, t -> t + " Preferences"));
+    dialog.showAndWait();
+  }
+
+  public Category getSettings() {
     // Use a flushable property here to prevent a call to populate() on every keystroke in the editor (!)
     FlushableProperty<String> flushableSourcePrefix = new FlushableProperty<>(sourcePrefix);
     WidgetPane widgetPane = getWidgetPane();
     FlushableProperty<Number> flushableTileSize = new FlushableProperty<>(widgetPane.tileSizeProperty());
-    Category category = Category.of("Tab Preferences",
+    return Category.of(getTitle(),
         Group.of("Autopopulation",
             Setting.of(
                 "Autopopulate",
@@ -160,17 +166,6 @@ public class DashboardTab extends Tab implements HandledTab, Populatable {
             Setting.of("Title", "The title of this tab", title)
         )
     );
-    Dialog<ButtonType> dialog = new Dialog<>();
-    dialog.getDialogPane().getStylesheets().setAll(AppPreferences.getInstance().getTheme().getStyleSheets());
-    dialog.getDialogPane().setContent(new BorderPane(category.createPropertySheet()));
-    dialog.setResizable(true);
-    dialog.titleProperty().bind(EasyBind.map(this.title, t -> t + " Preferences"));
-    dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CLOSE);
-    dialog.setOnCloseRequest(__ -> {
-      flushableSourcePrefix.flush();
-      flushableTileSize.flush();
-    });
-    dialog.showAndWait();
   }
 
   /**

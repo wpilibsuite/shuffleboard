@@ -2,19 +2,19 @@
 
 <?import edu.wpi.first.shuffleboard.app.components.DashboardTabPane?>
 <?import edu.wpi.first.shuffleboard.app.components.WidgetGallery?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Accordion?>
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.SeparatorMenuItem?>
+<?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
-<?import javafx.scene.control.SeparatorMenuItem?>
-<?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.control.Accordion?>
-<?import javafx.scene.layout.VBox?>
-<?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.geometry.Insets?>
+<?import javafx.scene.layout.VBox?>
 <VBox fx:id="root" maxHeight="Infinity" maxWidth="Infinity"
       xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="edu.wpi.first.shuffleboard.app.MainWindowController">
@@ -42,7 +42,7 @@
         <Menu text="Tab">
             <MenuItem text="New tab" onAction="#newTab" accelerator="SHORTCUT+T"/>
             <MenuItem text="Close current tab" onAction="#closeCurrentTab" accelerator="SHORTCUT+W"/>
-            <MenuItem text="Current tab preferences" onAction="#showCurrentTabPrefs" accelerator="SHORTCUT+SHIFT+,"/>
+            <MenuItem text="Tab preferences" onAction="#showTabPrefs" accelerator="SHORTCUT+SHIFT+,"/>
         </Menu>
         <Menu text="Help">
             <MenuItem text="About" onAction="#showAboutDialog" accelerator="F1"/>

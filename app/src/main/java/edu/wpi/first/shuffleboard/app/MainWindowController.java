@@ -19,6 +19,7 @@ import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.LazyInit;
 import edu.wpi.first.shuffleboard.api.util.Storage;
 import edu.wpi.first.shuffleboard.api.util.ThreadUtils;
+import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.app.components.DashboardTab;
 import edu.wpi.first.shuffleboard.app.components.DashboardTabPane;
@@ -76,7 +77,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.SplitPane;
-import javafx.scene.control.Tab;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.TreeItem;
@@ -596,11 +596,15 @@ public class MainWindowController {
   }
 
   @FXML
-  private void showCurrentTabPrefs() {
-    Tab currentTab = dashboard.getSelectionModel().getSelectedItem();
-    if (currentTab instanceof DashboardTab) {
-      ((DashboardTab) currentTab).showPrefsDialog();
-    }
+  private void showTabPrefs() {
+    List<Category> categories = dashboard.getTabs().stream()
+        .flatMap(TypeUtils.castStream(DashboardTab.class))
+        .map(DashboardTab::getSettings)
+        .collect(Collectors.toList());
+    SettingsDialog dialog = new SettingsDialog(categories);
+    dialog.getDialogPane().getStylesheets().setAll(stylesheets.getValue());
+    dialog.setTitle("Tab Preferences");
+    dialog.showAndWait();
   }
 
   @FXML

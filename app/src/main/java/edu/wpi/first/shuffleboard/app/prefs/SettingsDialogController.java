@@ -8,16 +8,17 @@ import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 
+import org.fxmisc.easybind.EasyBind;
+
 import java.util.Collection;
 
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.fxml.FXML;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SplitPane;
-import javafx.scene.control.cell.TextFieldListCell;
 import javafx.scene.layout.StackPane;
-import javafx.util.StringConverter;
 
 @ParametrizedController("SettingsDialog.fxml")
 public final class SettingsDialogController {
@@ -35,18 +36,8 @@ public final class SettingsDialogController {
 
     root.getStyleClass().add("settings-pane");
     categories.setCellFactory(v -> {
-      TextFieldListCell<Category> cell = new TextFieldListCell<>();
-      cell.setConverter(new StringConverter<Category>() {
-        @Override
-        public String toString(Category category) {
-          return category.getName();
-        }
-
-        @Override
-        public Category fromString(String string) {
-          throw new UnsupportedOperationException();
-        }
-      });
+      ListCell<Category> cell = new ListCell<>();
+      cell.textProperty().bind(EasyBind.monadic(cell.itemProperty()).map(Category::getName));
       return cell;
     });
 

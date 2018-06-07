@@ -4,6 +4,7 @@ import edu.wpi.first.shuffleboard.api.prefs.Category;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
 
 import javafx.geometry.Rectangle2D;
@@ -20,6 +21,10 @@ import javafx.stage.StageStyle;
  * main right-hand view. The first category in the list will be selected by default.
  */
 public final class SettingsDialog extends Dialog<Boolean> {
+
+  public SettingsDialog(Category... categories) {
+    this(Arrays.asList(categories));
+  }
 
   /**
    * Creates a new settings dialog.
