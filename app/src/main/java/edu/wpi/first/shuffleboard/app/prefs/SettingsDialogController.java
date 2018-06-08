@@ -48,22 +48,24 @@ public final class SettingsDialogController {
 
     categories.getSelectionModel().selectedItemProperty().addListener((__, old, item) -> {
       Category category = item.getValue();
-      if (category.getGroups().isEmpty()) {
-        view.getChildren().setAll(new Label("No settings for " + category.getName()));
-      } else {
-        view.getChildren().setAll(new ExtendedPropertySheet(category));
-      }
+      setViewForCategory(category);
     });
 
     rootItem.getChildren().addListener((InvalidationListener) __ -> {
       if (!rootItem.getChildren().isEmpty()) {
-        Platform.runLater(() -> {
-          categories.getSelectionModel().select(0);
-        });
+        setViewForCategory(rootItem.getChildren().get(0).getValue());
       }
     });
 
     Platform.runLater(() -> root.setDividerPositions(0));
+  }
+
+  private void setViewForCategory(Category category) {
+    if (category.getGroups().isEmpty()) {
+      view.getChildren().setAll(new Label("No settings for " + category.getName()));
+    } else {
+      view.getChildren().setAll(new ExtendedPropertySheet(category));
+    }
   }
 
   /**

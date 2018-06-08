@@ -3,6 +3,7 @@ package edu.wpi.first.shuffleboard.api.prefs;
 import com.google.common.collect.ImmutableList;
 
 import java.util.Collection;
+import java.util.Objects;
 
 /**
  * A category of settings. This is typically used to contain all the settings for a single configurable object, such
@@ -54,6 +55,10 @@ public final class Category {
   }
 
   private Category(String name, ImmutableList<Category> subcategories, ImmutableList<Group> groups) {
+    Objects.requireNonNull(name, "A category name cannot be null");
+    if (name.chars().allMatch(Character::isWhitespace)) {
+      throw new IllegalArgumentException("A category name cannot be empty");
+    }
     this.name = name;
     this.subcategories = subcategories;
     this.groups = groups;
