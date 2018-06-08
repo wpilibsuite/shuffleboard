@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.StackPane?>
+<StackPane xmlns="http://javafx.com/javafx"
+           xmlns:fx="http://javafx.com/fxml"
+           fx:controller="edu.wpi.first.shuffleboard.plugin.base.layout.GridLayout"
+           fx:id="root">
+    <padding>
+        <Insets topRightBottomLeft="4"/>
+    </padding>
+    <GridPane fx:id="grid"/>
+</StackPane>

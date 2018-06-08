@@ -1,7 +1,9 @@
 package edu.wpi.first.shuffleboard.api.util;
 
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
+import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -18,11 +20,14 @@ import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.AccessibleAttribute;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.paint.Color;
+import javafx.stage.Window;
+import javafx.stage.WindowEvent;
 
 import static java.util.Objects.requireNonNull;
 
@@ -200,6 +205,34 @@ public final class FxUtils {
    */
   public static <T> T getController(Node node) {
     return Maps.get(node.getProperties(), FX_CONTROLLER_KEY);
+  }
+
+  /**
+   * Loads an FXML file specified by its controller class' {@link ParametrizedController} annotation.
+   *
+   * @param controllerClass the FXML controller class to load
+   *
+   * @return the root pane of the FXML
+   *
+   * @throws IllegalArgumentException if the class does not have a {@code ParametrizedController} annotation
+   * @throws IOException              if the specified FXML file could not be loaded
+   */
+  public static <N extends Node> N load(Class<?> controllerClass) throws IllegalArgumentException, IOException {
+    ParametrizedController annotation = controllerClass.getAnnotation(ParametrizedController.class);
+    if (annotation == null) {
+      throw new IllegalArgumentException("FXML controller class has no @ParametrizedController: " + controllerClass);
+    }
+    return FXMLLoader.load(controllerClass.getResource(annotation.value()));
+  }
+
+  /**
+   * Fires a close request on a window. This is useful to call on the main application window to allow shutdown
+   * listeners to run, since they are not run when <tt>System.exit()</tt> or <tt>Platform.exit()</tt> are called.
+   *
+   * @param window the window to request to close
+   */
+  public static void requestClose(Window window) {
+    window.fireEvent(new WindowEvent(window, WindowEvent.WINDOW_CLOSE_REQUEST));
   }
 
 }

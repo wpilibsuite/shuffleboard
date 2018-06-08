@@ -1,16 +1,21 @@
 package edu.wpi.first.shuffleboard.plugin.base.widget;
 
 import edu.wpi.first.shuffleboard.api.components.ExtendedPropertySheet;
+import edu.wpi.first.shuffleboard.api.prefs.Group;
+import edu.wpi.first.shuffleboard.api.prefs.Setting;
+import edu.wpi.first.shuffleboard.api.sources.DataSourceUtils;
 import edu.wpi.first.shuffleboard.api.util.AlphanumComparator;
-import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.api.widget.Description;
 import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 import edu.wpi.first.shuffleboard.api.widget.SimpleAnnotatedWidget;
 import edu.wpi.first.shuffleboard.plugin.base.data.RobotPreferencesData;
 
+import com.google.common.collect.ImmutableList;
+
 import org.controlsfx.control.PropertySheet;
 
 import java.util.Comparator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -55,10 +60,9 @@ public class RobotPreferencesWidget extends SimpleAnnotatedWidget<RobotPreferenc
             .forEach(wrapperProperties::remove);
       }
       updated.forEach((key, value) -> {
-        if (NetworkTableUtils.isMetadata(key)) {
-          return;
+        if (DataSourceUtils.isNotMetadata(key)) {
+          wrapperProperties.computeIfAbsent(key, k -> generateWrapper(k, value)).setValue(value);
         }
-        wrapperProperties.computeIfAbsent(key, k -> generateWrapper(k, value)).setValue(value);
       });
     });
 
@@ -70,8 +74,15 @@ public class RobotPreferencesWidget extends SimpleAnnotatedWidget<RobotPreferenc
       }
       propertySheet.getItems().sort(itemSorter);
     });
+  }
 
-    exportProperties(propertySheet.searchBoxVisibleProperty());
+  @Override
+  public List<Group> getSettings() {
+    return ImmutableList.of(
+        Group.of("Miscellaneous",
+            Setting.of("Show search box", propertySheet.searchBoxVisibleProperty())
+        )
+    );
   }
 
   @Override

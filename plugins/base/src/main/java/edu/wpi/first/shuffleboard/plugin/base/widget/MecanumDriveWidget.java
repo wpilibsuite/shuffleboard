@@ -1,6 +1,8 @@
 package edu.wpi.first.shuffleboard.plugin.base.widget;
 
 import edu.wpi.first.shuffleboard.api.components.CurvedArrow;
+import edu.wpi.first.shuffleboard.api.prefs.Group;
+import edu.wpi.first.shuffleboard.api.prefs.Setting;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.util.Vector2D;
 import edu.wpi.first.shuffleboard.api.widget.Components;
@@ -9,8 +11,12 @@ import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 import edu.wpi.first.shuffleboard.plugin.base.data.MecanumDriveData;
 import edu.wpi.first.shuffleboard.plugin.base.data.SpeedControllerData;
 
+import com.google.common.collect.ImmutableList;
+
 import org.fxmisc.easybind.EasyBind;
 import org.fxmisc.easybind.monadic.MonadicBinding;
+
+import java.util.List;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -120,7 +126,6 @@ public final class MecanumDriveWidget extends AbstractDriveWidget<MecanumDriveDa
     drawForceVectors(new MecanumDriveData(0, 0, 0, 0));
 
     driveView.getChildren().add(0, generateMecanumDriveBase(30, 80, 150, 200));
-    exportProperties(showForceVectors);
   }
 
   /**
@@ -128,6 +133,15 @@ public final class MecanumDriveWidget extends AbstractDriveWidget<MecanumDriveDa
    */
   private void drawForceVectors(MecanumDriveData data) {
     vectorPane.getChildren().setAll(drawDirectionVector(data));
+  }
+
+  @Override
+  public List<Group> getSettings() {
+    return ImmutableList.of(
+        Group.of("Visuals",
+            Setting.of("Show velocity vectors", showForceVectors)
+        )
+    );
   }
 
   @Override

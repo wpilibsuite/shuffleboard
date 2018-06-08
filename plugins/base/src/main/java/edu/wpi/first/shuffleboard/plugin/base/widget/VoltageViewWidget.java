@@ -1,6 +1,8 @@
 package edu.wpi.first.shuffleboard.plugin.base.widget;
 
 import edu.wpi.first.shuffleboard.api.components.LinearIndicator;
+import edu.wpi.first.shuffleboard.api.prefs.Group;
+import edu.wpi.first.shuffleboard.api.prefs.Setting;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.util.UnitStringConverter;
 import edu.wpi.first.shuffleboard.api.widget.AnnotatedWidget;
@@ -11,8 +13,11 @@ import edu.wpi.first.shuffleboard.plugin.base.data.AnalogInputData;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.AnalogInputType;
 import edu.wpi.first.shuffleboard.api.data.types.NumberType;
 
+import com.google.common.collect.ImmutableList;
+
 import org.fxmisc.easybind.EasyBind;
 
+import java.util.List;
 import java.util.logging.Logger;
 
 import javafx.beans.property.DoubleProperty;
@@ -64,8 +69,21 @@ public class VoltageViewWidget extends SingleSourceWidget implements AnnotatedWi
               }
             }));
     indicator.setLabelFormatter(new UnitStringConverter("V")); // "Volts" is too long and causes clipping issues
-    exportProperties(indicator.minProperty(), indicator.maxProperty(), indicator.centerProperty(),
-        indicator.orientationProperty(), numTicks);
+  }
+
+  @Override
+  public List<Group> getSettings() {
+    return ImmutableList.of(
+        Group.of("Range",
+            Setting.of("Min", indicator.minProperty()),
+            Setting.of("Max", indicator.maxProperty()),
+            Setting.of("Center", indicator.centerProperty())
+        ),
+        Group.of("Visuals",
+            Setting.of("Orientation", indicator.orientationProperty()),
+            Setting.of("Number of tick marks", numTicks)
+        )
+    );
   }
 
   @Override

@@ -25,10 +25,10 @@ dependencies {
     compile(project(path = ":plugins:cameraserver"))
     compile(project(path = ":plugins:networktables"))
     compile(project(path = ":plugins:powerup"))
-    compile(group = "com.google.code.gson", name = "gson", version = "2.8.2")
     compile(group = "de.huxhorn.lilith", name = "de.huxhorn.lilith.3rdparty.junique", version = "1.0.4")
     compile(group = "com.github.samcarlberg", name = "update-checker", version = "+")
     compile(group = "com.github.zafarkhaja", name = "java-semver", version = "0.9.0")
+    compile(group = "org.apache.commons", name = "commons-csv", version = "1.5")
     testCompile(project("test_plugins"))
 }
 

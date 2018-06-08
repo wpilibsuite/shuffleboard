@@ -5,8 +5,8 @@ import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
+import edu.wpi.first.shuffleboard.api.sources.DataSourceUtils;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
-import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.Components;
@@ -41,7 +41,7 @@ public class SubsystemLayout extends ListLayout implements Populatable, Sourced 
         && !getSource().getId().equals(sourceId)
         && sourceId.startsWith(getSource().getId())
         && dataType != DataTypes.Map
-        && !NetworkTableUtils.isMetadata(sourceId);
+        && DataSourceUtils.isNotMetadata(sourceId);
   }
 
   @Override

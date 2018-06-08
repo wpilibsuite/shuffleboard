@@ -1,12 +1,18 @@
 package edu.wpi.first.shuffleboard.plugin.base.widget;
 
 import edu.wpi.first.shuffleboard.api.components.LinearIndicator;
+import edu.wpi.first.shuffleboard.api.prefs.Group;
+import edu.wpi.first.shuffleboard.api.prefs.Setting;
 import edu.wpi.first.shuffleboard.api.widget.Description;
 import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 import edu.wpi.first.shuffleboard.api.widget.SimpleAnnotatedWidget;
 import edu.wpi.first.shuffleboard.plugin.base.data.ThreeAxisAccelerometerData;
 
+import com.google.common.collect.ImmutableList;
+
 import org.fxmisc.easybind.EasyBind;
+
+import java.util.List;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
@@ -72,8 +78,6 @@ public class ThreeAxisAccelerometerWidget extends SimpleAnnotatedWidget<ThreeAxi
     xLabel.textProperty().bind(EasyBind.combine(x.valueProperty(), numDecimals, this::format));
     yLabel.textProperty().bind(EasyBind.combine(y.valueProperty(), numDecimals, this::format));
     zLabel.textProperty().bind(EasyBind.combine(z.valueProperty(), numDecimals, this::format));
-
-    exportProperties(range, showText, numDecimals, x.showTickMarksProperty());
   }
 
   private String format(Number value, Number numDecimalPlaces) {
@@ -82,6 +86,20 @@ public class ThreeAxisAccelerometerWidget extends SimpleAnnotatedWidget<ThreeAxi
 
   private int negateInteger(int i) {
     return -i;
+  }
+
+  @Override
+  public List<Group> getSettings() {
+    return ImmutableList.of(
+        Group.of("Accelerometer",
+            Setting.of("Range", range)
+        ),
+        Group.of("Visuals",
+            Setting.of("Show value", showText),
+            Setting.of("Precision", numDecimals),
+            Setting.of("Show tick marks", x.showTickMarksProperty())
+        )
+    );
   }
 
   @Override

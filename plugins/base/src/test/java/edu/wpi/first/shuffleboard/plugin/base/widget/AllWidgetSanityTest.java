@@ -6,6 +6,8 @@ import edu.wpi.first.shuffleboard.api.sources.DummySource;
 import edu.wpi.first.shuffleboard.api.util.AsyncUtils;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
+import edu.wpi.first.shuffleboard.api.widget.Layout;
+import edu.wpi.first.shuffleboard.api.widget.LayoutType;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 import edu.wpi.first.shuffleboard.api.widget.WidgetType;
 import edu.wpi.first.shuffleboard.plugin.base.BasePlugin;
@@ -55,11 +57,24 @@ public class AllWidgetSanityTest extends ApplicationTest {
     assertNotNull(widget.getView(), "No view for " + widgetType.getName());
   }
 
+  @ParameterizedTest
+  @MethodSource("createLayoutMap")
+  public void testNonNullLayoutView(LayoutType<?> layoutType) {
+    Layout layout = layoutType.get();
+    assertNotNull(layout.getView(), "No view for " + layoutType.getName());
+  }
+
   private static Stream<Arguments> createWidgetMap() {
     return plugin.getComponents().stream()
         .flatMap(TypeUtils.castStream(WidgetType.class))
         .flatMap(widgetType -> widgetType.getDataTypes().stream()
             .map(type -> Arguments.of(widgetType, type)));
+  }
+
+  private static Stream<Arguments> createLayoutMap() {
+    return plugin.getComponents().stream()
+        .flatMap(TypeUtils.castStream(LayoutType.class))
+        .map(Arguments::of);
   }
 
 }

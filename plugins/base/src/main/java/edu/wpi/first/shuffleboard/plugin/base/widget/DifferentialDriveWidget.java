@@ -1,6 +1,8 @@
 package edu.wpi.first.shuffleboard.plugin.base.widget;
 
 import edu.wpi.first.shuffleboard.api.components.CurvedArrow;
+import edu.wpi.first.shuffleboard.api.prefs.Group;
+import edu.wpi.first.shuffleboard.api.prefs.Setting;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.api.widget.Description;
@@ -9,6 +11,7 @@ import edu.wpi.first.shuffleboard.plugin.base.data.DifferentialDriveData;
 import edu.wpi.first.shuffleboard.plugin.base.data.SpeedControllerData;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
@@ -112,8 +115,19 @@ public final class DifferentialDriveWidget extends AbstractDriveWidget<Different
     vectorPane.getChildren().setAll(drawMotionVector(0, 0));
     driveView.getChildren().add(0, generateDifferentialDriveBase(
         WHEEL_WIDTH, wheelHeight.get(), FRAME_WIDTH, FRAME_HEIGHT, numWheels.get()));
+  }
 
-    exportProperties(numWheels, wheelHeight, showVectors);
+  @Override
+  public List<Group> getSettings() {
+    return ImmutableList.of(
+        Group.of("Wheels",
+            Setting.of("Number of wheels", numWheels),
+            Setting.of("Wheel diameter", wheelHeight)
+        ),
+        Group.of("Visuals",
+            Setting.of("Show velocity vectors", showVectors)
+        )
+    );
   }
 
   @Override

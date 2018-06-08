@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+<?import org.controlsfx.control.ToggleSwitch?>
+<HBox xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="edu.wpi.first.shuffleboard.app.ConvertRecordingPaneController"
+      fx:id="root"
+      spacing="8"
+      prefHeight="300.0" prefWidth="480.0">
+    <padding>
+        <Insets bottom="8.0" left="8.0" right="8.0" top="8.0"/>
+    </padding>
+    <BorderPane minHeight="-Infinity" minWidth="-Infinity" prefWidth="200.0" HBox.hgrow="NEVER">
+        <top>
+            <Label styleClass="h5" text="Files to Convert" BorderPane.alignment="CENTER"/>
+        </top>
+        <center>
+            <ListView fx:id="fileList" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+                <placeholder>
+                    <Label text="No files selected"/>
+                </placeholder>
+            </ListView>
+        </center>
+        <bottom>
+            <GridPane BorderPane.alignment="CENTER">
+                <columnConstraints>
+                    <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="100.0" prefWidth="100.0"/>
+                    <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="100.0" prefWidth="100.0"/>
+                </columnConstraints>
+                <rowConstraints>
+                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                </rowConstraints>
+                <Button minWidth="90.0" mnemonicParsing="false" onAction="#addFiles" text="Add Files"/>
+                <Button minWidth="90.0" mnemonicParsing="false" onAction="#addDirectory" text="Add Directory" GridPane.columnIndex="1"/>
+            </GridPane>
+        </bottom>
+    </BorderPane>
+    <BorderPane maxHeight="Infinity" maxWidth="Infinity" minWidth="-Infinity" HBox.hgrow="ALWAYS">
+        <top>
+            <VBox alignment="CENTER" BorderPane.alignment="CENTER" spacing="4">
+                <BorderPane.margin>
+                    <Insets bottom="8.0" left="8.0" right="8.0" top="8.0"/>
+                </BorderPane.margin>
+                <HBox alignment="CENTER" maxHeight="Infinity" maxWidth="Infinity" spacing="6.0">
+                    <Label text="Convert to"/>
+                    <ComboBox fx:id="formatDropdown" prefWidth="150.0" promptText="Choose format"/>
+                </HBox>
+                <ToggleSwitch text="Include metadata" fx:id="includeMetadata" selected="false"/>
+            </VBox>
+        </top>
+        <center>
+            <VBox alignment="CENTER" maxHeight="Infinity" maxWidth="Infinity" BorderPane.alignment="CENTER">
+                <TextField fx:id="destinationDirField" editable="false" promptText="Destination directory"/>
+                <Label fx:id="changeDestinationLabel" onMouseClicked="#chooseDestinationDir" styleClass="link-label" text="Change"/>
+            </VBox>
+        </center>
+        <bottom>
+            <Button fx:id="convertButton" mnemonicParsing="false" onAction="#convert" text="Convert" BorderPane.alignment="CENTER" disable="${!controller.exportable}"/>
+        </bottom>
+    </BorderPane>
+</HBox>

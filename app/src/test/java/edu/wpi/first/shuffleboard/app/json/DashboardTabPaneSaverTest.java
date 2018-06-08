@@ -2,6 +2,7 @@ package edu.wpi.first.shuffleboard.app.json;
 
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
+import edu.wpi.first.shuffleboard.api.prefs.Group;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.Components;
@@ -101,7 +102,7 @@ public class DashboardTabPaneSaverTest extends ApplicationTest {
   private static class DummyBooleanBox implements Widget {
 
     @Override
-    public List<Property<?>> getProperties() {
+    public List<Group> getSettings() {
       return new ArrayList<>();
     }
 

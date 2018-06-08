@@ -8,6 +8,7 @@ Public API for writing plugins for shuffleboard.
 
 dependencies {
     api(group = "com.google.guava", name = "guava", version = "21.0")
+    api(group = "com.google.code.gson", name = "gson", version = "2.8.2")
     api(group = "org.fxmisc.easybind", name = "easybind", version = "1.0.3")
     api(group = "org.controlsfx", name = "controlsfx", version = "8.40.14")
     api(group = "de.codecentric.centerdevice", name = "javafxsvg", version = "1.2.1")

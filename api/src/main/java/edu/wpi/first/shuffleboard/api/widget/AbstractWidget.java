@@ -1,10 +1,14 @@
 package edu.wpi.first.shuffleboard.api.widget;
 
 import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
+import edu.wpi.first.shuffleboard.api.prefs.Group;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 
+import com.google.common.collect.ImmutableList;
+
+import java.util.List;
+
 import javafx.beans.InvalidationListener;
-import javafx.beans.property.Property;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
@@ -13,8 +17,7 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 
 /**
- * A partial implementation of {@link Widget} that implements property methods. This also has a method
- * {@link #exportProperties(Property[]) exportProperties} that allows subclasses to easily add properties.
+ * A partial implementation of {@link Widget} that implements property methods.
  */
 public abstract class AbstractWidget implements Widget {
 
@@ -22,7 +25,6 @@ public abstract class AbstractWidget implements Widget {
 
   private final StringProperty title = new SimpleStringProperty(this, "title", "");
 
-  private final ObservableList<Property<?>> properties = FXCollections.observableArrayList();
   private final ChangeListener<Boolean> connectionListener = (__, was, is) -> {
     if (is) {
       getView().setDisable(!sources.stream().allMatch(DataSource::isConnected));
@@ -68,31 +70,14 @@ public abstract class AbstractWidget implements Widget {
     useGeneratedTitle = title == null || title.isEmpty();
   }
 
-  /**
-   * Exports the given properties so other parts of the app can see the properties of this widget.
-   * Not all properties need to (or should be) exported; it should only properties that can be
-   * user-configurable. If possible, the view for this widget will allow users to modify the value
-   * of each property. For example, a "Number Slider" widget with a slider could have the minimum
-   * and maximum values of that slider be configurable by the user.
-   *
-   * @param properties the properties to export
-   */
-  protected final void exportProperties(Property<?>... properties) {
-    for (Property<?> property : properties) {
-      if (!this.properties.contains(property)) {
-        this.properties.add(property);
-      }
-    }
+  @Override
+  public List<Group> getSettings() {
+    return ImmutableList.of();
   }
 
   @Override
   public StringProperty titleProperty() {
     return title;
-  }
-
-  @Override
-  public final ObservableList<Property<?>> getProperties() {
-    return properties;
   }
 
   @Override

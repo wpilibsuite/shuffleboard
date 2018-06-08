@@ -1,5 +1,7 @@
 package edu.wpi.first.shuffleboard.app.components;
 
+import edu.wpi.first.shuffleboard.api.sources.DataSource;
+import edu.wpi.first.shuffleboard.api.sources.SourceEntry;
 import edu.wpi.first.shuffleboard.api.tab.TabInfo;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 import edu.wpi.first.shuffleboard.api.widget.Component;
@@ -119,4 +121,20 @@ public class DashboardTabPane extends TabPane {
             .ifPresent(pane -> pane.selectWidgets(selector)));
   }
 
+  /**
+   * Creates a new tab to autopopulate with data in a complex data source, then selects that tab.
+   *
+   * @param entry the source entry to create a tab for
+   */
+  public void createTabForSource(SourceEntry entry) {
+    DataSource<?> source = entry.get();
+    if (!source.getDataType().isComplex()) {
+      throw new IllegalArgumentException("Data source does not provide complex data");
+    }
+    DashboardTab newTab = new DashboardTab(entry.getViewName());
+    getTabs().add(getTabs().size() - 1, newTab);
+    newTab.setSourcePrefix(source.getId() + "/");
+    newTab.setAutoPopulate(true);
+    getSelectionModel().select(newTab);
+  }
 }

@@ -1,13 +1,23 @@
 package edu.wpi.first.shuffleboard.plugin.cameraserver.widget;
 
 import edu.wpi.first.shuffleboard.api.components.IntegerField;
+import edu.wpi.first.shuffleboard.api.prefs.Group;
+import edu.wpi.first.shuffleboard.api.prefs.Setting;
 import edu.wpi.first.shuffleboard.api.properties.SavePropertyFrom;
 import edu.wpi.first.shuffleboard.api.widget.Description;
 import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 import edu.wpi.first.shuffleboard.api.widget.SimpleAnnotatedWidget;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.data.CameraServerData;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.data.Resolution;
+import edu.wpi.first.shuffleboard.plugin.cameraserver.recording.serialization.ImageConverter;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.source.CameraServerSource;
+
+import com.google.common.collect.ImmutableList;
+
+import java.util.List;
+import org.fxmisc.easybind.EasyBind;
+import org.opencv.core.Core;
+import org.opencv.core.Mat;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.Property;
@@ -34,6 +44,8 @@ public class CameraServerWidget extends SimpleAnnotatedWidget<CameraServerData> 
   @FXML
   private Label bandwidthLabel;
   @FXML
+  private Pane imageContainer;
+  @FXML
   private ImageView imageView;
   @FXML
   private Image emptyImage;
@@ -54,9 +66,13 @@ public class CameraServerWidget extends SimpleAnnotatedWidget<CameraServerData> 
   @FXML
   private Node crosshairs;
 
+  private final Mat displayMat = new Mat();
+  private final ImageConverter converter = new ImageConverter();
+
   private final BooleanProperty showControls = new SimpleBooleanProperty(this, "showControls", true);
   private final BooleanProperty showCrosshair = new SimpleBooleanProperty(this, "showCrosshair", true);
   private final Property<Color> crosshairColor = new SimpleObjectProperty<>(this, "crosshairColor", Color.WHITE);
+  private final Property<Rotation> rotation = new SimpleObjectProperty<>(this, "rotation", Rotation.NONE);
   private final ChangeListener<Number> sourceCompressionListener =
       (__, old, compression) -> compressionSlider.setValue(compression.doubleValue());
   private final ChangeListener<Number> numberChangeListener =
@@ -69,7 +85,15 @@ public class CameraServerWidget extends SimpleAnnotatedWidget<CameraServerData> 
 
   @FXML
   private void initialize() {
-    imageView.imageProperty().bind(dataOrDefault.map(CameraServerData::getImage).orElse(emptyImage));
+    imageView.imageProperty().bind(EasyBind.combine(dataOrDefault, rotation, (data, rotation) -> {
+      if (data.getImage() == null) {
+        return emptyImage;
+      } else {
+        data.getImage().copyTo(displayMat);
+        rotation.rotate(displayMat);
+        return converter.convert(displayMat);
+      }
+    }));
     fpsLabel.textProperty().bind(dataOrDefault.map(CameraServerData::getFps).map(fps -> {
       if (fps < 0) {
         return "--- FPS";
@@ -110,8 +134,20 @@ public class CameraServerWidget extends SimpleAnnotatedWidget<CameraServerData> 
         oldSource.targetResolutionProperty().removeListener(resolutionChangeListener);
       }
     });
+  }
 
-    exportProperties(showControls, showCrosshair, crosshairColor);
+  @Override
+  public List<Group> getSettings() {
+    return ImmutableList.of(
+        Group.of("Crosshair",
+            Setting.of("Show crosshair", showCrosshair),
+            Setting.of("Crosshair color", crosshairColor)
+        ),
+        Group.of("Controls",
+            Setting.of("Show controls", showControls),
+            Setting.of("Rotation", rotation)
+        )
+    );
   }
 
   @Override
@@ -142,6 +178,34 @@ public class CameraServerWidget extends SimpleAnnotatedWidget<CameraServerData> 
         source.setTargetResolution(Resolution.EMPTY);
       }
     }
+  }
+
+  public enum Rotation {
+    NONE("None", image -> {}),
+    QUARTER_CW("90 degrees clockwise", image -> Core.rotate(image, image, Core.ROTATE_90_CLOCKWISE)),
+    QUARTER_CCW("90 degrees counter-clockwise", image -> Core.rotate(image, image, Core.ROTATE_90_COUNTERCLOCKWISE)),
+    HALF("180 degrees", image -> Core.rotate(image, image, Core.ROTATE_180));
+
+    private final String humanReadable;
+    private final RotationStrategy rotationStrategy;
+
+    Rotation(String humanReadable, RotationStrategy rotationStrategy) {
+      this.humanReadable = humanReadable;
+      this.rotationStrategy = rotationStrategy;
+    }
+
+    @Override
+    public String toString() {
+      return humanReadable;
+    }
+
+    void rotate(Mat image) {
+      rotationStrategy.rotate(image);
+    }
+  }
+
+  private interface RotationStrategy {
+    void rotate(Mat src);
   }
 
   public boolean isShowControls() {

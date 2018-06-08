@@ -1,6 +1,6 @@
 package edu.wpi.first.shuffleboard.api.properties;
 
-import edu.wpi.first.shuffleboard.api.widget.Widget;
+import edu.wpi.first.shuffleboard.api.widget.Component;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Repeatable;
@@ -9,13 +9,13 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Flags a property of a field in a widget class to be saved as part of that widget.
+ * Flags a property of a field to be saved as part of that object.
  *
  * <p>For example, take a widget class has a slider that controls the speed of something. In the old API, the widget
  * would have export its properties directly (which doesn't give descriptive names in the widget's context, and can
  * run into conflicts), or create new properties with the desired names and bind those to the properties of the slider.
  * This takes a lot of code and makes the class less readable; there is a lot of boilerplate. It is also not ideal,
- * because properties exported via {@link Widget#getProperties()} are also configurable through the property editor for
+ * because properties exported via {@link Component#getSettings()} are also configurable through the property editor for
  * the widget, even if the author does not want them to be user-editable, or if they are already editable through the
  * controls in the widget; for example, the value of the slider changes when a user moves the slider - it does not need
  * to be editable another way.

@@ -120,14 +120,19 @@
  * Toggle switch                                                               *
  *                                                                             *
  ******************************************************************************/
+.tile .toggle-switch > .thumb-area {
+    -fx-background-color: -swatch-light-gray, -swatch-gray;
+}
+
 .toggle-switch > .thumb-area {
-    -fx-background-color: -swatch-gray;
+    -fx-background-color: -swatch-light-gray, -swatch-dark-gray;
 }
 
 .toggle-switch > .thumb {
     -fx-background-color: #AAAAAA;
 }
 
+.tile .toggle-switch:selected > .thumb-area,
 .toggle-switch:selected > .thumb-area {
     -fx-background-color: -swatch-500;
 }
@@ -200,7 +205,8 @@
     -fx-background-color: -swatch-100;
 }
 
-.tree-table-row-cell > .tree-disclosure-node > .arrow {
+.tree-table-row-cell > .tree-disclosure-node > .arrow,
+.tree-cell > .tree-disclosure-node > .arrow {
     -fx-background-color: white;
 }
 
@@ -235,6 +241,15 @@
     -fx-effect: dropshadow(gaussian, #101010, 6, 0.1, 0, 4);
 }
 
+.tile:selected {
+    -fx-background-color: #101010;
+    -fx-effect: dropshadow(gaussian, derive(yellow, -25%), 8, 0.00005, 0, 4);
+}
+
+.tile:selected .tile-title-bar {
+    -fx-background-color: -swatch-500;
+}
+
 .tile .label {
     -fx-text-fill: -fx-text-base-color;
 }
@@ -259,22 +274,29 @@
  *                                                                             *
  ******************************************************************************/
 .list-view {
-    -fx-border-width: 0;
-    -fx-border-color: orange;
-    -fx-background-color: -swatch-500;
+    -fx-background-color: transparent;
 }
 
-.list-view:focused .list-cell:filled {
-    -fx-background-color: -swatch-dark-gray;
+.list-view .list-cell {
+    -fx-background-color: -swatch-gray;
+}
+
+.list-view .list-cell:filled:focused:selected {
+    -fx-background-color: -swatch-500;
+    -fx-text-fill: -fx-text-base-color;
 }
 
 .list-view:focused .list-cell:filled:focused:selected {
-    -fx-background-color: -swatch-gray;
-    -fx-text-fill: -swatch-100;
+    -fx-background-color: -swatch-100;
 }
 
 .list-view:hover .list-cell:filled:hover {
     -fx-background-color: -swatch-light-gray;
+    -fx-text-fill: -fx-text-base-color;
+}
+
+.list-view:hover .list-cell:hover {
+    -fx-background-color: null;
     -fx-text-fill: -fx-text-base-color;
 }
 
@@ -316,4 +338,13 @@
  ******************************************************************************/
 .robot-drive {
     -fx-fill: #666;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Settings dialogs                                                            *
+ *                                                                             *
+ ******************************************************************************/
+.settings-pane {
+    -fx-border-color: -swatch-dark-gray;
 }

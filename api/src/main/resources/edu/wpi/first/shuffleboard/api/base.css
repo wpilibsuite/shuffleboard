@@ -77,7 +77,6 @@
     -fx-padding: 0 0 0 10px;
 }
 
-
 /*******************************************************************************
  *                                                                             *
  * Tiles                                                                       *
@@ -89,7 +88,12 @@
 }
 
 .tile:selected {
-    -fx-effect: dropshadow(gaussian, -swatch-500, 6, 0.1, 0, 4);
+    -fx-effect: dropshadow(gaussian, indigo, 8, 0.00005, 0, 4);
+    -fx-background-color: #f0f0f0;
+}
+
+.tile:selected .tile-title-bar {
+    -fx-background-color: -swatch-500;
 }
 
 .tile-title-bar {
@@ -138,6 +142,17 @@
 .grid-highlight:colliding {
     -fx-border-color: rgba(255, 0, 0, 0.75);
     -fx-background-color: rgba(255, 0, 0, 0.1);
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Grid Selection                                                              *
+ *                                                                             *
+ ******************************************************************************/
+.grid-selection {
+    -fx-fill: rgba(0, 255, 0, 0.1);
+    -fx-stroke: rgba(0, 255, 0, 0.75);
+    -fx-stroke-width: 0.25em;
 }
 
 /*******************************************************************************
@@ -348,4 +363,60 @@
     -fx-stroke: -swatch-400;
     -fx-fill: -fx-stroke;
     -fx-stroke-width: 1.5;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Link labels                                                                 *
+ *                                                                             *
+ ******************************************************************************/
+.link-label {
+    -fx-underline: true;
+    -fx-cursor: hand;
+}
+
+.link-label:hover {
+    -fx-text-fill: #6dbdff;
+}
+
+.link-label:pressed {
+    -fx-text-fill: #6b8acb
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Settings dialogs                                                            *
+ *                                                                             *
+ ******************************************************************************/
+.settings-pane {
+    -fx-border-width: 0 0 2px 0;
+    -fx-border-color: derive(-swatch-light-gray, 12%);
+}
+
+.settings-pane > .split-pane-divider {
+    -fx-padding: 0 1 0 1;
+    -fx-background-color: -swatch-light-gray;
+    -fx-background-insets: 0;
+}
+
+.settings-pane .settings-categories {
+    -fx-background-color: transparent;
+}
+
+.settings-pane .settings-categories .tree-cell {
+    -fx-background-color: transparent;
+}
+
+.settings-pane .settings-categories:focused .tree-cell:selected {
+    -fx-background-color: -swatch-100;
+    -fx-text-fill: -fx-text-base-color;
+}
+
+.settings-pane .settings-categories .tree-cell:selected {
+    -fx-background-color: -swatch-500;
+    -fx-text-fill: -fx-text-base-color;
+}
+
+.settings-pane .settings-categories .tree-cell > .tree-disclosure-node > .arrow {
+    -fx-background-color: -fx-text-base-color;
 }

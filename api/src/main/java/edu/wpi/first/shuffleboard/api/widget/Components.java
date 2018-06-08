@@ -10,6 +10,7 @@ import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -20,6 +21,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.UUID;
 import java.util.WeakHashMap;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -41,6 +43,7 @@ public class Components extends Registry<ComponentType> {
   private final Map<String, ComponentType<?>> components = new TreeMap<>();
   private final Map<DataType, ComponentType<?>> defaultComponents = new HashMap<>();
   private final WeakHashMap<Widget, Widget> activeWidgets = new WeakHashMap<>();
+  private final Map<Component, UUID> allActiveComponents = new WeakHashMap<>();
 
   /**
    * Gets the default widget registry.
@@ -130,6 +133,7 @@ public class Components extends Registry<ComponentType> {
   public <T> Optional<Widget> createWidget(String name, DataSource<T> source) {
     Optional<Widget> widget = createWidget(name);
     widget.ifPresent(w -> w.addSource(source));
+    widget.ifPresent(this::setId);
     return widget;
   }
 
@@ -148,6 +152,7 @@ public class Components extends Registry<ComponentType> {
   public Optional<Widget> createWidget(String name, Collection<DataSource> sources) throws IncompatibleSourceException {
     Optional<Widget> widget = createWidget(name);
     widget.ifPresent(w -> sources.forEach(w::addSource));
+    widget.ifPresent(this::setId);
     return widget;
   }
 
@@ -157,6 +162,7 @@ public class Components extends Registry<ComponentType> {
   public Optional<Widget> createWidget(String name) {
     Optional<Widget> widget = typeFor(name).map(ComponentType::get).flatMap(TypeUtils.optionalCast(Widget.class));
     widget.ifPresent(w -> activeWidgets.put(w, w));
+    widget.ifPresent(this::setId);
     return widget;
   }
 
@@ -167,10 +173,16 @@ public class Components extends Registry<ComponentType> {
   public Optional<? extends Component> createComponent(String name) {
     // Widgets need to be created using the createWidget function due to state
     Optional<Widget> widget = typeFor(name).filter(WidgetType.class::isInstance).flatMap(_w -> createWidget(name));
+    widget.ifPresent(this::setId);
     if (widget.isPresent()) {
       return widget;
     } else {
-      return typeFor(name).map(ComponentType::get);
+      return typeFor(name)
+          .map(ComponentType::get)
+          .map(c -> {
+            setId(c);
+            return c;
+          });
     }
   }
 
@@ -191,6 +203,48 @@ public class Components extends Registry<ComponentType> {
           }
           return c;
         });
+  }
+
+  /**
+   * Gets the UUID of a component.
+   *
+   * @param component the component to get the UUID of
+   *
+   * @return the UUID for the given component
+   *
+   * @throws IllegalArgumentException if the component does not have a UUID
+   */
+  public UUID uuidForComponent(Component component) {
+    UUID uuid = allActiveComponents.get(component);
+    if (uuid == null) {
+      throw new IllegalArgumentException("Component is not active: " + component);
+    }
+    return uuid;
+  }
+
+  /**
+   * Gets the component with the given UUID.
+   *
+   * @param uuid the UUID of the component to get
+   *
+   * @return an optional of the component with the UUID
+   */
+  public Optional<Component> getByUuid(UUID uuid) {
+    return ImmutableMap.copyOf(allActiveComponents)
+        .entrySet()
+        .stream()
+        .filter(e -> e.getValue().equals(uuid))
+        .map(Map.Entry::getKey)
+        .findFirst();
+  }
+
+  /**
+   * Sets a unique identifier for a component.
+   *
+   * @param component the component to set
+   */
+  private void setId(Component component) {
+    allActiveComponents.putIfAbsent(component, UUID.randomUUID());
   }
 
   public Optional<Type> javaTypeFor(String name) {

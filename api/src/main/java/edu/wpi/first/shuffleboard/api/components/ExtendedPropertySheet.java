@@ -1,6 +1,9 @@
 package edu.wpi.first.shuffleboard.api.components;
 
+import edu.wpi.first.shuffleboard.api.prefs.Category;
 import edu.wpi.first.shuffleboard.api.prefs.FlushableProperty;
+import edu.wpi.first.shuffleboard.api.prefs.Group;
+import edu.wpi.first.shuffleboard.api.prefs.Setting;
 import edu.wpi.first.shuffleboard.api.theme.Theme;
 import edu.wpi.first.shuffleboard.api.theme.Themes;
 import edu.wpi.first.shuffleboard.api.util.Debouncer;
@@ -13,14 +16,13 @@ import org.controlsfx.property.editor.DefaultPropertyEditorFactory;
 import org.controlsfx.property.editor.PropertyEditor;
 
 import java.time.Duration;
-import java.util.Collection;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import javafx.beans.property.Property;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Control;
+import javafx.scene.control.Skin;
 import javafx.scene.control.TextField;
 import javafx.util.StringConverter;
 
@@ -61,13 +63,18 @@ public class ExtendedPropertySheet extends PropertySheet {
   }
 
   /**
-   * Creates a new property sheet containing items for each of the given properties.
+   * Creates a property sheet for editing the settings in a category. This does <i>not</i> include settings for
+   * subcategories.
    */
-  public ExtendedPropertySheet(Collection<? extends Property<?>> properties) {
+  public ExtendedPropertySheet(Category settingsCategory) {
     this();
-    getItems().setAll(properties.stream()
-        .map(PropertyItem::new)
-        .collect(Collectors.toList()));
+    setMode(PropertySheet.Mode.CATEGORY);
+    for (Group group : settingsCategory.getGroups()) {
+      for (Setting<?> setting : group.getSettings()) {
+        PropertySheet.Item item = new SettingsItem(group, setting);
+        getItems().add(item);
+      }
+    }
   }
 
   /**
@@ -169,6 +176,13 @@ public class ExtendedPropertySheet extends PropertySheet {
       return Optional.of(property);
     }
 
+  }
+
+  @Override
+  protected Skin<?> createDefaultSkin() {
+    // Very similar to PropertySheetSkin, but changes the Category view to put everything in a single pane with headers
+    // for each category instead of an accordion view (which is very MEH in our context)
+    return new ExtendedPropertySheetSkin(this);
   }
 
   private abstract static class DebouncedPropertyEditor<T, C extends Control> extends AbstractPropertyEditor<T, C> {
@@ -295,4 +309,52 @@ public class ExtendedPropertySheet extends PropertySheet {
     }
   }
 
+  /**
+   * An item wrapping a single {@link Setting}.
+   */
+  private static class SettingsItem implements Item {
+    private final Setting<?> setting;
+    private final Group group;
+
+    public SettingsItem(Group group, Setting<?> setting) {
+      this.setting = setting;
+      this.group = group;
+    }
+
+    @Override
+    public Class<?> getType() {
+      return setting.getProperty().getValue().getClass();
+    }
+
+    @Override
+    public String getCategory() {
+      return group.getName();
+    }
+
+    @Override
+    public String getName() {
+      return setting.getName();
+    }
+
+    @Override
+    public String getDescription() {
+      return setting.getDescription();
+    }
+
+    @Override
+    public Object getValue() {
+      return setting.getProperty().getValue();
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public void setValue(Object value) {
+      ((Property) setting.getProperty()).setValue(value);
+    }
+
+    @Override
+    public Optional<ObservableValue<?>> getObservableValue() {
+      return Optional.of(setting.getProperty());
+    }
+  }
 }

@@ -1,7 +1,6 @@
 package edu.wpi.first.shuffleboard.app;
 
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
-import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
 
 import javafx.application.Preloader;
 import javafx.fxml.FXMLLoader;
@@ -27,7 +26,8 @@ public class ShuffleboardPreloader extends Preloader {
     controller = FxUtils.getController(preloaderPane);
 
     Scene scene = new Scene(preloaderPane);
-    scene.getStylesheets().setAll(AppPreferences.getInstance().getTheme().getStyleSheets());
+    scene.getStylesheets().setAll("/edu/wpi/first/shuffleboard/api/base.css");
+
     stage.setScene(scene);
     stage.initStyle(StageStyle.UNDECORATED);
     stage.show();
