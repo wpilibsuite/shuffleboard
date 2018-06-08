@@ -53,6 +53,7 @@ public final class SettingsDialogController {
 
     rootItem.getChildren().addListener((InvalidationListener) __ -> {
       if (!rootItem.getChildren().isEmpty()) {
+        categories.getSelectionModel().select(0);
         setViewForCategory(rootItem.getChildren().get(0).getValue());
       }
     });
