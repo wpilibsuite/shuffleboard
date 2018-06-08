@@ -1,6 +1,8 @@
 package edu.wpi.first.shuffleboard.plugin.base.layout;
 
 import edu.wpi.first.shuffleboard.api.components.ActionList;
+import edu.wpi.first.shuffleboard.api.prefs.Group;
+import edu.wpi.first.shuffleboard.api.prefs.Setting;
 import edu.wpi.first.shuffleboard.api.util.ListUtils;
 import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.LayoutBase;
@@ -11,7 +13,6 @@ import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.WeakHashMap;
 
-import javafx.beans.property.Property;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -100,9 +101,11 @@ public class ListLayout extends LayoutBase {
   }
 
   @Override
-  public List<? extends Property<?>> getProperties() {
+  public List<Group> getSettings() {
     return ImmutableList.of(
-        labelPositionProperty()
+        Group.of("Layout",
+            Setting.of("Label position", labelPositionProperty())
+        )
     );
   }
 

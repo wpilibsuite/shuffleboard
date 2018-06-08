@@ -1,9 +1,11 @@
 package edu.wpi.first.shuffleboard.app.components;
 
 import edu.wpi.first.shuffleboard.api.Populatable;
-import edu.wpi.first.shuffleboard.api.components.ExtendedPropertySheet;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
+import edu.wpi.first.shuffleboard.api.prefs.Category;
 import edu.wpi.first.shuffleboard.api.prefs.FlushableProperty;
+import edu.wpi.first.shuffleboard.api.prefs.Group;
+import edu.wpi.first.shuffleboard.api.prefs.Setting;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.DataSourceUtils;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
@@ -18,13 +20,13 @@ import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.api.widget.Sourced;
 import edu.wpi.first.shuffleboard.app.Autopopulator;
 import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
+import edu.wpi.first.shuffleboard.app.prefs.SettingsDialog;
 
 import edu.wpi.first.networktables.NetworkTable;
 
 import org.fxmisc.easybind.EasyBind;
 
 import java.time.Duration;
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -36,12 +38,9 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.ListChangeListener;
-import javafx.scene.control.ButtonType;
 import javafx.scene.control.ContextMenu;
-import javafx.scene.control.Dialog;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tab;
-import javafx.scene.layout.BorderPane;
 
 public class DashboardTab extends Tab implements HandledTab, Populatable {
 
@@ -130,32 +129,46 @@ public class DashboardTab extends Tab implements HandledTab, Populatable {
    * Shows a dialog for editing the properties of this tab.
    */
   public void showPrefsDialog() {
+    Category category = getSettings();
+    SettingsDialog dialog = new SettingsDialog(category);
+    dialog.getDialogPane().getStylesheets().setAll(AppPreferences.getInstance().getTheme().getStyleSheets());
+    dialog.titleProperty().bind(EasyBind.map(this.title, t -> t + " Preferences"));
+    dialog.showAndWait();
+  }
+
+  /**
+   * Gets the category of settings for this tab. This contains autopopulation settings, layout settings, and the tite.
+   */
+  public Category getSettings() {
     // Use a flushable property here to prevent a call to populate() on every keystroke in the editor (!)
     FlushableProperty<String> flushableSourcePrefix = new FlushableProperty<>(sourcePrefix);
-    FlushableProperty<Number> flushableTileSize = new FlushableProperty<>(getWidgetPane().tileSizeProperty());
-    ExtendedPropertySheet propertySheet = new ExtendedPropertySheet(
-        Arrays.asList(
-            this.title,
-            this.autoPopulate,
-            flushableSourcePrefix,
-            flushableTileSize,
-            getWidgetPane().showGridProperty()
-        ));
-    propertySheet.getItems().addAll(
-        new ExtendedPropertySheet.PropertyItem<>(getWidgetPane().hgapProperty(), "Horizontal spacing"),
-        new ExtendedPropertySheet.PropertyItem<>(getWidgetPane().vgapProperty(), "Vertical spacing")
+    WidgetPane widgetPane = getWidgetPane();
+    FlushableProperty<Number> flushableTileSize = new FlushableProperty<>(widgetPane.tileSizeProperty());
+    return Category.of(getTitle(),
+        Group.of("Autopopulation",
+            Setting.of(
+                "Autopopulate",
+                "Sets this tab to automatically populate with widgets",
+                autoPopulate
+            ),
+            Setting.of(
+                "Autopopulation Prefix",
+                "The prefix for data sources to autopopulate into the tab",
+                flushableSourcePrefix
+            )
+        ),
+        Group.of("Layout",
+            Setting.of("Tile size", "The size of tiles in this tab", flushableTileSize),
+            Setting.of("Horizontal spacing", "How far apart tiles should be, horizontally", widgetPane.hgapProperty()),
+            Setting.of("Vertical spacing", "How far apart tiles should be, vertically", widgetPane.vgapProperty())
+        ),
+        Group.of("Visual",
+            Setting.of("Show grid", "Show the alignment grid", widgetPane.showGridProperty())
+        ),
+        Group.of("Miscellaneous",
+            Setting.of("Title", "The title of this tab", title)
+        )
     );
-    Dialog<ButtonType> dialog = new Dialog<>();
-    dialog.getDialogPane().getStylesheets().setAll(AppPreferences.getInstance().getTheme().getStyleSheets());
-    dialog.setResizable(true);
-    dialog.titleProperty().bind(EasyBind.map(this.title, t -> t + " Preferences"));
-    dialog.getDialogPane().setContent(new BorderPane(propertySheet));
-    dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CLOSE);
-    dialog.setOnCloseRequest(__ -> {
-      flushableSourcePrefix.flush();
-      flushableTileSize.flush();
-    });
-    dialog.showAndWait();
   }
 
   /**

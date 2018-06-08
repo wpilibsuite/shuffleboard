@@ -221,7 +221,8 @@
     -fx-background-color: transparent;
 }
 
-.tree-table-row-cell > .tree-disclosure-node > .arrow {
+.tree-table-row-cell > .tree-disclosure-node > .arrow,
+.tree-cell > .tree-disclosure-node > .arrow {
     -fx-background-color: white;
 }
 
@@ -294,21 +295,28 @@
  ******************************************************************************/
 .list-view {
     -fx-background-color: transparent;
-    -fx-border-color: -swatch-light-gray;
-    -fx-border-width: 1;
 }
 
 .list-view .list-cell {
-    -fx-background-color: -swatch-dark-gray;
+    -fx-background-color: -swatch-gray;
+}
+
+.list-view .list-cell:filled:focused:selected {
+    -fx-background-color: -swatch-500;
+    -fx-text-fill: -fx-text-base-color;
 }
 
 .list-view:focused .list-cell:filled:focused:selected {
-    -fx-background-color: -swatch500;
-    -fx-text-fill: yellow;
+    -fx-background-color: -swatch-100;
 }
 
 .list-view:hover .list-cell:filled:hover {
     -fx-background-color: -swatch-light-gray;
+    -fx-text-fill: -fx-text-base-color;
+}
+
+.list-view:hover .list-cell:hover {
+    -fx-background-color: null;
     -fx-text-fill: -fx-text-base-color;
 }
 
@@ -384,3 +392,13 @@
 .robot-drive {
     -fx-fill: #666;
 }
+
+/*******************************************************************************
+ *                                                                             *
+ * Settings dialogs                                                            *
+ *                                                                             *
+ ******************************************************************************/
+.settings-pane {
+    -fx-border-color: #171F2F;
+}
+

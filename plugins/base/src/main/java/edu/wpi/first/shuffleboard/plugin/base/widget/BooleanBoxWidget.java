@@ -1,8 +1,14 @@
 package edu.wpi.first.shuffleboard.plugin.base.widget;
 
+import edu.wpi.first.shuffleboard.api.prefs.Group;
+import edu.wpi.first.shuffleboard.api.prefs.Setting;
 import edu.wpi.first.shuffleboard.api.widget.Description;
 import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 import edu.wpi.first.shuffleboard.api.widget.SimpleAnnotatedWidget;
+
+import com.google.common.collect.ImmutableList;
+
+import java.util.List;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.Property;
@@ -33,7 +39,16 @@ public class BooleanBoxWidget extends SimpleAnnotatedWidget<Boolean> {
         Bindings.createObjectBinding(
             () -> createSolidColorBackground(getColor()),
             dataProperty(), trueColor, falseColor));
-    exportProperties(trueColor, falseColor);
+  }
+
+  @Override
+  public List<Group> getSettings() {
+    return ImmutableList.of(
+        Group.of("Colors",
+            Setting.of("Color when true", "The color to use when the value is `true`", trueColor),
+            Setting.of("Color when false", "The color to use when the value is `false`", falseColor)
+        )
+    );
   }
 
   @Override

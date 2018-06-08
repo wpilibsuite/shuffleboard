@@ -1,11 +1,13 @@
 package edu.wpi.first.shuffleboard.app.prefs;
 
+import edu.wpi.first.shuffleboard.api.prefs.Category;
+import edu.wpi.first.shuffleboard.api.prefs.Group;
+import edu.wpi.first.shuffleboard.api.prefs.Setting;
 import edu.wpi.first.shuffleboard.api.theme.Theme;
 import edu.wpi.first.shuffleboard.api.theme.Themes;
 import edu.wpi.first.shuffleboard.api.util.PreferencesUtils;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
 
 import java.io.File;
 import java.util.prefs.Preferences;
@@ -31,6 +33,22 @@ public final class AppPreferences {
       new SimpleBooleanProperty(this, "showConfirmationDialogWhenExiting", true);
   private final BooleanProperty checkForUpdatesOnStartup =
       new SimpleBooleanProperty(this, "checkForUpdatesOnStartup", true);
+
+  private final Category settings = Category.of("App Settings",
+      Group.of("Theme",
+          Setting.of("Theme", "The theme to display Shuffleboard with", theme)
+      ),
+      Group.of("Tab Settings",
+          Setting.of("Default tile size", "The tile size of new tabs (existing tabs are unaffected)", defaultTileSize)
+      ),
+      Group.of("Startup",
+          Setting.of("Load last save file", "Load the most recent save file at startup", autoLoadLastSaveFile),
+          Setting.of("Check for updates", "Check for new Shuffleboard releases at startup", checkForUpdatesOnStartup)
+      ),
+      Group.of("Miscellaneous",
+          Setting.of("Confirm exit", "Request confirmation before exiting", confirmExit)
+      )
+  );
 
   @VisibleForTesting
   static AppPreferences instance = new AppPreferences();
@@ -59,17 +77,8 @@ public final class AppPreferences {
     return instance;
   }
 
-  /**
-   * Gets a read-only list of all the preference properties.
-   */
-  public ImmutableList<Property<?>> getProperties() {
-    return ImmutableList.of(
-        theme,
-        defaultTileSize,
-        autoLoadLastSaveFile,
-        confirmExit,
-        checkForUpdatesOnStartup
-    );
+  public Category getSettings() {
+    return settings;
   }
 
   public Property<Theme> themeProperty() {

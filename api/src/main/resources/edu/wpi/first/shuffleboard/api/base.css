@@ -382,3 +382,41 @@
 .link-label:pressed {
     -fx-text-fill: #6b8acb
 }
+
+/*******************************************************************************
+ *                                                                             *
+ * Settings dialogs                                                            *
+ *                                                                             *
+ ******************************************************************************/
+.settings-pane {
+    -fx-border-width: 0 0 2px 0;
+    -fx-border-color: derive(-swatch-light-gray, 12%);
+}
+
+.settings-pane > .split-pane-divider {
+    -fx-padding: 0 1 0 1;
+    -fx-background-color: -swatch-light-gray;
+    -fx-background-insets: 0;
+}
+
+.settings-pane .settings-categories {
+    -fx-background-color: transparent;
+}
+
+.settings-pane .settings-categories .tree-cell {
+    -fx-background-color: transparent;
+}
+
+.settings-pane .settings-categories:focused .tree-cell:selected {
+    -fx-background-color: -swatch-100;
+    -fx-text-fill: -fx-text-base-color;
+}
+
+.settings-pane .settings-categories .tree-cell:selected {
+    -fx-background-color: -swatch-500;
+    -fx-text-fill: -fx-text-base-color;
+}
+
+.settings-pane .settings-categories .tree-cell > .tree-disclosure-node > .arrow {
+    -fx-background-color: -fx-text-base-color;
+}

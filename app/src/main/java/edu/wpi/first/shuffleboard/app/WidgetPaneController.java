@@ -1,9 +1,11 @@
 package edu.wpi.first.shuffleboard.app;
 
 import edu.wpi.first.shuffleboard.api.components.ActionList;
-import edu.wpi.first.shuffleboard.api.components.ExtendedPropertySheet;
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.dnd.DataFormats;
+import edu.wpi.first.shuffleboard.api.prefs.Category;
+import edu.wpi.first.shuffleboard.api.prefs.Group;
+import edu.wpi.first.shuffleboard.api.prefs.Setting;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
@@ -26,16 +28,20 @@ import edu.wpi.first.shuffleboard.app.components.WidgetTile;
 import edu.wpi.first.shuffleboard.app.dnd.TileDragResizer;
 import edu.wpi.first.shuffleboard.app.json.SourcedRestorer;
 import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
+import edu.wpi.first.shuffleboard.app.prefs.SettingsDialog;
 import edu.wpi.first.shuffleboard.app.sources.DestroyedSource;
 
 import org.fxmisc.easybind.EasyBind;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.function.Function;
@@ -50,9 +56,7 @@ import javafx.fxml.FXML;
 import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import javafx.scene.SnapshotParameters;
-import javafx.scene.control.ButtonType;
 import javafx.scene.control.ContextMenu;
-import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
@@ -64,7 +68,6 @@ import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
 
@@ -349,7 +352,20 @@ public class WidgetPaneController {
         }
       }
       widgetPaneActions.addAction("Edit Properties",
-          () -> showPropertySheet(tile));
+          () -> {
+            Set<Tile<?>> tiles = new LinkedHashSet<>();
+            tiles.add(tile);
+            tiles.addAll(selector.getSelectedTiles());
+            if (tiles.size() == 1) {
+              showSettingsDialog(createSettingsCategoriesForComponent(tile.getContent()));
+            } else {
+              List<Category> categories = tiles.stream()
+                  .map(t -> t.getContent())
+                  .map(c -> createSettingsCategoriesForComponent(c))
+                  .collect(Collectors.toList());
+              showSettingsDialog(categories);
+            }
+          });
 
       // Layout unwrapping
       if (tile instanceof LayoutTile) {
@@ -566,24 +582,63 @@ public class WidgetPaneController {
   }
 
   /**
-   * Creates the menu for editing the properties of a widget.
+   * Creates and displays a dialog for editing settings.
    *
-   * @param tile the tile to pull properties from
+   * @param categories the root categories to display in the settings dialog
    */
-  private void showPropertySheet(Tile<?> tile) {
-    ExtendedPropertySheet propertySheet = new ExtendedPropertySheet();
-    propertySheet.getItems().add(new ExtendedPropertySheet.PropertyItem<>(tile.getContent().titleProperty()));
-    Dialog<ButtonType> dialog = new Dialog<>();
-    tile.getContent().getProperties().stream()
-        .map(ExtendedPropertySheet.PropertyItem::new)
-        .forEachOrdered(propertySheet.getItems()::add);
+  private void showSettingsDialog(List<Category> categories) {
+    SettingsDialog dialog = new SettingsDialog(categories);
 
-    dialog.setTitle("Edit properties");
+    dialog.setTitle("Edit Properties");
     dialog.getDialogPane().getStylesheets().setAll(AppPreferences.getInstance().getTheme().getStyleSheets());
-    dialog.getDialogPane().setContent(new BorderPane(propertySheet));
-    dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CLOSE);
 
     dialog.showAndWait();
+  }
+
+  /**
+   * Creates and displays a dialog for editing settings.
+   *
+   * @param categories the root categories to display in the settings dialog
+   */
+  private void showSettingsDialog(Category... categories) {
+    showSettingsDialog(Arrays.asList(categories));
+  }
+
+  /**
+   * Creates a category for a component, setting subcategories as necessary if it contains other components.
+   *
+   * @param component the component to create a settings category for
+   *
+   * @return a new settings category
+   */
+  private Category createSettingsCategoriesForComponent(Component component) {
+    List<Group> groups = new ArrayList<>(component.getSettings());
+    groups.add(titleGroup(component));
+    if (component instanceof ComponentContainer) {
+      List<Category> subCategories = ((ComponentContainer) component).components()
+          .map(this::createSettingsCategoriesForComponent)
+          .collect(Collectors.toList());
+      return Category.of(component.getTitle(), subCategories, groups);
+    } else {
+      return Category.of(component.getTitle(), groups);
+    }
+  }
+
+  /**
+   * Creates a settings group for the title property of a component.
+   *
+   * @param component the component to create the settings group for
+   *
+   * @return a new settings group
+   */
+  private Group titleGroup(Component component) {
+    return Group.of("Miscellaneous",
+        Setting.of(
+            "Title",
+            "The title of this " + component.getName().toLowerCase(Locale.US),
+            component.titleProperty()
+        )
+    );
   }
 
   private static void destroyedSourceCouldNotBeRestored(DestroyedSource source, Throwable error) {

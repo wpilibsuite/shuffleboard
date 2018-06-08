@@ -36,7 +36,7 @@
         <Menu text="Tab">
             <MenuItem text="New tab" onAction="#newTab" accelerator="SHORTCUT+T"/>
             <MenuItem text="Close current tab" onAction="#closeCurrentTab" accelerator="SHORTCUT+W"/>
-            <MenuItem text="Current tab preferences" onAction="#showCurrentTabPrefs" accelerator="SHORTCUT+SHIFT+,"/>
+            <MenuItem text="Tab preferences" onAction="#showTabPrefs" accelerator="SHORTCUT+SHIFT+,"/>
         </Menu>
         <Menu text="Help">
             <MenuItem text="About" onAction="#showAboutDialog" accelerator="F1"/>

@@ -1,6 +1,8 @@
 package edu.wpi.first.shuffleboard.plugin.cameraserver.widget;
 
 import edu.wpi.first.shuffleboard.api.components.IntegerField;
+import edu.wpi.first.shuffleboard.api.prefs.Group;
+import edu.wpi.first.shuffleboard.api.prefs.Setting;
 import edu.wpi.first.shuffleboard.api.properties.SavePropertyFrom;
 import edu.wpi.first.shuffleboard.api.widget.Description;
 import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
@@ -10,6 +12,9 @@ import edu.wpi.first.shuffleboard.plugin.cameraserver.data.Resolution;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.recording.serialization.ImageConverter;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.source.CameraServerSource;
 
+import com.google.common.collect.ImmutableList;
+
+import java.util.List;
 import org.fxmisc.easybind.EasyBind;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
@@ -129,8 +134,20 @@ public class CameraServerWidget extends SimpleAnnotatedWidget<CameraServerData> 
         oldSource.targetResolutionProperty().removeListener(resolutionChangeListener);
       }
     });
+  }
 
-    exportProperties(rotation, showControls, showCrosshair, crosshairColor);
+  @Override
+  public List<Group> getSettings() {
+    return ImmutableList.of(
+        Group.of("Crosshair",
+            Setting.of("Show crosshair", showCrosshair),
+            Setting.of("Crosshair color", crosshairColor)
+        ),
+        Group.of("Controls",
+            Setting.of("Show controls", showControls),
+            Setting.of("Rotation", rotation)
+        )
+    );
   }
 
   @Override

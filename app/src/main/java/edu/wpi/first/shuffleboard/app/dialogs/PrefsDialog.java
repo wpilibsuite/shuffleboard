@@ -1,24 +1,28 @@
 package edu.wpi.first.shuffleboard.app.dialogs;
 
-import edu.wpi.first.shuffleboard.api.DashboardMode;
-import edu.wpi.first.shuffleboard.api.components.ExtendedPropertySheet;
-import edu.wpi.first.shuffleboard.api.components.ExtendedPropertySheet.PropertyItem;
 import edu.wpi.first.shuffleboard.api.plugin.Plugin;
-import edu.wpi.first.shuffleboard.api.prefs.FlushableProperty;
+import edu.wpi.first.shuffleboard.api.prefs.Category;
+import edu.wpi.first.shuffleboard.api.prefs.Group;
+import edu.wpi.first.shuffleboard.api.prefs.Setting;
+import edu.wpi.first.shuffleboard.api.theme.Theme;
+import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
+import edu.wpi.first.shuffleboard.app.components.DashboardTab;
+import edu.wpi.first.shuffleboard.app.components.DashboardTabPane;
 import edu.wpi.first.shuffleboard.app.plugin.PluginLoader;
 import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
+import edu.wpi.first.shuffleboard.app.prefs.SettingsDialog;
 
-import java.util.function.Function;
-import java.util.function.Predicate;
+import com.google.common.collect.ImmutableList;
 
-import javafx.scene.control.ButtonType;
+import org.fxmisc.easybind.EasyBind;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import javafx.beans.value.ObservableValue;
 import javafx.scene.control.Dialog;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
-import javafx.scene.layout.BorderPane;
-import javafx.stage.Modality;
-import javafx.stage.StageStyle;
 
 /**
  * Dialog for editing application and plugin preferences.
@@ -27,59 +31,43 @@ public final class PrefsDialog {
 
   private static final String DIALOG_TITLE = "Shuffleboard Preferences";
 
-  private final TabPane tabs = new TabPane();
-  private final Predicate<Plugin> hasProperties = plugin -> !plugin.getProperties().isEmpty();
-  private final Function<Plugin, Tab> createTabForPlugin = this::createTabForPlugin;
-
-  public PrefsDialog() {
-    tabs.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
-  }
+  private final ObservableValue<List<String>> stylesheets
+      = EasyBind.map(AppPreferences.getInstance().themeProperty(), Theme::getStyleSheets);
 
   /**
    * Shows the preferences dialog.
    */
-  public void show() {
-    tabs.getTabs().clear();
-    tabs.getTabs().add(new Tab("Application", new ExtendedPropertySheet(AppPreferences.getInstance().getProperties())));
+  public void show(DashboardTabPane tabPane) {
+    Dialog<Boolean> dialog = createDialog(tabPane);
+    dialog.showAndWait();
+  }
 
-    PluginLoader.getDefault().getLoadedPlugins().stream()
-        .filter(hasProperties)
-        .map(createTabForPlugin)
-        .forEach(tabs.getTabs()::add);
-
-    Dialog<Boolean> dialog = createDialog();
-    if (dialog.showAndWait().orElse(false)) {
-      tabs.getTabs().stream()
-          .map(t -> (ExtendedPropertySheet) t.getContent())
-          .flatMap(p -> p.getItems().stream())
-          .flatMap(TypeUtils.castStream(PropertyItem.class))
-          .map(i -> (PropertyItem<?>) i) // due to castStream not working on generic types
-          .map(PropertyItem::getObservableValue)
-          .flatMap(TypeUtils.optionalStream())
-          .flatMap(TypeUtils.castStream(FlushableProperty.class))
-          .filter(FlushableProperty::isChanged)
-          .forEach(FlushableProperty::flush);
+  private SettingsDialog createDialog(DashboardTabPane tabPane) {
+    List<Category> pluginCategories = new ArrayList<>();
+    for (Plugin plugin : PluginLoader.getDefault().getLoadedPlugins()) {
+      if (plugin.getSettings().isEmpty()) {
+        continue;
+      }
+      Category category = Category.of(plugin.getName(), plugin.getSettings());
+      pluginCategories.add(category);
     }
-  }
+    Category appSettings = AppPreferences.getInstance().getSettings();
+    Category plugins = Category.of("Plugins", pluginCategories, ImmutableList.of());
+    Category tabs = Category.of("Tabs",
+        tabPane.getTabs().stream()
+            .flatMap(TypeUtils.castStream(DashboardTab.class))
+            .map(DashboardTab::getSettings)
+            .collect(Collectors.toList()),
+        ImmutableList.of(
+            Group.of("Default Settings",
+                Setting.of("Default tile size", AppPreferences.getInstance().defaultTileSizeProperty())
+            )
+        ));
 
-  private Dialog<Boolean> createDialog() {
-    Dialog<Boolean> dialog = new Dialog<>();
-    dialog.getDialogPane().getStylesheets().setAll(AppPreferences.getInstance().getTheme().getStyleSheets());
-    dialog.getDialogPane().setContent(new BorderPane(tabs));
-    dialog.initModality(Modality.APPLICATION_MODAL);
-    dialog.initStyle(StageStyle.UTILITY);
-    dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CANCEL, ButtonType.OK);
+    SettingsDialog dialog = new SettingsDialog(appSettings, plugins, tabs);
+    FxUtils.bind(dialog.getDialogPane().getStylesheets(), stylesheets);
     dialog.setTitle(DIALOG_TITLE);
-    dialog.setResizable(true);
-    dialog.setResultConverter(button -> !button.getButtonData().isCancelButton());
     return dialog;
-  }
-
-  private Tab createTabForPlugin(Plugin plugin) {
-    Tab tab = new Tab(plugin.getName());
-    tab.setContent(new ExtendedPropertySheet(plugin.getProperties()));
-    tab.setDisable(DashboardMode.getCurrentMode() == DashboardMode.PLAYBACK);
-    return tab;
   }
 
 }

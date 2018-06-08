@@ -1,6 +1,8 @@
 package edu.wpi.first.shuffleboard.plugin.base.layout;
 
 import edu.wpi.first.shuffleboard.api.components.ActionList;
+import edu.wpi.first.shuffleboard.api.prefs.Group;
+import edu.wpi.first.shuffleboard.api.prefs.Setting;
 import edu.wpi.first.shuffleboard.api.util.GridPoint;
 import edu.wpi.first.shuffleboard.api.util.ListUtils;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
@@ -22,7 +24,6 @@ import java.util.stream.Stream;
 
 import javafx.beans.binding.DoubleBinding;
 import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.Property;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
@@ -332,11 +333,13 @@ public final class GridLayout extends LayoutBase {
   }
 
   @Override
-  public List<Property<?>> getProperties() {
+  public List<Group> getSettings() {
     return ImmutableList.of(
-        numColumns,
-        numRows,
-        labelPositionProperty()
+        Group.of("Layout",
+            Setting.of("Number of columns", numColumns),
+            Setting.of("Number of rows", numRows),
+            Setting.of("Label position", labelPositionProperty())
+        )
     );
   }
 

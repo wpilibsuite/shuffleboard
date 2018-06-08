@@ -1,12 +1,14 @@
 package edu.wpi.first.shuffleboard.app;
 
 import edu.wpi.first.shuffleboard.api.plugin.Plugin;
+import edu.wpi.first.shuffleboard.api.prefs.Category;
 import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
 import edu.wpi.first.shuffleboard.api.tab.TabInfo;
 import edu.wpi.first.shuffleboard.api.theme.Theme;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.Storage;
 import edu.wpi.first.shuffleboard.api.util.ThreadUtils;
+import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 import edu.wpi.first.shuffleboard.app.components.DashboardTab;
 import edu.wpi.first.shuffleboard.app.components.DashboardTabPane;
 import edu.wpi.first.shuffleboard.app.dialogs.AboutDialog;
@@ -17,6 +19,7 @@ import edu.wpi.first.shuffleboard.app.dialogs.RestartPromptDialog;
 import edu.wpi.first.shuffleboard.app.dialogs.UpdateDownloadDialog;
 import edu.wpi.first.shuffleboard.app.plugin.PluginLoader;
 import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
+import edu.wpi.first.shuffleboard.app.prefs.SettingsDialog;
 import edu.wpi.first.shuffleboard.app.sources.recording.Playback;
 import edu.wpi.first.shuffleboard.app.tab.TabInfoRegistry;
 
@@ -40,7 +43,6 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SplitPane;
-import javafx.scene.control.Tab;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -232,7 +234,7 @@ public class MainWindowController {
 
   @FXML
   public void showPrefs() {
-    prefsDialog.show();
+    prefsDialog.show(dashboard);
   }
 
   @FXML
@@ -269,11 +271,15 @@ public class MainWindowController {
   }
 
   @FXML
-  private void showCurrentTabPrefs() {
-    Tab currentTab = dashboard.getSelectionModel().getSelectedItem();
-    if (currentTab instanceof DashboardTab) {
-      ((DashboardTab) currentTab).showPrefsDialog();
-    }
+  private void showTabPrefs() {
+    List<Category> categories = dashboard.getTabs().stream()
+        .flatMap(TypeUtils.castStream(DashboardTab.class))
+        .map(DashboardTab::getSettings)
+        .collect(Collectors.toList());
+    SettingsDialog dialog = new SettingsDialog(categories);
+    dialog.getDialogPane().getStylesheets().setAll(stylesheets.getValue());
+    dialog.setTitle("Tab Preferences");
+    dialog.showAndWait();
   }
 
   @FXML

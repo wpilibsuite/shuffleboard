@@ -5,6 +5,8 @@ import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.plugin.Description;
 import edu.wpi.first.shuffleboard.api.plugin.Plugin;
 import edu.wpi.first.shuffleboard.api.prefs.FlushableProperty;
+import edu.wpi.first.shuffleboard.api.prefs.Group;
+import edu.wpi.first.shuffleboard.api.prefs.Setting;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
@@ -24,7 +26,6 @@ import java.util.Map;
 import java.util.prefs.Preferences;
 
 import javafx.beans.InvalidationListener;
-import javafx.beans.property.Property;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
@@ -127,10 +128,14 @@ public class NetworkTablesPlugin extends Plugin {
   }
 
   @Override
-  public List<Property<?>> getProperties() {
+  public List<Group> getSettings() {
     return ImmutableList.of(
-        // use FlushableProperty so changes made are only effected when committed by the user
-        new FlushableProperty<>(serverId)
+        Group.of("Connection settings",
+            Setting.of("Server",
+                "The NetworkTables server to connect to. This can be a team number, IP address, or mDNS URL",
+                new FlushableProperty<>(serverId)
+            )
+        )
     );
   }
 

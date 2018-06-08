@@ -1,12 +1,18 @@
 package edu.wpi.first.shuffleboard.plugin.base.widget;
 
 import edu.wpi.first.shuffleboard.api.components.LinearIndicator;
+import edu.wpi.first.shuffleboard.api.prefs.Group;
+import edu.wpi.first.shuffleboard.api.prefs.Setting;
 import edu.wpi.first.shuffleboard.api.widget.Description;
 import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 import edu.wpi.first.shuffleboard.api.widget.SimpleAnnotatedWidget;
 import edu.wpi.first.shuffleboard.plugin.base.data.AccelerometerData;
 
+import com.google.common.collect.ImmutableList;
+
 import org.fxmisc.easybind.EasyBind;
+
+import java.util.List;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
@@ -34,17 +40,25 @@ public class AccelerometerWidget extends SimpleAnnotatedWidget<AccelerometerData
   private void initialize() {
     indicator.valueProperty().bind(dataOrDefault.map(AccelerometerData::getValue));
     label.textProperty().bind(EasyBind.combine(dataOrDefault, numDecimals, this::generateLabelText));
-    exportProperties(
-        showText,
-        numDecimals,
-        indicator.showTickMarksProperty(),
-        indicator.minProperty(),
-        indicator.maxProperty()
-    );
   }
 
   private String generateLabelText(AccelerometerData data, Number numDecimals) {
     return String.format("%." + numDecimals.intValue() + "f g", data.getValue());
+  }
+
+  @Override
+  public List<Group> getSettings() {
+    return ImmutableList.of(
+        Group.of("Visuals",
+            Setting.of("Show text", showText),
+            Setting.of("Precision", numDecimals),
+            Setting.of("Show tick marks", indicator.showTickMarksProperty())
+        ),
+        Group.of("Range",
+            Setting.of("Min", indicator.minProperty()),
+            Setting.of("Max", indicator.maxProperty())
+        )
+    );
   }
 
   @Override

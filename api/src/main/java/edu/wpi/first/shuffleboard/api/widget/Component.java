@@ -1,5 +1,7 @@
 package edu.wpi.first.shuffleboard.api.widget;
 
+import edu.wpi.first.shuffleboard.api.prefs.Group;
+
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -48,7 +50,18 @@ public interface Component {
   String getName();
 
   /**
-   * Gets the user-configurable properties for this component.
+   * Gets the settings for this component. Settings are defined in groups. There may be arbitrarily many groups or
+   * settings per group.
+   *
+   * <p>General structure:
+   * <pre>{@code
+   * ImmutableList.of(
+   *   Group.of("Group Name",
+   *     Setting.of("Setting name", settingProperty)
+   *   )
+   * );
+   * }</pre>
    */
-  List<? extends Property<?>> getProperties();
+  List<Group> getSettings();
+
 }

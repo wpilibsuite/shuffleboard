@@ -1,8 +1,14 @@
 package edu.wpi.first.shuffleboard.plugin.base.widget;
 
+import edu.wpi.first.shuffleboard.api.prefs.Group;
+import edu.wpi.first.shuffleboard.api.prefs.Setting;
 import edu.wpi.first.shuffleboard.api.widget.Description;
 import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 import edu.wpi.first.shuffleboard.api.widget.SimpleAnnotatedWidget;
+
+import com.google.common.collect.ImmutableList;
+
+import java.util.List;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Slider;
@@ -26,12 +32,22 @@ public class NumberSliderWidget extends SimpleAnnotatedWidget<Number> {
         slider.maxProperty()
               .subtract(slider.minProperty())
               .divide(4));
-    exportProperties(slider.minProperty(), slider.maxProperty(), slider.blockIncrementProperty());
     slider.valueProperty().bindBidirectional(dataProperty());
   }
 
   @Override
   public Pane getView() {
     return root;
+  }
+
+  @Override
+  public List<Group> getSettings() {
+    return ImmutableList.of(
+        Group.of("Slider Settings",
+            Setting.of("Min", slider.minProperty()),
+            Setting.of("Max", slider.maxProperty()),
+            Setting.of("Block increment", slider.blockIncrementProperty())
+        )
+    );
   }
 }

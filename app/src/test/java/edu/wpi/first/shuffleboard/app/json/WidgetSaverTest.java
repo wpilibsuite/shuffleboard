@@ -2,6 +2,8 @@ package edu.wpi.first.shuffleboard.app.json;
 
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.data.types.AllType;
+import edu.wpi.first.shuffleboard.api.prefs.Group;
+import edu.wpi.first.shuffleboard.api.prefs.Setting;
 import edu.wpi.first.shuffleboard.api.properties.SavePropertyFrom;
 import edu.wpi.first.shuffleboard.api.properties.SaveThisProperty;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
@@ -10,6 +12,7 @@ import edu.wpi.first.shuffleboard.api.widget.Description;
 import edu.wpi.first.shuffleboard.api.widget.SimpleAnnotatedWidget;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 
+import com.google.common.collect.ImmutableList;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
@@ -19,6 +22,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.testfx.framework.junit5.ApplicationTest;
+
+import java.util.List;
 
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -36,11 +41,18 @@ public class WidgetSaverTest extends ApplicationTest {
   @Description(name = "Simple Widget", dataTypes = AllType.class)
   public static class SimpleWidget extends SimpleAnnotatedWidget {
 
-    public SimpleWidget() {
-      exportProperties(
-          new SimpleDoubleProperty(this, "min", 0),
-          new SimpleDoubleProperty(this, "max", 0),
-          new SimpleDoubleProperty(this, "blockIncrement", 0)
+    private final SimpleDoubleProperty min = new SimpleDoubleProperty(this, "min", 0);
+    private final SimpleDoubleProperty max = new SimpleDoubleProperty(this, "max", 0);
+    private final SimpleDoubleProperty blockIncrement = new SimpleDoubleProperty(this, "blockIncrement", 0);
+
+    @Override
+    public List<Group> getSettings() {
+      return ImmutableList.of(
+          Group.of("Test",
+              Setting.of("min", min),
+              Setting.of("max", max),
+              Setting.of("blockIncrement", blockIncrement)
+          )
       );
     }
 
@@ -101,10 +113,13 @@ public class WidgetSaverTest extends ApplicationTest {
   }
 
   private static Object getPropertyValue(Widget widget, String name) {
-    return widget.getProperties().stream()
+    return widget.getSettings().get(0)
+        .getSettings()
+        .stream()
         .filter(p -> p.getName().equals(name))
         .findFirst()
         .orElseThrow(RuntimeException::new)
+        .getProperty()
         .getValue();
   }
 
@@ -115,9 +130,9 @@ public class WidgetSaverTest extends ApplicationTest {
     String widgetJson = "{\n"
         + "\"_type\": \"Simple Widget\",\n"
         + "\"_source0\": \"example://All\",\n"
-        + "\"min\": -1.0,\n"
-        + "\"max\": 1.0,\n"
-        + "\"blockIncrement\": 0.0625\n"
+        + "\"Test/min\": -1.0,\n"
+        + "\"Test/max\": 1.0,\n"
+        + "\"Test/blockIncrement\": 0.0625\n"
         + "}";
 
     Widget widget = JsonBuilder.forSaveFile().fromJson(widgetJson, Widget.class);
