@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.app.prefs;
 
+import edu.wpi.first.shuffleboard.api.components.ExtendedPropertySheet;
 import edu.wpi.first.shuffleboard.api.prefs.Category;
 import edu.wpi.first.shuffleboard.api.prefs.FlushableProperty;
 import edu.wpi.first.shuffleboard.api.prefs.Group;
@@ -50,7 +51,7 @@ public final class SettingsDialogController {
       if (category.getGroups().isEmpty()) {
         view.getChildren().setAll(new Label("No settings for " + category.getName()));
       } else {
-        view.getChildren().setAll(category.createPropertySheet());
+        view.getChildren().setAll(new ExtendedPropertySheet(category));
       }
     });
 

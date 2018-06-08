@@ -1,17 +1,15 @@
 package edu.wpi.first.shuffleboard.api.prefs;
 
-import edu.wpi.first.shuffleboard.api.components.ExtendedPropertySheet;
-
 import com.google.common.collect.ImmutableList;
 
-import org.controlsfx.control.PropertySheet;
-
 import java.util.Collection;
-import java.util.Optional;
 
-import javafx.beans.property.Property;
-import javafx.beans.value.ObservableValue;
-
+/**
+ * A category of settings. This is typically used to contain all the settings for a single configurable object, such
+ * as a component, layout, or tab. Categories can have nested categories, like in the case of a layout containing
+ * child components; the settings categories for the children can be nested under the settings category for the
+ * parent layout. This lets components to be grouped together in a UI object.
+ */
 public final class Category {
 
   private final String name;
@@ -80,60 +78,6 @@ public final class Category {
    */
   public ImmutableList<Group> getGroups() {
     return groups;
-  }
-
-  /**
-   * Creates a property sheet for editing the settings in this category. This does <i>not</i> include settings for
-   * subcategories.
-   *
-   * @return a new property sheet for this category
-   */
-  public PropertySheet createPropertySheet() {
-    ExtendedPropertySheet propertySheet = new ExtendedPropertySheet();
-    propertySheet.setMode(PropertySheet.Mode.CATEGORY);
-    for (Group group : groups) {
-      for (Setting<?> setting : group.getSettings()) {
-        PropertySheet.Item item = new PropertySheet.Item() {
-          @Override
-          public Class<?> getType() {
-            return setting.getProperty().getValue().getClass();
-          }
-
-          @Override
-          public String getCategory() {
-            return group.getName();
-          }
-
-          @Override
-          public String getName() {
-            return setting.getName();
-          }
-
-          @Override
-          public String getDescription() {
-            return setting.getDescription();
-          }
-
-          @Override
-          public Object getValue() {
-            return setting.getProperty().getValue();
-          }
-
-          @Override
-          @SuppressWarnings("unchecked")
-          public void setValue(Object value) {
-            ((Property) setting.getProperty()).setValue(value);
-          }
-
-          @Override
-          public Optional<ObservableValue<?>> getObservableValue() {
-            return Optional.of(setting.getProperty());
-          }
-        };
-        propertySheet.getItems().add(item);
-      }
-    }
-    return propertySheet;
   }
 
 }
