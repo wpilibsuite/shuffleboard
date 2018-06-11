@@ -9,6 +9,7 @@ import edu.wpi.first.shuffleboard.api.sources.recording.TimestampedData;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.data.CameraServerData;
+import edu.wpi.first.shuffleboard.plugin.cameraserver.data.type.CameraServerDataType;
 
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -44,7 +45,7 @@ public final class CameraServerSourceType extends SourceType {
             if (!availableUris.contains(uri)) {
               availableUris.add(uri);
             }
-            availableSources.put(uri, new CameraServerData(name, null, -1, -1));
+            availableSources.put(uri, new CameraServerData(name, null, 0, 0));
           }
         }), 0xFF);
   }
@@ -57,13 +58,29 @@ public final class CameraServerSourceType extends SourceType {
   }
 
   @Override
+  public void connect() {
+    super.connect();
+    availableUris.stream()
+        .map(CameraServerSource::forName)
+        .forEach(CameraServerSource::connect);
+  }
+
+  @Override
+  public void disconnect() {
+    availableUris.stream()
+        .map(CameraServerSource::forName)
+        .forEach(CameraServerSource::disconnect);
+    super.disconnect();
+  }
+
+  @Override
   public SourceEntry createSourceEntryForUri(String uri) {
-    return new CameraServerSourceEntry(new CameraServerData(removeProtocol(uri), null, -1, -1));
+    return new CameraServerSourceEntry(new CameraServerData(removeProtocol(uri), null, 0, 0));
   }
 
   @Override
   public DataType<?> dataTypeForSource(DataTypes registry, String sourceUri) {
-    return registry.forName("CameraServerData").orElse(DataTypes.Unknown);
+    return CameraServerDataType.Instance;
   }
 
   @Override

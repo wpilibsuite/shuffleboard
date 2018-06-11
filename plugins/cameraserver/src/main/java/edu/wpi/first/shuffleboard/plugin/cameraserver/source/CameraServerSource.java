@@ -201,6 +201,14 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
     }
     final Thread thread = Thread.currentThread();
     while (!thread.isInterrupted()) {
+      // Sleep until the source reconnects
+      if (!isConnected()) {
+        try {
+          Thread.sleep(500);
+        } catch (InterruptedException e) {
+          thread.interrupt();
+        }
+      }
       boolean success = grabOnceBlocking();
       if (!success) {
         // Couldn't grab the frame, wait a bit to try again
