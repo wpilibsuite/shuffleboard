@@ -3,10 +3,13 @@ package edu.wpi.first.shuffleboard.api.sources.recording;
 import edu.wpi.first.shuffleboard.api.DashboardMode;
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
+import edu.wpi.first.shuffleboard.api.properties.AtomicBooleanProperty;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
+import edu.wpi.first.shuffleboard.api.sources.recording.serialization.Serializer;
 import edu.wpi.first.shuffleboard.api.sources.recording.serialization.Serializers;
+import edu.wpi.first.shuffleboard.api.util.ShutdownHooks;
 import edu.wpi.first.shuffleboard.api.util.Storage;
 import edu.wpi.first.shuffleboard.api.util.ThreadUtils;
 
@@ -20,7 +23,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
 
 /**
  * Records data from sources. Each source is responsible for calling {@link #recordCurrentValue} whenever its value
@@ -32,7 +34,7 @@ public final class Recorder {
 
   private static final Recorder instance = new Recorder();
 
-  private final BooleanProperty running = new SimpleBooleanProperty(this, "running", false);
+  private final BooleanProperty running = new AtomicBooleanProperty(this, "running", false);
   private Instant startTime = null;
   private Recording recording = null;
   private File recordingFile;
@@ -69,27 +71,27 @@ public final class Recorder {
                 }
               }
             }, 0, 2, TimeUnit.SECONDS);
+
+    ShutdownHooks.addHook(this::stop);
   }
 
-  private void saveToDisk() throws IOException {
+  private synchronized void saveToDisk() throws IOException {
     if (recording == null) {
       // Nothing to save
       return;
     }
-    synchronized (recordingLock) {
-      Path file = Storage.createRecordingFilePath(startTime);
-      if (recordingFile == null) {
-        recordingFile = file.toFile();
-      }
-      if (firstSave) {
-        Serialization.saveRecording(recording, file);
-        firstSave = false;
-      } else {
-        Serialization.updateRecordingSave(recording, file);
-      }
-      recording.getData().clear();
-      log.fine("Saved recording to " + file);
+    Path file = Storage.createRecordingFilePath(startTime);
+    if (recordingFile == null) {
+      recordingFile = file.toFile();
     }
+    if (firstSave) {
+      Serialization.saveRecording(recording, file);
+      firstSave = false;
+    } else {
+      Serialization.updateRecordingSave(recording, file);
+    }
+    Serializers.getAdapters().forEach(Serializer::flush);
+    log.fine("Saved recording to " + file);
   }
 
   /**
@@ -123,6 +125,11 @@ public final class Recorder {
    * Stops recording data.
    */
   public void stop() {
+    try {
+      saveToDisk();
+    } catch (IOException e) {
+      log.log(Level.WARNING, "Could not save last data to disk", e);
+    }
     Serializers.cleanUpAll();
     recordingFile = null;
     setRunning(false);
@@ -154,9 +161,7 @@ public final class Recorder {
     if (!isRunning()) {
       return;
     }
-    // Store the ID in the common string pool
-    // There can easily tens or hundreds of thousands of instances, so storing it in the pool can cut memory
-    // use by megabytes per data point
+    // Use synchronized
     synchronized (recordingLock) {
       recording.append(new TimestampedData(id.intern(), dataType, value, timestamp()));
     }

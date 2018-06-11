@@ -28,8 +28,7 @@ public final class CameraServerSourceType extends SourceType {
   private static final ObservableMap<String, Object> availableSources = FXCollections.observableHashMap();
 
   private CameraServerSourceType() {
-    // TODO fix bugs with recording before enabling it on master
-    super("CameraServer", false, "camera_server://", CameraServerSource::forName);
+    super("CameraServer", true, "camera_server://", CameraServerSource::forName);
     NetworkTableInstance.getDefault().addEntryListener("/CameraPublisher", entryNotification ->
         FxUtils.runOnFxThread(() -> {
           List<String> hierarchy = NetworkTable.getHierarchy(entryNotification.name);

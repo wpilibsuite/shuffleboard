@@ -5,10 +5,13 @@ import edu.wpi.first.shuffleboard.api.plugin.Description;
 import edu.wpi.first.shuffleboard.api.plugin.Plugin;
 import edu.wpi.first.shuffleboard.api.plugin.Requires;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
+import edu.wpi.first.shuffleboard.api.sources.recording.Converter;
+import edu.wpi.first.shuffleboard.api.sources.recording.serialization.TypeAdapter;
 import edu.wpi.first.shuffleboard.api.widget.ComponentType;
 import edu.wpi.first.shuffleboard.api.widget.WidgetType;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.data.type.CameraServerDataType;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.source.CameraServerSourceType;
+import edu.wpi.first.shuffleboard.plugin.cameraserver.source.CameraStreamRecorder;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.widget.CameraServerWidget;
 
 import com.google.common.collect.ImmutableList;
@@ -32,6 +35,7 @@ import java.util.logging.Logger;
 public class CameraServerPlugin extends Plugin {
 
   private static final Logger log = Logger.getLogger(CameraServerPlugin.class.getName());
+  private final CameraStreamRecorder streamRecorder = new CameraStreamRecorder();
 
   @Override
   public void onLoad() {
@@ -59,6 +63,13 @@ public class CameraServerPlugin extends Plugin {
   public List<SourceType> getSourceTypes() {
     return ImmutableList.of(
         CameraServerSourceType.INSTANCE
+    );
+  }
+
+  @Override
+  public List<TypeAdapter> getTypeAdapters() {
+    return ImmutableList.of(
+        streamRecorder
     );
   }
 

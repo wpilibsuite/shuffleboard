@@ -5,8 +5,10 @@ import edu.wpi.first.shuffleboard.api.properties.AtomicIntegerProperty;
 import edu.wpi.first.shuffleboard.api.sources.AbstractDataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.Sources;
+import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
 import edu.wpi.first.shuffleboard.api.util.Debouncer;
 import edu.wpi.first.shuffleboard.api.util.EqualityUtils;
+import edu.wpi.first.shuffleboard.api.util.ShutdownHooks;
 import edu.wpi.first.shuffleboard.api.util.ThreadUtils;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.data.CameraServerData;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.data.Resolution;
@@ -106,6 +108,7 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
   private CameraServerSource(String name) {
     super(CameraServerDataType.Instance);
     setName(name);
+    setData(new CameraServerData(name, null, 0, 0));
     videoSink = new CvSink(name + "-videosink");
     eventListenerId = CameraServerJNI.addListener(e -> {
       if (e.name.equals(name)) {
@@ -158,6 +161,8 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
     targetFps.addListener(cameraUrlUpdater);
     targetResolution.addListener(cameraUrlUpdater);
     setActive(camera != null && camera.getUrls().length > 0);
+
+    ShutdownHooks.addHook(this::cancelFrameGrabber);
   }
 
   private void reEnable() {
@@ -225,6 +230,7 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
       } else {
         setData(getData().withImage(image));
       }
+      Recorder.getInstance().record(getId(), getDataType(), getData().withImage(image.clone()));
     }
     return true;
   }
