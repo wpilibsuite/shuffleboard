@@ -4,25 +4,25 @@ import edu.wpi.first.shuffleboard.api.sources.recording.serialization.TypeAdapte
 import edu.wpi.first.shuffleboard.plugin.cameraserver.data.CameraServerData;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.data.type.CameraServerDataType;
 
-import org.bytedeco.javacpp.avcodec;
-import org.bytedeco.javacpp.avutil;
-import org.bytedeco.javacpp.indexer.UByteBufferIndexer;
-import org.bytedeco.javacv.FFmpegFrameGrabber;
-import org.bytedeco.javacv.FFmpegFrameRecorder;
-import org.bytedeco.javacv.Frame;
-import org.bytedeco.javacv.FrameRecorder;
-import org.bytedeco.javacv.OpenCVFrameConverter;
-import org.opencv.core.Mat;
+import com.google.common.primitives.Bytes;
 
-import java.io.File;
-import java.io.IOException;
+import org.bytedeco.javacv.FFmpegFrameGrabber;
+import org.bytedeco.javacv.FrameRecorder;
+
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
+
+import static edu.wpi.first.shuffleboard.api.sources.recording.Serialization.SIZE_OF_BYTE;
+import static edu.wpi.first.shuffleboard.api.sources.recording.Serialization.SIZE_OF_INT;
+import static edu.wpi.first.shuffleboard.api.sources.recording.Serialization.SIZE_OF_SHORT;
+import static edu.wpi.first.shuffleboard.api.sources.recording.Serialization.readInt;
+import static edu.wpi.first.shuffleboard.api.sources.recording.Serialization.readShort;
+import static edu.wpi.first.shuffleboard.api.sources.recording.Serialization.readString;
+import static edu.wpi.first.shuffleboard.api.sources.recording.Serialization.toByteArray;
 
 public class CameraStreamRecorder extends TypeAdapter<CameraServerData> {
 
-  private final Map<String, FFmpegFrameRecorder> savers = new HashMap<>();
+  private final Map<String, CameraStreamSaver> savers = new HashMap<>();
   private final Map<String, FFmpegFrameGrabber> readers = new HashMap<>();
 
   public CameraStreamRecorder() {
@@ -49,87 +49,59 @@ public class CameraStreamRecorder extends TypeAdapter<CameraServerData> {
 
   @Override
   public synchronized void cleanUp() {
-    savers.values().forEach(r -> {
+    savers.values().forEach(s -> {
       try {
-        r.stop();
+        s.finish();
       } catch (FrameRecorder.Exception e) {
         e.printStackTrace();
       }
     });
     readers.clear();
-    frameNum.set(0);
   }
 
   @Override
   public CameraServerData deserialize(byte[] buffer, int bufferPosition) {
-    // TODO
-    return null;
+    // TODO read frames from video file
+    String name = readString(buffer, bufferPosition);
+    bufferPosition += name.length() + SIZE_OF_INT;
+    byte fileNum = buffer[bufferPosition];
+    bufferPosition++;
+    short frameNum = readShort(buffer, bufferPosition);
+    bufferPosition += SIZE_OF_SHORT;
+    int bandwidth = readInt(buffer, bufferPosition);
+    bufferPosition += SIZE_OF_INT;
+    double fps = readShort(buffer, bufferPosition) / 100.0;
+    return new CameraServerData(name, null, fps, bandwidth);
   }
 
   @Override
   public int getSerializedSize(CameraServerData value) {
-    // TODO
-    return 0;
+    return value.getName().length() + SIZE_OF_INT // name
+        + SIZE_OF_BYTE   // video file number
+        + SIZE_OF_SHORT  // frame number
+        + SIZE_OF_INT    // bandwidth
+        + SIZE_OF_SHORT; // FPS
   }
 
   @Override
   public synchronized byte[] serialize(CameraServerData data) {
-    serializeFrame(data.getName(), data.getImage());
-    return new byte[0];
-  }
-
-  private Frame frame;
-  private final AtomicInteger frameNum = new AtomicInteger();
-  private boolean started = false;
-
-  public synchronized void serializeFrame(String cameraName, Mat image) {
-    FFmpegFrameRecorder recorder = savers.computeIfAbsent(cameraName, this::createRecorder);
-    recorder.setVideoQuality(1);
-    if (frame == null) {
-      frame = new Frame(image.width(), image.height(), OpenCVFrameConverter.getFrameDepth(image.depth()), image.channels());
-    }
-    byte[] b = new byte[(int) (image.total() * image.channels())];
-    image.get(0, 0, b);
-    int[] wide = new int[b.length];
-    for (int i = 0; i < b.length; i++) {
-      wide[i] = b[i] & 0xFF;
-    }
-    frame.<UByteBufferIndexer>createIndexer()
-        .put(0, wide)
-        .release();
-    try {
-      if (!started) {
-        try {
-          recorder.setImageWidth(image.width());
-          recorder.setImageHeight(image.height());
-          recorder.start();
-          started = true;
-        } catch (FrameRecorder.Exception e) {
-          throw new AssertionError("Could not start recorder", e);
-        }
-      }
-      recorder.setFrameNumber(frameNum.getAndIncrement());
-      recorder.record(frame);
-    } catch (FrameRecorder.Exception e) {
-      throw new AssertionError("Could not save frame", e);
-    } finally {
-      image.release();
-    }
-  }
-
-  private FFmpegFrameRecorder createRecorder(String name) {
-    String file = getCurrentFile().getAbsolutePath().replace(".sbr", "-" + name + ".mp4");
-    try {
-      new File(file).createNewFile();
-    } catch (IOException e) {
-      throw new AssertionError(e);
-    }
-    FFmpegFrameRecorder recorder = new FFmpegFrameRecorder(file, 0);
-    recorder.setVideoCodec(avcodec.AV_CODEC_ID_MPEG4);
-    recorder.setFormat("mp4");
-    recorder.setPixelFormat(avutil.AV_PIX_FMT_YUV420P);
-//    recorder.setVideoBitrate(1_000_000);
-    return recorder;
+    // Save:
+    //  - Camera name as String
+    //  - File number (0, 1, ...) as int8 (255 files will never be reached; typical count is 1)
+    //  - Frame number (1, 2, 3, ...) as int16 (limits to ~9 hours)
+    //  - Current bandwidth use as int32
+    //  - Current FPS as int16
+    // Camera URI (camera_server://CameraName) is saved by the Serializer and placed in the constant pool,
+    // but we don't have access to it here
+    CameraStreamSaver saver = savers.computeIfAbsent(data.getName(), name -> new CameraStreamSaver(name, getCurrentFile()));
+    saver.serializeFrame(data);
+    return Bytes.concat(
+        toByteArray(data.getName()),
+        new byte[]{(byte) saver.getFileNum()}, // TODO
+        toByteArray((short) saver.getFrameNum()),
+        toByteArray((int) data.getBandwidth()),
+        toByteArray((short) (data.getFps() * 100)) // limits to 327.68 max input FPS - should be enough :)
+    );
   }
 
 }
