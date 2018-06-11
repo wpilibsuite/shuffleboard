@@ -97,7 +97,7 @@ public class CameraStreamRecorder extends TypeAdapter<CameraServerData> {
     saver.serializeFrame(data);
     return Bytes.concat(
         toByteArray(data.getName()),
-        new byte[]{(byte) saver.getFileNum()}, // TODO
+        new byte[]{(byte) saver.getFileNum()},
         toByteArray((short) saver.getFrameNum()),
         toByteArray((int) data.getBandwidth()),
         toByteArray((short) (data.getFps() * 100)) // limits to 327.68 max input FPS - should be enough :)
