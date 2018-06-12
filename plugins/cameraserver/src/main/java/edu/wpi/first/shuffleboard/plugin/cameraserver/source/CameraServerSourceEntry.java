@@ -32,7 +32,7 @@ public class CameraServerSourceEntry implements SourceEntry {
 
   @Override
   public CameraServerSource get() {
-    return CameraServerSource.forName(name);
+    return CameraServerSourceType.INSTANCE.forName(name);
   }
 
 }

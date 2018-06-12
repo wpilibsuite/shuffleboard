@@ -14,7 +14,9 @@ import edu.wpi.first.shuffleboard.plugin.cameraserver.data.type.CameraServerData
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -25,11 +27,12 @@ public final class CameraServerSourceType extends SourceType {
 
   public static final CameraServerSourceType INSTANCE = new CameraServerSourceType();
 
-  private static final ObservableList<String> availableUris = FXCollections.observableArrayList();
-  private static final ObservableMap<String, Object> availableSources = FXCollections.observableHashMap();
+  private final Map<String, CameraServerSource> sources = new HashMap<>();
+  private final ObservableList<String> availableUris = FXCollections.observableArrayList();
+  private final ObservableMap<String, Object> availableSources = FXCollections.observableHashMap();
 
   private CameraServerSourceType() {
-    super("CameraServer", true, "camera_server://", CameraServerSource::forName);
+    super("CameraServer", true, "camera_server://", CameraServerSourceType::forName);
     NetworkTableInstance.getDefault().addEntryListener("/CameraPublisher", entryNotification ->
         FxUtils.runOnFxThread(() -> {
           List<String> hierarchy = NetworkTable.getHierarchy(entryNotification.name);
@@ -50,6 +53,14 @@ public final class CameraServerSourceType extends SourceType {
         }), 0xFF);
   }
 
+  public static CameraServerSource forName(String name) {
+    return INSTANCE.sources.computeIfAbsent(name, CameraServerSource::new);
+  }
+
+  public static void removeSource(CameraServerSource source) {
+    INSTANCE.sources.remove(source.getId());
+  }
+
   @Override
   public void read(TimestampedData recordedData) {
     super.read(recordedData);
@@ -60,16 +71,12 @@ public final class CameraServerSourceType extends SourceType {
   @Override
   public void connect() {
     super.connect();
-    availableUris.stream()
-        .map(CameraServerSource::forName)
-        .forEach(CameraServerSource::connect);
+    sources.values().forEach(CameraServerSource::connect);
   }
 
   @Override
   public void disconnect() {
-    availableUris.stream()
-        .map(CameraServerSource::forName)
-        .forEach(CameraServerSource::disconnect);
+    sources.values().forEach(CameraServerSource::disconnect);
     super.disconnect();
   }
 

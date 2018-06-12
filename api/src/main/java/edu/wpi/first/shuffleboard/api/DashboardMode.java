@@ -46,4 +46,8 @@ public enum DashboardMode {
     DashboardMode.currentMode.set(currentMode);
   }
 
+  public static boolean inPlayback() {
+    return getCurrentMode() == PLAYBACK;
+  }
+
 }
