@@ -63,6 +63,10 @@ public final class CameraStreamSaver {
   public void serializeFrame(CameraServerData data) {
     try {
       lock.lock();
+      if (recorder == null) {
+        log.warning("Attempting to read frame after saver has finished");
+        return;
+      }
       Mat image = data.getImage();
       if (image == null || image.getNativeObjAddr() == 0) {
         // No image to save, bail
