@@ -4,7 +4,6 @@ import edu.wpi.first.shuffleboard.api.properties.AsyncProperty;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.Property;
-import javafx.beans.property.SimpleObjectProperty;
 
 /**
  * An enum representing the possible modes of dashboard operation.

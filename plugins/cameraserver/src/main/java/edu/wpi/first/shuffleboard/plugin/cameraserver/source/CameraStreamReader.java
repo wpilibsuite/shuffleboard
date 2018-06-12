@@ -12,6 +12,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -28,6 +30,8 @@ public final class CameraStreamReader {
   private final File rootRecordingFile;
   private FFmpegFrameGrabber grabber;
   private final AtomicBoolean started = new AtomicBoolean(false);
+
+  private final Lock lock = new ReentrantLock();
 
   private Mat mat;
 
@@ -52,16 +56,21 @@ public final class CameraStreamReader {
    * @param fileNumber the file number to read
    */
   public void setFileNumber(int fileNumber) {
-    if (fileNumber != this.fileNumber.get()) {
-      this.fileNumber.set(fileNumber);
-      try {
-        grabber.stop();
-        started.set(false);
-      } catch (FrameGrabber.Exception e) {
-        log.log(Level.WARNING, "Could not clean up grabber", e);
+    try {
+      lock.lock();
+      if (fileNumber != this.fileNumber.get()) {
+        this.fileNumber.set(fileNumber);
+        try {
+          grabber.stop();
+          started.set(false);
+        } catch (FrameGrabber.Exception e) {
+          log.log(Level.WARNING, "Could not clean up grabber", e);
+        }
+        mat = null;
+        grabber = createGrabber(fileNumber);
       }
-      mat = null;
-      grabber = createGrabber(fileNumber);
+    } finally {
+      lock.unlock();
     }
   }
 
@@ -83,8 +92,9 @@ public final class CameraStreamReader {
    *
    * @throws IOException if a frame could not be read from the video file
    */
-  public synchronized Mat readFrame(int frameNum) throws IOException {
+  public Mat readFrame(int frameNum) throws IOException {
     try {
+      lock.lock();
       if (!started.get()) {
         grabber.start();
         started.set(true);
@@ -115,6 +125,8 @@ public final class CameraStreamReader {
       return mat.clone();
     } catch (FrameGrabber.Exception e) {
       throw new IOException(e);
+    } finally {
+      lock.unlock();
     }
   }
 

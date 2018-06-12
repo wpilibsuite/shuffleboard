@@ -2,6 +2,8 @@ package edu.wpi.first.shuffleboard.api.sources.recording.serialization;
 
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 public class NumberArrayAdapterTest extends AbstractAdapterTest<double[]> {
@@ -18,14 +20,14 @@ public class NumberArrayAdapterTest extends AbstractAdapterTest<double[]> {
   }
 
   @Test
-  public void testDecodeEmpty() {
+  public void testDecodeEmpty() throws IOException {
     byte[] buffer = {0, 0, 0, 0};
     double[] expected = {};
     assertArrayEquals(expected, adapter.deserialize(buffer, 0));
   }
 
   @Test
-  public void testEncode() {
+  public void testEncode() throws IOException {
     double[] array = {
         Double.MAX_VALUE,
         Double.MIN_VALUE,

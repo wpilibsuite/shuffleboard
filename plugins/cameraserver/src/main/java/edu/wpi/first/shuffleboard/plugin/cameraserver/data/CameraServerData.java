@@ -4,19 +4,14 @@ import edu.wpi.first.shuffleboard.api.data.ComplexData;
 
 import com.google.common.collect.ImmutableMap;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 import org.opencv.core.Mat;
 
-import java.io.Serializable;
 import java.util.Map;
 
-// serialversion UID doesn't matter since this is only used in one JVM at a time
-@SuppressFBWarnings("SE_NO_SERIALVERSIONID")
-public class CameraServerData extends ComplexData<CameraServerData> implements Serializable {
+public class CameraServerData extends ComplexData<CameraServerData> {
 
   private final String name;
-  private final transient Mat image;
+  private final Mat image;
   private final double fps;
   private final double bandwidth;
 

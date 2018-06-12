@@ -75,7 +75,7 @@ public final class Recorder {
     ShutdownHooks.addHook(this::stop);
   }
 
-  private synchronized void saveToDisk() throws IOException {
+  private void saveToDisk() throws IOException {
     if (recording == null) {
       // Nothing to save
       return;
@@ -84,13 +84,15 @@ public final class Recorder {
     if (recordingFile == null) {
       recordingFile = file.toFile();
     }
-    if (firstSave) {
-      Serialization.saveRecording(recording, file);
-      firstSave = false;
-    } else {
-      Serialization.updateRecordingSave(recording, file);
+    synchronized (recordingLock) {
+      if (firstSave) {
+        Serialization.saveRecording(recording, file);
+        firstSave = false;
+      } else {
+        Serialization.updateRecordingSave(recording, file);
+      }
+      Serializers.getAdapters().forEach(Serializer::flush);
     }
-    Serializers.getAdapters().forEach(Serializer::flush);
     log.fine("Saved recording to " + file);
   }
 
@@ -105,11 +107,11 @@ public final class Recorder {
    * Starts recording data.
    */
   public void start() {
-    startTime = Instant.now();
-    firstSave = true;
-    recording = new Recording();
-    // Record initial conditions
     synchronized (recordingLock) {
+      startTime = Instant.now();
+      firstSave = true;
+      recording = new Recording();
+      // Record initial conditions
       SourceTypes.getDefault().getItems().stream()
           .map(SourceType::getAvailableSources)
           .forEach(sources -> sources.forEach((id, value) -> {
@@ -130,9 +132,11 @@ public final class Recorder {
     } catch (IOException e) {
       log.log(Level.WARNING, "Could not save last data to disk", e);
     }
-    Serializers.cleanUpAll();
-    recordingFile = null;
-    setRunning(false);
+    synchronized (recordingLock) {
+      Serializers.cleanUpAll();
+      recordingFile = null;
+      setRunning(false);
+    }
   }
 
   /**

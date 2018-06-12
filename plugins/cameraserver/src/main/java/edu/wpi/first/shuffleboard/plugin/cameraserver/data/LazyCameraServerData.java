@@ -17,7 +17,7 @@ import java.util.function.Supplier;
  */
 public final class LazyCameraServerData extends CameraServerData {
 
-  private final LazyInit<Mat> image;
+  private final transient LazyInit<Mat> image;
 
   /**
    * Creates a new data object. This constructor is identical to {@link CameraServerData#CameraServerData}, but takes
@@ -38,6 +38,10 @@ public final class LazyCameraServerData extends CameraServerData {
     return image.get();
   }
 
+  /**
+   * Releases the image and clears the lazy-loading holder. The next call to {@link #getImage()} will read the frame
+   * from disk.
+   */
   public void clear() {
     if (image.hasValue()) {
       image.get().release();

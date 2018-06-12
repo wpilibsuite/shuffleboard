@@ -75,7 +75,7 @@ public final class CameraServerSourceType extends SourceType {
 
   @Override
   public SourceEntry createSourceEntryForUri(String uri) {
-    return new CameraServerSourceEntry(new CameraServerData(removeProtocol(uri), null, 0, 0));
+    return new CameraServerSourceEntry(removeProtocol(uri));
   }
 
   @Override

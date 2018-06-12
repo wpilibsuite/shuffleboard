@@ -5,7 +5,6 @@ import edu.wpi.first.shuffleboard.api.plugin.Description;
 import edu.wpi.first.shuffleboard.api.plugin.Plugin;
 import edu.wpi.first.shuffleboard.api.plugin.Requires;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
-import edu.wpi.first.shuffleboard.api.sources.recording.Converter;
 import edu.wpi.first.shuffleboard.api.sources.recording.serialization.TypeAdapter;
 import edu.wpi.first.shuffleboard.api.widget.ComponentType;
 import edu.wpi.first.shuffleboard.api.widget.WidgetType;

@@ -65,9 +65,10 @@ public class SerializationTest {
     final Recording recording = new Recording();
     recording.append(new TimestampedData("foo", DataTypes.Number, 0.0, 0));
     recording.append(new TimestampedData("foo", DataTypes.Number, 100.0, 1));
+    ArrayList<TimestampedData> data = new ArrayList<>(recording.getData());
     Serialization.saveRecording(recording, file);
     final Recording loaded = Serialization.loadRecording(file);
-    assertEquals(recording, loaded, "The loaded recording differs from the encoded one");
+    assertEquals(data, loaded.getData(), "The loaded recording differs from the encoded one");
   }
 
   @Test
@@ -80,10 +81,9 @@ public class SerializationTest {
     recording.getData().addAll(data);
     Serialization.saveRecording(recording, file);
     final Recording loaded = Serialization.loadRecording(file);
-    assertEquals(recording, loaded, "The loaded recording differs from the encoded one");
+    assertEquals(data, loaded.getData(), "The loaded recording differs from the encoded one");
 
     TimestampedData newData = new TimestampedData("foo", DataTypes.Number, 123.456, 2);
-    recording.getData().clear();
     data.add(newData);
     recording.getData().add(newData);
     Serialization.updateRecordingSave(recording, file);

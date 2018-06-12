@@ -10,8 +10,11 @@ import com.google.common.primitives.Bytes;
 import org.bytedeco.javacv.FrameRecorder;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static edu.wpi.first.shuffleboard.api.sources.recording.Serialization.SIZE_OF_BYTE;
 import static edu.wpi.first.shuffleboard.api.sources.recording.Serialization.SIZE_OF_INT;
@@ -26,25 +29,28 @@ import static edu.wpi.first.shuffleboard.api.sources.recording.Serialization.toB
  */
 public final class CameraStreamRecorder extends TypeAdapter<CameraServerData> {
 
-  private final Map<String, CameraStreamSaver> savers = new HashMap<>();
-  private final Map<String, CameraStreamReader> readers = new HashMap<>();
+  private static final Logger log = Logger.getLogger(CameraStreamReader.class.getName());
+
+  private final Map<String, CameraStreamSaver> savers = new ConcurrentHashMap<>();
+  private final Map<String, CameraStreamReader> readers = new ConcurrentHashMap<>();
+  private final Function<String, CameraStreamSaver> newSaver = name -> new CameraStreamSaver(name, getCurrentFile());
 
   public CameraStreamRecorder() {
     super(CameraServerDataType.Instance);
   }
 
   @Override
-  public synchronized void flush() {
+  public void flush() {
     // TODO make this able to update existing video files (not sure if possible with FFmpeg)
   }
 
   @Override
-  public synchronized void cleanUp() {
+  public void cleanUp() {
     savers.values().forEach(s -> {
       try {
         s.finish();
       } catch (FrameRecorder.Exception e) {
-        e.printStackTrace();
+        log.log(Level.WARNING, "Could not finish saver", e);
       }
     });
     readers.clear();
@@ -52,15 +58,16 @@ public final class CameraStreamRecorder extends TypeAdapter<CameraServerData> {
 
   @Override
   public CameraServerData deserialize(byte[] buffer, int bufferPosition) throws IOException {
-    String name = readString(buffer, bufferPosition);
-    bufferPosition += name.length() + SIZE_OF_INT;
-    byte fileNum = buffer[bufferPosition];
-    bufferPosition++;
-    short frameNum = readShort(buffer, bufferPosition);
-    bufferPosition += SIZE_OF_SHORT;
-    int bandwidth = readInt(buffer, bufferPosition);
-    bufferPosition += SIZE_OF_INT;
-    double fps = readShort(buffer, bufferPosition) / 100.0;
+    int cursor = bufferPosition;
+    String name = readString(buffer, cursor);
+    cursor += name.length() + SIZE_OF_INT;
+    byte fileNum = buffer[cursor];
+    cursor++;
+    short frameNum = readShort(buffer, cursor);
+    cursor += SIZE_OF_SHORT;
+    int bandwidth = readInt(buffer, cursor);
+    cursor += SIZE_OF_INT;
+    double fps = readShort(buffer, cursor) / 100.0;
 
     CameraStreamReader reader = readers.computeIfAbsent(name, __ -> new CameraStreamReader(__, getCurrentFile()));
 
@@ -69,7 +76,7 @@ public final class CameraStreamRecorder extends TypeAdapter<CameraServerData> {
         reader.setFileNumber(fileNum);
         return reader.readFrame(frameNum);
       } catch (IOException e) {
-        e.printStackTrace();
+        log.log(Level.WARNING, "Could not read frame " + frameNum, e);
         return null;
       }
     }, fps, bandwidth);
@@ -85,7 +92,7 @@ public final class CameraStreamRecorder extends TypeAdapter<CameraServerData> {
   }
 
   @Override
-  public synchronized byte[] serialize(CameraServerData data) {
+  public byte[] serialize(CameraServerData data) {
     // Save:
     //  - Camera name as String
     //  - File number (0, 1, ...) as int8 (255 files will never be reached; typical count is 1)
@@ -94,7 +101,7 @@ public final class CameraStreamRecorder extends TypeAdapter<CameraServerData> {
     //  - Current FPS as int16
     // Camera URI (camera_server://CameraName) is saved by the Serializer and placed in the constant pool,
     // but we don't have access to it here
-    CameraStreamSaver saver = savers.computeIfAbsent(data.getName(), name -> new CameraStreamSaver(name, getCurrentFile()));
+    CameraStreamSaver saver = savers.computeIfAbsent(data.getName(), newSaver);
     saver.serializeFrame(data);
     return Bytes.concat(
         toByteArray(data.getName()),
