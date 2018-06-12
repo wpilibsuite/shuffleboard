@@ -29,7 +29,7 @@ public final class CameraStreamSaver {
   private final File rootRecordingFile;
   private FFmpegFrameRecorder recorder;
   private Frame frame;
-  private final AtomicBoolean started = new AtomicBoolean(false);
+  private final AtomicBoolean running = new AtomicBoolean(false);
   private final AtomicInteger frameNum = new AtomicInteger(0);
   private final AtomicInteger fileNum = new AtomicInteger(0);
   private Resolution resolution = null;
@@ -38,7 +38,7 @@ public final class CameraStreamSaver {
   public CameraStreamSaver(String cameraName, File rootRecordingFile) {
     this.cameraName = cameraName;
     this.rootRecordingFile = rootRecordingFile;
-    recorder = createRecorder(cameraName, rootRecordingFile, 0);
+    recorder = createRecorder(0);
   }
 
   public synchronized void serializeFrame(CameraServerData data) {
@@ -61,7 +61,7 @@ public final class CameraStreamSaver {
       }
       frame = newFrameFromMat(image);
       resolution = new Resolution(image.width(), image.height());
-      recorder = createRecorder(cameraName, rootRecordingFile, fileNum.incrementAndGet());
+      recorder = createRecorder(fileNum.incrementAndGet());
       setupAndStartRecorder(data);
       buffer = new byte[(int) (image.total() * image.channels())];
     }
@@ -74,7 +74,7 @@ public final class CameraStreamSaver {
         .put(0, wide)
         .release();
     try {
-      if (!started.get()) {
+      if (!running.get()) {
         setupAndStartRecorder(data);
       }
       recorder.setFrameNumber(frameNum.getAndIncrement());
@@ -96,13 +96,16 @@ public final class CameraStreamSaver {
   }
 
   private void setupAndStartRecorder(CameraServerData data) {
+    if (recorder == null) {
+      return;
+    }
     try {
       recorder.setImageWidth(resolution.getWidth());
       recorder.setImageHeight(resolution.getHeight());
       //recorder.setFrameRate(data.getFps()); // Doesn't work? "[mpeg4 @ 0x7f2...] The encoder timebase is not set."
       recorder.setVideoBitrate((int) (data.getBandwidth() * 8)); // x8 to covert bytes per second to bits per second
       recorder.start();
-      started.set(true);
+      running.set(true);
     } catch (FrameRecorder.Exception e) {
       throw new AssertionError("Could not start recorder", e);
     }
@@ -117,14 +120,16 @@ public final class CameraStreamSaver {
   }
 
   public synchronized void finish() throws FrameRecorder.Exception {
-    recorder.stop();
-    started.set(false);
-    frameNum.set(0);
-    recorder = null;
+    if (running.get()) {
+      recorder.stop();
+      running.set(false);
+      frameNum.set(0);
+      recorder = null;
+    }
   }
 
-  private static FFmpegFrameRecorder createRecorder(String name, File rootRecordingFile, int fileIndex) {
-    String file = rootRecordingFile.getAbsolutePath().replace(".sbr", "-" + name + "." + fileIndex + ".mp4");
+  private FFmpegFrameRecorder createRecorder(int fileIndex) {
+    String file = rootRecordingFile.getAbsolutePath().replace(".sbr", "-" + cameraName + "." + fileIndex + ".mp4");
     try {
       Files.createFile(Paths.get(file));
     } catch (IOException e) {

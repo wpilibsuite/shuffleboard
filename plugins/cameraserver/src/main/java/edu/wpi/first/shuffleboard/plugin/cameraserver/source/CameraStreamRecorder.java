@@ -2,13 +2,15 @@ package edu.wpi.first.shuffleboard.plugin.cameraserver.source;
 
 import edu.wpi.first.shuffleboard.api.sources.recording.serialization.TypeAdapter;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.data.CameraServerData;
+import edu.wpi.first.shuffleboard.plugin.cameraserver.data.LazyCameraServerData;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.data.type.CameraServerDataType;
 
 import com.google.common.primitives.Bytes;
 
-import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.FrameRecorder;
+import org.opencv.core.Mat;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,7 +25,7 @@ import static edu.wpi.first.shuffleboard.api.sources.recording.Serialization.toB
 public class CameraStreamRecorder extends TypeAdapter<CameraServerData> {
 
   private final Map<String, CameraStreamSaver> savers = new HashMap<>();
-  private final Map<String, FFmpegFrameGrabber> readers = new HashMap<>();
+  private final Map<String, CameraStreamReader> readers = new HashMap<>();
 
   public CameraStreamRecorder() {
     super(CameraServerDataType.Instance);
@@ -60,8 +62,7 @@ public class CameraStreamRecorder extends TypeAdapter<CameraServerData> {
   }
 
   @Override
-  public CameraServerData deserialize(byte[] buffer, int bufferPosition) {
-    // TODO read frames from video file
+  public CameraServerData deserialize(byte[] buffer, int bufferPosition) throws IOException {
     String name = readString(buffer, bufferPosition);
     bufferPosition += name.length() + SIZE_OF_INT;
     byte fileNum = buffer[bufferPosition];
@@ -71,7 +72,18 @@ public class CameraStreamRecorder extends TypeAdapter<CameraServerData> {
     int bandwidth = readInt(buffer, bufferPosition);
     bufferPosition += SIZE_OF_INT;
     double fps = readShort(buffer, bufferPosition) / 100.0;
-    return new CameraServerData(name, null, fps, bandwidth);
+
+    CameraStreamReader reader = readers.computeIfAbsent(name, __ -> new CameraStreamReader(__, getCurrentFile()));
+
+    return new LazyCameraServerData(name, () -> {
+      try {
+        reader.setFileNumber(fileNum);
+        return reader.readFrame(frameNum);
+      } catch (IOException e) {
+        e.printStackTrace();
+        return null;
+      }
+    }, fps, bandwidth);
   }
 
   @Override

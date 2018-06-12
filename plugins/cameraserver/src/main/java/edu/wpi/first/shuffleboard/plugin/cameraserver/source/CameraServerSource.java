@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.plugin.cameraserver.source;
 
+import edu.wpi.first.shuffleboard.api.DashboardMode;
 import edu.wpi.first.shuffleboard.api.properties.AsyncProperty;
 import edu.wpi.first.shuffleboard.api.properties.AtomicIntegerProperty;
 import edu.wpi.first.shuffleboard.api.sources.AbstractDataSource;
@@ -11,6 +12,7 @@ import edu.wpi.first.shuffleboard.api.util.EqualityUtils;
 import edu.wpi.first.shuffleboard.api.util.ShutdownHooks;
 import edu.wpi.first.shuffleboard.api.util.ThreadUtils;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.data.CameraServerData;
+import edu.wpi.first.shuffleboard.plugin.cameraserver.data.LazyCameraServerData;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.data.Resolution;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.data.type.CameraServerDataType;
 
@@ -31,6 +33,8 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -55,7 +59,7 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
 
   private final ExecutorService frameGrabberService = Executors.newSingleThreadExecutor(ThreadUtils::makeDaemonThread);
   private final BooleanBinding enabled = active.and(connected);
-  private final ChangeListener<Boolean> enabledListener =  (__, was, is) -> {
+  private final ChangeListener<Boolean> enabledListener = (__, was, is) -> {
     if (is) {
       reEnable();
     } else {
@@ -85,7 +89,7 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
 
   private final StreamDiscoverer streamDiscoverer;
   private final CameraUrlGenerator urlGenerator = new CameraUrlGenerator(this);
-  private final ChangeListener<String[]> urlChangeListener =  (__, old, urls) -> {
+  private final ChangeListener<String[]> urlChangeListener = (__, old, urls) -> {
     if (urls.length == 0) {
       setActive(false);
     } else {
@@ -100,6 +104,8 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
       setActive(true);
     }
   };
+
+  private static final ScheduledExecutorService imageReleaseService = ThreadUtils.newDaemonScheduledExecutorService();
 
   // Needs to be debounced; quickly changing URLs can cause serious performance hits
   private final Debouncer urlUpdateDebouncer = new Debouncer(this::updateUrls, Duration.ofMillis(10));
@@ -127,7 +133,7 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
     }, 0xFF, true);
 
     CameraServerJNI.addListener(e -> {
-      if (enabled.get() && camera != null && camera.isValid()) {
+      if (enabled.get() && camera != null && camera.isValid() && !inPlayback()) {
         double bandwidth;
         double fps;
         try {
@@ -156,11 +162,30 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
       videoSink.setEnabled(true);
     }
 
+    DashboardMode.currentModeProperty().addListener((__, old, mode) -> {
+      if (mode == DashboardMode.PLAYBACK) {
+        cancelFrameGrabber();
+      } else {
+        reEnable();
+      }
+    });
+
     enabled.addListener(enabledListener);
     targetCompression.addListener(cameraUrlUpdater);
     targetFps.addListener(cameraUrlUpdater);
     targetResolution.addListener(cameraUrlUpdater);
     setActive(camera != null && camera.getUrls().length > 0);
+
+    // If the data is playback data, free it up after some time has passed to reduce memory pressure
+    dataProperty().addListener((__, old, data) -> {
+      if (data instanceof LazyCameraServerData) {
+        imageReleaseService.schedule(() -> {
+          if (getData() != data) {
+            ((LazyCameraServerData) data).clear();
+          }
+        }, 1, TimeUnit.SECONDS);
+      }
+    });
 
     ShutdownHooks.addHook(this::cancelFrameGrabber);
   }
@@ -201,14 +226,6 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
     }
     final Thread thread = Thread.currentThread();
     while (!thread.isInterrupted()) {
-      // Sleep until the source reconnects
-      if (!isConnected()) {
-        try {
-          Thread.sleep(500);
-        } catch (InterruptedException e) {
-          thread.interrupt();
-        }
-      }
       boolean success = grabOnceBlocking();
       if (!success) {
         // Couldn't grab the frame, wait a bit to try again
@@ -232,15 +249,19 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
     if (frameTime == 0) {
       log.warning("Error when grabbing frame from camera '" + getName() + "': " + videoSink.getError());
       return false;
-    } else {
+    } else if (!inPlayback()) {
       if (getData() == null) {
-        setData(new CameraServerData(getName(), image, -1, -1));
+        setData(new CameraServerData(getName(), image, 0, 0));
       } else {
         setData(getData().withImage(image));
       }
       Recorder.getInstance().record(getId(), getDataType(), getData().withImage(image.clone()));
     }
     return true;
+  }
+
+  private boolean inPlayback() {
+    return DashboardMode.getCurrentMode() == DashboardMode.PLAYBACK;
   }
 
   @Override

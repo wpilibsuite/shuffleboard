@@ -3,6 +3,7 @@ package edu.wpi.first.shuffleboard.api.sources.recording.serialization;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.sources.recording.Serialization;
 
+import java.io.IOException;
 import java.util.Arrays;
 
 public class StringArrayAdapter extends TypeAdapter<String[]> {
@@ -33,7 +34,7 @@ public class StringArrayAdapter extends TypeAdapter<String[]> {
   }
 
   @Override
-  public String[] deserialize(byte[] array, int pos) {
+  public String[] deserialize(byte[] array, int pos) throws IOException {
     int cursor = pos;
     int length = Serialization.readInt(array, cursor);
     cursor += Serialization.SIZE_OF_INT;

@@ -13,7 +13,7 @@ import java.util.Map;
 
 // serialversion UID doesn't matter since this is only used in one JVM at a time
 @SuppressFBWarnings("SE_NO_SERIALVERSIONID")
-public final class CameraServerData extends ComplexData<CameraServerData> implements Serializable {
+public class CameraServerData extends ComplexData<CameraServerData> implements Serializable {
 
   private final String name;
   private final transient Mat image;
