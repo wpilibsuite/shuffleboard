@@ -24,7 +24,7 @@ public interface Serializer<T> {
 
   /**
    * If this serializer uses external recording files other than the primary Shuffleboard recording file (such as
-   * video files for camera streams), this will save
+   * video files for camera streams), this will save those files.
    */
   default void flush() {
     // NOP

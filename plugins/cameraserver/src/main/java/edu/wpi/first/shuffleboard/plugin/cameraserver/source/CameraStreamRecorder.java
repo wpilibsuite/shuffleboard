@@ -8,7 +8,6 @@ import edu.wpi.first.shuffleboard.plugin.cameraserver.data.type.CameraServerData
 import com.google.common.primitives.Bytes;
 
 import org.bytedeco.javacv.FrameRecorder;
-import org.opencv.core.Mat;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -22,7 +21,10 @@ import static edu.wpi.first.shuffleboard.api.sources.recording.Serialization.rea
 import static edu.wpi.first.shuffleboard.api.sources.recording.Serialization.readString;
 import static edu.wpi.first.shuffleboard.api.sources.recording.Serialization.toByteArray;
 
-public class CameraStreamRecorder extends TypeAdapter<CameraServerData> {
+/**
+ * Serializer for camera streams.
+ */
+public final class CameraStreamRecorder extends TypeAdapter<CameraServerData> {
 
   private final Map<String, CameraStreamSaver> savers = new HashMap<>();
   private final Map<String, CameraStreamReader> readers = new HashMap<>();
@@ -33,20 +35,7 @@ public class CameraStreamRecorder extends TypeAdapter<CameraServerData> {
 
   @Override
   public synchronized void flush() {
-    // TODO make this able to update the existing video file
-    /*
-    savers.values().forEach(r -> {
-      try {
-        r.stop();
-      } catch (FrameRecorder.Exception e) {
-        e.printStackTrace();
-      }
-    });
-    savers.clear();
-    started = false;
-    frame = null;
-    // Do not reset frame num
-    */
+    // TODO make this able to update existing video files (not sure if possible with FFmpeg)
   }
 
   @Override

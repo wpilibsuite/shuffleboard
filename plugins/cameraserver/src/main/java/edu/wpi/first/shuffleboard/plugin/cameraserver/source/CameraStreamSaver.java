@@ -41,6 +41,15 @@ public final class CameraStreamSaver {
     recorder = createRecorder(0);
   }
 
+  /**
+   * Saves a single frame to a video file. If the image resolution changes, the current video file will be closed and
+   * cleaned up before creating a new file that the given frame will be written to. This avoids issues with changing
+   * resolutions or aspect ratios causing issues with codecs or video players. The video file name is formatted as:
+   * {@code recording-<timestamp>-<camera name>.<file number>.mp4}, eg {@code recording-15.03.11-Camera.0.mp4},
+   * {@code recording-15.03.11-Camera.1.mp4}, {@code recording-15.03.11-Camera.2.mp4}, etc.
+   *
+   * @param data the camera data to save
+   */
   public synchronized void serializeFrame(CameraServerData data) {
     Mat image = data.getImage();
     if (image == null || image.getNativeObjAddr() == 0) {
@@ -111,14 +120,25 @@ public final class CameraStreamSaver {
     }
   }
 
+  /**
+   * Gets the index of the most recent frame that was saved to the current video file.
+   */
   public int getFrameNum() {
     return frameNum.get();
   }
 
+  /**
+   * Gets the video file number. The first video file written is number 0, the second is 1, and so on.
+   */
   public int getFileNum() {
     return fileNum.get();
   }
 
+  /**
+   * Finishes writing the current video file.
+   *
+   * @throws FrameRecorder.Exception if the file could not be written
+   */
   public synchronized void finish() throws FrameRecorder.Exception {
     if (running.get()) {
       recorder.stop();

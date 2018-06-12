@@ -15,8 +15,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static org.opencv.core.CvType.*;
+import static org.opencv.core.CvType.CV_8UC3;
 
+/**
+ * Reads images from saved video files for a single camera stream in playback.
+ */
 public final class CameraStreamReader {
 
   private static final Logger log = Logger.getLogger(CameraStreamReader.class.getName());
@@ -30,12 +33,24 @@ public final class CameraStreamReader {
 
   private final AtomicInteger fileNumber = new AtomicInteger(0);
 
+  /**
+   * Creates a new video recording reader.
+   *
+   * @param cameraName        the name of camera stream
+   * @param rootRecordingFile the root recording file being read
+   */
   public CameraStreamReader(String cameraName, File rootRecordingFile) {
     this.cameraName = cameraName;
     this.rootRecordingFile = rootRecordingFile;
     grabber = createGrabber(0);
   }
 
+  /**
+   * Sets the video file number to read from. File numbers are saved in the main recording file as part of the frame
+   * data.
+   *
+   * @param fileNumber the file number to read
+   */
   public void setFileNumber(int fileNumber) {
     if (fileNumber != this.fileNumber.get()) {
       this.fileNumber.set(fileNumber);
@@ -59,6 +74,15 @@ public final class CameraStreamReader {
     return grabber;
   }
 
+  /**
+   * Reads a single frame from the current video file.
+   *
+   * @param frameNum the frame number to read
+   *
+   * @return the frame at the given frame index
+   *
+   * @throws IOException if a frame could not be read from the video file
+   */
   public synchronized Mat readFrame(int frameNum) throws IOException {
     try {
       if (!started.get()) {
@@ -68,6 +92,7 @@ public final class CameraStreamReader {
       grabber.setFrameNumber(frameNum);
       Frame frame = grabber.grab();
       if (frame == null) {
+        // Maybe `do { frame = grabber.grab() } while (frame == null)` instead?
         log.warning("No frame at index " + frameNum + " in video " + fileNumber);
         return null;
       }
