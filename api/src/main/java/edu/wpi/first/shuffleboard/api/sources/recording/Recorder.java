@@ -39,7 +39,7 @@ public final class Recorder {
   private Recording recording = null;
   private File recordingFile;
 
-  private final Object recordingLock = new Object();
+  private final Object startStopLock = new Object();
   private boolean firstSave = true;
 
   private Recorder() {
@@ -84,7 +84,7 @@ public final class Recorder {
     if (recordingFile == null) {
       recordingFile = file.toFile();
     }
-    synchronized (recordingLock) {
+    synchronized (startStopLock) {
       if (firstSave) {
         Serialization.saveRecording(recording, file);
         firstSave = false;
@@ -107,7 +107,7 @@ public final class Recorder {
    * Starts recording data.
    */
   public void start() {
-    synchronized (recordingLock) {
+    synchronized (startStopLock) {
       startTime = Instant.now();
       firstSave = true;
       recording = new Recording();
@@ -132,7 +132,7 @@ public final class Recorder {
     } catch (IOException e) {
       log.log(Level.WARNING, "Could not save last data to disk", e);
     }
-    synchronized (recordingLock) {
+    synchronized (startStopLock) {
       Serializers.cleanUpAll();
       recordingFile = null;
       setRunning(false);
@@ -165,10 +165,7 @@ public final class Recorder {
     if (!isRunning()) {
       return;
     }
-    // Use synchronized
-    synchronized (recordingLock) {
-      recording.append(new TimestampedData(id.intern(), dataType, value, timestamp()));
-    }
+    recording.append(new TimestampedData(id.intern(), dataType, value, timestamp()));
   }
 
   private long timestamp() {
