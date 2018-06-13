@@ -31,8 +31,6 @@ import java.time.Duration;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -95,8 +93,6 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
       setActive(true);
     }
   };
-
-  private static final ScheduledExecutorService imageReleaseService = ThreadUtils.newDaemonScheduledExecutorService();
 
   // Needs to be debounced; quickly changing URLs can cause serious performance hits
   private final Debouncer urlUpdateDebouncer = new Debouncer(this::updateUrls, Duration.ofMillis(10));
@@ -167,14 +163,10 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
     targetResolution.addListener(cameraUrlUpdater);
     setActive(camera != null && camera.getUrls().length > 0);
 
-    // If the data is playback data, free it up after some time has passed to reduce memory pressure
+    // If the old data is playback data, free it to reduce memory pressure
     dataProperty().addListener((__, old, data) -> {
-      if (data instanceof LazyCameraServerData) {
-        imageReleaseService.schedule(() -> {
-          if (getData() != data) {
-            ((LazyCameraServerData) data).clear();
-          }
-        }, 1, TimeUnit.SECONDS);
+      if (old instanceof LazyCameraServerData) {
+        ((LazyCameraServerData) old).clear();
       }
     });
 
