@@ -71,7 +71,7 @@ public final class CameraStreamSaver {
     try {
       lock.lock();
       if (recorder == null) {
-        log.warning("Attempting to read frame after saver has finished");
+        log.warning("Attempting to write frame after saver has finished");
         return;
       }
       Mat image = data.getImage();
