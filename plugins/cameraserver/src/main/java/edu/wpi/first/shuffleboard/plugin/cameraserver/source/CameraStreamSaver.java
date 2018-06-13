@@ -182,6 +182,7 @@ public final class CameraStreamSaver {
       throw new AssertionError("Could not create video file " + file, e);
     }
     FFmpegFrameRecorder recorder = new FFmpegFrameRecorder(file, 0);
+    recorder.setVideoQuality(0); // lossless
     recorder.setVideoCodec(avcodec.AV_CODEC_ID_MPEG4);
     recorder.setFormat("mp4");
     recorder.setPixelFormat(avutil.AV_PIX_FMT_YUV420P);
