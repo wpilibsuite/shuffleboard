@@ -1,7 +1,6 @@
 package edu.wpi.first.shuffleboard.plugin.cameraserver.source;
 
 import org.bytedeco.javacpp.avcodec;
-import org.bytedeco.javacpp.avutil;
 import org.bytedeco.javacpp.indexer.UByteIndexer;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.Frame;
@@ -79,7 +78,6 @@ public final class CameraStreamReader {
     FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(file);
     grabber.setVideoCodec(avcodec.AV_CODEC_ID_MPEG4);
     grabber.setFormat("mp4");
-    grabber.setPixelFormat(avutil.AV_PIX_FMT_YUV420P);
     return grabber;
   }
 
