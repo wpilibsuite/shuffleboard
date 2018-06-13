@@ -1,5 +1,7 @@
 package edu.wpi.first.shuffleboard.plugin.cameraserver.source;
 
+import com.google.common.base.Stopwatch;
+
 import org.bytedeco.javacpp.avcodec;
 import org.bytedeco.javacpp.indexer.UByteIndexer;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
@@ -9,6 +11,7 @@ import org.opencv.core.Mat;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
@@ -37,6 +40,7 @@ public final class CameraStreamReader {
   private Mat mat;
 
   private final AtomicInteger fileNumber = new AtomicInteger(0);
+  private final AtomicInteger lastFrameIndex = new AtomicInteger(-1);
 
   /**
    * Creates a new video recording reader.
@@ -64,6 +68,7 @@ public final class CameraStreamReader {
         try {
           grabber.stop();
           started.set(false);
+          lastFrameIndex.set(-1);
         } catch (FrameGrabber.Exception e) {
           log.log(Level.WARNING, "Could not clean up grabber", e);
         }
@@ -99,8 +104,11 @@ public final class CameraStreamReader {
         grabber.start();
         started.set(true);
       }
-      grabber.setFrameNumber(frameNum);
-      Frame frame = grabber.grabFrame(false, true, true, false);
+      if (lastFrameIndex.get() != frameNum - 1) {
+        grabber.setFrameNumber(frameNum);
+      }
+      lastFrameIndex.set(frameNum);
+      Frame frame = grabber.grabImage();
       if (frame == null) {
         // Maybe `do { frame = grabber.grab() } while (frame == null)` instead?
         log.warning("No frame at index " + frameNum + " in video " + fileNumber);
