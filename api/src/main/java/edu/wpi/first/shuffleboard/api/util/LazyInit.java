@@ -20,6 +20,17 @@ import java.util.function.Supplier;
  * }
  * }</pre></p>
  *
+ * <p>If the contained value uses a lot of memory or locks a system resource, or is otherwise expensive to keep around,
+ * and is currently unused (and may not be used again for a while), the value can be cleaned up with
+ * <pre>{@code
+ * if (lazyInit.hasValue()) {
+ *   cleanUp(lazyInit.get()); // application-specific clean up
+ *   lazyInit.clear();
+ * }
+ * }</pre>
+ *
+ * <p>After calling {@link #clear()}, successive calls to {@link #get()} will re-initialize the value.</p>
+ *
  * @param <T> the type of the value to be initialized
  */
 public final class LazyInit<T> implements Supplier<T> {

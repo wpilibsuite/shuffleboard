@@ -23,6 +23,12 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Saves frames from a single camera stream to a video file on disk. {@link #finish()} must be called to finish writing
+ * the video file; otherwise, it will be unreadable. Additionally, if the stream changes resolution then a new video
+ * file will be created (the previous one will be completed automatically). These video files have an index number
+ * embedded in their name: the first video file will be 0, the second video file will be 1, the third 2, and so on.
+ */
 public final class CameraStreamSaver {
 
   private static final Logger log = Logger.getLogger(CameraStreamSaver.class.getName());
