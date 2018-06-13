@@ -178,6 +178,9 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
     String[] streamUrls = streamDiscoverer.getUrls();
     if (streamUrls.length == 0) {
       setActive(false);
+    } else {
+      videoSink.setEnabled(true);
+      setActive(true);
     }
     streamDiscoverer.urlsProperty().addListener(urlChangeListener);
   }
@@ -186,6 +189,8 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
     if (frameFuture != null) {
       frameFuture.cancel(true);
     }
+    videoSink.setEnabled(false);
+    setActive(false);
     streamDiscoverer.urlsProperty().removeListener(urlChangeListener);
   }
 
