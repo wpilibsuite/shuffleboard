@@ -122,7 +122,7 @@ public final class CameraStreamReader {
 
       return mat.clone();
     } catch (FrameGrabber.Exception e) {
-      throw new IOException(e);
+      throw new IOException("Could not read frame " + frameNum + " from video file #" + fileNumber, e);
     } finally {
       lock.unlock();
     }
