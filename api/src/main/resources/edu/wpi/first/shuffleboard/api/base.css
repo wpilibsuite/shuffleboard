@@ -41,6 +41,16 @@
     -fx-border-color: transparent;
 }
 
+.tab-container {
+    /* Rotate the tab container to put the close button on the left-hand side */
+    -fx-rotate: 180;
+}
+
+.tab-container > * {
+    /* Re-rotate the contents to keep the text right-side up */
+    -fx-rotate: 180;
+}
+
 /*******************************************************************************
  *                                                                             *
  * Dashboard Tabs                                                              *

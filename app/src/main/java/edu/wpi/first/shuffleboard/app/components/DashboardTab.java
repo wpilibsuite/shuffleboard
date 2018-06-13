@@ -41,6 +41,7 @@ import javafx.collections.ListChangeListener;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 
 public class DashboardTab extends Tab implements HandledTab, Populatable {
 
@@ -114,6 +115,14 @@ public class DashboardTab extends Tab implements HandledTab, Populatable {
     MenuItem prefItem = FxUtils.menuItem("Preferences", __ -> showPrefsDialog());
     prefItem.setStyle("-fx-text-fill: black;");
     setContextMenu(new ContextMenu(prefItem));
+
+    setOnCloseRequest(e -> {
+      TabPane tabPane = getTabPane();
+      int index = tabPane.getTabs().indexOf(this);
+      // index + 1 for the next tab, since this tab has not yet been removed
+      // tabPane.getTabs().size() - 2 because -1 is the adder tab, which we do not want to select
+      tabPane.getSelectionModel().select(Math.min(index + 1, tabPane.getTabs().size() - 2));
+    });
   }
 
   /**
