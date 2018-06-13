@@ -85,7 +85,7 @@ public final class LazyInit<T> implements Supplier<T> {
   public boolean hasValue() {
     try {
       lock.lock();
-      return initialized;
+      return value != null;
     } finally {
       lock.unlock();
     }
