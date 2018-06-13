@@ -9,6 +9,7 @@ import com.google.common.primitives.Bytes;
 
 import org.bytedeco.javacv.FrameRecorder;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -110,6 +111,17 @@ public final class CameraStreamRecorder extends TypeAdapter<CameraServerData> {
         toByteArray((int) data.getBandwidth()),
         toByteArray((short) (data.getFps() * 100)) // limits to 327.68 max input FPS - should be enough :)
     );
+  }
+
+  /**
+   * Generates the path to a video file for a recorded camera stream.
+   *
+   * @param rootRecordingFile the root recording file
+   * @param cameraName        the name of the recorded stream
+   * @param fileIndex         the video file index
+   */
+  public static String videoFilePath(File rootRecordingFile, String cameraName, int fileIndex) {
+    return rootRecordingFile.getAbsolutePath().replace(".sbr", "-" + cameraName + "." + fileIndex + ".mp4");
   }
 
 }
