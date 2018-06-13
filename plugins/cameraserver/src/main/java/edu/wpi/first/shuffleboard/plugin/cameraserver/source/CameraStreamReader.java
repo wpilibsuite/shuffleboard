@@ -29,6 +29,8 @@ public final class CameraStreamReader {
   private final File rootRecordingFile;
   private FFmpegFrameGrabber grabber;
   private final AtomicBoolean started = new AtomicBoolean(false);
+  private int[] buffer;
+  private byte[] narrowBuffer;
 
   private final Lock lock = new ReentrantLock();
 
@@ -98,27 +100,31 @@ public final class CameraStreamReader {
         started.set(true);
       }
       grabber.setFrameNumber(frameNum);
-      Frame frame = grabber.grab();
+      Frame frame = grabber.grabFrame(false, true, true, false);
       if (frame == null) {
         // Maybe `do { frame = grabber.grab() } while (frame == null)` instead?
         log.warning("No frame at index " + frameNum + " in video " + fileNumber);
         return null;
       }
       UByteIndexer indexer = frame.createIndexer();
-      long size = indexer.width() * indexer.height() * indexer.channels();
-      int[] buf = new int[(int) size];
-      indexer.get(0, buf)
-          .release();
-
-      byte[] narrow = new byte[buf.length];
-      for (int i = 0; i < buf.length; i++) {
-        narrow[i] = (byte) buf[i];
-      }
-
       if (mat == null) {
         mat = new Mat((int) indexer.height(), (int) indexer.width(), CV_8UC3);
+        long size = indexer.width() * indexer.height() * indexer.channels();
+        if (size > Integer.MAX_VALUE) {
+          log.warning(String.format("Frame too large: %.2fGB", size / 1e9));
+          return null;
+        }
+        buffer = new int[(int) size];
+        narrowBuffer = new byte[(int) size];
       }
-      mat.put(0, 0, narrow);
+      indexer.get(0, buffer)
+          .release();
+
+      for (int i = 0; i < buffer.length; i++) {
+        narrowBuffer[i] = (byte) buffer[i];
+      }
+
+      mat.put(0, 0, narrowBuffer);
 
       return mat.clone();
     } catch (FrameGrabber.Exception e) {

@@ -36,6 +36,7 @@ public final class CameraStreamSaver {
   private final AtomicInteger fileNum = new AtomicInteger(0);
   private Resolution resolution = null;
   private byte[] buffer = null;
+  private int[] wideBuffer = null;
 
   private final Lock lock = new ReentrantLock();
 
@@ -76,6 +77,7 @@ public final class CameraStreamSaver {
         frame = newFrameFromMat(image);
         resolution = new Resolution(image.width(), image.height());
         buffer = new byte[(int) (image.total() * image.channels())];
+        wideBuffer = new int[buffer.length];
       } else if (resolution.isNotEqual(image.width(), image.height())) {
         // Stream resolution changed. Video files don't like frames with different resolutions, so finish writing the
         // current file and move on to writing to a new file instead
@@ -89,14 +91,14 @@ public final class CameraStreamSaver {
         recorder = createRecorder(fileNum.incrementAndGet());
         setupAndStartRecorder(data);
         buffer = new byte[(int) (image.total() * image.channels())];
+        wideBuffer = new int[buffer.length];
       }
       image.get(0, 0, buffer);
-      int[] wide = new int[buffer.length];
       for (int i = 0; i < buffer.length; i++) {
-        wide[i] = buffer[i] & 0xFF;
+        wideBuffer[i] = buffer[i] & 0xFF;
       }
       frame.<UByteBufferIndexer>createIndexer()
-          .put(0, wide)
+          .put(0, wideBuffer)
           .release();
       try {
         if (!running.get()) {
