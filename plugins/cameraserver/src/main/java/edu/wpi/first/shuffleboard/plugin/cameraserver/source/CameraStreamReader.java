@@ -78,7 +78,7 @@ public final class CameraStreamReader {
   }
 
   private FFmpegFrameGrabber createGrabber(int fileNumber) {
-    String file = CameraStreamRecorder.videoFilePath(rootRecordingFile, cameraName, fileNumber);
+    String file = CameraStreamAdapter.videoFilePath(rootRecordingFile, cameraName, fileNumber);
     FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(file);
     grabber.setVideoCodec(avcodec.AV_CODEC_ID_MPEG4);
     grabber.setFormat("mp4");

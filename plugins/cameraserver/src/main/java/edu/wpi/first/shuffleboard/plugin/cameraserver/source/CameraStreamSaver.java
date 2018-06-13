@@ -181,7 +181,7 @@ public final class CameraStreamSaver {
   }
 
   private FFmpegFrameRecorder createRecorder(int fileIndex) {
-    String file = CameraStreamRecorder.videoFilePath(rootRecordingFile, cameraName, fileIndex);
+    String file = CameraStreamAdapter.videoFilePath(rootRecordingFile, cameraName, fileIndex);
     try {
       Files.createFile(Paths.get(file));
     } catch (IOException e) {

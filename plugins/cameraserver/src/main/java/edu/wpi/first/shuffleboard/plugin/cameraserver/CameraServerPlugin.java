@@ -10,7 +10,7 @@ import edu.wpi.first.shuffleboard.api.widget.ComponentType;
 import edu.wpi.first.shuffleboard.api.widget.WidgetType;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.data.type.CameraServerDataType;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.source.CameraServerSourceType;
-import edu.wpi.first.shuffleboard.plugin.cameraserver.source.CameraStreamRecorder;
+import edu.wpi.first.shuffleboard.plugin.cameraserver.source.CameraStreamAdapter;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.widget.CameraServerWidget;
 
 import com.google.common.collect.ImmutableList;
@@ -34,7 +34,7 @@ import java.util.logging.Logger;
 public class CameraServerPlugin extends Plugin {
 
   private static final Logger log = Logger.getLogger(CameraServerPlugin.class.getName());
-  private final CameraStreamRecorder streamRecorder = new CameraStreamRecorder();
+  private final CameraStreamAdapter streamRecorder = new CameraStreamAdapter();
 
   @Override
   public void onLoad() {

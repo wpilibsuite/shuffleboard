@@ -28,7 +28,7 @@ import static edu.wpi.first.shuffleboard.api.sources.recording.Serialization.toB
 /**
  * Serializer for camera streams.
  */
-public final class CameraStreamRecorder extends TypeAdapter<CameraServerData> {
+public final class CameraStreamAdapter extends TypeAdapter<CameraServerData> {
 
   private static final Logger log = Logger.getLogger(CameraStreamReader.class.getName());
 
@@ -36,7 +36,7 @@ public final class CameraStreamRecorder extends TypeAdapter<CameraServerData> {
   private final Map<String, CameraStreamReader> readers = new ConcurrentHashMap<>();
   private final Function<String, CameraStreamSaver> newSaver = name -> new CameraStreamSaver(name, getCurrentFile());
 
-  public CameraStreamRecorder() {
+  public CameraStreamAdapter() {
     super(CameraServerDataType.Instance);
   }
 
