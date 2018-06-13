@@ -58,7 +58,7 @@ public final class CameraStreamRecorder extends TypeAdapter<CameraServerData> {
   }
 
   @Override
-  public CameraServerData deserialize(byte[] buffer, int bufferPosition) throws IOException {
+  public CameraServerData deserialize(byte[] buffer, int bufferPosition) {
     int cursor = bufferPosition;
     String name = readString(buffer, cursor);
     cursor += name.length() + SIZE_OF_INT;

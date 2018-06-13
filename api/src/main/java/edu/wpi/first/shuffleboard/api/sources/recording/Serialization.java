@@ -294,7 +294,7 @@ public final class Serialization {
    * @param bufferPosition the position in the buffer to start reading from
    * @param type           the type of the data to decode
    */
-  public static <T> T decode(byte[] buffer, int bufferPosition, DataType<T> type) throws IOException {
+  public static <T> T decode(byte[] buffer, int bufferPosition, DataType<T> type) {
     return Serializers.get(type).deserialize(buffer, bufferPosition);
   }
 
@@ -589,7 +589,7 @@ public final class Serialization {
    * @param array the array to read from
    * @param pos   the starting position of the encoded string
    */
-  public static String readString(byte[] array, int pos) throws IOException {
+  public static String readString(byte[] array, int pos) {
     return Serializers.get(StringType.Instance).deserialize(array, pos);
   }
 
@@ -599,7 +599,7 @@ public final class Serialization {
    * @param array the array to read from
    * @param pos   the starting position of the encoded string array
    */
-  public static String[] readStringArray(byte[] array, int pos) throws IOException {
+  public static String[] readStringArray(byte[] array, int pos) {
     return Serializers.get(StringArrayType.Instance).deserialize(array, pos);
   }
 

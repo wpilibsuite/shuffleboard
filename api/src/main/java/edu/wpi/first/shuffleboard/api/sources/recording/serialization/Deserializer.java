@@ -2,8 +2,6 @@ package edu.wpi.first.shuffleboard.api.sources.recording.serialization;
 
 import edu.wpi.first.shuffleboard.api.data.DataType;
 
-import java.io.IOException;
-
 /**
  * An interface for functions that can convert raw byte arrays of {@link Serializer serialized} data back to objects.
  *
@@ -21,10 +19,8 @@ public interface Deserializer<T> {
    *
    * @param buffer         the byte buffer to deserialize from
    * @param bufferPosition the position in the buffer to start deserializing from
-   *
-   * @throws IOException if data could not be read
    */
-  T deserialize(byte[] buffer, int bufferPosition) throws IOException;
+  T deserialize(byte[] buffer, int bufferPosition);
 
   /**
    * Gets the size of a byte array that would encode the given value.

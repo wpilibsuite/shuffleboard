@@ -2,8 +2,6 @@ package edu.wpi.first.shuffleboard.api.sources.recording.serialization;
 
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
-
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -22,7 +20,7 @@ public class BooleanArrayAdapterTest extends AbstractAdapterTest<boolean[]> {
   }
 
   @Test
-  public void testDecodeEmptyArray() throws IOException {
+  public void testDecodeEmptyArray() {
     final byte[] buffer = {0, 0, 0, 0};
     final boolean[] deserialized = adapter.deserialize(buffer, 0);
     assertEquals(0, deserialized.length);
@@ -40,7 +38,7 @@ public class BooleanArrayAdapterTest extends AbstractAdapterTest<boolean[]> {
   }
 
   @Test
-  public void testDecode() throws IOException {
+  public void testDecode() {
     final byte[] buffer = {0, 0, 0, 4, 1, 0, 1, 0};
     final boolean[] expected = {true, false, true, false};
     assertArrayEquals(expected, adapter.deserialize(buffer, 0));
