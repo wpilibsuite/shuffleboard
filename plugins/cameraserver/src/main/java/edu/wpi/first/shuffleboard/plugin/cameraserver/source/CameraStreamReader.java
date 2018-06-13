@@ -1,7 +1,5 @@
 package edu.wpi.first.shuffleboard.plugin.cameraserver.source;
 
-import com.google.common.base.Stopwatch;
-
 import org.bytedeco.javacpp.avcodec;
 import org.bytedeco.javacpp.indexer.UByteIndexer;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
@@ -11,7 +9,6 @@ import org.opencv.core.Mat;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
