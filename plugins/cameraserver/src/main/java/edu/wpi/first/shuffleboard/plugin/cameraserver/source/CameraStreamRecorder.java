@@ -54,6 +54,7 @@ public final class CameraStreamRecorder extends TypeAdapter<CameraServerData> {
         log.log(Level.WARNING, "Could not finish saver", e);
       }
     });
+    savers.clear();
     readers.clear();
   }
 

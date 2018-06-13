@@ -133,9 +133,9 @@ public final class Recorder {
       log.log(Level.WARNING, "Could not save last data to disk", e);
     }
     synchronized (startStopLock) {
-      Serializers.cleanUpAll();
-      recordingFile = null;
       setRunning(false);
+      recordingFile = null;
+      Serializers.cleanUpAll();
     }
   }
 
