@@ -96,6 +96,10 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
 
   private volatile boolean streaming = true; // Are we currently supposed to be grabbing frames from the stream?
 
+  // Lets us ignore kSourceDisconnected events when we force a stream reconnect to update URL parameters
+  // TODO remove this when cscore fixes URL parameter parsing
+  private volatile boolean forceUpdatingUrls = false;
+
   // Needs to be debounced; quickly changing URLs can cause serious performance hits
   private final Debouncer urlUpdateDebouncer = new Debouncer(this::updateUrls, Duration.ofMillis(10));
   private final InvalidationListener cameraUrlUpdater = __ -> urlUpdateDebouncer.run();
@@ -106,13 +110,16 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
     setData(new CameraServerData(name, null, 0, 0));
     videoSink = new CvSink(name + "-videosink");
     eventListenerId = CameraServerJNI.addListener(e -> {
-      if (e.name.equals(name) && streaming) {
+      if (e.name.equals(name)) {
         switch (e.kind) {
           case kSourceConnected:
+            forceUpdatingUrls = false;
             setConnected(true);
             break;
           case kSourceDisconnected:
-            setConnected(false);
+            if (!forceUpdatingUrls) {
+              setConnected(false);
+            }
             break;
           default:
             // don't care
@@ -283,6 +290,7 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
         resolution.getHeight(),
         getTargetFps()
     );
+    forceUpdatingUrls = true;
     camera.setVideoMode(videoMode);
   }
 
