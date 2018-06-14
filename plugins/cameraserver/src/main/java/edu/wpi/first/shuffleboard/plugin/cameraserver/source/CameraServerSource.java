@@ -21,7 +21,6 @@ import edu.wpi.cscore.CvSink;
 import edu.wpi.cscore.HttpCamera;
 import edu.wpi.cscore.VideoEvent;
 import edu.wpi.cscore.VideoException;
-import edu.wpi.cscore.VideoMode;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 
@@ -280,16 +279,7 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
 
   private void setCameraUrls(String[] urls) { // NOPMD varargs instead of array
     camera.setUrls(urls);
-    // Setting the video mode forces a reconnect
-    Resolution resolution = getTargetResolution();
-    VideoMode videoMode = new VideoMode(
-        VideoMode.PixelFormat.kMJPEG,
-        resolution.getWidth(),
-        resolution.getHeight(),
-        getTargetFps()
-    );
     forceUpdatingUrls = true;
-    camera.setVideoMode(videoMode);
   }
 
   /**
