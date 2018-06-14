@@ -17,7 +17,7 @@ import java.util.function.Supplier;
  */
 public final class LazyCameraServerData extends CameraServerData {
 
-  private final transient LazyInit<Mat> image;
+  private final LazyInit<Mat> image;
 
   /**
    * Creates a new data object. This constructor is identical to {@link CameraServerData#CameraServerData}, but takes
