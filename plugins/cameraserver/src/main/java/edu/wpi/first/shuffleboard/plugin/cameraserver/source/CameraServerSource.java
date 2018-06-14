@@ -161,8 +161,10 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
     DashboardMode.currentModeProperty().addListener((__, old, mode) -> {
       if (mode == DashboardMode.PLAYBACK) {
         cancelFrameGrabber();
+        videoSink.setEnabled(false);
       } else {
         reEnable();
+        videoSink.setEnabled(true);
       }
     });
 
@@ -188,7 +190,6 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
     if (streamUrls.length == 0) {
       setActive(false);
     } else {
-      videoSink.setEnabled(true);
       setActive(true);
     }
     streaming = true;
@@ -199,7 +200,6 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
     if (frameFuture != null) {
       frameFuture.cancel(true);
     }
-    videoSink.setEnabled(false);
     setActive(false);
     streaming = false;
     streamDiscoverer.urlsProperty().removeListener(urlChangeListener);
