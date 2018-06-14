@@ -94,6 +94,8 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
     }
   };
 
+  private volatile boolean streaming = true; // Are we currently supposed to be grabbing frames from the stream?
+
   // Needs to be debounced; quickly changing URLs can cause serious performance hits
   private final Debouncer urlUpdateDebouncer = new Debouncer(this::updateUrls, Duration.ofMillis(10));
   private final InvalidationListener cameraUrlUpdater = __ -> urlUpdateDebouncer.run();
@@ -104,7 +106,7 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
     setData(new CameraServerData(name, null, 0, 0));
     videoSink = new CvSink(name + "-videosink");
     eventListenerId = CameraServerJNI.addListener(e -> {
-      if (e.name.equals(name)) {
+      if (e.name.equals(name) && streaming) {
         switch (e.kind) {
           case kSourceConnected:
             setConnected(true);
@@ -120,7 +122,7 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
     }, 0xFF, true);
 
     CameraServerJNI.addListener(e -> {
-      if (enabled.get() && camera != null && camera.isValid() && !DashboardMode.inPlayback()) {
+      if (enabled.get() && camera != null && camera.isValid() && streaming) {
         double bandwidth;
         double fps;
         try {
@@ -182,6 +184,7 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
       videoSink.setEnabled(true);
       setActive(true);
     }
+    streaming = true;
     streamDiscoverer.urlsProperty().addListener(urlChangeListener);
   }
 
@@ -191,6 +194,7 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
     }
     videoSink.setEnabled(false);
     setActive(false);
+    streaming = false;
     streamDiscoverer.urlsProperty().removeListener(urlChangeListener);
   }
 
@@ -229,11 +233,14 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
    * @return true if a frame was successfully grabbed, false if an error occurred
    */
   private boolean grabOnceBlocking() {
+    if (!streaming) {
+      return false;
+    }
     long frameTime = videoSink.grabFrameNoTimeout(image);
     if (frameTime == 0) {
       log.warning("Error when grabbing frame from camera '" + getName() + "': " + videoSink.getError());
       return false;
-    } else if (!DashboardMode.inPlayback()) {
+    } else {
       if (getData() == null) {
         setData(new CameraServerData(getName(), image, 0, 0));
       } else {
