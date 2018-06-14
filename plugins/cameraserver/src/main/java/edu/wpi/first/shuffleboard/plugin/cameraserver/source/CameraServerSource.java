@@ -117,9 +117,7 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
             setConnected(true);
             break;
           case kSourceDisconnected:
-            if (!forceUpdatingUrls) {
-              setConnected(false);
-            }
+            setConnected(forceUpdatingUrls);
             break;
           default:
             // don't care
