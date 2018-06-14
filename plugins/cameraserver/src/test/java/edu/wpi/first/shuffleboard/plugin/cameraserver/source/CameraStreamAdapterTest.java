@@ -119,12 +119,21 @@ public class CameraStreamAdapterTest {
   @Test
   public void testVideoFileName() {
     assertAll("Video file names",
-        () -> assertEquals("/recording-Camera.0.mp4", videoFilePath(new File("/recording.sbr"), "Camera", 0)),
-        () -> assertEquals("/foo/bar-a b c.45.mp4", videoFilePath(new File("/foo/bar.sbr"), "a b c", 45))
+        () -> assertEquals(
+            new File("/recording-Camera.0.mp4").getAbsolutePath(),
+            videoFilePath(new File("/recording.sbr"), "Camera", 0)),
+        () -> assertEquals(
+            new File("/foo/bar-a b c.45.mp4").getAbsolutePath(),
+            videoFilePath(new File("/foo/bar.sbr"), "a b c", 45)
+        )
     );
   }
 
   private void deleteTempFiles(File file) {
+    if (System.getenv("CI") != null) {
+      // On a CI platform, don't need to clean up
+      return;
+    }
     boolean delete = file.delete();
     delete &= new File(videoFilePath(file, "name", 0)).delete();
     if (!delete) {

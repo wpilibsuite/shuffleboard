@@ -68,7 +68,7 @@ public class SerializationTest {
     ArrayList<TimestampedData> data = new ArrayList<>(recording.getData());
     Serialization.saveRecording(recording, file);
     final Recording loaded = Serialization.loadRecording(file);
-    Files.delete(file);
+    deleteFile(file);
     assertEquals(data, loaded.getData(), "The loaded recording differs from the encoded one");
   }
 
@@ -89,8 +89,15 @@ public class SerializationTest {
     recording.getData().add(newData);
     Serialization.updateRecordingSave(recording, file);
     final Recording loadedUpdate = Serialization.loadRecording(file);
-    Files.delete(file);
+    deleteFile(file);
     assertEquals(data, loadedUpdate.getData());
+  }
+
+  private void deleteFile(Path file) throws IOException {
+    if (System.getenv("CI") != null) {
+      return;
+    }
+    Files.delete(file);
   }
 
 }
