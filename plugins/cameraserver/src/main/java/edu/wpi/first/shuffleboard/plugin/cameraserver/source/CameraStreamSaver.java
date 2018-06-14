@@ -154,6 +154,10 @@ public final class CameraStreamSaver {
     return frameNum.get();
   }
 
+  public int getLastFrameNum() {
+    return Math.max(0, getFrameNum() - 1);
+  }
+
   /**
    * Gets the video file number. The first video file written is number 0, the second is 1, and so on.
    */

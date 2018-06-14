@@ -108,7 +108,7 @@ public final class CameraStreamAdapter extends TypeAdapter<CameraServerData> {
     return Bytes.concat(
         toByteArray(data.getName()),
         new byte[]{(byte) saver.getFileNum()},
-        toByteArray((short) saver.getFrameNum()),
+        toByteArray((short) saver.getLastFrameNum()),
         toByteArray((int) data.getBandwidth()),
         toByteArray((short) (data.getFps() * 100)) // limits to 327.68 max input FPS - should be enough :)
     );
