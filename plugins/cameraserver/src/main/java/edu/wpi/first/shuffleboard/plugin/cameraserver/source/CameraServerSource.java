@@ -220,7 +220,7 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
       throw new IllegalStateException("This may not run on the FX application thread!");
     }
     final Thread thread = Thread.currentThread();
-    while (!thread.isInterrupted()) {
+    while (!thread.isInterrupted() && streaming) {
       boolean success = grabOnceBlocking();
       if (!success) {
         // Couldn't grab the frame, wait a bit to try again
