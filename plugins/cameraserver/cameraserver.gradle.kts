@@ -9,3 +9,6 @@ dependencies {
     compile(group = "edu.wpi.first.cscore", name = "cscore-jni", version = "+", classifier = "all")
     compile(group = "org.opencv", name = "opencv-jni", version = "+", classifier = "all")
 }
+
+version = "1.5.0"
+extra["pluginName"] = "CameraServer"
