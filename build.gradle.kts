@@ -1,4 +1,5 @@
 
+import com.diffplug.spotless.FormatterStep
 import edu.wpi.first.wpilib.versioning.ReleaseType
 import org.gradle.api.Project
 import org.gradle.api.plugins.quality.FindBugs
@@ -46,7 +47,46 @@ allprojects {
             endWithNewline()
         }
         freshmark {
-            trimTrailingWhitespace()
+            // Default timeWhitespace() doesn't respect lines ending with two spaces for a tight line break
+            // So we have to implement it ourselves
+            class TrimTrailingSpaces : FormatterStep {
+                override fun getName(): String = "trimTrailingSpaces"
+
+                override fun format(rawUnix: String?, file: File?): String? {
+                    if (rawUnix == null || file == null) {
+                        return null
+                    }
+                    return rawUnix.split('\n')
+                            .joinToString(separator = "\n", transform = this::formatLine)
+                }
+
+                fun formatLine(rawUnix: String): String {
+                    if (!rawUnix.endsWith(" ")) {
+                        // No trailing whitespace
+                        return rawUnix
+                    }
+                    if (rawUnix.matches(Regex("^.*[^ \t] {2}$"))) {
+                        // Ends with two spaces - it's a tight line break, so leave it
+                        return rawUnix
+                    }
+                    val r = Regex("^(.*[^ \t]) {3,}^")
+                    val m = r.matchEntire(rawUnix)
+                    if (m != null) {
+                        // Ends with at least 3 spaces
+                        // Trim the excess, but leave two spaces at the end for a tight line break
+                        return m.groupValues[1] + "  "
+                    }
+                    if (rawUnix.endsWith(" ")) {
+                        // Ends with a single space - remove it
+                        return rawUnix.substring(0, rawUnix.length - 1)
+                    }
+                    // Not sure how we got here; every case should have been covered.
+                    // Print an error but do not change the line
+                    System.err.println("Could not trim whitespace from line '$rawUnix'")
+                    return rawUnix
+                }
+            }
+            addStep(TrimTrailingSpaces())
             indentWithSpaces()
             endWithNewline()
         }
