@@ -60,30 +60,30 @@ allprojects {
                             .joinToString(separator = "\n", transform = this::formatLine)
                 }
 
-                fun formatLine(rawUnix: String): String {
-                    if (!rawUnix.endsWith(" ")) {
+                fun formatLine(line: String): String {
+                    if (!line.endsWith(" ")) {
                         // No trailing whitespace
-                        return rawUnix
+                        return line
                     }
-                    if (rawUnix.matches(Regex("^.*[^ \t] {2}$"))) {
+                    if (line.matches(Regex("^.*[^ \t] {2}$"))) {
                         // Ends with two spaces - it's a tight line break, so leave it
-                        return rawUnix
+                        return line
                     }
-                    val r = Regex("^(.*[^ \t]) {3,}^")
-                    val m = r.matchEntire(rawUnix)
-                    if (m != null) {
+                    val endsWithMoreThanTwoSpaces = Regex("^(.*[^ \t]) {3,}^")
+                    val match = endsWithMoreThanTwoSpaces.matchEntire(line)
+                    if (match != null) {
                         // Ends with at least 3 spaces
                         // Trim the excess, but leave two spaces at the end for a tight line break
-                        return m.groupValues[1] + "  "
+                        return match.groupValues[1] + "  "
                     }
-                    if (rawUnix.endsWith(" ")) {
+                    if (line.endsWith(" ")) {
                         // Ends with a single space - remove it
-                        return rawUnix.substring(0, rawUnix.length - 1)
+                        return line.substring(0, line.length - 1)
                     }
                     // Not sure how we got here; every case should have been covered.
                     // Print an error but do not change the line
-                    System.err.println("Could not trim whitespace from line '$rawUnix'")
-                    return rawUnix
+                    System.err.println("Could not trim whitespace from line '$line'")
+                    return line
                 }
             }
             addStep(TrimTrailingSpaces())
