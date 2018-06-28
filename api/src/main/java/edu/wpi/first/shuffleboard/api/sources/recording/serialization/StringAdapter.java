@@ -3,8 +3,6 @@ package edu.wpi.first.shuffleboard.api.sources.recording.serialization;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.sources.recording.Serialization;
 
-import com.google.common.primitives.Bytes;
-
 import java.io.UnsupportedEncodingException;
 
 public class StringAdapter extends TypeAdapter<String> {
@@ -15,11 +13,7 @@ public class StringAdapter extends TypeAdapter<String> {
 
   @Override
   public byte[] serialize(String value) {
-    try {
-      return Bytes.concat(Serialization.toByteArray(value.length()), value.getBytes("UTF-8"));
-    } catch (UnsupportedEncodingException e) {
-      throw new AssertionError("UTF-8 is not supported (the JVM is not to spec!)", e);
-    }
+    return Serialization.toByteArray(value);
   }
 
   @Override
@@ -42,7 +36,7 @@ public class StringAdapter extends TypeAdapter<String> {
 
   @Override
   public int getSerializedSize(String value) {
-    return Serialization.SIZE_OF_INT + value.length();
+    return serialize(value).length;
   }
 
 }

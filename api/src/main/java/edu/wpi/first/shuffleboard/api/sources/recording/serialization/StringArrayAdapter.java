@@ -3,8 +3,6 @@ package edu.wpi.first.shuffleboard.api.sources.recording.serialization;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.sources.recording.Serialization;
 
-import java.util.Arrays;
-
 public class StringArrayAdapter extends TypeAdapter<String[]> {
 
   public StringArrayAdapter() {
@@ -16,7 +14,7 @@ public class StringArrayAdapter extends TypeAdapter<String[]> {
     if (data.length == 0) {
       return new byte[Serialization.SIZE_OF_INT];
     }
-    byte[] buf = new byte[getSerializedSize(data)];
+    byte[] buf = new byte[Serialization.sizeOfStringArray(data)];
 
     int pos = 0;
 
@@ -48,11 +46,7 @@ public class StringArrayAdapter extends TypeAdapter<String[]> {
 
   @Override
   public int getSerializedSize(String[] value) {
-    return Serialization.SIZE_OF_INT
-        + Arrays.stream(value)
-        .mapToInt(String::length)
-        .map(i -> i + Serialization.SIZE_OF_INT)
-        .sum();
+    return serialize(value).length;
   }
 
 }
