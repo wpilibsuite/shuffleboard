@@ -58,7 +58,7 @@ public final class CameraServerSourceType extends SourceType {
   }
 
   public static void removeSource(CameraServerSource source) {
-    INSTANCE.sources.remove(source.getId());
+    INSTANCE.sources.remove(source.getName());
   }
 
   @Override
