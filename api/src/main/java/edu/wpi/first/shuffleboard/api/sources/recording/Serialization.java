@@ -107,7 +107,7 @@ public final class Serialization {
    */
   public static void saveRecording(Recording recording, Path file) throws IOException {
     Serializers.getAdapters().forEach(a -> a.setCurrentFile(file.toFile()));
-    // work on a copy of the data so changes to the recording don't mess this up
+    // Work on a copy, since the recording can have new data added to it while we're in the middle of saving
     final List<TimestampedData> dataCopy = new ArrayList<>(recording.getData());
     recording.getData().clear();
     dataCopy.sort(TimestampedData::compareTo); // make sure the data is sorted properly
@@ -169,7 +169,8 @@ public final class Serialization {
     RandomAccessFile raf = new RandomAccessFile(file.toFile(), "rw");
     int magic = raf.readInt();
     if (magic != MAGIC_NUMBER) {
-      throw new IOException("Wrong magic number in the header. Expected " + MAGIC_NUMBER + ", but was " + magic);
+      throw new IOException(
+          String.format("Wrong magic number in the header. Expected %08X, but was %08X", MAGIC_NUMBER, magic));
     }
 
     // Update the number of data points
