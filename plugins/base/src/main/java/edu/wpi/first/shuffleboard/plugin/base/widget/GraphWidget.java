@@ -141,15 +141,6 @@ public class GraphWidget implements AnnotatedWidget {
         }
       }, 500, UPDATE_PERIOD, TimeUnit.MILLISECONDS);
 
-  /**
-   * Creates a new graph widget.
-   */
-  public GraphWidget() {
-    synchronized (graphWidgets) {
-      graphWidgets.add(this);
-    }
-  }
-
   @FXML
   private void initialize() {
     chart.legendVisibleProperty().bind(
@@ -245,6 +236,12 @@ public class GraphWidget implements AnnotatedWidget {
             }
           });
     });
+
+    // Add this widget to the list only after everything is initialized to prevent occasional null pointers when
+    // the update thread runs after construction but before FXML injection or initialization
+    synchronized (graphWidgets) {
+      graphWidgets.add(this);
+    }
 
   }
 
