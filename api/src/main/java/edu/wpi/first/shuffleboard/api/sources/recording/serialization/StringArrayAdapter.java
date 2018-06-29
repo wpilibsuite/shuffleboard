@@ -37,9 +37,9 @@ public class StringArrayAdapter extends TypeAdapter<String[]> {
     cursor += Serialization.SIZE_OF_INT;
     String[] stringArray = new String[length];
     for (int i = 0; i < length; i++) {
-      String string = Serialization.decode(array, cursor, DataTypes.String);
+      String string = Serialization.readString(array, cursor);
       stringArray[i] = string;
-      cursor += Serialization.SIZE_OF_INT + string.length();
+      cursor += Serialization.SIZE_OF_INT + Serialization.readInt(array, cursor);
     }
     return stringArray;
   }

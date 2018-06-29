@@ -22,6 +22,10 @@ public class SerializationTest {
       0, 0, 0, 3, 'b', 'a', 'r'  // "bar", encoded with length
   };
 
+  // Grinning emoji, four bytes
+  @SuppressWarnings("AvoidEscapedUnicodeCharacters")
+  private static final String grinningEmoji = "\uD83D\uDE01";
+
   @Test
   public void testIntToBytes() {
     final int val = 0x007F10FF;
@@ -89,6 +93,28 @@ public class SerializationTest {
     Serialization.updateRecordingSave(recording, file);
     final Recording loadedUpdate = Serialization.loadRecording(file);
     assertEquals(data, loadedUpdate.getData());
+  }
+
+  @Test
+  public void testMultiByteCharsInString() {
+    String string = grinningEmoji;
+    byte[] bytes = Serialization.toByteArray(string);
+    assertEquals(8, bytes.length);
+    String read = Serialization.readString(bytes, 0);
+    assertEquals(string, read);
+  }
+
+  @Test
+  public void testMultiByteCharsInStringArray() {
+    String[] strings = {
+        "®",
+        "©",
+        grinningEmoji
+    };
+    byte[] bytes = Serialization.toByteArray(strings);
+    assertEquals(24, bytes.length);
+    String[] read = Serialization.readStringArray(bytes, 0);
+    assertArrayEquals(strings, read);
   }
 
 }
