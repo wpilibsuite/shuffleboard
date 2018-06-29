@@ -13,7 +13,6 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@SuppressWarnings("PMD")
 public class SerializationTest {
 
   private static final byte[] fooBarBytes = new byte[]{
@@ -23,8 +22,7 @@ public class SerializationTest {
   };
 
   // Grinning emoji, four bytes
-  @SuppressWarnings("AvoidEscapedUnicodeCharacters")
-  private static final String grinningEmoji = "\uD83D\uDE01";
+  private static final String grinningEmoji = "😁";
 
   @Test
   public void testIntToBytes() {
