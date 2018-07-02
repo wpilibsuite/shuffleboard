@@ -41,7 +41,8 @@ public final class Serialization {
   public static final int MAGIC_NUMBER = 0xBEEF_FACE;
 
   /**
-   * The current serialization format version.
+   * The current serialization format version. This number is incremented every time the recording format changes in
+   * a way that makes it incompatible with previous versions.
    */
   public static final int VERSION = 2;
 
