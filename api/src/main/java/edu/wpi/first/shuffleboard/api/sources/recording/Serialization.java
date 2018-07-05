@@ -441,8 +441,8 @@ public final class Serialization {
   }
 
   /**
-   * Encodes a string as a big-endian byte array. The resulting array encodes the length of the string in the first
-   * four bytes, then the contents of the string.
+   * Encodes a string as a big-endian byte array. The resulting array encodes the number bytes that encode the string
+   * in a 4-byte int, followed by the encoded character bytes.
    */
   public static byte[] toByteArray(String string) {
     try {
