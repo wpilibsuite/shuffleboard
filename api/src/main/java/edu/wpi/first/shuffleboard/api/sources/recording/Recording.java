@@ -7,6 +7,7 @@ import java.util.Objects;
 
 public class Recording {
 
+  private final Object modificationLock = new Object();
   private TimestampedData first;
   private TimestampedData last;
   private final List<TimestampedData> data = Collections.synchronizedList(new ArrayList<>());
@@ -18,67 +19,89 @@ public class Recording {
    * @param data the data to append
    */
   public void append(TimestampedData data) {
-    this.data.add(data);
-    if (!sourceIds.contains(data.getSourceId())) {
-      sourceIds.add(data.getSourceId());
-    }
-    if (first == null || data.getTimestamp() < first.getTimestamp()) {
-      first = data;
-    }
-    if (last == null || data.getTimestamp() > last.getTimestamp()) {
-      last = data;
+    synchronized (modificationLock) {
+      this.data.add(data);
+      if (!sourceIds.contains(data.getSourceId())) {
+        sourceIds.add(data.getSourceId());
+      }
+      if (first == null || data.getTimestamp() < first.getTimestamp()) {
+        first = data;
+      }
+      if (last == null || data.getTimestamp() > last.getTimestamp()) {
+        last = data;
+      }
     }
   }
 
+  @SuppressWarnings("JavadocMethod")
   public List<TimestampedData> getData() {
-    return data;
+    synchronized (modificationLock) {
+      return data;
+    }
   }
 
+  @SuppressWarnings("JavadocMethod")
   public List<String> getSourceIds() {
-    return sourceIds;
+    synchronized (modificationLock) {
+      return sourceIds;
+    }
   }
 
+  @SuppressWarnings("JavadocMethod")
   public TimestampedData getFirst() {
-    return first;
+    synchronized (modificationLock) {
+      return first;
+    }
   }
 
+  @SuppressWarnings("JavadocMethod")
   public TimestampedData getLast() {
-    return last;
+    synchronized (modificationLock) {
+      return last;
+    }
   }
 
   /**
    * Gets the length of this recording in milliseconds. Recordings wth 0 or 1 data points have a length of 0.
    */
   public long getLength() {
-    if (first == null || last == null) {
-      return 0;
-    } else {
-      return last.getTimestamp() - first.getTimestamp();
+    synchronized (modificationLock) {
+      if (first == null || last == null) {
+        return 0;
+      } else {
+        return last.getTimestamp() - first.getTimestamp();
+      }
     }
   }
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
-    }
-    if (obj == null || getClass() != obj.getClass()) {
-      return false;
-    }
+    synchronized (modificationLock) {
+      if (this == obj) {
+        return true;
+      }
+      if (obj == null || getClass() != obj.getClass()) {
+        return false;
+      }
 
-    Recording that = (Recording) obj;
+      Recording that = (Recording) obj;
 
-    return this.data.equals(that.data);
+      return this.data.equals(that.data);
+    }
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(data);
+    synchronized (modificationLock) {
+      return Objects.hash(data);
+    }
   }
 
   @Override
   public String toString() {
-    return "Recording(data=" + data + ")";
+    synchronized (modificationLock) {
+      return "Recording(data=" + data + ")";
+    }
   }
 
 }

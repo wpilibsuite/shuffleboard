@@ -1,14 +1,18 @@
 package edu.wpi.first.shuffleboard.plugin.cameraserver.source;
 
-import edu.wpi.first.shuffleboard.api.properties.AsyncProperty;
+import edu.wpi.first.shuffleboard.api.DashboardMode;
+import edu.wpi.first.shuffleboard.api.properties.AsyncValidatingProperty;
 import edu.wpi.first.shuffleboard.api.properties.AtomicIntegerProperty;
 import edu.wpi.first.shuffleboard.api.sources.AbstractDataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.Sources;
+import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
 import edu.wpi.first.shuffleboard.api.util.Debouncer;
 import edu.wpi.first.shuffleboard.api.util.EqualityUtils;
+import edu.wpi.first.shuffleboard.api.util.ShutdownHooks;
 import edu.wpi.first.shuffleboard.api.util.ThreadUtils;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.data.CameraServerData;
+import edu.wpi.first.shuffleboard.plugin.cameraserver.data.LazyCameraServerData;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.data.Resolution;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.data.type.CameraServerDataType;
 
@@ -17,15 +21,12 @@ import edu.wpi.cscore.CvSink;
 import edu.wpi.cscore.HttpCamera;
 import edu.wpi.cscore.VideoEvent;
 import edu.wpi.cscore.VideoException;
-import edu.wpi.cscore.VideoMode;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 
 import org.opencv.core.Mat;
 
 import java.time.Duration;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -43,8 +44,6 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
 
   private static final Logger log = Logger.getLogger(CameraServerSource.class.getName());
 
-  private static final Map<String, CameraServerSource> sources = new HashMap<>();
-
   private final NetworkTable cameraPublisherTable = NetworkTableInstance.getDefault().getTable("/CameraPublisher");
   private final int eventListenerId;
   private HttpCamera camera;
@@ -53,7 +52,7 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
 
   private final ExecutorService frameGrabberService = Executors.newSingleThreadExecutor(ThreadUtils::makeDaemonThread);
   private final BooleanBinding enabled = active.and(connected);
-  private final ChangeListener<Boolean> enabledListener =  (__, was, is) -> {
+  private final ChangeListener<Boolean> enabledListener = (__, was, is) -> {
     if (is) {
       reEnable();
     } else {
@@ -69,21 +68,16 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
 
   private final IntegerProperty targetCompression = new AtomicIntegerProperty(this, "targetCompression", -1);
   private final IntegerProperty targetFps = new AtomicIntegerProperty(this, "targetFps", -1);
+
   private final Property<Resolution> targetResolution =
-      new AsyncProperty<Resolution>(this, "targetResolution", Resolution.EMPTY) {
-        @Override
-        public void set(Resolution newValue) {
-          if (newValue.getWidth() > MAX_RESOLUTION.getWidth() || newValue.getHeight() > MAX_RESOLUTION.getHeight()) {
-            throw new IllegalArgumentException(
-                "The maximum supported resolution is " + MAX_RESOLUTION + ", but was given " + newValue);
-          }
-          super.set(newValue);
-        }
-      };
+      new AsyncValidatingProperty<>(this, "targetResolution", Resolution.EMPTY, resolution -> {
+        return resolution.getWidth() <= MAX_RESOLUTION.getWidth()
+            && resolution.getHeight() <= MAX_RESOLUTION.getHeight();
+      });
 
   private final StreamDiscoverer streamDiscoverer;
   private final CameraUrlGenerator urlGenerator = new CameraUrlGenerator(this);
-  private final ChangeListener<String[]> urlChangeListener =  (__, old, urls) -> {
+  private final ChangeListener<String[]> urlChangeListener = (__, old, urls) -> {
     if (urls.length == 0) {
       setActive(false);
     } else {
@@ -99,22 +93,30 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
     }
   };
 
+  private volatile boolean streaming = true; // Are we currently supposed to be grabbing frames from the stream?
+
+  // Lets us ignore kSourceDisconnected events when we force a stream reconnect to update URL parameters
+  // TODO remove this when cscore fixes URL parameter parsing
+  private volatile boolean forceUpdatingUrls = false;
+
   // Needs to be debounced; quickly changing URLs can cause serious performance hits
   private final Debouncer urlUpdateDebouncer = new Debouncer(this::updateUrls, Duration.ofMillis(10));
   private final InvalidationListener cameraUrlUpdater = __ -> urlUpdateDebouncer.run();
 
-  private CameraServerSource(String name) {
+  CameraServerSource(String name) {
     super(CameraServerDataType.Instance);
     setName(name);
+    setData(new CameraServerData(name, null, 0, 0));
     videoSink = new CvSink(name + "-videosink");
     eventListenerId = CameraServerJNI.addListener(e -> {
       if (e.name.equals(name)) {
         switch (e.kind) {
           case kSourceConnected:
+            forceUpdatingUrls = false;
             setConnected(true);
             break;
           case kSourceDisconnected:
-            setConnected(false);
+            setConnected(forceUpdatingUrls);
             break;
           default:
             // don't care
@@ -124,7 +126,7 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
     }, 0xFF, true);
 
     CameraServerJNI.addListener(e -> {
-      if (enabled.get() && camera != null && camera.isValid()) {
+      if (enabled.get() && camera != null && camera.isValid() && streaming) {
         double bandwidth;
         double fps;
         try {
@@ -153,11 +155,30 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
       videoSink.setEnabled(true);
     }
 
+    DashboardMode.currentModeProperty().addListener((__, old, mode) -> {
+      if (mode == DashboardMode.PLAYBACK) {
+        cancelFrameGrabber();
+        videoSink.setEnabled(false);
+      } else {
+        reEnable();
+        videoSink.setEnabled(true);
+      }
+    });
+
     enabled.addListener(enabledListener);
     targetCompression.addListener(cameraUrlUpdater);
     targetFps.addListener(cameraUrlUpdater);
     targetResolution.addListener(cameraUrlUpdater);
     setActive(camera != null && camera.getUrls().length > 0);
+
+    // If the old data is playback data, free it to reduce memory pressure
+    dataProperty().addListener((__, old, data) -> {
+      if (old instanceof LazyCameraServerData) {
+        ((LazyCameraServerData) old).clear();
+      }
+    });
+
+    ShutdownHooks.addHook(this::cancelFrameGrabber);
   }
 
   private void reEnable() {
@@ -165,7 +186,10 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
     String[] streamUrls = streamDiscoverer.getUrls();
     if (streamUrls.length == 0) {
       setActive(false);
+    } else {
+      setActive(true);
     }
+    streaming = true;
     streamDiscoverer.urlsProperty().addListener(urlChangeListener);
   }
 
@@ -173,11 +197,9 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
     if (frameFuture != null) {
       frameFuture.cancel(true);
     }
+    setActive(false);
+    streaming = false;
     streamDiscoverer.urlsProperty().removeListener(urlChangeListener);
-  }
-
-  public static CameraServerSource forName(String name) {
-    return sources.computeIfAbsent(name, CameraServerSource::new);
   }
 
   @Override
@@ -195,7 +217,7 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
       throw new IllegalStateException("This may not run on the FX application thread!");
     }
     final Thread thread = Thread.currentThread();
-    while (!thread.isInterrupted()) {
+    while (!thread.isInterrupted() && streaming) {
       boolean success = grabOnceBlocking();
       if (!success) {
         // Couldn't grab the frame, wait a bit to try again
@@ -215,16 +237,20 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
    * @return true if a frame was successfully grabbed, false if an error occurred
    */
   private boolean grabOnceBlocking() {
+    if (!streaming) {
+      return false;
+    }
     long frameTime = videoSink.grabFrameNoTimeout(image);
     if (frameTime == 0) {
       log.warning("Error when grabbing frame from camera '" + getName() + "': " + videoSink.getError());
       return false;
     } else {
       if (getData() == null) {
-        setData(new CameraServerData(getName(), image, -1, -1));
+        setData(new CameraServerData(getName(), image, 0, 0));
       } else {
         setData(getData().withImage(image));
       }
+      Recorder.getInstance().record(getId(), getDataType(), getData().withImage(image.clone()));
     }
     return true;
   }
@@ -237,11 +263,11 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
     enabled.removeListener(enabledListener);
     CameraServerJNI.removeListener(eventListenerId);
     cancelFrameGrabber();
-    videoSink.free();
+    videoSink.close();
     if (camera != null) {
-      camera.free();
+      camera.close();
     }
-    sources.remove(getName());
+    CameraServerSourceType.removeSource(this);
     Sources.getDefault().unregister(this);
   }
 
@@ -253,15 +279,7 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
 
   private void setCameraUrls(String[] urls) { // NOPMD varargs instead of array
     camera.setUrls(urls);
-    // Setting the video mode forces a reconnect
-    Resolution resolution = getTargetResolution();
-    VideoMode videoMode = new VideoMode(
-        VideoMode.PixelFormat.kMJPEG,
-        resolution.getWidth(),
-        resolution.getHeight(),
-        getTargetFps()
-    );
-    camera.setVideoMode(videoMode);
+    forceUpdatingUrls = true;
   }
 
   /**

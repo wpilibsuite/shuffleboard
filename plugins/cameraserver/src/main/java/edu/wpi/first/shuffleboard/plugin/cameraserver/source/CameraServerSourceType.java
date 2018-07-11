@@ -9,11 +9,14 @@ import edu.wpi.first.shuffleboard.api.sources.recording.TimestampedData;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.data.CameraServerData;
+import edu.wpi.first.shuffleboard.plugin.cameraserver.data.type.CameraServerDataType;
 
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -24,12 +27,12 @@ public final class CameraServerSourceType extends SourceType {
 
   public static final CameraServerSourceType INSTANCE = new CameraServerSourceType();
 
-  private static final ObservableList<String> availableUris = FXCollections.observableArrayList();
-  private static final ObservableMap<String, Object> availableSources = FXCollections.observableHashMap();
+  private final Map<String, CameraServerSource> sources = new HashMap<>();
+  private final ObservableList<String> availableUris = FXCollections.observableArrayList();
+  private final ObservableMap<String, Object> availableSources = FXCollections.observableHashMap();
 
   private CameraServerSourceType() {
-    // TODO fix bugs with recording before enabling it on master
-    super("CameraServer", false, "camera_server://", CameraServerSource::forName);
+    super("CameraServer", true, "camera_server://", CameraServerSourceType::forName);
     NetworkTableInstance.getDefault().addEntryListener("/CameraPublisher", entryNotification ->
         FxUtils.runOnFxThread(() -> {
           List<String> hierarchy = NetworkTable.getHierarchy(entryNotification.name);
@@ -45,9 +48,17 @@ public final class CameraServerSourceType extends SourceType {
             if (!availableUris.contains(uri)) {
               availableUris.add(uri);
             }
-            availableSources.put(uri, new CameraServerData(name, null, -1, -1));
+            availableSources.put(uri, new CameraServerData(name, null, 0, 0));
           }
         }), 0xFF);
+  }
+
+  public static CameraServerSource forName(String name) {
+    return INSTANCE.sources.computeIfAbsent(name, CameraServerSource::new);
+  }
+
+  public static void removeSource(CameraServerSource source) {
+    INSTANCE.sources.remove(source.getName());
   }
 
   @Override
@@ -58,13 +69,25 @@ public final class CameraServerSourceType extends SourceType {
   }
 
   @Override
+  public void connect() {
+    super.connect();
+    sources.values().forEach(CameraServerSource::connect);
+  }
+
+  @Override
+  public void disconnect() {
+    sources.values().forEach(CameraServerSource::disconnect);
+    super.disconnect();
+  }
+
+  @Override
   public SourceEntry createSourceEntryForUri(String uri) {
-    return new CameraServerSourceEntry(new CameraServerData(removeProtocol(uri), null, -1, -1));
+    return new CameraServerSourceEntry(removeProtocol(uri));
   }
 
   @Override
   public DataType<?> dataTypeForSource(DataTypes registry, String sourceUri) {
-    return registry.forName("CameraServerData").orElse(DataTypes.Unknown);
+    return CameraServerDataType.Instance;
   }
 
   @Override

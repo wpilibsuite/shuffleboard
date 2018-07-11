@@ -165,8 +165,7 @@ public class CameraServerWidget extends SimpleAnnotatedWidget<CameraServerData> 
       int height = this.height.getNumber();
       boolean change = source.getTargetCompression() != compression
           || source.getTargetFps() != fps
-          || source.getTargetResolution().getWidth() != width
-          || source.getTargetResolution().getHeight() != height;
+          || source.getTargetResolution().isNotEqual(width, height);
       if (!change) {
         return;
       }

@@ -1,39 +1,38 @@
 package edu.wpi.first.shuffleboard.plugin.cameraserver.source;
 
 import edu.wpi.first.shuffleboard.api.sources.SourceEntry;
-import edu.wpi.first.shuffleboard.plugin.cameraserver.data.CameraServerData;
 
 public class CameraServerSourceEntry implements SourceEntry {
 
-  private final CameraServerData data;
+  private final String name;
 
-  public CameraServerSourceEntry(CameraServerData data) {
-    this.data = data;
+  public CameraServerSourceEntry(String name) {
+    this.name = name;
   }
 
   @Override
   public String getName() {
-    return "/" + data.getName();
+    return "/" + name;
   }
 
   @Override
   public String getViewName() {
-    return data.getName();
+    return name;
   }
 
   @Override
   public Object getValue() {
-    return data;
+    return name;
   }
 
   @Override
   public Object getValueView() {
-    return data.getImage();
+    return null;
   }
 
   @Override
   public CameraServerSource get() {
-    return CameraServerSource.forName(data.getName());
+    return CameraServerSourceType.INSTANCE.forName(name);
   }
 
 }
