@@ -742,7 +742,15 @@
     -fx-text-fill: white;
 }
 
-.tab:selected .tab-label {
+.tab .tab-label {
+    /*
+     * Set a border to the same color as the background to keep the label text in the same position
+     * when the tab is selected.
+     */
     -fx-border-width: 0 0 0.125em 0;
+    -fx-border-color: -swatch-500;
+}
+
+.tab:selected .tab-label {
     -fx-border-color: -fx-text-fill;
 }

@@ -15,6 +15,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import javafx.collections.ListChangeListener;
+import javafx.event.Event;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 
@@ -100,7 +101,10 @@ public class DashboardTabPane extends TabPane {
    * Closes the currently selected tab.
    */
   public void closeCurrentTab() {
-    getTabs().remove(getSelectionModel().getSelectedItem());
+    Tab tab = getSelectionModel().getSelectedItem();
+    Event event = new Event(tab, tab, Tab.TAB_CLOSE_REQUEST_EVENT);
+    Event.fireEvent(tab, event);
+    getTabs().remove(tab);
   }
 
   /**

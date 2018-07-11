@@ -354,7 +354,7 @@ public final class Serialization {
   public static int sizeOfStringArray(String[] array) { // NOPMD varargs
     int size = SIZE_OF_INT;
     for (String s : array) {
-      size += s.length() + SIZE_OF_INT;
+      size += toByteArray(s).length; // maintains UTF-8 encoding of multi-byte chars
     }
     return size;
   }
@@ -447,12 +447,13 @@ public final class Serialization {
   }
 
   /**
-   * Encodes a string as a big-endian byte array. The resulting array encodes the length of the string in the first
-   * four bytes, then the contents of the string.
+   * Encodes a string as a big-endian byte array. The resulting array encodes the number bytes that encode the string
+   * in a 4-byte int, followed by the encoded character bytes.
    */
   public static byte[] toByteArray(String string) {
     try {
-      return Bytes.concat(toByteArray(string.length()), string.getBytes("UTF-8"));
+      byte[] bytes = string.getBytes("UTF-8");
+      return Bytes.concat(toByteArray(bytes.length), bytes);
     } catch (UnsupportedEncodingException e) {
       throw new AssertionError("UTF-8 is not supported (the JVM is not to spec!)", e);
     }
