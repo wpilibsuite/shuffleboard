@@ -8,6 +8,7 @@ import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.recording.Converter;
 import edu.wpi.first.shuffleboard.api.sources.recording.serialization.TypeAdapter;
 import edu.wpi.first.shuffleboard.api.tab.TabInfo;
+import edu.wpi.first.shuffleboard.api.tab.model.TabStructure;
 import edu.wpi.first.shuffleboard.api.theme.Theme;
 import edu.wpi.first.shuffleboard.api.util.Storage;
 import edu.wpi.first.shuffleboard.api.widget.ComponentType;
@@ -237,6 +238,13 @@ public class Plugin {
    */
   public List<TabInfo> getDefaultTabInfo() {
     return ImmutableList.of();
+  }
+
+  /**
+   * Gets a tab structure for procedurally generated tabs.
+   */
+  public TabStructure getTabs() {
+    return null;
   }
 
   /**
