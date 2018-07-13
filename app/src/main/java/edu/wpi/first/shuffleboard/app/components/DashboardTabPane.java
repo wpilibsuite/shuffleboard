@@ -36,18 +36,18 @@ import static edu.wpi.first.shuffleboard.api.util.TypeUtils.optionalCast;
  */
 public class DashboardTabPane extends TabPane {
 
-  private final Map<TabStructure, Map<TabModel, DashboardTab>> pluginTabs = new WeakHashMap<>();
+  private final Map<TabStructure, Map<TabModel, ProcedurallyDefinedTab>> pluginTabs = new WeakHashMap<>();
 
   private final StructureChangeListener structureChangeListener = tabs -> {
     FxUtils.runOnFxThread(() -> {
       tabs.printStructure();
-      Map<TabModel, DashboardTab> realTabs = pluginTabs.computeIfAbsent(tabs, __ -> new WeakHashMap<>());
+      Map<TabModel, ProcedurallyDefinedTab> realTabs = pluginTabs.computeIfAbsent(tabs, __ -> new WeakHashMap<>());
       for (TabModel model : tabs.getTabs().values()) {
-        DashboardTab tab = realTabs.computeIfAbsent(model, DashboardTab::new);
+        ProcedurallyDefinedTab tab = realTabs.computeIfAbsent(model, ProcedurallyDefinedTab::new);
         if (!getTabs().contains(tab)) {
           getTabs().add(getTabs().size() - 1, tab);
         }
-        tab.populateFrom(model);
+        tab.populate();
       }
     });
   };
