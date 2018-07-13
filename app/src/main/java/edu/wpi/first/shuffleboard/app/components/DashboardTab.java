@@ -11,12 +11,17 @@ import edu.wpi.first.shuffleboard.api.sources.DataSourceUtils;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
 import edu.wpi.first.shuffleboard.api.tab.TabInfo;
+import edu.wpi.first.shuffleboard.api.tab.model.ComponentModel;
+import edu.wpi.first.shuffleboard.api.tab.model.LayoutModel;
+import edu.wpi.first.shuffleboard.api.tab.model.ParentModel;
+import edu.wpi.first.shuffleboard.api.tab.model.TabModel;
 import edu.wpi.first.shuffleboard.api.util.Debouncer;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.ComponentContainer;
 import edu.wpi.first.shuffleboard.api.widget.Components;
+import edu.wpi.first.shuffleboard.api.widget.Layout;
 import edu.wpi.first.shuffleboard.api.widget.Sourced;
 import edu.wpi.first.shuffleboard.app.Autopopulator;
 import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
@@ -28,9 +33,12 @@ import org.fxmisc.easybind.EasyBind;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -78,6 +86,8 @@ public class DashboardTab extends Tab implements HandledTab, Populatable {
       }
     }
   };
+
+  private final Map<ComponentModel, Component> proceduralComponents = new WeakHashMap<>();
 
   private boolean deferPopulation = true;
 
@@ -132,6 +142,10 @@ public class DashboardTab extends Tab implements HandledTab, Populatable {
     this(tabInfo.getName());
     setSourcePrefix(tabInfo.getSourcePrefix());
     setAutoPopulate(tabInfo.isAutoPopulate());
+  }
+
+  public DashboardTab(TabModel model) {
+    this(model.getTitle());
   }
 
   /**
@@ -265,6 +279,48 @@ public class DashboardTab extends Tab implements HandledTab, Populatable {
     this.sourcePrefix.set(sourceRegex);
   }
 
+  public void populateFrom(TabModel model) {
+    if (getTabPane() == null) {
+      // No longer in the scene; bail
+      return;
+    }
+    if (getWidgetPane().getScene() == null || getWidgetPane().getParent() == null) {
+      // Defer until the pane is visible and is laid out in the scene
+      deferPopulation = true;
+      Platform.runLater(() -> populateFrom(model));
+      return;
+    }
+    if (deferPopulation) {
+      // Defer one last time; this method tends to trigger before row/column bindings on the widget pane
+      // This makes sure the pane is properly sized before populating it
+      deferPopulation = false;
+      Platform.runLater(() -> populateFrom(model));
+      return;
+    }
+    populateLayout(model, getWidgetPane());
+  }
+
+  private void populateLayout(ParentModel parent, ComponentContainer layout) {
+    for (ComponentModel componentModel : parent.getChildren().values()) {
+      Component component = proceduralComponents.get(componentModel);
+      if (component == null) {
+        component = componentFor(componentModel);
+        component.setTitle(componentModel.getTitle());
+        proceduralComponents.put(componentModel, component);
+        layout.addComponent(component);
+      }
+      if (componentModel instanceof ParentModel) {
+        populateLayout((ParentModel) componentModel, (ComponentContainer) proceduralComponents.get(componentModel)); // recursion
+      }
+    }
+  }
+
+  private Component componentFor(ComponentModel model) {
+    System.out.println("Getting component for " + model.getPath());
+    return Components.getDefault().createComponent(model.getDisplayType())
+        .orElseThrow(() -> new IllegalStateException("No available component for " + model.getDisplayType()));
+  }
+
   @Override
   public boolean supports(String sourceId) {
     SourceType type = SourceTypes.getDefault().typeForUri(sourceId);
@@ -280,6 +336,7 @@ public class DashboardTab extends Tab implements HandledTab, Populatable {
   @Override
   public boolean hasComponentFor(String sourceId) {
     List<Component> topLevelComponents = getWidgetPane().getTiles().stream()
+        .map(t -> (Tile<?>) t)
         .map(Tile::getContent)
         .collect(Collectors.toList());
     Predicate<Sourced> isSameSource = s -> s.getSources().stream()

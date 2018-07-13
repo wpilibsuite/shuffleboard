@@ -3,12 +3,16 @@ package edu.wpi.first.shuffleboard.api.tab.model;
 /**
  * Represents a single component in Shuffleboard. This can be either a widget or a layout.
  */
-public interface ComponentModel extends PropertyHolder {
+public interface ComponentModel extends PropertyHolder, Titled {
 
   /**
    * Gets the path to this component. This is always constant, regardless of the actual component's title.
    */
   String getPath();
+
+  default String getTitle() {
+    return getPath().substring(getPath().lastIndexOf('/') + 1);
+  }
 
   /**
    * Gets the parent of this component.
