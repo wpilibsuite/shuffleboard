@@ -69,6 +69,10 @@ final class TabGenerator {
   private void metadataChanged(EntryNotification event) {
     String name = event.name;
     List<String> metaHierarchy = NetworkTable.getHierarchy(name);
+    if (metaHierarchy.size() < 5) {
+      // Not metadata for a component or a tab, bail
+      return;
+    }
     List<String> realHierarchy = NetworkTable.getHierarchy(realPath(name));
     TabModel tab = tabs.getTab(NetworkTable.basenameKey(realHierarchy.get(2)));
     if (name.endsWith("/PreferredComponent")) {
