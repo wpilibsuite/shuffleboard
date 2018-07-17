@@ -4,9 +4,11 @@ import edu.wpi.first.shuffleboard.api.tab.model.ComponentModel;
 import edu.wpi.first.shuffleboard.api.tab.model.ParentModel;
 import edu.wpi.first.shuffleboard.api.tab.model.TabModel;
 import edu.wpi.first.shuffleboard.api.tab.model.WidgetModel;
+import edu.wpi.first.shuffleboard.api.util.GridPoint;
 import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.ComponentContainer;
 import edu.wpi.first.shuffleboard.api.widget.Components;
+import edu.wpi.first.shuffleboard.api.widget.TileSize;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 
 import java.util.Map;
@@ -75,7 +77,24 @@ public class ProcedurallyDefinedTab extends DashboardTab {
         if (componentModel instanceof WidgetModel) {
           ((Widget) component).addSource(((WidgetModel) componentModel).getDataSource());
         }
-        container.addComponent(component);
+        if (container instanceof WidgetPane) {
+          // Set the size and position in the widget pane
+          // Does not apply to layouts, since they do not necessarily support this behavior
+          GridPoint position = componentModel.getPreferredPosition();
+          if (position != null) {
+            WidgetPane widgetPane = (WidgetPane) container;
+            TileSize size = componentModel.getPreferredSize();
+            if (size != null) {
+              widgetPane.addComponent(component, position, size);
+            } else {
+              widgetPane.addComponent(component, position);
+            }
+          } else {
+            container.addComponent(component);
+          }
+        } else {
+          container.addComponent(component);
+        }
         proceduralComponents.put(componentModel, component);
       }
       applySettings(component, componentModel.getProperties());

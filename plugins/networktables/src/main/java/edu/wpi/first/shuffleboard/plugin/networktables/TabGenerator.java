@@ -1,15 +1,20 @@
 package edu.wpi.first.shuffleboard.plugin.networktables;
 
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
+import edu.wpi.first.shuffleboard.api.tab.model.ComponentModel;
 import edu.wpi.first.shuffleboard.api.tab.model.LayoutModel;
 import edu.wpi.first.shuffleboard.api.tab.model.ParentModel;
 import edu.wpi.first.shuffleboard.api.tab.model.TabModel;
 import edu.wpi.first.shuffleboard.api.tab.model.TabStructure;
+import edu.wpi.first.shuffleboard.api.tab.model.WidgetModel;
+import edu.wpi.first.shuffleboard.api.util.GridPoint;
+import edu.wpi.first.shuffleboard.api.widget.TileSize;
 import edu.wpi.first.shuffleboard.plugin.networktables.sources.NetworkTableSource;
 
 import edu.wpi.first.networktables.EntryNotification;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.tables.ITable;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -46,8 +51,8 @@ final class TabGenerator {
       tabs.dirty();
     }, 0xFF);
 
-    metadataListener = inst.addEntryListener("/Shuffleboard/.metadata/", this::metadataChanged, 0xFF);
-    dataListener = inst.addEntryListener("/Shuffleboard", this::dataChanged, 0xFF);
+    metadataListener = inst.addEntryListener("/Shuffleboard/.metadata/", this::metadataChanged, 23);
+    dataListener = inst.addEntryListener("/Shuffleboard", this::dataChanged, 7);
   }
 
   /**
@@ -82,6 +87,24 @@ final class TabGenerator {
         return;
       }
       tab.getChild(real).setDisplayType(preferredComponentType);
+    }
+    if (name.endsWith("Size")) {
+      String real = realHierarchy.get(realHierarchy.size() - 2);
+      if (tab.getChild(real) == null) {
+        // No component yet
+        return;
+      }
+      double[] size = inst.getEntry(name).getDoubleArray(new double[]{0, 0});
+      tab.getChild(real).setPreferredSize(new TileSize((int) size[0], (int) size[1]));
+    }
+    if (name.endsWith("Position")) {
+      String real = realHierarchy.get(realHierarchy.size() - 2);
+      if (tab.getChild(real) == null) {
+        // No component yet
+        return;
+      }
+      double[] pos = inst.getEntry(name).getDoubleArray(new double[]{0, 0});
+      tab.getChild(real).setPreferredPosition(new GridPoint((int) pos[0], (int) pos[1]));
     }
     if (name.matches("^.+/Properties/[^/]+$")) {
       String real = realHierarchy.get(realHierarchy.size() - 3);
@@ -145,17 +168,20 @@ final class TabGenerator {
             break;
           case "ShuffleboardLayout":
             LayoutModel layout = parent.getLayout(path, table.getEntry(".layout_type").getString(null));
+            setSizeAndPosition(path, layout);
             layout.setProperties(properties(path));
             parent = layout;
             break;
           default:
             end = true;
-            parent.getOrCreate(path, sourceForPath(path), preferredComponent(path, type), properties(path));
+            WidgetModel widget = parent.getOrCreate(path, sourceForPath(path), preferredComponent(path, type), properties(path));
+            setSizeAndPosition(path, widget);
             break;
         }
       } else if (index > 1) {
         end = true;
-        parent.getOrCreate(path, sourceForPath(path), preferredComponent(path, null), properties(path));
+        WidgetModel widget = parent.getOrCreate(path, sourceForPath(path), preferredComponent(path, null), properties(path));
+        setSizeAndPosition(path, widget);
       }
       index++;
       if (end) {
@@ -218,5 +244,21 @@ final class TabGenerator {
       }
     }
     return props;
+  }
+
+  private void setSizeAndPosition(String path, ComponentModel component) {
+    NetworkTable metaTable = metaTable(path);
+    if (metaTable.containsKey("Size")) {
+      double[] size = metaTable.getEntry("Size").getDoubleArray(new double[0]);
+      if (size.length == 2 && size[0] != 0 && size[1] != 0) {
+        component.setPreferredSize(new TileSize((int) size[0], (int) size[1]));
+      }
+    }
+    if (metaTable.containsKey("Position")) {
+      double[] pos = metaTable.getEntry("Position").getDoubleArray(new double[0]);
+      if (pos.length == 2 && pos[0] != 0 && pos[1] != 0) {
+        component.setPreferredPosition(new GridPoint((int) pos[0], (int) pos[1]));
+      }
+    }
   }
 }

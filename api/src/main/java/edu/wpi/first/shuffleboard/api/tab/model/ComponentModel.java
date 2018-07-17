@@ -1,5 +1,8 @@
 package edu.wpi.first.shuffleboard.api.tab.model;
 
+import edu.wpi.first.shuffleboard.api.util.GridPoint;
+import edu.wpi.first.shuffleboard.api.widget.TileSize;
+
 /**
  * Represents a single component in Shuffleboard. This can be either a widget or a layout.
  */
@@ -35,5 +38,13 @@ public interface ComponentModel extends PropertyHolder, Titled {
    * retain the same child components.
    */
   void setDisplayType(String displayType);
+
+  void setPreferredPosition(GridPoint point);
+
+  GridPoint getPreferredPosition();
+
+  void setPreferredSize(TileSize size);
+
+  TileSize getPreferredSize();
 
 }
