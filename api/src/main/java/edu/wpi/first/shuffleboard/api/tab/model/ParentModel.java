@@ -1,6 +1,9 @@
 package edu.wpi.first.shuffleboard.api.tab.model;
 
+import edu.wpi.first.shuffleboard.api.sources.DataSource;
+
 import java.util.Map;
+import java.util.function.Supplier;
 
 /**
  * A parent contains child components.
@@ -34,26 +37,31 @@ public interface ParentModel {
   ComponentModel getChild(String path);
 
   /**
-   * Gets the child with the given path, creating it if it does not already exist. The existing child, if present,
-   * will have its display type and properties updated.
+   * Gets the child widget with the given path, creating it if it does not already exist. The existing widget,
+   * if present, will have its display type and properties updated.
    *
-   * @param path        the full path to th child
-   * @param type        the type of the child to create. Only used if no child exists with the given path
-   * @param displayType the display type of the child
-   * @param properties  the properties of the child
+   * @param path        the full path to the child widget
+   * @param displayType the display type of the widget
+   * @param properties  the properties of the widget
    *
-   * @return the child
+   * @return the widget
+   *
+   * @throws IllegalArgumentException if the component specified by the given path already exists and is not a widget
    */
-  default ComponentModel getOrCreate(String path, String type, String displayType, Map<String, Object> properties) {
-    if (getChild(path) == null) {
-      ComponentModelImpl component = new ComponentModelImpl(path, this, type, displayType, properties);
-      addChild(component);
+  default WidgetModel getOrCreate(String path, Supplier<? extends DataSource<?>> sourceSupplier, String displayType, Map<String, Object> properties) {
+    ComponentModel existingChild = getChild(path);
+    if (existingChild == null) {
+      WidgetModel widget = new WidgetModelImpl(path, this, sourceSupplier, displayType, properties);
+      addChild(widget);
+      return widget;
     } else {
-      ComponentModel child = getChild(path);
-      child.setDisplayType(displayType);
-      child.setProperties(properties);
+      if (!(existingChild instanceof WidgetModel)) {
+        throw new IllegalArgumentException("The child specified by the path '" + path + "' is not a widget");
+      }
+      existingChild.setDisplayType(displayType);
+      existingChild.setProperties(properties);
+      return (WidgetModel) existingChild;
     }
-    return getChild(path);
   }
 
   /**

@@ -3,9 +3,11 @@ package edu.wpi.first.shuffleboard.app.components;
 import edu.wpi.first.shuffleboard.api.tab.model.ComponentModel;
 import edu.wpi.first.shuffleboard.api.tab.model.ParentModel;
 import edu.wpi.first.shuffleboard.api.tab.model.TabModel;
+import edu.wpi.first.shuffleboard.api.tab.model.WidgetModel;
 import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.ComponentContainer;
 import edu.wpi.first.shuffleboard.api.widget.Components;
+import edu.wpi.first.shuffleboard.api.widget.Widget;
 
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -59,6 +61,9 @@ public class ProcedurallyDefinedTab extends DashboardTab {
       if (component == null) {
         component = componentFor(componentModel);
         component.setTitle(componentModel.getTitle());
+        if (componentModel instanceof WidgetModel) {
+          ((Widget) component).addSource(((WidgetModel) componentModel).getDataSource());
+        }
         container.addComponent(component);
         proceduralComponents.put(componentModel, component);
       }
@@ -70,7 +75,6 @@ public class ProcedurallyDefinedTab extends DashboardTab {
   }
 
   private Component componentFor(ComponentModel model) {
-    System.out.println("Getting component for " + model.getPath());
     return Components.getDefault().createComponent(model.getDisplayType())
         .orElseThrow(() -> new IllegalStateException("No available component for " + model.getDisplayType()));
   }

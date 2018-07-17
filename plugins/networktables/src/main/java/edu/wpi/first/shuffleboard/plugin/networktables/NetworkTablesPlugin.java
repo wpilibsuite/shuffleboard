@@ -7,6 +7,7 @@ import edu.wpi.first.shuffleboard.api.plugin.Plugin;
 import edu.wpi.first.shuffleboard.api.prefs.FlushableProperty;
 import edu.wpi.first.shuffleboard.api.prefs.Group;
 import edu.wpi.first.shuffleboard.api.prefs.Setting;
+import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
 import edu.wpi.first.shuffleboard.api.tab.model.LayoutModel;
@@ -17,6 +18,7 @@ import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.api.util.PreferencesUtils;
 import edu.wpi.first.shuffleboard.api.widget.ComponentType;
 import edu.wpi.first.shuffleboard.api.widget.WidgetType;
+import edu.wpi.first.shuffleboard.plugin.networktables.sources.NetworkTableSource;
 import edu.wpi.first.shuffleboard.plugin.networktables.sources.NetworkTableSourceType;
 
 import com.google.common.collect.ImmutableList;
@@ -26,10 +28,10 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.NetworkTablesJNI;
 
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 
@@ -41,7 +43,7 @@ import javafx.beans.value.ChangeListener;
 @Description(
     group = "edu.wpi.first.shuffleboard",
     name = "NetworkTables",
-    version = "1.0.1",
+    version = "1.0.2",
     summary = "Provides sources and widgets for NetworkTables"
 )
 public class NetworkTablesPlugin extends Plugin {
@@ -112,7 +114,6 @@ public class NetworkTablesPlugin extends Plugin {
       for (String tabName : tabNames) {
         tabs.getTab(tabName);
       }
-      System.out.println("Tabs changed: " + Arrays.toString(tabNames));
       tabs.dirty();
     }, 0xFF);
 
@@ -120,15 +121,11 @@ public class NetworkTablesPlugin extends Plugin {
       String name = event.name;
       List<String> metaHierarchy = NetworkTable.getHierarchy(name);
       List<String> realHierarchy = NetworkTable.getHierarchy(realPath(name));
-      System.out.println(realHierarchy.get(2));
       TabModel tab = tabs.getTab(NetworkTable.basenameKey(realHierarchy.get(2)));
       if (name.endsWith("/PreferredComponent")) {
         String real = realHierarchy.get(realHierarchy.size() - 2);
-        System.out.println(real);
         String preferredComponentType = event.getEntry().getValue().getString();
-        System.out.println("Updating " + real + " to use " + preferredComponentType);
         if (tab.getChild(real) == null) {
-          System.out.println("  No component yet");
           return;
         }
         tab.getChild(real).setDisplayType(preferredComponentType);
@@ -139,7 +136,6 @@ public class NetworkTablesPlugin extends Plugin {
         NetworkTable propsTable = inst.getTable(propsTableName);
         Map<String, Object> properties = propsTable.getKeys()
             .stream()
-            .peek(System.out::println)
             .collect(Collectors.toMap(t -> t, k -> propsTable.getEntry(k).getValue().getValue()));
         if (NetworkTable.basenameKey(real).equals(tab.getTitle())) {
           tab.setProperties(properties);
@@ -164,17 +160,15 @@ public class NetworkTablesPlugin extends Plugin {
       }
       List<String> hierarchy = NetworkTable.getHierarchy(event.name);
       if (hierarchy.size() < 3) {
-        System.out.println("Not enough data: " + event.name);
+        // Not enough data
         return;
       }
       if (NetworkTable.basenameKey(event.name).startsWith(".")) {
-        System.out.println("Metadata changed, don't care: " + event.name);
         return;
       }
-      TabModel tab = tabs.getTab(NetworkTable.basenameKey(hierarchy.get(2))); // 0='/', 1='/Shuffleboard', 2='/Shuffleboard/<Tab>'
+      // 0='/', 1='/Shuffleboard', 2='/Shuffleboard/<Tab>'
+      TabModel tab = tabs.getTab(NetworkTable.basenameKey(hierarchy.get(2)));
       ParentModel parent = tab;
-      System.out.println("----------------");
-      System.out.println(hierarchy);
       int index = 0;
       boolean end = false;
       for (String path : hierarchy) {
@@ -183,32 +177,26 @@ public class NetworkTablesPlugin extends Plugin {
           index++;
           continue;
         }
-        System.out.println(path);
         NetworkTable table = inst.getTable(path);
         if (table.getKeys().contains(".type")) {
           String type = table.getEntry(".type").getString(null);
           switch (type) {
             case "ShuffleboardTab":
-              System.out.println("Tab changed: " + path);
               tab.setProperties(properties(path));
               break;
             case "ShuffleboardLayout":
-              System.out.println("Layout changed: " + path);
               LayoutModel layout = parent.getLayout(path, table.getEntry(".layout_type").getString(null));
               layout.setProperties(properties(path));
               parent = layout;
               break;
             default:
-              System.out.println("Something else changed: " + path);
-              System.out.println("  (type = " + type + ")");
               end = true;
-              parent.getOrCreate(path, "Widget", preferredComponent(path, type), properties(path));
+              parent.getOrCreate(path, sourceForPath(path), preferredComponent(path, type), properties(path));
               break;
           }
         } else if (index > 1) {
-          System.out.println("Something else changed: " + path);
           end = true;
-          parent.getOrCreate(path, "Widget", preferredComponent(path, null), properties(path));
+          parent.getOrCreate(path, sourceForPath(path), preferredComponent(path, null), properties(path));
         }
         index++;
         if (end) {
@@ -220,6 +208,10 @@ public class NetworkTablesPlugin extends Plugin {
 
     serverChangeListener.changed(null, null, serverId.get());
     serverId.addListener(serverChangeListener);
+  }
+
+  private Supplier<? extends DataSource<?>> sourceForPath(String path) {
+    return () -> NetworkTableSource.forKey(path);
   }
 
   private NetworkTable metaTable(String dataTable) {
