@@ -40,7 +40,6 @@ public class DashboardTabPane extends TabPane {
 
   private final StructureChangeListener structureChangeListener = tabs -> {
     FxUtils.runOnFxThread(() -> {
-      tabs.printStructure();
       Map<TabModel, ProcedurallyDefinedTab> realTabs = pluginTabs.computeIfAbsent(tabs, __ -> new WeakHashMap<>());
       for (TabModel model : tabs.getTabs().values()) {
         ProcedurallyDefinedTab tab = realTabs.computeIfAbsent(model, ProcedurallyDefinedTab::new);

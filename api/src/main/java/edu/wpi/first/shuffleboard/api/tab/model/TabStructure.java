@@ -49,45 +49,10 @@ public final class TabStructure {
   }
 
   public void dirty() {
-    System.out.println("Structure changed, firing listeners");
     synchronized (structureChangeListeners) {
       for (StructureChangeListener listener : structureChangeListeners) {
         listener.structureChanged(this);
       }
     }
   }
-
-  /**
-   * Prints the structure (temporary).
-   */
-  public void printStructure() {
-    System.out.println("Tabs");
-    for (TabModel tab : tabs.values()) {
-      System.out.println("  " + tab.getTitle());
-      System.out.println("    Properties: " + tab.getProperties());
-      System.out.println("    Children:");
-      for (ComponentModel child : tab.getChildren().values()) {
-        printChild("      ", child);
-      }
-    }
-  }
-
-  private void printChild(String indent, ComponentModel child) {
-    System.out.println(indent + child.getPath().substring(child.getPath().lastIndexOf('/') + 1));
-    indent += "  ";
-    System.out.println(indent + "Properties: " + child.getProperties());
-    System.out.println(indent + "Display type: " + child.getDisplayType());
-    System.out.println(indent + "Type: " + child.getType());
-    if (child instanceof LayoutModel) {
-      printParent(indent, (LayoutModel) child);
-    }
-  }
-
-  private void printParent(String indent, LayoutModel layout) {
-    System.out.println(indent + "Children:");
-    for (ComponentModel child : layout.getChildren().values()) {
-      printChild(indent + "  ", child);
-    }
-  }
-
 }
