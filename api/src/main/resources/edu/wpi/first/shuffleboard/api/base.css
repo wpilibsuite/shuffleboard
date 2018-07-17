@@ -14,7 +14,8 @@
  ******************************************************************************/
 .root {
     -fx-font-family: "Roboto";
-    -procedurally-defined-tab-color: derive(-swatch-500, -25%);
+    -procedurally-defined-tab-color: derive(-swatch-500, -12%);
+    -procedurally-defined-tab-text-color: yellow;
 }
 
 /*******************************************************************************
@@ -100,7 +101,7 @@
 
 .dashboard-tabs .procedurally-defined-tab .text-field,
 .dashboard-tabs .procedurally-defined-tab .label {
-    /*-fx-text-fill: #111;*/
+    -fx-text-fill: -procedurally-defined-tab-text-color;
 }
 
 .dashboard-tabs .procedurally-defined-tab {
@@ -114,12 +115,11 @@
 }
 
 .dashboard-tabs .procedurally-defined-tab:selected .tab-label {
-    -fx-border-color: #DDDDDD;
+    -fx-border-color: -procedurally-defined-tab-text-color;
 }
 
 .dashboard-tabs .procedurally-defined-tab:selected .tab-close-button {
-    /*-fx-fill: #111;*/
-    /*-fx-background-color: #111;*/
+    -fx-background-color: -procedurally-defined-tab-text-color;
 }
 
 /*******************************************************************************
