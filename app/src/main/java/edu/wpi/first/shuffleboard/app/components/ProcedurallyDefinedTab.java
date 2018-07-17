@@ -4,6 +4,8 @@ import edu.wpi.first.shuffleboard.api.tab.model.ComponentModel;
 import edu.wpi.first.shuffleboard.api.tab.model.ParentModel;
 import edu.wpi.first.shuffleboard.api.tab.model.TabModel;
 import edu.wpi.first.shuffleboard.api.tab.model.WidgetModel;
+import edu.wpi.first.shuffleboard.api.util.Debouncer;
+import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.GridPoint;
 import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.ComponentContainer;
@@ -11,10 +13,10 @@ import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.api.widget.TileSize;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 
+import java.time.Duration;
 import java.util.Map;
 import java.util.WeakHashMap;
 
-import javafx.application.Platform;
 import javafx.beans.property.Property;
 
 /**
@@ -26,6 +28,7 @@ public class ProcedurallyDefinedTab extends DashboardTab {
   private boolean deferPopulation = false; // NOPMD
 
   private final Map<ComponentModel, Component> proceduralComponents = new WeakHashMap<>();
+  private final Debouncer populateDebouncer = new Debouncer(() -> FxUtils.runOnFxThread(this::populate), Duration.ofMillis(50));
 
   public ProcedurallyDefinedTab(TabModel model) {
     super(model.getTitle());
@@ -43,6 +46,11 @@ public class ProcedurallyDefinedTab extends DashboardTab {
     // NOP
   }
 
+  @Override
+  Debouncer getPopulateDebouncer() {
+    return populateDebouncer;
+  }
+
   public void populate() {
     if (getTabPane() == null) {
       // No longer in the scene; bail
@@ -55,14 +63,14 @@ public class ProcedurallyDefinedTab extends DashboardTab {
     if (getWidgetPane().getScene() == null || getWidgetPane().getParent() == null) {
       // Defer until the pane is visible and is laid out in the scene
       deferPopulation = true;
-      Platform.runLater(this::populate);
+      populateDebouncer.run();
       return;
     }
     if (deferPopulation) {
       // Defer one last time; this method tends to trigger before row/column bindings on the widget pane
       // This makes sure the pane is properly sized before populating it
       deferPopulation = false;
-      Platform.runLater(this::populate);
+      populateDebouncer.run();
       return;
     }
     populateLayout(model, getWidgetPane());

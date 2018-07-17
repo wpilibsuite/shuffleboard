@@ -11,10 +11,10 @@ import edu.wpi.first.shuffleboard.api.util.GridPoint;
 import edu.wpi.first.shuffleboard.api.widget.TileSize;
 import edu.wpi.first.shuffleboard.plugin.networktables.sources.NetworkTableSource;
 
+import edu.wpi.first.networktables.EntryListenerFlags;
 import edu.wpi.first.networktables.EntryNotification;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.wpilibj.tables.ITable;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -51,8 +51,10 @@ final class TabGenerator {
       tabs.dirty();
     }, 0xFF);
 
-    metadataListener = inst.addEntryListener("/Shuffleboard/.metadata/", this::metadataChanged, 23);
-    dataListener = inst.addEntryListener("/Shuffleboard", this::dataChanged, 7);
+    metadataListener = inst.addEntryListener("/Shuffleboard/.metadata/", this::metadataChanged,
+        EntryListenerFlags.kImmediate | EntryListenerFlags.kNew | EntryListenerFlags.kUpdate);
+    dataListener = inst.addEntryListener("/Shuffleboard", this::dataChanged,
+        EntryListenerFlags.kImmediate | EntryListenerFlags.kNew);
   }
 
   /**
@@ -94,8 +96,10 @@ final class TabGenerator {
         // No component yet
         return;
       }
-      double[] size = inst.getEntry(name).getDoubleArray(new double[]{0, 0});
-      tab.getChild(real).setPreferredSize(new TileSize((int) size[0], (int) size[1]));
+      double[] size = inst.getEntry(name).getDoubleArray(new double[0]);
+      if (size.length == 2) {
+        tab.getChild(real).setPreferredSize(new TileSize((int) size[0], (int) size[1]));
+      }
     }
     if (name.endsWith("Position")) {
       String real = realHierarchy.get(realHierarchy.size() - 2);
@@ -103,8 +107,10 @@ final class TabGenerator {
         // No component yet
         return;
       }
-      double[] pos = inst.getEntry(name).getDoubleArray(new double[]{0, 0});
-      tab.getChild(real).setPreferredPosition(new GridPoint((int) pos[0], (int) pos[1]));
+      double[] pos = inst.getEntry(name).getDoubleArray(new double[0]);
+      if (pos.length == 2) {
+        tab.getChild(real).setPreferredPosition(new GridPoint((int) pos[0], (int) pos[1]));
+      }
     }
     if (name.matches("^.+/Properties/[^/]+$")) {
       String real = realHierarchy.get(realHierarchy.size() - 3);
@@ -250,13 +256,13 @@ final class TabGenerator {
     NetworkTable metaTable = metaTable(path);
     if (metaTable.containsKey("Size")) {
       double[] size = metaTable.getEntry("Size").getDoubleArray(new double[0]);
-      if (size.length == 2 && size[0] != 0 && size[1] != 0) {
+      if (size.length == 2) {
         component.setPreferredSize(new TileSize((int) size[0], (int) size[1]));
       }
     }
     if (metaTable.containsKey("Position")) {
       double[] pos = metaTable.getEntry("Position").getDoubleArray(new double[0]);
-      if (pos.length == 2 && pos[0] != 0 && pos[1] != 0) {
+      if (pos.length == 2) {
         component.setPreferredPosition(new GridPoint((int) pos[0], (int) pos[1]));
       }
     }
