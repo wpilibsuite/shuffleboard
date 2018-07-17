@@ -30,6 +30,16 @@ public class ProcedurallyDefinedTab extends DashboardTab {
     this.model = model;
   }
 
+  @Override
+  public boolean isAutoPopulate() {
+    return false;
+  }
+
+  @Override
+  public void setAutoPopulate(boolean autoPopulate) {
+    // NOP
+  }
+
   public void populate() {
     if (getTabPane() == null) {
       // No longer in the scene; bail

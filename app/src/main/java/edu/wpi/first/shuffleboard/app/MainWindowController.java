@@ -184,6 +184,7 @@ public class MainWindowController {
     // Attempt to close the main window. This lets window closing handlers run. Calling System.exit() or Platform.exit()
     // will more-or-less immediately terminate the application without calling these handlers.
     FxUtils.requestClose(root.getScene().getWindow());
+    dashboard.getTabs().clear();
   }
 
   private DashboardData getData() {
