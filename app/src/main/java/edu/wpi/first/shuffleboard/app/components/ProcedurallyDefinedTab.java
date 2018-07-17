@@ -28,6 +28,7 @@ public class ProcedurallyDefinedTab extends DashboardTab {
   public ProcedurallyDefinedTab(TabModel model) {
     super(model.getTitle());
     this.model = model;
+    getStyleClass().add("procedurally-defined-tab");
   }
 
   @Override

@@ -14,6 +14,7 @@
  ******************************************************************************/
 .root {
     -fx-font-family: "Roboto";
+    -procedurally-defined-tab-color: derive(-swatch-500, -25%);
 }
 
 /*******************************************************************************
@@ -61,7 +62,19 @@
 }
 
 .tab-header-area {
-    -fx-padding: 2px;
+    -fx-padding: 0;
+}
+
+.tab {
+    -fx-background-color: transparent;
+    -fx-align: center;
+    -fx-padding: 4;
+    -fx-border-radius: 0;
+    -fx-background-radius: 0;
+}
+
+.tab .tab-close-button {
+    -fx-padding: 0 0 0 10px;
 }
 
 .tab:hover {
@@ -77,14 +90,36 @@
     -fx-highlight-fill: -swatch-200;
 }
 
-.tab {
-    -fx-background-color: transparent;
-    -fx-border-color: transparent;
-    -fx-align: center;
+.dashboard-tabs .tab {
+    -fx-padding: 4 12 4 16;
 }
 
-.tab .tab-close-button {
-    -fx-padding: 0 0 0 10px;
+.dashboard-tabs .tab:selected {
+    -fx-padding: 4 12 4 0;
+}
+
+.dashboard-tabs .procedurally-defined-tab .text-field,
+.dashboard-tabs .procedurally-defined-tab .label {
+    /*-fx-text-fill: #111;*/
+}
+
+.dashboard-tabs .procedurally-defined-tab {
+    -fx-background-color: -procedurally-defined-tab-color;
+    -fx-border-width: 1;
+    -fx-border-color: -procedurally-defined-tab-color;
+}
+
+.dashboard-tabs .procedurally-defined-tab .tab-label {
+    -fx-border-color: -procedurally-defined-tab-color;
+}
+
+.dashboard-tabs .procedurally-defined-tab:selected .tab-label {
+    -fx-border-color: #DDDDDD;
+}
+
+.dashboard-tabs .procedurally-defined-tab:selected .tab-close-button {
+    /*-fx-fill: #111;*/
+    /*-fx-background-color: #111;*/
 }
 
 /*******************************************************************************

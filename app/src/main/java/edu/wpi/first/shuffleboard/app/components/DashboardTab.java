@@ -123,6 +123,8 @@ public class DashboardTab extends Tab implements HandledTab, Populatable {
       // tabPane.getTabs().size() - 2 because -1 is the adder tab, which we do not want to select
       tabPane.getSelectionModel().select(Math.min(index + 1, tabPane.getTabs().size() - 2));
     });
+
+    getStyleClass().add("dashboard-tab");
   }
 
   /**
