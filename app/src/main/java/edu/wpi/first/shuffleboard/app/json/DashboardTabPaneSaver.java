@@ -4,6 +4,7 @@ import edu.wpi.first.shuffleboard.api.json.AnnotatedTypeAdapter;
 import edu.wpi.first.shuffleboard.api.json.ElementTypeAdapter;
 import edu.wpi.first.shuffleboard.app.components.DashboardTab;
 import edu.wpi.first.shuffleboard.app.components.DashboardTabPane;
+import edu.wpi.first.shuffleboard.app.components.ProcedurallyDefinedTab;
 import edu.wpi.first.shuffleboard.app.components.WidgetPane;
 
 import com.google.gson.JsonArray;
@@ -26,7 +27,7 @@ public class DashboardTabPaneSaver implements ElementTypeAdapter<DashboardTabPan
     JsonArray tabs = new JsonArray();
 
     for (Tab t : src.getTabs()) {
-      if (t instanceof DashboardTab) {
+      if (t instanceof DashboardTab && !(t instanceof ProcedurallyDefinedTab)) {
         DashboardTab tab = (DashboardTab) t;
 
         JsonObject object = new JsonObject();
