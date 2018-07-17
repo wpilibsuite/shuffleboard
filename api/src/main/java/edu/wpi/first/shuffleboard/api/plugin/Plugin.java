@@ -241,7 +241,8 @@ public class Plugin {
   }
 
   /**
-   * Gets a tab structure for procedurally generated tabs.
+   * Gets a tab structure for procedurally generated tabs. Plugins are responsible for updating the structure
+   * internally; Shuffleboard will detect the changes and update the UI appropriately.
    */
   public TabStructure getTabs() {
     return null;

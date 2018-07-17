@@ -31,6 +31,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
+import java.util.stream.Collectors;
 
 import javafx.beans.InvalidationListener;
 import javafx.beans.property.SimpleStringProperty;
@@ -117,11 +118,13 @@ public class NetworkTablesPlugin extends Plugin {
 
     inst.addEntryListener("/Shuffleboard/.metadata/", event -> {
       String name = event.name;
+      List<String> metaHierarchy = NetworkTable.getHierarchy(name);
+      List<String> realHierarchy = NetworkTable.getHierarchy(realPath(name));
+      System.out.println(realHierarchy.get(2));
+      TabModel tab = tabs.getTab(NetworkTable.basenameKey(realHierarchy.get(2)));
       if (name.endsWith("/PreferredComponent")) {
-        List<String> hierarchy = NetworkTable.getHierarchy(realPath(name));
-        String real = hierarchy.get(hierarchy.size() - 2);
+        String real = realHierarchy.get(realHierarchy.size() - 2);
         System.out.println(real);
-        TabModel tab = tabs.getTab(NetworkTable.basenameKey(hierarchy.get(2)));
         String preferredComponentType = event.getEntry().getValue().getString();
         System.out.println("Updating " + real + " to use " + preferredComponentType);
         if (tab.getChild(real) == null) {
@@ -129,6 +132,24 @@ public class NetworkTablesPlugin extends Plugin {
           return;
         }
         tab.getChild(real).setDisplayType(preferredComponentType);
+      }
+      if (name.matches("^.+/Properties/[^/]+$")) {
+        String real = realHierarchy.get(realHierarchy.size() - 3);
+        String propsTableName = metaHierarchy.get(metaHierarchy.size() - 2);
+        NetworkTable propsTable = inst.getTable(propsTableName);
+        Map<String, Object> properties = propsTable.getKeys()
+            .stream()
+            .peek(System.out::println)
+            .collect(Collectors.toMap(t -> t, k -> propsTable.getEntry(k).getValue().getValue()));
+        if (NetworkTable.basenameKey(real).equals(tab.getTitle())) {
+          tab.setProperties(properties);
+        } else {
+          if (tab.getChild(real) == null) {
+            // No component yet to set the properties for. Its properties will be set once it appears
+            return;
+          }
+          tab.getChild(real).setProperties(properties);
+        }
       }
       tabs.dirty();
     }, 0xFF);

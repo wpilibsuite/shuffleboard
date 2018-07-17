@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.WeakHashMap;
 
 import javafx.application.Platform;
+import javafx.beans.property.Property;
 
 /**
  * A dashboard tab that generates its own contents based on an external model.
@@ -30,6 +31,10 @@ public class ProcedurallyDefinedTab extends DashboardTab {
   public void populate() {
     if (getTabPane() == null) {
       // No longer in the scene; bail
+      return;
+    }
+    if (getWidgetPane().getScene() != null && !getWidgetPane().getScene().getWindow().isShowing()) {
+      // Shuffleboard is closing; bail
       return;
     }
     if (getWidgetPane().getScene() == null || getWidgetPane().getParent() == null) {
@@ -54,9 +59,10 @@ public class ProcedurallyDefinedTab extends DashboardTab {
       if (component == null) {
         component = componentFor(componentModel);
         component.setTitle(componentModel.getTitle());
-        proceduralComponents.put(componentModel, component);
         container.addComponent(component);
+        proceduralComponents.put(componentModel, component);
       }
+      applySettings(component, componentModel.getProperties());
       if (componentModel instanceof ParentModel) {
         populateLayout((ParentModel) componentModel, (ComponentContainer) proceduralComponents.get(componentModel));
       }
@@ -67,6 +73,19 @@ public class ProcedurallyDefinedTab extends DashboardTab {
     System.out.println("Getting component for " + model.getPath());
     return Components.getDefault().createComponent(model.getDisplayType())
         .orElseThrow(() -> new IllegalStateException("No available component for " + model.getDisplayType()));
+  }
+
+  private void applySettings(Component component, Map<String, Object> properties) {
+    properties.forEach((name, value) -> {
+      component.getSettings().stream()
+          .map(g -> g.getSettings())
+          .flatMap(l -> l.stream())
+          .forEach(s -> {
+            if (s.getName().equalsIgnoreCase(name)) {
+              ((Property) s.getProperty()).setValue(value);
+            }
+          });
+    });
   }
 
 }

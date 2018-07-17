@@ -79,6 +79,12 @@ public class DashboardTabPane extends TabPane {
         .filter(Objects::nonNull)
         .forEach(structureChangeListener::structureChanged);
 
+    PluginLoader.getDefault().getLoadedPlugins()
+        .stream()
+        .map(Plugin::getTabs)
+        .filter(Objects::nonNull)
+        .forEach(s -> s.addStructureChangeListener(structureChangeListener));
+
     PluginLoader.getDefault().getLoadedPlugins().addListener((SetChangeListener<Plugin>) change -> {
       if (change.wasAdded()) {
         TabStructure customTabs = change.getElementAdded().getTabs();
