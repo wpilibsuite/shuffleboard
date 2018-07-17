@@ -28,7 +28,8 @@ public class ProcedurallyDefinedTab extends DashboardTab {
   private boolean deferPopulation = false; // NOPMD
 
   private final Map<ComponentModel, Component> proceduralComponents = new WeakHashMap<>();
-  private final Debouncer populateDebouncer = new Debouncer(() -> FxUtils.runOnFxThread(this::populate), Duration.ofMillis(50));
+  private final Debouncer populateDebouncer =
+      new Debouncer(() -> FxUtils.runOnFxThread(this::populate), Duration.ofMillis(50));
 
   public ProcedurallyDefinedTab(TabModel model) {
     super(model.getTitle());
@@ -88,18 +89,7 @@ public class ProcedurallyDefinedTab extends DashboardTab {
         if (container instanceof WidgetPane) {
           // Set the size and position in the widget pane
           // Does not apply to layouts, since they do not necessarily support this behavior
-          GridPoint position = componentModel.getPreferredPosition();
-          if (position != null) {
-            WidgetPane widgetPane = (WidgetPane) container;
-            TileSize size = componentModel.getPreferredSize();
-            if (size != null) {
-              widgetPane.addComponent(component, position, size);
-            } else {
-              widgetPane.addComponent(component, position);
-            }
-          } else {
-            container.addComponent(component);
-          }
+          addToWidgetPane((WidgetPane) container, componentModel, component);
         } else {
           container.addComponent(component);
         }
@@ -109,6 +99,20 @@ public class ProcedurallyDefinedTab extends DashboardTab {
       if (componentModel instanceof ParentModel) {
         populateLayout((ParentModel) componentModel, (ComponentContainer) proceduralComponents.get(componentModel));
       }
+    }
+  }
+
+  private void addToWidgetPane(WidgetPane widgetPane, ComponentModel componentModel, Component component) {
+    GridPoint position = componentModel.getPreferredPosition();
+    if (position != null) {
+      TileSize size = componentModel.getPreferredSize();
+      if (size != null) {
+        widgetPane.addComponent(component, position, size);
+      } else {
+        widgetPane.addComponent(component, position);
+      }
+    } else {
+      widgetPane.addComponent(component);
     }
   }
 
