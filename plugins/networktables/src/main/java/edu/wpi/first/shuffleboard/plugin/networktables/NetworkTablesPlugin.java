@@ -7,33 +7,24 @@ import edu.wpi.first.shuffleboard.api.plugin.Plugin;
 import edu.wpi.first.shuffleboard.api.prefs.FlushableProperty;
 import edu.wpi.first.shuffleboard.api.prefs.Group;
 import edu.wpi.first.shuffleboard.api.prefs.Setting;
-import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
-import edu.wpi.first.shuffleboard.api.tab.model.LayoutModel;
-import edu.wpi.first.shuffleboard.api.tab.model.ParentModel;
-import edu.wpi.first.shuffleboard.api.tab.model.TabModel;
 import edu.wpi.first.shuffleboard.api.tab.model.TabStructure;
 import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.api.util.PreferencesUtils;
 import edu.wpi.first.shuffleboard.api.widget.ComponentType;
 import edu.wpi.first.shuffleboard.api.widget.WidgetType;
-import edu.wpi.first.shuffleboard.plugin.networktables.sources.NetworkTableSource;
 import edu.wpi.first.shuffleboard.plugin.networktables.sources.NetworkTableSourceType;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
-import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.NetworkTablesJNI;
 
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
 import java.util.prefs.Preferences;
-import java.util.stream.Collectors;
 
 import javafx.beans.InvalidationListener;
 import javafx.beans.property.SimpleStringProperty;
@@ -55,7 +46,7 @@ public class NetworkTablesPlugin extends Plugin {
   private final StringProperty serverId = new SimpleStringProperty(this, "server", "localhost");
   private final InvalidationListener serverSaver = __ -> PreferencesUtils.save(serverId, preferences);
 
-  private TabStructure tabs = new TabStructure();
+  private final TabGenerator tabGenerator = new TabGenerator(inst);
 
   private final ChangeListener<String> serverChangeListener = (observable, oldValue, newValue) -> {
     String[] value = newValue.split(":");
@@ -107,139 +98,15 @@ public class NetworkTablesPlugin extends Plugin {
           });
     }, 0xFF);
 
-    // Make sure all tabs exist if they're defined, even if they're empty
-    NetworkTable rootMetaTable = inst.getTable("/Shuffleboard/.metadata");
-    rootMetaTable.addEntryListener("Tabs", (table, key, entry, value, flags) -> {
-      String[] tabNames = value.getStringArray();
-      for (String tabName : tabNames) {
-        tabs.getTab(tabName);
-      }
-      tabs.dirty();
-    }, 0xFF);
-
-    inst.addEntryListener("/Shuffleboard/.metadata/", event -> {
-      String name = event.name;
-      List<String> metaHierarchy = NetworkTable.getHierarchy(name);
-      List<String> realHierarchy = NetworkTable.getHierarchy(realPath(name));
-      TabModel tab = tabs.getTab(NetworkTable.basenameKey(realHierarchy.get(2)));
-      if (name.endsWith("/PreferredComponent")) {
-        String real = realHierarchy.get(realHierarchy.size() - 2);
-        String preferredComponentType = event.getEntry().getValue().getString();
-        if (tab.getChild(real) == null) {
-          return;
-        }
-        tab.getChild(real).setDisplayType(preferredComponentType);
-      }
-      if (name.matches("^.+/Properties/[^/]+$")) {
-        String real = realHierarchy.get(realHierarchy.size() - 3);
-        String propsTableName = metaHierarchy.get(metaHierarchy.size() - 2);
-        NetworkTable propsTable = inst.getTable(propsTableName);
-        Map<String, Object> properties = propsTable.getKeys()
-            .stream()
-            .collect(Collectors.toMap(t -> t, k -> propsTable.getEntry(k).getValue().getValue()));
-        if (NetworkTable.basenameKey(real).equals(tab.getTitle())) {
-          tab.setProperties(properties);
-        } else {
-          if (tab.getChild(real) == null) {
-            // No component yet to set the properties for. Its properties will be set once it appears
-            return;
-          }
-          tab.getChild(real).setProperties(properties);
-        }
-      }
-      tabs.dirty();
-    }, 0xFF);
-
-    inst.addEntryListener("/Shuffleboard", event -> {
-      // Make sure the tabs exist, and in the order specified
-      for (String tabName : inst.getEntry("/Shuffleboard/.metadata/Tabs").getStringArray(null)) {
-        tabs.getTab(tabName);
-      }
-      if (event.name.startsWith("/Shuffleboard/.metadata/")) {
-        return;
-      }
-      List<String> hierarchy = NetworkTable.getHierarchy(event.name);
-      if (hierarchy.size() < 3) {
-        // Not enough data
-        return;
-      }
-      if (NetworkTable.basenameKey(event.name).startsWith(".")) {
-        return;
-      }
-      // 0='/', 1='/Shuffleboard', 2='/Shuffleboard/<Tab>'
-      TabModel tab = tabs.getTab(NetworkTable.basenameKey(hierarchy.get(2)));
-      ParentModel parent = tab;
-      int index = 0;
-      boolean end = false;
-      for (String path : hierarchy) {
-        if (index == 0) {
-          // Skip leading "/"
-          index++;
-          continue;
-        }
-        NetworkTable table = inst.getTable(path);
-        if (table.getKeys().contains(".type")) {
-          String type = table.getEntry(".type").getString(null);
-          switch (type) {
-            case "ShuffleboardTab":
-              tab.setProperties(properties(path));
-              break;
-            case "ShuffleboardLayout":
-              LayoutModel layout = parent.getLayout(path, table.getEntry(".layout_type").getString(null));
-              layout.setProperties(properties(path));
-              parent = layout;
-              break;
-            default:
-              end = true;
-              parent.getOrCreate(path, sourceForPath(path), preferredComponent(path, type), properties(path));
-              break;
-          }
-        } else if (index > 1) {
-          end = true;
-          parent.getOrCreate(path, sourceForPath(path), preferredComponent(path, null), properties(path));
-        }
-        index++;
-        if (end) {
-          break;
-        }
-      }
-      tabs.dirty();
-    }, 0xFF);
+    tabGenerator.start();
 
     serverChangeListener.changed(null, null, serverId.get());
     serverId.addListener(serverChangeListener);
   }
 
-  private Supplier<? extends DataSource<?>> sourceForPath(String path) {
-    return () -> NetworkTableSource.forKey(path);
-  }
-
-  private NetworkTable metaTable(String dataTable) {
-    return inst.getTable(dataTable.replaceFirst("^/Shuffleboard/", "/Shuffleboard/.metadata/"));
-  }
-
-  private String realPath(String metaPath) {
-    return (metaPath.replaceFirst("^/Shuffleboard/.metadata/", "/Shuffleboard/"));
-  }
-
-  private String preferredComponent(String path, String fallback) {
-    return metaTable(path).getEntry("PreferredComponent").getString(fallback);
-  }
-
-  private Map<String, Object> properties(String path) {
-    NetworkTable table = metaTable(path);
-    Map<String, Object> props = new LinkedHashMap<>();
-    if (table.containsSubTable("Properties")) {
-      NetworkTable propsTable = table.getSubTable("Properties");
-      for (String k : propsTable.getKeys()) {
-        props.put(k, propsTable.getEntry(k).getValue().getValue());
-      }
-    }
-    return props;
-  }
-
   @Override
   public void onUnload() {
+    tabGenerator.stop();
     NetworkTablesJNI.removeEntryListener(recorderUid);
     NetworkTableUtils.shutdown(inst);
     serverId.removeListener(serverSaver);
@@ -280,7 +147,7 @@ public class NetworkTablesPlugin extends Plugin {
 
   @Override
   public TabStructure getTabs() {
-    return tabs;
+    return tabGenerator.getStructure();
   }
 
   public String getServerId() {
