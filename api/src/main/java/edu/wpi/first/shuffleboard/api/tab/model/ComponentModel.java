@@ -39,12 +39,26 @@ public interface ComponentModel extends PropertyHolder, Titled {
    */
   void setDisplayType(String displayType);
 
+  /**
+   * Sets the preferred position of this component. If no position is set, or if the position is already occupied,
+   * Shuffleboard will determine an open position in which to place the component.
+   */
   void setPreferredPosition(GridPoint point);
 
+  /**
+   * Gets the preferred position of this component, as specified by {@link #setPreferredPosition}.
+   */
   GridPoint getPreferredPosition();
 
+  /**
+   * Sets the preferred size of this component. If no size is set, then Shuffleboard will use the default size of the
+   * component of the specified display type. Requires {@link #setPreferredPosition the preferred position} to be set.
+   */
   void setPreferredSize(TileSize size);
 
+  /**
+   * Gets the preferred size of this component, as specified by {@link #setPreferredSize}.
+   */
   TileSize getPreferredSize();
 
 }
