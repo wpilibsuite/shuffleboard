@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.app.components;
 
+import edu.wpi.first.shuffleboard.api.prefs.Category;
 import edu.wpi.first.shuffleboard.api.tab.model.ComponentModel;
 import edu.wpi.first.shuffleboard.api.tab.model.LayoutModel;
 import edu.wpi.first.shuffleboard.api.tab.model.ParentModel;
@@ -17,6 +18,7 @@ import edu.wpi.first.shuffleboard.api.widget.Widget;
 import java.time.Duration;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.stream.Collectors;
 
 import javafx.beans.property.Property;
 
@@ -145,4 +147,16 @@ public class ProcedurallyDefinedTab extends DashboardTab {
     });
   }
 
+  @Override
+  public Category getSettings() {
+    // Use the normal settings EXCEPT for autopopulation - there's no point to it!
+    Category allSettings = super.getSettings();
+    return Category.of(
+        allSettings.getName(),
+        allSettings.getSubcategories(),
+        allSettings.getGroups().stream()
+            .filter(g -> !g.getName().equals("Autopopulation"))
+            .collect(Collectors.toList())
+    );
+  }
 }
