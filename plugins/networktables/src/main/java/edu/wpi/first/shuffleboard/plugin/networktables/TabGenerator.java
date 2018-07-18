@@ -52,9 +52,14 @@ final class TabGenerator {
     }, 0xFF);
 
     metadataListener = inst.addEntryListener("/Shuffleboard/.metadata/", this::metadataChanged,
-        EntryListenerFlags.kImmediate | EntryListenerFlags.kNew | EntryListenerFlags.kUpdate);
+        EntryListenerFlags.kImmediate
+            | EntryListenerFlags.kLocal
+            | EntryListenerFlags.kNew
+            | EntryListenerFlags.kUpdate);
     dataListener = inst.addEntryListener("/Shuffleboard", this::dataChanged,
-        EntryListenerFlags.kImmediate | EntryListenerFlags.kNew);
+        EntryListenerFlags.kImmediate
+            | EntryListenerFlags.kLocal
+            | EntryListenerFlags.kNew);
   }
 
   /**
@@ -82,6 +87,8 @@ final class TabGenerator {
     }
     List<String> realHierarchy = NetworkTable.getHierarchy(realPath(name));
     TabModel tab = tabs.getTab(NetworkTable.basenameKey(realHierarchy.get(2)));
+
+    // Component type
     if (name.endsWith("/PreferredComponent")) {
       String real = realHierarchy.get(realHierarchy.size() - 2);
       if (tab.getChild(real) == null) {
@@ -89,6 +96,8 @@ final class TabGenerator {
       }
       tab.getChild(real).setDisplayType(event.getEntry().getValue().getString());
     }
+
+    // Component size
     if (name.endsWith("Size")) {
       String real = realHierarchy.get(realHierarchy.size() - 2);
       if (tab.getChild(real) == null) {
@@ -100,6 +109,8 @@ final class TabGenerator {
         tab.getChild(real).setPreferredSize(new TileSize((int) size[0], (int) size[1]));
       }
     }
+
+    // Component position
     if (name.endsWith("Position")) {
       String real = realHierarchy.get(realHierarchy.size() - 2);
       if (tab.getChild(real) == null) {
@@ -111,6 +122,8 @@ final class TabGenerator {
         tab.getChild(real).setPreferredPosition(new GridPoint((int) pos[0], (int) pos[1]));
       }
     }
+
+    // Component (or tab) properties
     if (name.matches("^.+/Properties/[^/]+$")) {
       String real = realHierarchy.get(realHierarchy.size() - 3);
       String propsTableName = metaHierarchy.get(metaHierarchy.size() - 2);
@@ -128,6 +141,7 @@ final class TabGenerator {
         tab.getChild(real).setProperties(properties);
       }
     }
+
     tabs.dirty();
   }
 
