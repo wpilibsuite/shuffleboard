@@ -173,7 +173,12 @@ final class TabGenerator {
             tab.setProperties(properties(path));
             break;
           case "ShuffleboardLayout":
-            LayoutModel layout = parent.getLayout(path, table.getEntry(".layout_type").getString(null));
+            String layoutType = preferredComponent(path, null);
+            if (layoutType == null) {
+              // No component specified for this layout - its children will be placed in its parent container
+              continue;
+            }
+            LayoutModel layout = parent.getLayout(path, layoutType);
             setSizeAndPosition(path, layout);
             layout.setProperties(properties(path));
             parent = layout;
