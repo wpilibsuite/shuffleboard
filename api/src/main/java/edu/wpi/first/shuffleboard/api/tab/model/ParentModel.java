@@ -48,7 +48,10 @@ public interface ParentModel {
    *
    * @throws IllegalArgumentException if the component specified by the given path already exists and is not a widget
    */
-  default WidgetModel getOrCreate(String path, Supplier<? extends DataSource<?>> sourceSupplier, String displayType, Map<String, Object> properties) {
+  default WidgetModel getOrCreate(String path,
+                                  Supplier<? extends DataSource<?>> sourceSupplier,
+                                  String displayType,
+                                  Map<String, Object> properties) {
     ComponentModel existingChild = getChild(path);
     if (existingChild == null) {
       WidgetModel widget = new WidgetModelImpl(path, this, sourceSupplier, displayType, properties);

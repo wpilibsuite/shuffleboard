@@ -84,11 +84,10 @@ final class TabGenerator {
     TabModel tab = tabs.getTab(NetworkTable.basenameKey(realHierarchy.get(2)));
     if (name.endsWith("/PreferredComponent")) {
       String real = realHierarchy.get(realHierarchy.size() - 2);
-      String preferredComponentType = event.getEntry().getValue().getString();
       if (tab.getChild(real) == null) {
         return;
       }
-      tab.getChild(real).setDisplayType(preferredComponentType);
+      tab.getChild(real).setDisplayType(event.getEntry().getValue().getString());
     }
     if (name.endsWith("Size")) {
       String real = realHierarchy.get(realHierarchy.size() - 2);
@@ -145,7 +144,7 @@ final class TabGenerator {
       // Not enough data
       return;
     }
-    if (NetworkTable.basenameKey(event.name).startsWith(".")) {
+    if (NetworkTable.basenameKey(event.name).charAt(0) == '.') {
       // Metadata changed; we don't need to worry about it
       return;
     }
@@ -185,13 +184,15 @@ final class TabGenerator {
             break;
           default:
             end = true;
-            WidgetModel widget = parent.getOrCreate(path, sourceForPath(path), preferredComponent(path, type), properties(path));
+            WidgetModel widget =
+                parent.getOrCreate(path, sourceForPath(path), preferredComponent(path, type), properties(path));
             setSizeAndPosition(path, widget);
             break;
         }
       } else if (index > 1) {
         end = true;
-        WidgetModel widget = parent.getOrCreate(path, sourceForPath(path), preferredComponent(path, null), properties(path));
+        WidgetModel widget =
+            parent.getOrCreate(path, sourceForPath(path), preferredComponent(path, null), properties(path));
         setSizeAndPosition(path, widget);
       }
       index++;
@@ -227,7 +228,7 @@ final class TabGenerator {
    * @param metaPath the path to the metadata
    */
   private String realPath(String metaPath) {
-    return (metaPath.replaceFirst("^/Shuffleboard/.metadata/", "/Shuffleboard/"));
+    return metaPath.replaceFirst("^/Shuffleboard/.metadata/", "/Shuffleboard/");
   }
 
   /**

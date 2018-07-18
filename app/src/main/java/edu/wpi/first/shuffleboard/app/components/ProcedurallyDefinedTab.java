@@ -1,6 +1,7 @@
 package edu.wpi.first.shuffleboard.app.components;
 
 import edu.wpi.first.shuffleboard.api.tab.model.ComponentModel;
+import edu.wpi.first.shuffleboard.api.tab.model.LayoutModel;
 import edu.wpi.first.shuffleboard.api.tab.model.ParentModel;
 import edu.wpi.first.shuffleboard.api.tab.model.TabModel;
 import edu.wpi.first.shuffleboard.api.tab.model.WidgetModel;
@@ -20,7 +21,8 @@ import java.util.WeakHashMap;
 import javafx.beans.property.Property;
 
 /**
- * A dashboard tab that generates its own contents based on an external model.
+ * A dashboard tab that generates its own contents based on an external model. {@link #populate()} must be called
+ * externally to update the contents of this tab.
  */
 public class ProcedurallyDefinedTab extends DashboardTab {
 
@@ -31,6 +33,11 @@ public class ProcedurallyDefinedTab extends DashboardTab {
   private final Debouncer populateDebouncer =
       new Debouncer(() -> FxUtils.runOnFxThread(this::populate), Duration.ofMillis(50));
 
+  /**
+   * Creates a new procedurally defined tab.
+   *
+   * @param model the backing tab model
+   */
   public ProcedurallyDefinedTab(TabModel model) {
     super(model.getTitle());
     this.model = model;
@@ -52,6 +59,9 @@ public class ProcedurallyDefinedTab extends DashboardTab {
     return populateDebouncer;
   }
 
+  /**
+   * Populates this tab from the tab model.
+   */
   public void populate() {
     if (getTabPane() == null) {
       // No longer in the scene; bail
@@ -96,12 +106,13 @@ public class ProcedurallyDefinedTab extends DashboardTab {
         proceduralComponents.put(componentModel, component);
       }
       applySettings(component, componentModel.getProperties());
-      if (componentModel instanceof ParentModel) {
-        populateLayout((ParentModel) componentModel, (ComponentContainer) proceduralComponents.get(componentModel));
+      if (componentModel instanceof LayoutModel) {
+        populateLayout((LayoutModel) componentModel, (ComponentContainer) proceduralComponents.get(componentModel));
       }
     }
   }
 
+  @SuppressWarnings("PMD.ConfusingTernary")
   private void addToWidgetPane(WidgetPane widgetPane, ComponentModel componentModel, Component component) {
     GridPoint position = componentModel.getPreferredPosition();
     if (position != null) {

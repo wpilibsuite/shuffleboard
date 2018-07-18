@@ -36,18 +36,31 @@ public final class TabStructure {
     return tabs;
   }
 
+  /**
+   * Adds a listener to listen for changes to the tab structure.
+   *
+   * @param listener the listener to add
+   */
   public void addStructureChangeListener(StructureChangeListener listener) {
     synchronized (structureChangeListeners) {
       structureChangeListeners.add(listener);
     }
   }
 
+  /**
+   * Removes a listener from structure changes.
+   *
+   * @param listener the listener to remove
+   */
   public void removeStructureChangeListener(StructureChangeListener listener) {
     synchronized (structureChangeListeners) {
       structureChangeListeners.remove(listener);
     }
   }
 
+  /**
+   * Marks the structure as having changed. This will fire all registered structure change listeners.
+   */
   public void dirty() {
     synchronized (structureChangeListeners) {
       for (StructureChangeListener listener : structureChangeListeners) {
