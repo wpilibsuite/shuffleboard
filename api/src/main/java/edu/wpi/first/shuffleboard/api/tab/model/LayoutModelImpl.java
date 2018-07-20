@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.api.tab.model;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -10,11 +11,11 @@ final class LayoutModelImpl extends ComponentModelImpl implements LayoutModel {
   private final Map<String, ComponentModel> children = new HashMap<>();
 
   LayoutModelImpl(String path, ParentModel parent, String displayType) {
-    this(path, parent, displayType, null);
+    this(path, parent, displayType, Collections.emptyMap());
   }
 
   LayoutModelImpl(String path, ParentModel parent, String displayType, Map<String, Object> properties) {
-    super(path, parent, "ShuffleboardLayout", displayType, properties);
+    super(path, parent, displayType, properties);
   }
 
   @Override

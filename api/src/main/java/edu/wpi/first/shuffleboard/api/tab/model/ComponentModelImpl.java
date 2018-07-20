@@ -3,78 +3,73 @@ package edu.wpi.first.shuffleboard.api.tab.model;
 import edu.wpi.first.shuffleboard.api.util.GridPoint;
 import edu.wpi.first.shuffleboard.api.widget.TileSize;
 
+import java.util.HashMap;
 import java.util.Map;
 
 class ComponentModelImpl implements ComponentModel {
 
   private final String path;
   private final ParentModel parent;
-  private final String type;
   private String displayType;
-  private Map<String, Object> properties;
+  private final Map<String, Object> properties = new HashMap<>();
   private GridPoint preferredPosition;
   private TileSize preferredSize;
 
-  ComponentModelImpl(String path, ParentModel parent, String type, String displayType, Map<String, Object> properties) {
+  ComponentModelImpl(String path, ParentModel parent, String displayType, Map<String, Object> properties) {
     this.path = path;
     this.parent = parent;
-    this.type = type;
     this.displayType = displayType;
-    this.properties = properties;
+    setProperties(properties);
   }
 
   @Override
-  public String getPath() {
+  public final String getPath() {
     return path;
   }
 
   @Override
-  public ParentModel getParent() {
+  public final ParentModel getParent() {
     return parent;
   }
 
   @Override
-  public String getType() {
-    return type;
-  }
-
-  @Override
-  public String getDisplayType() {
+  public final String getDisplayType() {
     return displayType;
   }
 
   @Override
-  public void setDisplayType(String displayType) {
+  public final void setDisplayType(String displayType) {
     this.displayType = displayType;
   }
 
   @Override
-  public Map<String, Object> getProperties() {
+  public final Map<String, Object> getProperties() {
     return properties;
   }
 
   @Override
-  public void setProperties(Map<String, Object> properties) {
-    this.properties = properties;
+  public final void setProperties(Map<String, Object> properties) {
+    this.properties.clear();
+    this.properties.putAll(properties);
   }
 
   @Override
-  public GridPoint getPreferredPosition() {
+  public final GridPoint getPreferredPosition() {
     return preferredPosition;
   }
 
   @Override
-  public void setPreferredPosition(GridPoint preferredPosition) {
+  public final void setPreferredPosition(GridPoint preferredPosition) {
     this.preferredPosition = preferredPosition;
   }
 
   @Override
-  public TileSize getPreferredSize() {
+  public final TileSize getPreferredSize() {
     return preferredSize;
   }
 
   @Override
-  public void setPreferredSize(TileSize preferredSize) {
+  public final void setPreferredSize(TileSize preferredSize) {
     this.preferredSize = preferredSize;
   }
 }

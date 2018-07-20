@@ -13,6 +13,10 @@ public interface ComponentModel extends PropertyHolder, Titled {
    */
   String getPath();
 
+  /**
+   * Gets the title of this component.
+   */
+  @Override
   default String getTitle() {
     return getPath().substring(getPath().lastIndexOf('/') + 1);
   }
@@ -21,11 +25,6 @@ public interface ComponentModel extends PropertyHolder, Titled {
    * Gets the parent of this component.
    */
   ParentModel getParent();
-
-  /**
-   * Gets the type of this component.
-   */
-  String getType();
 
   /**
    * Gets the display type of this component.
