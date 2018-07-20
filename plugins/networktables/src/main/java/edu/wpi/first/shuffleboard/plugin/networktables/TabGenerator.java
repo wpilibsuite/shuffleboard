@@ -27,6 +27,18 @@ import java.util.stream.Collectors;
  */
 final class TabGenerator {
 
+  public static final String ROOT_TABLE_NAME = "/Shuffleboard";
+  public static final String METADATA_TABLE_NAME = ROOT_TABLE_NAME + "/.metadata";
+  public static final String PREF_COMPONENT_ENTRY_NAME = "PreferredComponent";
+  public static final String PROPERTIES_TABLE_NAME = "Properties";
+  public static final String TABS_ENTRY_KEY = "Tabs";
+  public static final String TABS_ENTRY_PATH = METADATA_TABLE_NAME + "/" + TABS_ENTRY_KEY;
+  public static final String POSITION_ENTRY_NAME = "Position";
+  public static final String SIZE_ENTRY_NAME = "Size";
+
+  public static final String TAB_TYPE = "ShuffleboardTab";
+  public static final String LAYOUT_TYPE = "ShuffleboardLayout";
+
   private final TabStructure tabs = new TabStructure();
   private final NetworkTableInstance inst;
   private int tabsListener;
@@ -42,7 +54,7 @@ final class TabGenerator {
    */
   public void start() {
     // Make sure all tabs exist if they're defined, even if they're empty
-    NetworkTable rootMetaTable = inst.getTable("/Shuffleboard/.metadata");
+    NetworkTable rootMetaTable = inst.getTable(METADATA_TABLE_NAME);
     tabsListener = rootMetaTable.addEntryListener("Tabs", (table, key, entry, value, flags) -> {
       String[] tabNames = value.getStringArray();
       for (String tabName : tabNames) {
@@ -51,12 +63,12 @@ final class TabGenerator {
       tabs.dirty();
     }, 0xFF);
 
-    metadataListener = inst.addEntryListener("/Shuffleboard/.metadata/", this::metadataChanged,
+    metadataListener = inst.addEntryListener(METADATA_TABLE_NAME + "/", this::metadataChanged,
         EntryListenerFlags.kImmediate
             | EntryListenerFlags.kLocal
             | EntryListenerFlags.kNew
             | EntryListenerFlags.kUpdate);
-    dataListener = inst.addEntryListener("/Shuffleboard", this::dataChanged,
+    dataListener = inst.addEntryListener(ROOT_TABLE_NAME + "/", this::dataChanged,
         EntryListenerFlags.kImmediate
             | EntryListenerFlags.kLocal
             | EntryListenerFlags.kNew);
@@ -66,7 +78,7 @@ final class TabGenerator {
    * Stops the generator.
    */
   public void stop() {
-    inst.getTable("/Shuffleboard/.metadata").removeEntryListener(tabsListener);
+    inst.getTable(METADATA_TABLE_NAME).removeEntryListener(tabsListener);
     inst.removeEntryListener(metadataListener);
     inst.removeEntryListener(dataListener);
   }
@@ -89,7 +101,7 @@ final class TabGenerator {
     TabModel tab = tabs.getTab(NetworkTable.basenameKey(realHierarchy.get(2)));
 
     // Component type
-    if (name.endsWith("/PreferredComponent")) {
+    if (name.endsWith("/" + PREF_COMPONENT_ENTRY_NAME)) {
       String real = realHierarchy.get(realHierarchy.size() - 2);
       if (tab.getChild(real) == null) {
         return;
@@ -98,7 +110,7 @@ final class TabGenerator {
     }
 
     // Component size
-    if (name.endsWith("Size")) {
+    if (name.endsWith("/" + SIZE_ENTRY_NAME)) {
       String real = realHierarchy.get(realHierarchy.size() - 2);
       if (tab.getChild(real) == null) {
         // No component yet
@@ -111,7 +123,7 @@ final class TabGenerator {
     }
 
     // Component position
-    if (name.endsWith("Position")) {
+    if (name.endsWith("/" + POSITION_ENTRY_NAME)) {
       String real = realHierarchy.get(realHierarchy.size() - 2);
       if (tab.getChild(real) == null) {
         // No component yet
@@ -146,11 +158,11 @@ final class TabGenerator {
   }
 
   private void dataChanged(EntryNotification event) {
-    for (String tabName : inst.getEntry("/Shuffleboard/.metadata/Tabs").getStringArray(null)) {
+    for (String tabName : inst.getEntry(TABS_ENTRY_PATH).getStringArray(new String[0])) {
       // Make sure the tabs exist, and in the order specified
       tabs.getTab(tabName);
     }
-    if (event.name.startsWith("/Shuffleboard/.metadata/")) {
+    if (event.name.startsWith(METADATA_TABLE_NAME)) {
       return;
     }
     List<String> hierarchy = NetworkTable.getHierarchy(event.name);
@@ -182,10 +194,10 @@ final class TabGenerator {
       if (table.getKeys().contains(".type")) {
         String type = table.getEntry(".type").getString(null);
         switch (type) {
-          case "ShuffleboardTab":
+          case TAB_TYPE:
             tab.setProperties(properties(path));
             break;
-          case "ShuffleboardLayout":
+          case LAYOUT_TYPE:
             String layoutType = preferredComponent(path, null);
             if (layoutType == null) {
               // No component specified for this layout - its children will be placed in its parent container
@@ -252,7 +264,7 @@ final class TabGenerator {
    * @param fallback the fallback component type if no preferred component is specified in the metadata table
    */
   private String preferredComponent(String realPath, String fallback) {
-    return metaTable(realPath).getEntry("PreferredComponent").getString(fallback);
+    return metaTable(realPath).getEntry(PREF_COMPONENT_ENTRY_NAME).getString(fallback);
   }
 
   /**
@@ -263,8 +275,8 @@ final class TabGenerator {
   private Map<String, Object> properties(String realPath) {
     NetworkTable table = metaTable(realPath);
     Map<String, Object> props = new LinkedHashMap<>();
-    if (table.containsSubTable("Properties")) {
-      NetworkTable propsTable = table.getSubTable("Properties");
+    if (table.containsSubTable(PROPERTIES_TABLE_NAME)) {
+      NetworkTable propsTable = table.getSubTable(PROPERTIES_TABLE_NAME);
       for (String k : propsTable.getKeys()) {
         props.put(k, propsTable.getEntry(k).getValue().getValue());
       }
@@ -274,14 +286,14 @@ final class TabGenerator {
 
   private void setSizeAndPosition(String path, ComponentModel component) {
     NetworkTable metaTable = metaTable(path);
-    if (metaTable.containsKey("Size")) {
-      double[] size = metaTable.getEntry("Size").getDoubleArray(new double[0]);
+    if (metaTable.containsKey(SIZE_ENTRY_NAME)) {
+      double[] size = metaTable.getEntry(SIZE_ENTRY_NAME).getDoubleArray(new double[0]);
       if (size.length == 2) {
         component.setPreferredSize(new TileSize((int) size[0], (int) size[1]));
       }
     }
-    if (metaTable.containsKey("Position")) {
-      double[] pos = metaTable.getEntry("Position").getDoubleArray(new double[0]);
+    if (metaTable.containsKey(POSITION_ENTRY_NAME)) {
+      double[] pos = metaTable.getEntry(POSITION_ENTRY_NAME).getDoubleArray(new double[0]);
       if (pos.length == 2) {
         component.setPreferredPosition(new GridPoint((int) pos[0], (int) pos[1]));
       }
