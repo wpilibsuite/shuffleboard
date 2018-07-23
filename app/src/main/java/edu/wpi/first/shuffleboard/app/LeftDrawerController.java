@@ -76,7 +76,11 @@ public class LeftDrawerController {
     FxUtils.runOnFxThread(() -> {
       plugin.getSourceTypes().forEach(sourceType -> {
         InteractiveSourceTree tree =
-            new InteractiveSourceTree(sourceType, addComponentToActivePane, createTabForSource);
+            new InteractiveSourceTree(
+                sourceType,
+                t -> addComponentToActivePane.accept(t),
+                t -> createTabForSource.accept(t)
+            );
 
         TitledPane titledPane = new TitledPane(sourceType.getName(), tree);
         sourcePanes.put(plugin, titledPane);

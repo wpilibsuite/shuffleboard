@@ -159,6 +159,7 @@ public class MainWindowController {
     this.dashboard.getTabs().clear(); // Lets tabs get cleaned up (e.g. cancelling deferred autopopulation calls)
     this.dashboard = dashboard;
     centerSplitPane.getItems().add(dashboard);
+    setLeftDrawerCallbacks();
   }
 
   /**
