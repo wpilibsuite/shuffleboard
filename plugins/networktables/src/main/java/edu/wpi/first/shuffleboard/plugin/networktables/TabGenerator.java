@@ -8,6 +8,7 @@ import edu.wpi.first.shuffleboard.api.tab.model.TabModel;
 import edu.wpi.first.shuffleboard.api.tab.model.TabStructure;
 import edu.wpi.first.shuffleboard.api.tab.model.WidgetModel;
 import edu.wpi.first.shuffleboard.api.util.GridPoint;
+import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.api.widget.TileSize;
 import edu.wpi.first.shuffleboard.plugin.networktables.sources.NetworkTableSource;
 
@@ -19,6 +20,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -210,8 +212,16 @@ final class TabGenerator {
             break;
           default:
             end = true;
-            WidgetModel widget =
-                parent.getOrCreate(path, sourceForPath(path), preferredComponent(path, type), properties(path));
+            Optional<String> typeName = Components.getDefault()
+                .defaultComponentNameFor(NetworkTableSource.forKey(path).getDataType());
+            WidgetModel widget = parent.getOrCreate(
+                path,
+                sourceForPath(path),
+                preferredComponent(
+                    path,
+                    typeName.orElseThrow(() -> new IllegalStateException("No component for '" + path + "'"))
+                ),
+                properties(path));
             setSizeAndPosition(path, widget);
             break;
         }
