@@ -18,6 +18,7 @@ import edu.wpi.first.shuffleboard.api.widget.Widget;
 import java.time.Duration;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import javafx.beans.property.Property;
@@ -27,6 +28,8 @@ import javafx.beans.property.Property;
  * externally to update the contents of this tab.
  */
 public class ProcedurallyDefinedTab extends DashboardTab {
+
+  private static final Logger log = Logger.getLogger(ProcedurallyDefinedTab.class.getName());
 
   private final TabModel model;
   private boolean deferPopulation = false; // NOPMD
@@ -94,6 +97,10 @@ public class ProcedurallyDefinedTab extends DashboardTab {
       Component component = proceduralComponents.get(componentModel);
       if (component == null) {
         component = componentFor(componentModel);
+        if (component == null) {
+          log.warning("No registered component with name '" + componentModel.getDisplayType() + "'");
+          continue;
+        }
         component.setTitle(componentModel.getTitle());
         if (componentModel instanceof WidgetModel) {
           ((Widget) component).addSource(((WidgetModel) componentModel).getDataSource());
@@ -130,8 +137,7 @@ public class ProcedurallyDefinedTab extends DashboardTab {
   }
 
   private Component componentFor(ComponentModel model) {
-    return Components.getDefault().createComponent(model.getDisplayType())
-        .orElseThrow(() -> new IllegalStateException("No available component for " + model.getDisplayType()));
+    return Components.getDefault().createComponent(model.getDisplayType()).orElse(null);
   }
 
   private void applySettings(Component component, Map<String, Object> properties) {
