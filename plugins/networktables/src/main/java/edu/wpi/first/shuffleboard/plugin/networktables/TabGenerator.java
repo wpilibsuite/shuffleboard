@@ -16,6 +16,7 @@ import edu.wpi.first.networktables.EntryListenerFlags;
 import edu.wpi.first.networktables.EntryNotification;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.NetworkTableValue;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -219,7 +220,7 @@ final class TabGenerator {
                 sourceForPath(path),
                 preferredComponent(
                     path,
-                    typeName.orElseThrow(() -> new IllegalStateException("No component for '" + path + "'"))
+                    () -> typeName.orElseThrow(() -> new IllegalStateException("No component for '" + path + "'"))
                 ),
                 properties(path));
             setSizeAndPosition(path, widget);
@@ -228,7 +229,7 @@ final class TabGenerator {
       } else if (index > 1) {
         end = true;
         WidgetModel widget =
-            parent.getOrCreate(path, sourceForPath(path), preferredComponent(path, null), properties(path));
+            parent.getOrCreate(path, sourceForPath(path), preferredComponent(path, () -> null), properties(path));
         setSizeAndPosition(path, widget);
       }
       index++;
@@ -273,8 +274,13 @@ final class TabGenerator {
    * @param realPath the path to the component
    * @param fallback the fallback component type if no preferred component is specified in the metadata table
    */
-  private String preferredComponent(String realPath, String fallback) {
-    return metaTable(realPath).getEntry(PREF_COMPONENT_ENTRY_NAME).getString(fallback);
+  private String preferredComponent(String realPath, Supplier<String> fallback) {
+    NetworkTableValue value = metaTable(realPath).getEntry(PREF_COMPONENT_ENTRY_NAME).getValue();
+    if (value.isString()) {
+      return value.getString();
+    } else {
+      return fallback.get();
+    }
   }
 
   /**

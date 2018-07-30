@@ -4,11 +4,15 @@ import edu.wpi.first.shuffleboard.api.tab.model.ComponentModel;
 import edu.wpi.first.shuffleboard.api.tab.model.TabModel;
 import edu.wpi.first.shuffleboard.api.tab.model.TabStructure;
 import edu.wpi.first.shuffleboard.api.util.GridPoint;
+import edu.wpi.first.shuffleboard.api.widget.ComponentType;
+import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.api.widget.TileSize;
+import edu.wpi.first.shuffleboard.plugin.networktables.sources.NetworkTableSourceType;
 
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testfx.util.WaitForAsyncUtils;
@@ -27,6 +31,7 @@ public class TabGeneratorTest {
   private NetworkTable rootTable;
   private NetworkTable rootMetaTable;
   private TabGenerator generator;
+  private Components components;
 
   @BeforeEach
   public void setup() {
@@ -35,6 +40,14 @@ public class TabGeneratorTest {
     rootTable = ntInstance.getTable("/Shuffleboard");
     rootMetaTable = rootTable.getSubTable(".metadata");
     generator = new TabGenerator(ntInstance);
+    components = new Components();
+    Components.setDefault(components);
+    NetworkTableSourceType.setInstance(new NetworkTableSourceType(new NetworkTablesPlugin()));
+  }
+
+  @AfterAll
+  public static void tearDown() {
+    Components.setDefault(new Components());
   }
 
   private static void waitForNtUpdate() {
@@ -82,6 +95,8 @@ public class TabGeneratorTest {
     String layoutName = "Layout";
     String layoutType = "LayoutType";
     String widgetName = "Widget";
+
+    components.register(new MockComponentType(layoutType));
     rootMetaTable.getEntry(TabGenerator.TABS_ENTRY_KEY).setStringArray(new String[]{tabName});
     rootTable.getSubTable(tabName)
         .getEntry(".type")
@@ -119,6 +134,9 @@ public class TabGeneratorTest {
     String widgetName = "WidgetName";
     String widgetType = "WidgetType";
 
+    components.register(new MockComponentType(layoutType));
+    components.register(new MockComponentType(widgetType));
+
     NetworkTable tabTable = rootTable.getSubTable(tabName);
     NetworkTable layoutTable = tabTable.getSubTable(layoutName);
     NetworkTable widgetTable = layoutTable.getSubTable(widgetName);
@@ -142,9 +160,7 @@ public class TabGeneratorTest {
 
     TabStructure tabs = generator.getStructure();
     ComponentModel widget = tabs.getTab(tabName).getChild(path(tabName, layoutName, widgetName));
-    assertAll(
-        () -> assertEquals(widgetType, widget.getDisplayType(), "Wrong display type")
-    );
+    assertEquals(widgetType, widget.getDisplayType(), "Wrong display type");
 
     // ... and update
     widgetMetaTable.getEntry(TabGenerator.PREF_COMPONENT_ENTRY_NAME).setString("A Different Widget");
@@ -290,4 +306,26 @@ public class TabGeneratorTest {
     return sb.toString();
   }
 
+  private static class MockComponentType implements ComponentType {
+    private final String typeName;
+
+    public MockComponentType(String typeName) {
+      this.typeName = typeName;
+    }
+
+    @Override
+    public Class getType() {
+      return null;
+    }
+
+    @Override
+    public String getName() {
+      return typeName;
+    }
+
+    @Override
+    public Object get() {
+      return null;
+    }
+  }
 }
