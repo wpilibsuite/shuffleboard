@@ -73,7 +73,7 @@ public class ProcedurallyDefinedTab extends DashboardTab {
       // Shuffleboard is closing; bail
       return;
     }
-    if (getWidgetPane().getScene() == null || getWidgetPane().getParent() == null) {
+    if (getWidgetPane().getNumColumns() == 1 && getWidgetPane().getNumRows() == 1) {
       // Defer until the pane is visible and is laid out in the scene
       deferPopulation = true;
       populateDebouncer.run();
