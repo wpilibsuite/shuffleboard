@@ -233,6 +233,17 @@ public class MainWindowController {
     setDashboard(saveFileHandler.load());
   }
 
+  /**
+   * Loads the dashboard from a save file.
+   *
+   * @param saveFile the save file for the dashboard to load
+   *
+   * @throws IOException if the file could not be read from
+   */
+  public void load(File saveFile) throws IOException {
+    setDashboard(saveFileHandler.load(saveFile));
+  }
+
   @FXML
   public void showPrefs() {
     prefsDialog.show(dashboard);
