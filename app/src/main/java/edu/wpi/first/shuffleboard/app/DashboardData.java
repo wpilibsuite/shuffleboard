@@ -7,34 +7,32 @@ import edu.wpi.first.shuffleboard.app.components.DashboardTabPane;
  */
 public final class DashboardData {
 
-  private double dividerPosition;
-  private DashboardTabPane tabPane;
+  private final double dividerPosition;
+  private final DashboardTabPane tabPane;
+  private final WindowData windowData;
 
   /**
    * Creates a new dashboard data object.
    *
    * @param dividerPosition the position of the divider between the dashboard tabs and the sources/gallery pane
    * @param tabPane         the dashboard tab pane
+   * @param windowData      data for the window
    */
-  public DashboardData(double dividerPosition, DashboardTabPane tabPane) {
+  public DashboardData(double dividerPosition, DashboardTabPane tabPane, WindowData windowData) {
     this.dividerPosition = dividerPosition;
     this.tabPane = tabPane;
+    this.windowData = windowData;
   }
 
   public double getDividerPosition() {
     return dividerPosition;
   }
 
-  public void setDividerPosition(double dividerPosition) {
-    this.dividerPosition = dividerPosition;
-  }
-
   public DashboardTabPane getTabPane() {
     return tabPane;
   }
 
-  public void setTabPane(DashboardTabPane tabPane) {
-    this.tabPane = tabPane;
+  public WindowData getWindowData() {
+    return windowData;
   }
-
 }
