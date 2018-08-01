@@ -430,3 +430,16 @@
 .settings-pane .settings-categories .tree-cell > .tree-disclosure-node > .arrow {
     -fx-background-color: -fx-text-base-color;
 }
+
+/*******************************************************************************
+ *                                                                             *
+ * Sendable Chooser                                                            *
+ *                                                                             *
+ ******************************************************************************/
+.combobox-chooser .confirmation-label {
+    -fx-text-fill: -confirmation-color-confirmed !important;
+}
+
+.combobox-chooser .confirmation-label:error {
+    -fx-text-fill: -confirmation-color-error !important;
+}
