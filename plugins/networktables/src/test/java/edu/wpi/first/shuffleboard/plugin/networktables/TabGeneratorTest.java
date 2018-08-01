@@ -91,10 +91,10 @@ public class TabGeneratorTest {
 
   @Test
   public void testSimpleWidgetInLayout() {
-    String tabName = "Tab";
-    String layoutName = "Layout";
-    String layoutType = "LayoutType";
-    String widgetName = "Widget";
+    final String tabName = "Tab";
+    final String layoutName = "Layout";
+    final String layoutType = "LayoutType";
+    final String widgetName = "Widget";
 
     components.register(new MockComponentType(layoutType));
     rootMetaTable.getEntry(TabGenerator.TABS_ENTRY_KEY).setStringArray(new String[]{tabName});
@@ -128,11 +128,11 @@ public class TabGeneratorTest {
 
   @Test
   public void testComplexWidgetInLayout() {
-    String tabName = "Complex Layout";
-    String layoutName = "Layout";
-    String layoutType = "LayoutType";
-    String widgetName = "WidgetName";
-    String widgetType = "WidgetType";
+    final String tabName = "Complex Layout";
+    final String layoutName = "Layout";
+    final String layoutType = "LayoutType";
+    final String widgetName = "WidgetName";
+    final String widgetType = "WidgetType";
 
     components.register(new MockComponentType(layoutType));
     components.register(new MockComponentType(widgetType));
@@ -170,12 +170,12 @@ public class TabGeneratorTest {
 
   @Test
   public void testWidgetWithSizeAndPosition() {
-    String tabName = "SizedWidget";
-    String widgetName = "Widget";
-    int col = 10;
-    int row = 2;
-    int width = 4;
-    int height = 1;
+    final String tabName = "SizedWidget";
+    final String widgetName = "Widget";
+    final int col = 10;
+    final int row = 2;
+    final int width = 4;
+    final int height = 1;
 
     rootMetaTable.getEntry(TabGenerator.TABS_ENTRY_KEY).setStringArray(new String[]{tabName});
     NetworkTable widgetMetaTable = rootMetaTable.getSubTable(tabName).getSubTable(widgetName);
@@ -211,7 +211,7 @@ public class TabGeneratorTest {
 
   @Test
   public void testTabProperties() {
-    String tabName = "TabWithProperties";
+    final String tabName = "TabWithProperties";
 
     rootMetaTable.getEntry(TabGenerator.TABS_ENTRY_KEY).setStringArray(new String[]{tabName});
     NetworkTable propsTable = rootMetaTable.getSubTable(tabName).getSubTable(TabGenerator.PROPERTIES_TABLE_NAME);
@@ -231,9 +231,9 @@ public class TabGeneratorTest {
 
   @Test
   public void testNestedWidgetWithProperties() {
-    String tabName = "Tab";
-    String layoutName = "Layout";
-    String widgetName = "Data";
+    final String tabName = "Tab";
+    final String layoutName = "Layout";
+    final String widgetName = "Data";
 
     rootMetaTable.getEntry(TabGenerator.TABS_ENTRY_KEY).setStringArray(new String[]{tabName});
 
