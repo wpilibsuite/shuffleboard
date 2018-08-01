@@ -21,7 +21,7 @@ public final class SpeedControllerType extends ComplexDataType<SpeedControllerDa
 
   @Override
   public SpeedControllerData getDefaultValue() {
-    return new SpeedControllerData("Example", 0.0);
+    return new SpeedControllerData("Example", 0.0, false);
   }
 
 }

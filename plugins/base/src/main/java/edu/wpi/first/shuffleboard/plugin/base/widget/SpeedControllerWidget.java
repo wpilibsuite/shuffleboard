@@ -1,6 +1,5 @@
 package edu.wpi.first.shuffleboard.plugin.base.widget;
 
-import edu.wpi.first.shuffleboard.api.LiveWindow;
 import edu.wpi.first.shuffleboard.api.components.LinearIndicator;
 import edu.wpi.first.shuffleboard.api.components.NumberField;
 import edu.wpi.first.shuffleboard.api.prefs.Group;
@@ -50,7 +49,7 @@ public class SpeedControllerWidget extends SimpleAnnotatedWidget<SpeedController
 
   private final ChangeListener<? super Number> numberUpdateListener = (__, prev, cur) -> {
     double value = Doubles.constrainToRange(cur.doubleValue(), -1, 1);
-    setData(new SpeedControllerData(getData().getName(), value));
+    setData(new SpeedControllerData(getData().getName(), value, getData().isControllable()));
   };
 
   private final Property<Orientation> orientation =
@@ -58,9 +57,7 @@ public class SpeedControllerWidget extends SimpleAnnotatedWidget<SpeedController
 
   @FXML
   private void initialize() {
-    controllable.set(LiveWindow.isEnabled());
-
-    LiveWindow.enabledProperty().addListener((__, was, is) -> controllable.set(is));
+    controllable.bind(dataOrDefault.map(SpeedControllerData::isControllable));
     viewPane.visibleProperty().bind(controllable.not());
     controlPane.visibleProperty().bind(controllable);
 

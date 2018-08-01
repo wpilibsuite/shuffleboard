@@ -49,7 +49,7 @@ public abstract class AbstractDriveWidget<T> extends SimpleAnnotatedWidget<T> {
         SpeedControllerType.Instance,
         source,
         d -> setter.apply(dataOrDefault.get(), d == null ? 0.0 : d.getValue()),
-        d -> new SpeedControllerData(motorName, d == null ? 0.0 : getter.applyAsDouble(d))
+        d -> new SpeedControllerData(motorName, d == null ? 0.0 : getter.applyAsDouble(d), true)
     );
   }
 
