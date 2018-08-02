@@ -1,6 +1,5 @@
 package edu.wpi.first.shuffleboard.plugin.base.data;
 
-import edu.wpi.first.shuffleboard.api.data.ComplexData;
 import edu.wpi.first.shuffleboard.api.util.Maps;
 
 import java.util.Map;
@@ -9,7 +8,7 @@ import java.util.Objects;
 /**
  * Represents data from a differential drive base. All motor speeds are in the range <tt>(-1, 1)</tt>.
  */
-public final class DifferentialDriveData extends ComplexData<DifferentialDriveData> {
+public final class DifferentialDriveData extends DriveBaseData<DifferentialDriveData> {
 
   private final double leftSpeed;
   private final double rightSpeed;
@@ -17,10 +16,12 @@ public final class DifferentialDriveData extends ComplexData<DifferentialDriveDa
   /**
    * Creates a new differential drive data object.
    *
-   * @param leftSpeed  the speed of the left motor
-   * @param rightSpeed the speed of the right motor
+   * @param leftSpeed    the speed of the left motor
+   * @param rightSpeed   the speed of the right motor
+   * @param controllable if the drive base is use-controllable
    */
-  public DifferentialDriveData(double leftSpeed, double rightSpeed) {
+  public DifferentialDriveData(double leftSpeed, double rightSpeed, boolean controllable) {
+    super(controllable);
     this.leftSpeed = leftSpeed;
     this.rightSpeed = rightSpeed;
   }
@@ -35,7 +36,8 @@ public final class DifferentialDriveData extends ComplexData<DifferentialDriveDa
   public static DifferentialDriveData fromMap(Map<String, Object> map) {
     return new DifferentialDriveData(
         Maps.get(map, "Left Motor Speed"),
-        Maps.get(map, "Right Motor Speed")
+        Maps.get(map, "Right Motor Speed"),
+        Maps.get(map, ".controllable")
     );
   }
 
@@ -44,6 +46,7 @@ public final class DifferentialDriveData extends ComplexData<DifferentialDriveDa
     return Maps.<String, Object>builder()
         .put("Left Motor Speed", leftSpeed)
         .put("Right Motor Speed", rightSpeed)
+        .put(".controllable", isControllable())
         .build();
   }
 
@@ -56,11 +59,11 @@ public final class DifferentialDriveData extends ComplexData<DifferentialDriveDa
   }
 
   public DifferentialDriveData withLeftSpeed(double leftSpeed) {
-    return new DifferentialDriveData(leftSpeed, rightSpeed);
+    return new DifferentialDriveData(leftSpeed, rightSpeed, isControllable());
   }
 
   public DifferentialDriveData withRightSpeed(double rightSpeed) {
-    return new DifferentialDriveData(leftSpeed, rightSpeed);
+    return new DifferentialDriveData(leftSpeed, rightSpeed, isControllable());
   }
 
   @Override
@@ -73,17 +76,19 @@ public final class DifferentialDriveData extends ComplexData<DifferentialDriveDa
     }
     DifferentialDriveData that = (DifferentialDriveData) o;
     return this.leftSpeed == that.leftSpeed
-        && this.rightSpeed == that.rightSpeed;
+        && this.rightSpeed == that.rightSpeed
+        && this.isControllable() == that.isControllable();
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(leftSpeed, rightSpeed);
+    return Objects.hash(leftSpeed, rightSpeed, isControllable());
   }
 
   @Override
   public String toString() {
-    return String.format("DifferentialDriveData(leftSpeed=%s, rightSpeed=%s)", leftSpeed, rightSpeed);
+    return String.format("DifferentialDriveData(leftSpeed=%s, rightSpeed=%s, controllable=%s)",
+        leftSpeed, rightSpeed, isControllable());
   }
 
 }

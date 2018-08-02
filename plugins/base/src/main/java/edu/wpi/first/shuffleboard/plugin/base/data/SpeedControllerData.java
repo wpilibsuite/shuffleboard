@@ -1,6 +1,7 @@
 package edu.wpi.first.shuffleboard.plugin.base.data;
 
 import edu.wpi.first.shuffleboard.api.data.NamedData;
+import edu.wpi.first.shuffleboard.api.util.Maps;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -16,9 +17,7 @@ public final class SpeedControllerData extends NamedData<Double> {
   }
 
   public SpeedControllerData(Map<String, Object> map) {
-    this((String) map.getOrDefault("Name", ""),
-        (Double) map.getOrDefault("Value", 0.0),
-        (Boolean) map.getOrDefault(".controllable", false));
+    this(Maps.get(map, "Name"), Maps.get(map, "Value"), Maps.get(map, ".controllable"));
   }
 
   public boolean isControllable() {

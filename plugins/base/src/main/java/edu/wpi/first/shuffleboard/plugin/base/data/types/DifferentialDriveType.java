@@ -21,7 +21,7 @@ public final class DifferentialDriveType extends ComplexDataType<DifferentialDri
 
   @Override
   public DifferentialDriveData getDefaultValue() {
-    return new DifferentialDriveData(0, 0);
+    return new DifferentialDriveData(0, 0, false);
   }
 
 }

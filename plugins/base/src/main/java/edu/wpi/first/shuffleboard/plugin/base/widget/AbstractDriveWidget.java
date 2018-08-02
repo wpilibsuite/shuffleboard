@@ -4,6 +4,7 @@ import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SubSource;
 import edu.wpi.first.shuffleboard.api.widget.SimpleAnnotatedWidget;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
+import edu.wpi.first.shuffleboard.plugin.base.data.DriveBaseData;
 import edu.wpi.first.shuffleboard.plugin.base.data.SpeedControllerData;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.SpeedControllerType;
 
@@ -19,7 +20,7 @@ import javafx.scene.shape.Shape;
 /**
  * An abstract class defining several shared methods for drive base widgets.
  */
-public abstract class AbstractDriveWidget<T> extends SimpleAnnotatedWidget<T> {
+public abstract class AbstractDriveWidget<T extends DriveBaseData<T>> extends SimpleAnnotatedWidget<T> {
 
   /**
    * Overrides the intrinsic minimum dimensions of some widgets. This is useful for sane resizing of
@@ -49,7 +50,11 @@ public abstract class AbstractDriveWidget<T> extends SimpleAnnotatedWidget<T> {
         SpeedControllerType.Instance,
         source,
         d -> setter.apply(dataOrDefault.get(), d == null ? 0.0 : d.getValue()),
-        d -> new SpeedControllerData(motorName, d == null ? 0.0 : getter.applyAsDouble(d), true)
+        t -> new SpeedControllerData(
+            motorName,
+            t == null ? 0.0 : getter.applyAsDouble(t),
+            t != null && t.isControllable()
+        )
     );
   }
 

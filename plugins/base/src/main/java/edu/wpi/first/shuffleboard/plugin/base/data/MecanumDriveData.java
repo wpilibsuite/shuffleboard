@@ -1,6 +1,5 @@
 package edu.wpi.first.shuffleboard.plugin.base.data;
 
-import edu.wpi.first.shuffleboard.api.data.ComplexData;
 import edu.wpi.first.shuffleboard.api.util.Maps;
 import edu.wpi.first.shuffleboard.api.util.Vector2D;
 
@@ -12,12 +11,13 @@ import java.util.Objects;
 /**
  * Represents data from a mecanum drive base. All motor speeds are in the range <tt>(-1, 1)</tt>.
  */
-public final class MecanumDriveData extends ComplexData<MecanumDriveData> {
+public final class MecanumDriveData extends DriveBaseData<MecanumDriveData> {
 
   private static final String frontLeftMotorSpeed = "Front Left Motor Speed";
   private static final String frontRightMotorSpeed = "Front Right Motor Speed";
   private static final String rearLeftMotorSpeed = "Rear Left Motor Speed";
   private static final String rearRightMotorSpeed = "Rear Right Motor Speed";
+  private static final String controllable = ".controllable";
 
   private final double frontLeftSpeed;
   private final double frontRightSpeed;
@@ -36,7 +36,12 @@ public final class MecanumDriveData extends ComplexData<MecanumDriveData> {
    * @param rearLeftSpeed   the speed of the rear-left motor
    * @param rearRightSpeed  the speed of the rear-right motor
    */
-  public MecanumDriveData(double frontLeftSpeed, double frontRightSpeed, double rearLeftSpeed, double rearRightSpeed) {
+  public MecanumDriveData(double frontLeftSpeed,
+                          double frontRightSpeed,
+                          double rearLeftSpeed,
+                          double rearRightSpeed,
+                          boolean controllable) {
+    super(controllable);
     this.frontLeftSpeed = frontLeftSpeed;
     this.frontRightSpeed = frontRightSpeed;
     this.rearLeftSpeed = rearLeftSpeed;
@@ -58,7 +63,8 @@ public final class MecanumDriveData extends ComplexData<MecanumDriveData> {
         Maps.get(map, frontLeftMotorSpeed),
         Maps.get(map, frontRightMotorSpeed),
         Maps.get(map, rearLeftMotorSpeed),
-        Maps.get(map, rearRightMotorSpeed)
+        Maps.get(map, rearRightMotorSpeed),
+        Maps.get(map, controllable)
     );
   }
 
@@ -70,6 +76,7 @@ public final class MecanumDriveData extends ComplexData<MecanumDriveData> {
         .put(frontRightMotorSpeed, frontRightSpeed)
         .put(rearLeftMotorSpeed, rearLeftSpeed)
         .put(rearRightMotorSpeed, rearRightSpeed)
+        .put(controllable, isControllable())
         .build();
   }
 
@@ -115,19 +122,19 @@ public final class MecanumDriveData extends ComplexData<MecanumDriveData> {
   }
 
   public MecanumDriveData withFrontLeftSpeed(double frontLeftSpeed) {
-    return new MecanumDriveData(frontLeftSpeed, frontRightSpeed, rearLeftSpeed, rearRightSpeed);
+    return new MecanumDriveData(frontLeftSpeed, frontRightSpeed, rearLeftSpeed, rearRightSpeed, isControllable());
   }
 
   public MecanumDriveData withFrontRightSpeed(double frontRightSpeed) {
-    return new MecanumDriveData(frontLeftSpeed, frontRightSpeed, rearLeftSpeed, rearRightSpeed);
+    return new MecanumDriveData(frontLeftSpeed, frontRightSpeed, rearLeftSpeed, rearRightSpeed, isControllable());
   }
 
   public MecanumDriveData withRearLeftSpeed(double rearLeftSpeed) {
-    return new MecanumDriveData(frontLeftSpeed, frontRightSpeed, rearLeftSpeed, rearRightSpeed);
+    return new MecanumDriveData(frontLeftSpeed, frontRightSpeed, rearLeftSpeed, rearRightSpeed, isControllable());
   }
 
   public MecanumDriveData withRearRightSpeed(double rearRightSpeed) {
-    return new MecanumDriveData(frontLeftSpeed, frontRightSpeed, rearLeftSpeed, rearRightSpeed);
+    return new MecanumDriveData(frontLeftSpeed, frontRightSpeed, rearLeftSpeed, rearRightSpeed, isControllable());
   }
 
   /**
@@ -173,19 +180,20 @@ public final class MecanumDriveData extends ComplexData<MecanumDriveData> {
     return this.frontLeftSpeed == that.frontLeftSpeed
         && this.frontRightSpeed == that.frontRightSpeed
         && this.rearLeftSpeed == that.rearLeftSpeed
-        && this.rearRightSpeed == that.rearRightSpeed;
+        && this.rearRightSpeed == that.rearRightSpeed
+        && this.isControllable() == that.isControllable();
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(frontLeftSpeed, frontRightSpeed, rearLeftSpeed, rearRightSpeed);
+    return Objects.hash(frontLeftSpeed, frontRightSpeed, rearLeftSpeed, rearRightSpeed, isControllable());
   }
 
   @Override
   public String toString() {
     return String.format(
-        "MecanumDriveData(frontLeftSpeed=%s, frontRightSpeed=%s, rearLeftSpeed=%s, rearRightSpeed=%s)",
-        frontLeftSpeed, frontRightSpeed, rearLeftSpeed, rearRightSpeed
+        "MecanumDriveData(frontLeftSpeed=%s, frontRightSpeed=%s, rearLeftSpeed=%s, rearRightSpeed=%s, controllable=%s)",
+        frontLeftSpeed, frontRightSpeed, rearLeftSpeed, rearRightSpeed, isControllable()
     );
   }
 
