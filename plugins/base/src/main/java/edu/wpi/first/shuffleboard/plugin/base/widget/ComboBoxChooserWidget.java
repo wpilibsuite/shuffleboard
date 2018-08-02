@@ -6,6 +6,8 @@ import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 import edu.wpi.first.shuffleboard.plugin.base.data.SendableChooserData;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.SendableChooserType;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.GlyphFont;
 import org.controlsfx.glyphfont.GlyphFontRegistry;
@@ -29,7 +31,8 @@ public class ComboBoxChooserWidget extends ComplexAnnotatedWidget<SendableChoose
   @FXML
   private Pane root;
   @FXML
-  private ComboBox<String> comboBox;
+  @VisibleForTesting
+  ComboBox<String> comboBox;
   @FXML
   private Pane selectionLabelContainer;
 
