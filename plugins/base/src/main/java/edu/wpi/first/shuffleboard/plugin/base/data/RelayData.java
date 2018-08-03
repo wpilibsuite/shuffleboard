@@ -5,7 +5,7 @@ import edu.wpi.first.shuffleboard.api.util.Maps;
 
 import java.util.Map;
 
-public class RelayData extends ComplexData<RelayData> {
+public final class RelayData extends ComplexData<RelayData> {
 
   public enum State {
     OFF("Off"),
@@ -41,14 +41,16 @@ public class RelayData extends ComplexData<RelayData> {
 
   private final String name;
   private final String value;
+  private final boolean controllable;
 
-  public RelayData(String name, State state) {
-    this(name, state.getValue());
+  public RelayData(String name, State state, boolean controllable) {
+    this(name, state.getValue(), controllable);
   }
 
-  public RelayData(String name, String value) {
+  public RelayData(String name, String value, boolean controllable) {
     this.name = name;
     this.value = value;
+    this.controllable = controllable;
   }
 
   /**
@@ -58,7 +60,8 @@ public class RelayData extends ComplexData<RelayData> {
    */
   public RelayData(Map<String, Object> map) {
     this((String) map.getOrDefault(".name", ""),
-            (String) map.getOrDefault("Value", "Off"));
+        (String) map.getOrDefault("Value", "Off"),
+        (Boolean) map.getOrDefault(".controllable", false));
   }
 
   @Override
@@ -66,6 +69,7 @@ public class RelayData extends ComplexData<RelayData> {
     return Maps.<String, Object>builder()
             .put(".name", name)
             .put("Value", value)
+            .put(".controllable", controllable)
             .build();
   }
 
@@ -81,13 +85,17 @@ public class RelayData extends ComplexData<RelayData> {
     return State.fromValue(value);
   }
 
+  public boolean isControllable() {
+    return controllable;
+  }
+
   @Override
   public String toString() {
-    return String.format("%s(name=%s, value=%s)", getClass().getSimpleName(), name, value);
+    return String.format("RelayData(name=%s, value=%s, controllable=%s)", name, value, controllable);
   }
 
   public RelayData withState(State state) {
-    return new RelayData(this.name, state);
+    return new RelayData(this.name, state, controllable);
   }
 
 }

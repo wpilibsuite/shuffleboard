@@ -27,11 +27,16 @@ public class RelayWidget extends SimpleAnnotatedWidget<RelayData> {
 
   @FXML
   private void initialize() {
-    setUpButton(offButton, RelayData.State.OFF);
-    setUpButton(onButton, RelayData.State.ON);
-    setUpButton(forwardButton, RelayData.State.FORWARD);
-    setUpButton(reverseButton, RelayData.State.REVERSE);
+    setupButton(offButton, RelayData.State.OFF);
+    setupButton(onButton, RelayData.State.ON);
+    setupButton(forwardButton, RelayData.State.FORWARD);
+    setupButton(reverseButton, RelayData.State.REVERSE);
     dataOrDefault.addListener((obs, oldValue, newValue) -> {
+      if (!newValue.isControllable()) {
+        root.setDisable(true);
+      } else {
+        root.setDisable(false);
+      }
       RelayData.State state = newValue.getState();
       if (state == null) {
         offButton.setSelected(true);
@@ -61,7 +66,7 @@ public class RelayWidget extends SimpleAnnotatedWidget<RelayData> {
     return root;
   }
 
-  private void setUpButton(ToggleButton button, RelayData.State relayState) {
+  private void setupButton(ToggleButton button, RelayData.State relayState) {
     button.setOnAction(event -> {
       if (button.isSelected()) {
         setData(dataOrDefault.get().withState(relayState));
