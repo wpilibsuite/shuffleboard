@@ -32,11 +32,7 @@ public class RelayWidget extends SimpleAnnotatedWidget<RelayData> {
     setupButton(forwardButton, RelayData.State.FORWARD);
     setupButton(reverseButton, RelayData.State.REVERSE);
     dataOrDefault.addListener((obs, oldValue, newValue) -> {
-      if (!newValue.isControllable()) {
-        root.setDisable(true);
-      } else {
-        root.setDisable(false);
-      }
+      root.setDisable(!newValue.isControllable());
       RelayData.State state = newValue.getState();
       if (state == null) {
         offButton.setSelected(true);

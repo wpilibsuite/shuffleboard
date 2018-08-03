@@ -16,12 +16,13 @@ public final class SpeedControllerData extends NamedData<Double> {
     this.controllable = controllable;
   }
 
+  /**
+   * Creates a new speed controller data object from a map.
+   */
   public SpeedControllerData(Map<String, Object> map) {
-    this(
-        Maps.getOrDefault(map, "Name", ""),
+    this(Maps.getOrDefault(map, "Name", ""),
         Maps.getOrDefault(map, "Value", 0.0),
-        Maps.getOrDefault(map, ".controllable", false)
-    );
+        Maps.getOrDefault(map, ".controllable", false));
   }
 
   public boolean isControllable() {

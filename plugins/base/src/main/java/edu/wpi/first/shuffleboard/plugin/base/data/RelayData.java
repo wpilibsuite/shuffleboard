@@ -27,6 +27,7 @@ public final class RelayData extends ComplexData<RelayData> {
      * Get the State corresponding to the given value.
      *
      * @param str the value whose corresponding State should be returned
+     *
      * @return the State corresponding to the given value, or null if there is no such State
      */
     public static State fromValue(String str) {
@@ -47,6 +48,13 @@ public final class RelayData extends ComplexData<RelayData> {
     this(name, state.getValue(), controllable);
   }
 
+  /**
+   * Creates a new relay data object.
+   *
+   * @param name         the name of the relay
+   * @param value        the value of the relay ("Off", "On", "Forward", or "Reverse")
+   * @param controllable if this relay is user-controllable
+   */
   public RelayData(String name, String value, boolean controllable) {
     this.name = name;
     this.value = value;
@@ -59,29 +67,29 @@ public final class RelayData extends ComplexData<RelayData> {
    * @param map the map containing the data to be stored by this RelayData
    */
   public RelayData(Map<String, Object> map) {
-    this((String) map.getOrDefault(".name", ""),
-        (String) map.getOrDefault("Value", "Off"),
-        (Boolean) map.getOrDefault(".controllable", false));
+    this(Maps.getOrDefault(map, ".name", ""),
+        Maps.getOrDefault(map, "Value", "Off"),
+        Maps.getOrDefault(map, ".controllable", false));
   }
 
   @Override
   public Map<String, Object> asMap() {
     return Maps.<String, Object>builder()
-            .put(".name", name)
-            .put("Value", value)
-            .put(".controllable", controllable)
-            .build();
+        .put(".name", name)
+        .put("Value", value)
+        .put(".controllable", controllable)
+        .build();
   }
 
-  public final String getName() {
+  public String getName() {
     return name;
   }
 
-  public final String getValue() {
+  public String getValue() {
     return value;
   }
 
-  public final State getState() {
+  public State getState() {
     return State.fromValue(value);
   }
 
