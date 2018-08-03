@@ -35,9 +35,9 @@ public final class DifferentialDriveData extends DriveBaseData<DifferentialDrive
    */
   public static DifferentialDriveData fromMap(Map<String, Object> map) {
     return new DifferentialDriveData(
-        Maps.get(map, "Left Motor Speed"),
-        Maps.get(map, "Right Motor Speed"),
-        Maps.get(map, ".controllable")
+        Maps.getOrDefault(map, "Left Motor Speed", 0.0),
+        Maps.getOrDefault(map, "Right Motor Speed", 0.0),
+        Maps.getOrDefault(map, ".controllable", false)
     );
   }
 

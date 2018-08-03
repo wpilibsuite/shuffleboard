@@ -58,13 +58,13 @@ public final class MecanumDriveData extends DriveBaseData<MecanumDriveData> {
    *
    * @throws java.util.NoSuchElementException if the map is missing any entry for any motor speed value
    */
-  public static MecanumDriveData fromMap(Map<String, ?> map) {
+  public static MecanumDriveData fromMap(Map<String, Object> map) {
     return new MecanumDriveData(
-        Maps.get(map, frontLeftMotorSpeed),
-        Maps.get(map, frontRightMotorSpeed),
-        Maps.get(map, rearLeftMotorSpeed),
-        Maps.get(map, rearRightMotorSpeed),
-        Maps.get(map, controllable)
+        Maps.getOrDefault(map, frontLeftMotorSpeed, 0.0),
+        Maps.getOrDefault(map, frontRightMotorSpeed, 0.0),
+        Maps.getOrDefault(map, rearLeftMotorSpeed, 0.0),
+        Maps.getOrDefault(map, rearRightMotorSpeed, 0.0),
+        Maps.getOrDefault(map, controllable, false)
     );
   }
 

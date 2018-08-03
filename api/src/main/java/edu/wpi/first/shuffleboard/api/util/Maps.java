@@ -80,6 +80,28 @@ public final class Maps {
   }
 
   /**
+   * Gets the element mapped to {@code key} in a map, casting it as needed.
+   *
+   * @param map          the map to get an element from
+   * @param key          the key the element should be mapped to
+   * @param defaultValue the default value to use if the map does not contain the given key
+   * @param <K>          the type of keys in the map
+   * @param <V>          the type of values in the map
+   * @param <T>          the expected type of the element
+   *
+   * @return the
+   *
+   * @throws ClassCastException if the element is present in the map, but is not an instance of {@code T}
+   */
+  public static <K, V, T extends V> T getOrDefault(Map<? super K, V> map, K key, T defaultValue) {
+    if (map.containsKey(key)) {
+      return (T) map.get(key);
+    } else {
+      return defaultValue;
+    }
+  }
+
+  /**
    * A builder class for maps.
    *
    * @param <K> the type of the keys in the map to build
