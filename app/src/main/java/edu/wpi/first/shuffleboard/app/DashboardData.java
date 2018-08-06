@@ -9,19 +9,19 @@ public final class DashboardData {
 
   private final double dividerPosition;
   private final DashboardTabPane tabPane;
-  private final WindowData windowData;
+  private final WindowGeometry windowGeometry;
 
   /**
    * Creates a new dashboard data object.
    *
    * @param dividerPosition the position of the divider between the dashboard tabs and the sources/gallery pane
    * @param tabPane         the dashboard tab pane
-   * @param windowData      data for the window
+   * @param windowGeometry  the geometry of the window
    */
-  public DashboardData(double dividerPosition, DashboardTabPane tabPane, WindowData windowData) {
+  public DashboardData(double dividerPosition, DashboardTabPane tabPane, WindowGeometry windowGeometry) {
     this.dividerPosition = dividerPosition;
     this.tabPane = tabPane;
-    this.windowData = windowData;
+    this.windowGeometry = windowGeometry;
   }
 
   public double getDividerPosition() {
@@ -32,7 +32,7 @@ public final class DashboardData {
     return tabPane;
   }
 
-  public WindowData getWindowData() {
-    return windowData;
+  public WindowGeometry getWindowGeometry() {
+    return windowGeometry;
   }
 }

@@ -5,7 +5,7 @@ import javafx.stage.Window;
 /**
  * An immutable data object that contains the position and size of a window.
  */
-public final class WindowData {
+public final class WindowGeometry {
 
   private final double x;
   private final double y;
@@ -17,7 +17,7 @@ public final class WindowData {
    *
    * @param window the window
    */
-  public WindowData(Window window) {
+  public WindowGeometry(Window window) {
     this.x = window.getX();
     this.y = window.getY();
     this.width = window.getWidth();
