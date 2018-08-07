@@ -38,10 +38,12 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.ListChangeListener;
+import javafx.geometry.Insets;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
+import javafx.scene.layout.StackPane;
 
 public class DashboardTab extends Tab implements HandledTab, Populatable {
 
@@ -100,7 +102,9 @@ public class DashboardTab extends Tab implements HandledTab, Populatable {
 
     setWidgetPane(new WidgetPane());
 
-    this.contentProperty().bind(widgetPane);
+    this.contentProperty().bind(
+        EasyBind.monadic(widgetPane)
+            .map(DashboardTab::wrapWidgetPane));
 
     autoPopulate.addListener((__, was, is) -> {
       if (is) {
@@ -132,6 +136,13 @@ public class DashboardTab extends Tab implements HandledTab, Populatable {
     this(tabInfo.getName());
     setSourcePrefix(tabInfo.getSourcePrefix());
     setAutoPopulate(tabInfo.isAutoPopulate());
+  }
+
+  private static StackPane wrapWidgetPane(WidgetPane widgetPane) {
+    StackPane stackPane = new StackPane(widgetPane);
+    // Set the margin to avoid being drawn over by the drawer when it's closed
+    StackPane.setMargin(widgetPane, new Insets(0, 0, 0, 12));
+    return stackPane;
   }
 
   /**
