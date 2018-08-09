@@ -58,7 +58,6 @@ public class DashboardTabPaneSaverTest extends ApplicationTest {
   public void testDeserialize() throws Exception {
     Reader reader = new InputStreamReader(getClass().getResourceAsStream("/test.json"), "UTF-8");
     DashboardData data = JsonBuilder.forSaveFile().fromJson(reader, DashboardData.class);
-    assertEquals(0.123456, data.getDividerPosition(), "Divider position was wrong");
     DashboardTabPane dashboard = data.getTabPane();
 
     assertEquals(2 + 1, dashboard.getTabs().size(), "There should be 2 dashboard tabs and 1 adder tab");
