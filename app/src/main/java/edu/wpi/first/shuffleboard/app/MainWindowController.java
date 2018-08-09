@@ -209,7 +209,6 @@ public class MainWindowController {
 
   private DashboardData getData() {
     return new DashboardData(
-        0,
         dashboard,
         new WindowGeometry(root.getScene().getWindow())
     );
