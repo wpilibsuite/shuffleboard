@@ -47,6 +47,8 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
+import javafx.stage.Screen;
+import javafx.stage.Window;
 
 /**
  * Controller for the main UI window.
@@ -171,6 +173,20 @@ public class MainWindowController {
     }
     setDashboard(dashboardData.getTabPane());
     Platform.runLater(() -> {
+      // Check that the window will be visible with the saved position and size
+      WindowGeometry wg = dashboardData.getWindowGeometry();
+      if (wg != null) {
+        Window window = root.getScene().getWindow();
+        List<Screen> screens = Screen.getScreensForRectangle(wg.getX(), wg.getY(), wg.getWidth(), wg.getHeight());
+        if (!screens.isEmpty()) {
+          window.setX(wg.getX());
+          window.setY(wg.getY());
+        }
+        window.setWidth(wg.getWidth());
+        window.setHeight(wg.getHeight());
+      }
+
+      // Set divider position AFTER setting window size
       centerSplitPane.setDividerPositions(dashboardData.getDividerPosition());
     });
   }
@@ -188,7 +204,11 @@ public class MainWindowController {
   }
 
   private DashboardData getData() {
-    return new DashboardData(centerSplitPane.getDividerPositions()[0], dashboard);
+    return new DashboardData(
+        centerSplitPane.getDividerPositions()[0],
+        dashboard,
+        new WindowGeometry(root.getScene().getWindow())
+    );
   }
 
   /**
