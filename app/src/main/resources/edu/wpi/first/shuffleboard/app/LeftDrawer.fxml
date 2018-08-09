@@ -11,8 +11,9 @@
 <HBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="edu.wpi.first.shuffleboard.app.LeftDrawerController"
+      maxWidth="800"
       fx:id="root" styleClass="drawer">
-    <TabPane tabClosingPolicy="UNAVAILABLE" prefWidth="400" fx:id="tabs">
+    <TabPane tabClosingPolicy="UNAVAILABLE" minWidth="0" prefWidth="${tabs.maxWidth}" fx:id="tabs">
         <Tab text="Sources">
             <ScrollPane fitToWidth="true" fitToHeight="true">
                 <Accordion fx:id="sourcesAccordion"/>

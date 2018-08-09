@@ -30,7 +30,6 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
-import javafx.scene.Node;
 import javafx.scene.control.Accordion;
 import javafx.scene.control.Labeled;
 import javafx.scene.control.TabPane;
@@ -39,11 +38,14 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.layout.Pane;
 import javafx.util.Duration;
 
-public class LeftDrawerController {
+public final class LeftDrawerController {
 
   private static final GlyphFont fontAwesome = GlyphFontRegistry.font("FontAwesome");
   private static final Glyph EXPAND = fontAwesome.create(FontAwesome.Glyph.ANGLE_DOUBLE_RIGHT);
   private static final Glyph CONTRACT = fontAwesome.create(FontAwesome.Glyph.ANGLE_DOUBLE_LEFT);
+
+  public static final double MAX_WIDTH = 800;
+  public static final Object EXPANDED_SIZE_KEY = new Object();
 
   @FXML
   private Pane root;
@@ -54,7 +56,7 @@ public class LeftDrawerController {
   @FXML
   private WidgetGallery widgetGallery;
   @FXML
-  private Node handle;
+  private Pane handle;
   @FXML
   private Labeled expandContractButton;
 
@@ -71,6 +73,7 @@ public class LeftDrawerController {
       listenToPluginChanges(plugin);
       setup(plugin);
     });
+    tabs.maxWidthProperty().bind(root.widthProperty().subtract(handle.widthProperty()));
     sourcesAccordion.getPanes().sort(Comparator.comparing(TitledPane::getText));
     PluginLoader.getDefault().getKnownPlugins().addListener((ListChangeListener<Plugin>) c -> {
       while (c.next()) {
@@ -81,28 +84,6 @@ public class LeftDrawerController {
           });
         }
         sourcesAccordion.getPanes().sort(Comparator.comparing(TitledPane::getText));
-      }
-    });
-    expanded.addListener((__, was, expanded) -> {
-      if (root.getScene() == null) {
-        // Not in a scene; don't bother animating
-        if (expanded) {
-          tabs.setMaxWidth(tabs.getPrefWidth());
-        } else {
-          tabs.setMaxWidth(0);
-        }
-        return;
-      }
-      Timeline timeline = new Timeline(60);
-      double target = expanded ? tabs.getPrefWidth() : 0;
-      timeline.getKeyFrames().add(
-          new KeyFrame(Duration.millis(150), new KeyValue(tabs.maxWidthProperty(), target))
-      );
-      timeline.playFromStart();
-    });
-    handle.setOnMouseClicked(e -> {
-      if (e.getClickCount() == 2) {
-        toggleView();
       }
     });
     expandContractButton.graphicProperty().bind(EasyBind.monadic(expanded).map(expanded -> {
@@ -122,6 +103,10 @@ public class LeftDrawerController {
     }));
     expandContractButton.setTooltip(expandContractTooltip);
     expanded.set(false);
+    root.widthProperty().addListener((__, old, width) -> {
+      expanded.set(width.doubleValue() > handle.getWidth());
+    });
+    DrawerResizer.attach(root, handle);
     FxUtils.setController(root, this);
   }
 
@@ -177,15 +162,50 @@ public class LeftDrawerController {
 
   @FXML
   private void toggleView() {
-    expanded.set(!expanded.get());
+    if (expanded.get()) {
+      hide();
+    } else {
+      show();
+    }
   }
 
   public void hide() {
     expanded.set(false);
+    animateDrawer();
   }
 
   public void show() {
     expanded.set(true);
+    animateDrawer();
+  }
+
+  private void animateDrawer() {
+    if (root.getScene() == null) {
+      // Not in a scene; don't bother animating
+      if (expanded.get()) {
+        root.setMaxWidth(412);
+      } else {
+        root.setMaxWidth(12);
+      }
+      return;
+    }
+    Timeline timeline = new Timeline(60);
+    double target = getTargetDrawerWidth();
+    timeline.getKeyFrames().add(
+        new KeyFrame(
+            Duration.millis(150),
+            new KeyValue(root.minWidthProperty(), target),
+            new KeyValue(root.maxWidthProperty(), target)
+        ));
+    timeline.playFromStart();
+  }
+
+  private double getTargetDrawerWidth() {
+    if (expanded.get()) {
+      return (double) root.getProperties().getOrDefault(EXPANDED_SIZE_KEY, 412.0);
+    } else {
+      return handle.getWidth();
+    }
   }
 
   // TODO inject at initialization
