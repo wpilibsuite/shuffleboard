@@ -9,8 +9,8 @@ import edu.wpi.first.shuffleboard.api.sources.Sources;
 import edu.wpi.first.shuffleboard.api.sources.recording.TimestampedData;
 import edu.wpi.first.shuffleboard.api.util.AsyncUtils;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
-import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.plugin.networktables.NetworkTablesPlugin;
+import edu.wpi.first.shuffleboard.plugin.networktables.util.NetworkTableUtils;
 
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;

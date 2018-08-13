@@ -7,9 +7,9 @@ import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.UiHints;
 import edu.wpi.first.shuffleboard.api.sources.recording.TimestampedData;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
-import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.data.CameraServerData;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.data.type.CameraServerDataType;
+import edu.wpi.first.shuffleboard.plugin.networktables.util.NetworkTableUtils;
 
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;

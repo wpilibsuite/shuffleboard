@@ -2,8 +2,6 @@ package edu.wpi.first.shuffleboard.api.sources;
 
 import edu.wpi.first.shuffleboard.api.util.Registry;
 
-import edu.wpi.first.networktables.NetworkTable;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -65,7 +63,7 @@ public class Sources extends Registry<DataSource> {
   }
 
   public Stream<DataSource<?>> hierarchy(DataSource<?> source) {
-    return NetworkTable.getHierarchy(source.getName()).stream()
+    return DataSourceUtils.getHierarchy(source.getName()).stream()
         .map(n -> source.getType().forUri(source.getType().toUri(n)));
   }
 

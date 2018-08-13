@@ -6,20 +6,37 @@ import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 import edu.wpi.first.shuffleboard.plugin.base.data.SendableChooserData;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.SendableChooserType;
 
+import com.google.common.annotations.VisibleForTesting;
+
+import org.controlsfx.glyphfont.FontAwesome;
+import org.controlsfx.glyphfont.GlyphFont;
+import org.controlsfx.glyphfont.GlyphFontRegistry;
+
 import java.util.Map;
 
+import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.Pane;
 
 @Description(name = "ComboBox Chooser", dataTypes = SendableChooserType.class)
 @ParametrizedController("ComboBoxChooserWidget.fxml")
 public class ComboBoxChooserWidget extends ComplexAnnotatedWidget<SendableChooserData> {
 
+  private static final GlyphFont fontAwesome = GlyphFontRegistry.font("FontAwesome");
+  private static final PseudoClass error = PseudoClass.getPseudoClass("error");
+
   @FXML
   private Pane root;
   @FXML
+  @VisibleForTesting
   ComboBox<String> comboBox;
+  @FXML
+  private Pane selectionLabelContainer;
+
+  private final Tooltip activeTooltip = new Tooltip();
 
   @FXML
   private void initialize() {
@@ -34,7 +51,12 @@ public class ComboBoxChooserWidget extends ComplexAnnotatedWidget<SendableChoose
       if (changes.containsKey(SendableChooserData.SELECTED_OPTION_KEY)) {
         updateSelectedValue(newData.getSelectedOption());
       }
+      confirmationLabel(newData.getActiveOption().equals(newData.getSelectedOption()));
     });
+    activeTooltip.textProperty().bind(
+        dataOrDefault
+            .map(SendableChooserData::getActiveOption)
+            .map(option -> "Active option: '" + option + "'"));
     comboBox.getSelectionModel()
         .selectedItemProperty()
         .addListener((__, oldValue, newValue) -> {
@@ -47,6 +69,19 @@ public class ComboBoxChooserWidget extends ComplexAnnotatedWidget<SendableChoose
             setData(currentData.withSelectedOption(newValue));
           }
         });
+  }
+
+  private void confirmationLabel(boolean confirmation) {
+    Label activeSelectionLabel;
+    if (confirmation) {
+      activeSelectionLabel = fontAwesome.create(FontAwesome.Glyph.CHECK);
+    } else {
+      activeSelectionLabel = fontAwesome.create(FontAwesome.Glyph.EXCLAMATION);
+    }
+    activeSelectionLabel.getStyleClass().add("confirmation-label");
+    activeSelectionLabel.pseudoClassStateChanged(error, !confirmation);
+    activeSelectionLabel.setTooltip(activeTooltip);
+    selectionLabelContainer.getChildren().setAll(activeSelectionLabel);
   }
 
   private void updateOptions(String... options) {

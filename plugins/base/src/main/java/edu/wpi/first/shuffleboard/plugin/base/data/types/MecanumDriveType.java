@@ -21,7 +21,7 @@ public final class MecanumDriveType extends ComplexDataType<MecanumDriveData> {
 
   @Override
   public MecanumDriveData getDefaultValue() {
-    return new MecanumDriveData(0, 0, 0, 0);
+    return new MecanumDriveData(0, 0, 0, 0, false);
   }
 
 }

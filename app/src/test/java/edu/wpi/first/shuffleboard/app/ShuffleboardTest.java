@@ -1,6 +1,6 @@
 package edu.wpi.first.shuffleboard.app;
 
-import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
+import edu.wpi.first.shuffleboard.plugin.networktables.util.NetworkTableUtils;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;

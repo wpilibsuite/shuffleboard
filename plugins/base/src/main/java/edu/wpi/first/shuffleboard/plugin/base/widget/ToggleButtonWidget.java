@@ -1,11 +1,10 @@
 package edu.wpi.first.shuffleboard.plugin.base.widget;
 
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
+import edu.wpi.first.shuffleboard.api.sources.DataSourceUtils;
 import edu.wpi.first.shuffleboard.api.widget.Description;
 import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 import edu.wpi.first.shuffleboard.api.widget.SimpleAnnotatedWidget;
-
-import edu.wpi.first.networktables.NetworkTable;
 
 import org.fxmisc.easybind.EasyBind;
 import org.fxmisc.easybind.monadic.MonadicBinding;
@@ -28,7 +27,7 @@ public class ToggleButtonWidget extends SimpleAnnotatedWidget<Boolean> {
   private void initialize() {
     simpleSourceName = EasyBind.monadic(sourceProperty())
         .map(DataSource::getName)
-        .map(NetworkTable::basenameKey)
+        .map(DataSourceUtils::baseName)
         .orElse("");
     button.selectedProperty().bindBidirectional(dataProperty());
     button.textProperty().bind(simpleSourceName);
