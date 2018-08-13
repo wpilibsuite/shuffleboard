@@ -1,7 +1,8 @@
-package edu.wpi.first.shuffleboard.api.util;
+package edu.wpi.first.shuffleboard.plugin.networktables.util;
 
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
+import edu.wpi.first.shuffleboard.api.util.BitUtils;
 
 import edu.wpi.first.networktables.EntryListenerFlags;
 import edu.wpi.first.networktables.NetworkTable;
@@ -100,20 +101,5 @@ public final class NetworkTableUtils {
     for (NetworkTableEntry entry : instance.getEntries("", 0)) {
       entry.delete();
     }
-  }
-
-  /**
-   * Concatenates multiple keys.
-   *
-   * @param key1 the first key
-   * @param key2 the second key
-   * @param more optional extra keys to concatenate
-   */
-  public static String concat(String key1, String key2, String... more) {
-    StringBuilder builder = new StringBuilder(key1).append('/').append(key2);
-    for (String s : more) {
-      builder.append('/').append(s);
-    }
-    return NetworkTable.normalizeKey(builder.toString(), true);
   }
 }

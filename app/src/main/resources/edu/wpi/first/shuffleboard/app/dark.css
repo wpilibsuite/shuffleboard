@@ -25,6 +25,8 @@
     -swatch-light-gray: #444;
     -fx-background: -swatch-gray;
     -fx-color: -swatch-gray;
+    -confirmation-color-confirmed: lime;
+    -confirmation-color-error: red;
 }
 
 /*******************************************************************************

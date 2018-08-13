@@ -9,6 +9,7 @@ plugins {
 val os = osdetector.classifier.replace("osx", "macosx").replace("x86_32", "x86")
 
 dependencies {
+    compile(project(":plugins:networktables"))
     compile(group = "edu.wpi.first.cscore", name = "cscore-java", version = "+")
     compile(group = "org.opencv", name = "opencv-java", version = "3.2.0")
     compile(group = "edu.wpi.first.cscore", name = "cscore-jni", version = "+", classifier = "all")

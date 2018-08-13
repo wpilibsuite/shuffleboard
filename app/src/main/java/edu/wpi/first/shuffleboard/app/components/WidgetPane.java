@@ -12,6 +12,7 @@ import edu.wpi.first.shuffleboard.api.widget.TileSize;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 import edu.wpi.first.shuffleboard.app.dnd.DragUtils;
 import edu.wpi.first.shuffleboard.app.dnd.ResizeUtils;
+import edu.wpi.first.shuffleboard.app.dnd.TileDragResizer;
 
 import com.google.common.collect.ImmutableList;
 
@@ -222,6 +223,7 @@ public class WidgetPane extends TilePane implements ComponentContainer {
       // can't set the size if it wasn't actually added
       setSize(tile, size);
     }
+    TileDragResizer.makeResizable(this, tile);
     return tile;
   }
 
@@ -255,6 +257,7 @@ public class WidgetPane extends TilePane implements ComponentContainer {
       Tile<?> tile = addComponent(component, location, size);
       if (getChildren().contains(tile)) {
         // Can only set the size if the tile was actually added
+        TileDragResizer.makeResizable(this, tile);
         setSize(tile, size);
       }
     }
@@ -269,6 +272,7 @@ public class WidgetPane extends TilePane implements ComponentContainer {
    */
   public <C extends Component> Tile<C> addComponent(C component, GridPoint location, TileSize size) {
     Tile<C> tile = Tile.tileFor(component, size);
+    TileDragResizer.makeResizable(this, tile);
     tile.sizeProperty().addListener(__ -> setSize(tile, tile.getSize()));
     addTile(tile, location, size);
     return tile;

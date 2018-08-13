@@ -6,8 +6,8 @@
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.SeparatorMenuItem?>
-<?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <VBox fx:id="root" maxHeight="Infinity" maxWidth="Infinity"
       xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1"
@@ -42,10 +42,14 @@
             <MenuItem text="About" onAction="#showAboutDialog" accelerator="F1"/>
         </Menu>
     </MenuBar>
-    <SplitPane fx:id="centerSplitPane" dividerPositions="0.02">
-        <fx:include source="LeftDrawer.fxml" fx:id="leftDrawer"/>
+    <StackPane fx:id="contentRoot">
         <DashboardTabPane fx:id="dashboard"/>
-    </SplitPane>
+        <fx:include source="LeftDrawer.fxml" fx:id="leftDrawer" maxWidth="-Infinity" StackPane.alignment="CENTER_LEFT">
+            <StackPane.margin>
+                <Insets top="31"/>
+            </StackPane.margin>
+        </fx:include>
+    </StackPane>
     <VBox>
         <fx:include source="UpdateFooter.fxml" fx:id="updateFooter" managed="false"/>
         <BorderPane styleClass="footer">

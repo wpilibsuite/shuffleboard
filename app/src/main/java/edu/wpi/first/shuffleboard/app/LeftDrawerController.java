@@ -12,27 +12,56 @@ import edu.wpi.first.shuffleboard.app.plugin.PluginLoader;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 
+import org.controlsfx.glyphfont.FontAwesome;
+import org.controlsfx.glyphfont.Glyph;
+import org.controlsfx.glyphfont.GlyphFont;
+import org.controlsfx.glyphfont.GlyphFontRegistry;
+import org.fxmisc.easybind.EasyBind;
+
 import java.util.Comparator;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
 import javafx.scene.control.Accordion;
+import javafx.scene.control.Labeled;
+import javafx.scene.control.TabPane;
 import javafx.scene.control.TitledPane;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.Pane;
+import javafx.util.Duration;
 
-public class LeftDrawerController {
+public final class LeftDrawerController {
+
+  private static final GlyphFont fontAwesome = GlyphFontRegistry.font("FontAwesome");
+  private static final Glyph EXPAND = fontAwesome.create(FontAwesome.Glyph.ANGLE_DOUBLE_RIGHT);
+  private static final Glyph CONTRACT = fontAwesome.create(FontAwesome.Glyph.ANGLE_DOUBLE_LEFT);
+
+  public static final double MAX_WIDTH = 800;
+  public static final Object EXPANDED_SIZE_KEY = new Object();
 
   @FXML
   private Pane root;
   @FXML
+  private TabPane tabs;
+  @FXML
   private Accordion sourcesAccordion;
   @FXML
   private WidgetGallery widgetGallery;
+  @FXML
+  private Pane handle;
+  @FXML
+  private Labeled expandContractButton;
 
   private final Multimap<Plugin, TitledPane> sourcePanes = ArrayListMultimap.create();
+  private final BooleanProperty expanded = new SimpleBooleanProperty(true);
 
   // TODO inject these
   private Consumer<Component> addComponentToActivePane;
@@ -44,6 +73,7 @@ public class LeftDrawerController {
       listenToPluginChanges(plugin);
       setup(plugin);
     });
+    tabs.maxWidthProperty().bind(root.widthProperty().subtract(handle.widthProperty()));
     sourcesAccordion.getPanes().sort(Comparator.comparing(TitledPane::getText));
     PluginLoader.getDefault().getKnownPlugins().addListener((ListChangeListener<Plugin>) c -> {
       while (c.next()) {
@@ -56,6 +86,27 @@ public class LeftDrawerController {
         sourcesAccordion.getPanes().sort(Comparator.comparing(TitledPane::getText));
       }
     });
+    expandContractButton.graphicProperty().bind(EasyBind.monadic(expanded).map(expanded -> {
+      if (expanded) {
+        return CONTRACT;
+      } else {
+        return EXPAND;
+      }
+    }));
+    Tooltip expandContractTooltip = new Tooltip();
+    expandContractTooltip.textProperty().bind(EasyBind.monadic(expanded).map(expanded -> {
+      if (expanded) {
+        return "Collapse the drawer";
+      } else {
+        return "Expand the drawer";
+      }
+    }));
+    expandContractButton.setTooltip(expandContractTooltip);
+    expanded.set(false);
+    root.widthProperty().addListener((__, old, width) -> {
+      expanded.set(width.doubleValue() > handle.getWidth());
+    });
+    DrawerResizer.attach(root, handle);
     FxUtils.setController(root, this);
   }
 
@@ -107,6 +158,54 @@ public class LeftDrawerController {
 
     // Remove widgets from the gallery
     widgetGallery.setWidgets(Components.getDefault().allWidgets().collect(Collectors.toList()));
+  }
+
+  @FXML
+  private void toggleView() {
+    if (expanded.get()) {
+      hide();
+    } else {
+      show();
+    }
+  }
+
+  public void hide() {
+    expanded.set(false);
+    animateDrawer();
+  }
+
+  public void show() {
+    expanded.set(true);
+    animateDrawer();
+  }
+
+  private void animateDrawer() {
+    if (root.getScene() == null) {
+      // Not in a scene; don't bother animating
+      if (expanded.get()) {
+        root.setMaxWidth(412);
+      } else {
+        root.setMaxWidth(12);
+      }
+      return;
+    }
+    Timeline timeline = new Timeline(60);
+    double target = getTargetDrawerWidth();
+    timeline.getKeyFrames().add(
+        new KeyFrame(
+            Duration.millis(150),
+            new KeyValue(root.minWidthProperty(), target),
+            new KeyValue(root.maxWidthProperty(), target)
+        ));
+    timeline.playFromStart();
+  }
+
+  private double getTargetDrawerWidth() {
+    if (expanded.get()) {
+      return (double) root.getProperties().getOrDefault(EXPANDED_SIZE_KEY, 412.0);
+    } else {
+      return handle.getWidth();
+    }
   }
 
   // TODO inject at initialization

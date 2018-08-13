@@ -123,7 +123,7 @@ public final class MecanumDriveWidget extends AbstractDriveWidget<MecanumDriveDa
       }
     });
 
-    drawForceVectors(new MecanumDriveData(0, 0, 0, 0));
+    drawForceVectors(new MecanumDriveData(0, 0, 0, 0, false));
 
     driveView.getChildren().add(0, generateMecanumDriveBase(30, 80, 150, 200));
   }

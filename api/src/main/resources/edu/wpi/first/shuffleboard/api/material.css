@@ -73,6 +73,9 @@
     /* A bright blue for highlighting/accenting objects.  For example: selected
      * text; selected items in menus, lists, trees, and tables; progress bars */
     -fx-accent: -swatch-400;
+    -confirmation-color-confirmed: lightgreen;
+    -confirmation-color-warning: yellow;
+    -confirmation-color-error: darkred;
 }
 
 /*******************************************************************************

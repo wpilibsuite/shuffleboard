@@ -55,6 +55,53 @@
 
 /*******************************************************************************
  *                                                                             *
+ * Sources and Widget Drawer                                                   *
+ *                                                                             *
+ ******************************************************************************/
+.drawer {
+    -fx-background-color: -swatch-light-gray;
+}
+
+.drawer .tab-pane .tab-header-background {
+    -fx-background-color: -swatch-200;
+}
+
+.drawer .tab-pane .tab .tab-label {
+    -fx-text-fill: -fx-text-base-color;
+    -fx-border-color: -swatch-200;
+}
+
+.drawer .tab-pane .tab:selected .tab-label {
+    -fx-border-color: -fx-text-base-color;
+}
+
+.drawer .drawer-separator {
+    -fx-background-color: -swatch-light-gray;
+    -fx-cursor: h-resize;
+    -fx-border-width: 0 2 0 0, 0 1 0 0;
+    -fx-border-color: -swatch-dark-gray, -swatch-gray;
+}
+
+.drawer .drawer-separator .toggle-button {
+    -fx-background-color: null;
+    -fx-text-fill: -fx-text-base-color;
+    -fx-effect: none;
+    -fx-max-width: 12 !important;
+    -fx-pref-width: 12 !important;
+    -fx-padding: 0 0 0 0;
+    -fx-cursor: hand;
+}
+
+.drawer .drawer-separator .toggle-button:hover {
+    -fx-text-fill: derive(-fx-text-base-color, 25%);
+}
+
+.drawer .drawer-separator .toggle-button:pressed {
+    -fx-text-fill: derive(-fx-text-base-color, -15%);
+}
+
+/*******************************************************************************
+ *                                                                             *
  * Dashboard Tabs                                                              *
  *                                                                             *
  ******************************************************************************/
@@ -464,4 +511,17 @@
 
 .settings-pane .settings-categories .tree-cell > .tree-disclosure-node > .arrow {
     -fx-background-color: -fx-text-base-color;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Sendable Chooser                                                            *
+ *                                                                             *
+ ******************************************************************************/
+.combobox-chooser .confirmation-label {
+    -fx-text-fill: -confirmation-color-confirmed !important;
+}
+
+.combobox-chooser .confirmation-label:error {
+    -fx-text-fill: -confirmation-color-error !important;
 }

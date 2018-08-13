@@ -21,7 +21,7 @@ public final class RelayType extends ComplexDataType<RelayData> {
 
   @Override
   public RelayData getDefaultValue() {
-    return new RelayData("Example Relay", "Off");
+    return new RelayData("Example Relay", "Off", false);
   }
 
 }

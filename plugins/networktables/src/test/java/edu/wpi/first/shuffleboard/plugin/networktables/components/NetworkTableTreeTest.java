@@ -3,7 +3,7 @@ package edu.wpi.first.shuffleboard.plugin.networktables.components;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.shuffleboard.api.components.SourceTreeTable;
-import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
+import edu.wpi.first.shuffleboard.plugin.networktables.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.plugin.networktables.NetworkTableTreeWidget;
 import edu.wpi.first.shuffleboard.plugin.networktables.sources.NetworkTableSourceEntry;
 import edu.wpi.first.shuffleboard.plugin.networktables.sources.NetworkTableSource;

@@ -30,4 +30,15 @@ public class DataSourceUtilsTest extends UtilityClassTest<DataSourceUtils> {
     assertEquals(expectedResult, DataSourceUtils.isMetadata(key));
   }
 
+  @ParameterizedTest
+  @CsvSource({"foo, foo",
+                 "foo, /foo",
+                 "foo, ////foo",
+                 "bar, /foo/bar",
+                 "bar, foo/bar",
+                 "abc, a//b//c////abc"})
+  public void baseNameTest(String expectedResult, String path) {
+    assertEquals(expectedResult, DataSourceUtils.baseName(path));
+  }
+
 }
