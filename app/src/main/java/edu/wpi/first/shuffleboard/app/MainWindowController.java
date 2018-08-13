@@ -9,6 +9,7 @@ import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.Storage;
 import edu.wpi.first.shuffleboard.api.util.ThreadUtils;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
+import edu.wpi.first.shuffleboard.app.components.AdderTab;
 import edu.wpi.first.shuffleboard.app.components.DashboardTab;
 import edu.wpi.first.shuffleboard.app.components.DashboardTabPane;
 import edu.wpi.first.shuffleboard.app.dialogs.AboutDialog;
@@ -42,9 +43,7 @@ import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.MenuItem;
-import javafx.scene.control.SplitPane;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
 import javafx.stage.Screen;
@@ -62,15 +61,13 @@ public class MainWindowController {
   @FXML
   private Pane root;
   @FXML
-  private SplitPane centerSplitPane;
+  private Pane contentRoot;
   @FXML
   private Pane leftDrawer;
   @FXML
   private DashboardTabPane dashboard;
   @FXML
   private Pane updateFooter;
-  @FXML
-  private HBox connectionIndicatorArea;
 
   private final PluginDialog pluginDialog = new PluginDialog();
   private final AboutDialog aboutDialog = new AboutDialog();
@@ -132,6 +129,11 @@ public class MainWindowController {
     LeftDrawerController leftDrawerController = FxUtils.getController(leftDrawer);
     leftDrawerController.setAddComponentToActivePane(dashboard::addComponentToActivePane);
     leftDrawerController.setCreateTabForSource(dashboard::createTabForSource);
+    dashboard.getSelectionModel().selectedItemProperty().addListener((__, old, item) -> {
+      if (!(item instanceof AdderTab)) {
+        leftDrawerController.hide();
+      }
+    });
   }
 
   /**
@@ -157,11 +159,16 @@ public class MainWindowController {
    */
   private void setDashboard(DashboardTabPane dashboard) {
     dashboard.setId("dashboard");
-    centerSplitPane.getItems().remove(this.dashboard);
+    contentRoot.getChildren().remove(this.dashboard);
     this.dashboard.getTabs().clear(); // Lets tabs get cleaned up (e.g. cancelling deferred autopopulation calls)
     this.dashboard = dashboard;
-    centerSplitPane.getItems().add(dashboard);
     setLeftDrawerCallbacks();
+    dashboard.getSelectionModel().selectedItemProperty().addListener((__, old, item) -> {
+      if (!(item instanceof AdderTab)) {
+        FxUtils.<LeftDrawerController>getController(leftDrawer).hide();
+      }
+    });
+    contentRoot.getChildren().add(0, dashboard);
   }
 
   /**
@@ -185,9 +192,6 @@ public class MainWindowController {
         window.setWidth(wg.getWidth());
         window.setHeight(wg.getHeight());
       }
-
-      // Set divider position AFTER setting window size
-      centerSplitPane.setDividerPositions(dashboardData.getDividerPosition());
     });
   }
 
@@ -205,7 +209,6 @@ public class MainWindowController {
 
   private DashboardData getData() {
     return new DashboardData(
-        centerSplitPane.getDividerPositions()[0],
         dashboard,
         new WindowGeometry(root.getScene().getWindow())
     );
@@ -234,7 +237,6 @@ public class MainWindowController {
   @FXML
   public void newLayout() {
     saveFileHandler.clear();
-    double[] dividerPositions = centerSplitPane.getDividerPositions();
     List<TabInfo> tabInfo = TabInfoRegistry.getDefault().getItems();
     if (tabInfo.isEmpty()) {
       // No tab info, so add a placeholder tab so there's SOMETHING in the dashboard
@@ -242,7 +244,6 @@ public class MainWindowController {
     } else {
       setDashboard(new DashboardTabPane(tabInfo));
     }
-    centerSplitPane.setDividerPositions(dividerPositions);
   }
 
   /**

@@ -5,12 +5,15 @@
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.StackPane?>
-<StackPane xmlns="http://javafx.com/javafx"
-           xmlns:fx="http://javafx.com/fxml"
-           fx:controller="edu.wpi.first.shuffleboard.app.LeftDrawerController"
-           fx:id="root">
-    <TabPane tabClosingPolicy="UNAVAILABLE" prefWidth="400">
+<HBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="edu.wpi.first.shuffleboard.app.LeftDrawerController"
+      maxWidth="800"
+      fx:id="root" styleClass="drawer">
+    <TabPane tabClosingPolicy="UNAVAILABLE" minWidth="0" prefWidth="${tabs.maxWidth}" fx:id="tabs">
         <Tab text="Sources">
             <ScrollPane fitToWidth="true" fitToHeight="true">
                 <Accordion fx:id="sourcesAccordion"/>
@@ -22,4 +25,7 @@
             </ScrollPane>
         </Tab>
     </TabPane>
-</StackPane>
+    <StackPane fx:id="handle" minWidth="12" maxWidth="12" styleClass="drawer-separator">
+        <ToggleButton fx:id="expandContractButton" StackPane.alignment="TOP_CENTER" onMouseClicked="#toggleView"/>
+    </StackPane>
+</HBox>
