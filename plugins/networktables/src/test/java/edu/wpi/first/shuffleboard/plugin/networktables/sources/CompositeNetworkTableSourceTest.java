@@ -4,7 +4,7 @@ import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.data.MapData;
 import edu.wpi.first.shuffleboard.api.util.AsyncUtils;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
-import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
+import edu.wpi.first.shuffleboard.plugin.networktables.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.plugin.networktables.NetworkTablesPlugin;
 
 import com.google.common.collect.ImmutableMap;

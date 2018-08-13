@@ -1,12 +1,13 @@
 package edu.wpi.first.shuffleboard.plugin.networktables.sources;
 
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.shuffleboard.api.data.ComplexData;
 import edu.wpi.first.shuffleboard.api.data.ComplexDataType;
 import edu.wpi.first.shuffleboard.api.data.IncompleteDataException;
 import edu.wpi.first.shuffleboard.api.sources.Sources;
-import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
+import edu.wpi.first.shuffleboard.plugin.networktables.util.NetworkTableUtils;
+
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
 
 import java.util.HashMap;
 import java.util.Map;
