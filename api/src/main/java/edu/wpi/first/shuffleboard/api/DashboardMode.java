@@ -1,8 +1,9 @@
 package edu.wpi.first.shuffleboard.api;
 
+import edu.wpi.first.shuffleboard.api.properties.AsyncProperty;
+
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.Property;
-import javafx.beans.property.SimpleObjectProperty;
 
 /**
  * An enum representing the possible modes of dashboard operation.
@@ -25,7 +26,7 @@ public enum DashboardMode {
   PLAYBACK;
 
   private static final ObjectProperty<DashboardMode> currentMode
-      = new SimpleObjectProperty<>(DashboardMode.class, "currentMode", NORMAL);
+      = new AsyncProperty<>(DashboardMode.class, "currentMode", NORMAL);
 
   public static Property<DashboardMode> currentModeProperty() {
     return currentMode;
@@ -43,6 +44,10 @@ public enum DashboardMode {
    */
   public static void setCurrentMode(DashboardMode currentMode) {
     DashboardMode.currentMode.set(currentMode);
+  }
+
+  public static boolean inPlayback() {
+    return getCurrentMode() == PLAYBACK;
   }
 
 }

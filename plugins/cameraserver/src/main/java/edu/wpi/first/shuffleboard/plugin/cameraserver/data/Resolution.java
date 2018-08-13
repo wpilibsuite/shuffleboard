@@ -32,6 +32,21 @@ public final class Resolution {
     return height;
   }
 
+  /**
+   * Checks if this resolution is not equal to the given dimensions, ie
+   * {@code getWidth() != width || getHeight() != height}.
+   *
+   * @param width  the width to check
+   * @param height the height to check
+   *
+   * @return true if either {@code width} or {@code height} is different from this resolution's width or height,
+   *         respectively
+   */
+  public boolean isNotEqual(int width, int height) {
+    return this.width != width
+        || this.height != height;
+  }
+
   @Override
   public String toString() {
     return width + "x" + height;

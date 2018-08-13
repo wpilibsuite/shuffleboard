@@ -2,6 +2,8 @@ package edu.wpi.first.shuffleboard.api.util;
 
 import java.util.Objects;
 import java.util.concurrent.Callable;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 
 /**
@@ -18,11 +20,24 @@ import java.util.function.Supplier;
  * }
  * }</pre></p>
  *
+ * <p>If the contained value uses a lot of memory or locks a system resource, or is otherwise expensive to keep around,
+ * and is currently unused (and may not be used again for a while), the value can be cleaned up with
+ * <pre>{@code
+ * if (lazyInit.hasValue()) {
+ *   cleanUp(lazyInit.get()); // application-specific clean up
+ *   lazyInit.clear();
+ * }
+ * }</pre>
+ *
+ * <p>After calling {@link #clear()}, successive calls to {@link #get()} will re-initialize the value.</p>
+ *
  * @param <T> the type of the value to be initialized
  */
 public final class LazyInit<T> implements Supplier<T> {
 
-  private volatile boolean initialized = false;
+  private final Lock lock = new ReentrantLock();
+
+  private boolean initialized = false;
   private T value = null;
   private final Callable<? extends T> initializer;
 
@@ -57,15 +72,47 @@ public final class LazyInit<T> implements Supplier<T> {
    */
   @Override
   public T get() {
-    if (!initialized) {
-      try {
-        value = initializer.call();
-      } catch (Exception e) {
-        throw new RuntimeException("Could not initialize", e);
+    try {
+      lock.lock();
+      if (!initialized) {
+        try {
+          value = initializer.call();
+        } catch (Exception e) {
+          throw new RuntimeException("Could not initialize", e);
+        }
+        initialized = true;
       }
-      initialized = true;
+      return value;
+    } finally {
+      lock.unlock();
     }
-    return value;
+  }
+
+  /**
+   * Checks if this container has a value.
+   *
+   * @return true if a value exists, false if not
+   */
+  public boolean hasValue() {
+    try {
+      lock.lock();
+      return value != null;
+    } finally {
+      lock.unlock();
+    }
+  }
+
+  /**
+   * Clears the data in this container. The next call to {@link #get()} will re-initialize the value.
+   */
+  public void clear() {
+    try {
+      lock.lock();
+      value = null;
+      initialized = false;
+    } finally {
+      lock.unlock();
+    }
   }
 
 }

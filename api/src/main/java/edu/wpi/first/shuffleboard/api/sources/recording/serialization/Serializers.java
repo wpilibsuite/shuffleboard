@@ -18,8 +18,6 @@ public final class Serializers {
   private static final Map<DataType, TypeAdapter> serializers = new HashMap<>();
 
   static {
-    Runtime.getRuntime().addShutdownHook(new Thread(Serializers::cleanUpAll));
-
     add(new SimpleAdapter<>(DataTypes.Number,
         n -> Serialization.toByteArray(n.doubleValue()), Serialization::readDouble, Serialization.SIZE_OF_DOUBLE));
     add(new SimpleAdapter<>(DataTypes.Boolean,

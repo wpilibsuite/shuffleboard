@@ -95,8 +95,10 @@ public final class Serialization {
    * @throws IOException if the recording could not be saved to the given file
    */
   public static void saveRecording(Recording recording, Path file) throws IOException {
+    Serializers.getAdapters().forEach(a -> a.setCurrentFile(file.toFile()));
     // work on a copy of the data so changes to the recording don't mess this up
     final List<TimestampedData> dataCopy = new ArrayList<>(recording.getData());
+    recording.getData().clear();
     dataCopy.sort(TimestampedData::compareTo); // make sure the data is sorted properly
     final byte[] header = header(dataCopy); // NOPMD
     final List<String> sourceNames = getAllSourceNames(dataCopy);
@@ -144,10 +146,14 @@ public final class Serialization {
       saveRecording(recording, file);
       return;
     }
-    if (recording.getData().isEmpty()) {
+    // Use a copy to avoid synchronization locking
+    List<TimestampedData> dataCopy = new ArrayList<>(recording.getData());
+    recording.getData().clear();
+    if (dataCopy.isEmpty()) {
       // No new data
       return;
     }
+    Serializers.getAdapters().forEach(a -> a.setCurrentFile(file.toFile()));
     // Use a RandomAccessFile to avoid having to read its entire contents into memory
     RandomAccessFile raf = new RandomAccessFile(file.toFile(), "rw");
     int magic = raf.readInt();
@@ -158,7 +164,7 @@ public final class Serialization {
     // Update the number of data points
     raf.seek(Offsets.NUMBER_DATA_POINTS_OFFSET);
     int numExistingDataPoints = raf.readInt();
-    int totalDataPoints = numExistingDataPoints + recording.getData().size();
+    int totalDataPoints = numExistingDataPoints + dataCopy.size();
     raf.seek(Offsets.NUMBER_DATA_POINTS_OFFSET);
     raf.writeInt(totalDataPoints); // Update the number of data points
 
@@ -181,18 +187,18 @@ public final class Serialization {
       constantPoolSize += len;
       sourceIds.add(sourceId);
     }
-    byte[] newConstantPoolEntries = recording.getData().stream()
+    byte[] newConstantPoolEntries = dataCopy.stream()
         .map(TimestampedData::getSourceId)
         .distinct()
         .filter(id -> !sourceIds.contains(id))
         .map(Serialization::toByteArray)
         .reduce(new byte[0], Bytes::concat);
-    recording.getData().stream()
+    dataCopy.stream()
         .map(TimestampedData::getSourceId)
         .distinct()
         .filter(s -> !sourceIds.contains(s))
         .forEachOrdered(sourceIds::add);
-    byte[] newBodyEntries = recording.getData().stream()
+    byte[] newBodyEntries = dataCopy.stream()
         .map(data -> {
           final DataType type = data.getDataType();
           final Object value = data.getData();
@@ -348,7 +354,7 @@ public final class Serialization {
   public static int sizeOfStringArray(String[] array) { // NOPMD varargs
     int size = SIZE_OF_INT;
     for (String s : array) {
-      size += s.length() + SIZE_OF_INT;
+      size += toByteArray(s).length; // maintains UTF-8 encoding of multi-byte chars
     }
     return size;
   }
@@ -441,12 +447,13 @@ public final class Serialization {
   }
 
   /**
-   * Encodes a string as a big-endian byte array. The resulting array encodes the length of the string in the first
-   * four bytes, then the contents of the string.
+   * Encodes a string as a big-endian byte array. The resulting array encodes the number bytes that encode the string
+   * in a 4-byte int, followed by the encoded character bytes.
    */
   public static byte[] toByteArray(String string) {
     try {
-      return Bytes.concat(toByteArray(string.length()), string.getBytes("UTF-8"));
+      byte[] bytes = string.getBytes("UTF-8");
+      return Bytes.concat(toByteArray(bytes.length), bytes);
     } catch (UnsupportedEncodingException e) {
       throw new AssertionError("UTF-8 is not supported (the JVM is not to spec!)", e);
     }

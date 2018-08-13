@@ -13,7 +13,6 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@SuppressWarnings("PMD")
 public class SerializationTest {
 
   private static final byte[] fooBarBytes = new byte[]{
@@ -21,6 +20,9 @@ public class SerializationTest {
       0, 0, 0, 3, 'f', 'o', 'o', // "foo", encoded with length
       0, 0, 0, 3, 'b', 'a', 'r'  // "bar", encoded with length
   };
+
+  // Grinning emoji, four bytes
+  private static final String grinningEmoji = "😁";
 
   @Test
   public void testIntToBytes() {
@@ -65,9 +67,11 @@ public class SerializationTest {
     final Recording recording = new Recording();
     recording.append(new TimestampedData("foo", DataTypes.Number, 0.0, 0));
     recording.append(new TimestampedData("foo", DataTypes.Number, 100.0, 1));
+    ArrayList<TimestampedData> data = new ArrayList<>(recording.getData());
     Serialization.saveRecording(recording, file);
     final Recording loaded = Serialization.loadRecording(file);
-    assertEquals(recording, loaded, "The loaded recording differs from the encoded one");
+    deleteFile(file);
+    assertEquals(data, loaded.getData(), "The loaded recording differs from the encoded one");
   }
 
   @Test
@@ -80,15 +84,44 @@ public class SerializationTest {
     recording.getData().addAll(data);
     Serialization.saveRecording(recording, file);
     final Recording loaded = Serialization.loadRecording(file);
-    assertEquals(recording, loaded, "The loaded recording differs from the encoded one");
+    assertEquals(data, loaded.getData(), "The loaded recording differs from the encoded one");
 
     TimestampedData newData = new TimestampedData("foo", DataTypes.Number, 123.456, 2);
-    recording.getData().clear();
     data.add(newData);
     recording.getData().add(newData);
     Serialization.updateRecordingSave(recording, file);
     final Recording loadedUpdate = Serialization.loadRecording(file);
+    deleteFile(file);
     assertEquals(data, loadedUpdate.getData());
+  }
+
+  @Test
+  public void testMultiByteCharsInString() {
+    String string = grinningEmoji;
+    byte[] bytes = Serialization.toByteArray(string);
+    assertEquals(8, bytes.length);
+    String read = Serialization.readString(bytes, 0);
+    assertEquals(string, read);
+  }
+
+  @Test
+  public void testMultiByteCharsInStringArray() {
+    String[] strings = {
+        "®",
+        "©",
+        grinningEmoji
+    };
+    byte[] bytes = Serialization.toByteArray(strings);
+    assertEquals(24, bytes.length);
+    String[] read = Serialization.readStringArray(bytes, 0);
+    assertArrayEquals(strings, read);
+  }
+
+  private void deleteFile(Path file) throws IOException {
+    if (System.getenv("CI") != null) {
+      return;
+    }
+    Files.delete(file);
   }
 
 }

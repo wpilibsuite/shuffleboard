@@ -47,6 +47,8 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
+import javafx.stage.Screen;
+import javafx.stage.Window;
 
 /**
  * Controller for the main UI window.
@@ -159,6 +161,7 @@ public class MainWindowController {
     this.dashboard.getTabs().clear(); // Lets tabs get cleaned up (e.g. cancelling deferred autopopulation calls)
     this.dashboard = dashboard;
     centerSplitPane.getItems().add(dashboard);
+    setLeftDrawerCallbacks();
   }
 
   /**
@@ -170,6 +173,20 @@ public class MainWindowController {
     }
     setDashboard(dashboardData.getTabPane());
     Platform.runLater(() -> {
+      // Check that the window will be visible with the saved position and size
+      WindowGeometry wg = dashboardData.getWindowGeometry();
+      if (wg != null) {
+        Window window = root.getScene().getWindow();
+        List<Screen> screens = Screen.getScreensForRectangle(wg.getX(), wg.getY(), wg.getWidth(), wg.getHeight());
+        if (!screens.isEmpty()) {
+          window.setX(wg.getX());
+          window.setY(wg.getY());
+        }
+        window.setWidth(wg.getWidth());
+        window.setHeight(wg.getHeight());
+      }
+
+      // Set divider position AFTER setting window size
       centerSplitPane.setDividerPositions(dashboardData.getDividerPosition());
     });
   }
@@ -188,7 +205,11 @@ public class MainWindowController {
   }
 
   private DashboardData getData() {
-    return new DashboardData(centerSplitPane.getDividerPositions()[0], dashboard);
+    return new DashboardData(
+        centerSplitPane.getDividerPositions()[0],
+        dashboard,
+        new WindowGeometry(root.getScene().getWindow())
+    );
   }
 
   /**
@@ -231,6 +252,17 @@ public class MainWindowController {
   @FXML
   public void load() throws IOException {
     setDashboard(saveFileHandler.load());
+  }
+
+  /**
+   * Loads the dashboard from a save file.
+   *
+   * @param saveFile the save file for the dashboard to load
+   *
+   * @throws IOException if the file could not be read from
+   */
+  public void load(File saveFile) throws IOException {
+    setDashboard(saveFileHandler.load(saveFile));
   }
 
   @FXML

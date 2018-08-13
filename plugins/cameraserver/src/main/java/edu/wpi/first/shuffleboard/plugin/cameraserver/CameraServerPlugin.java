@@ -5,10 +5,12 @@ import edu.wpi.first.shuffleboard.api.plugin.Description;
 import edu.wpi.first.shuffleboard.api.plugin.Plugin;
 import edu.wpi.first.shuffleboard.api.plugin.Requires;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
+import edu.wpi.first.shuffleboard.api.sources.recording.serialization.TypeAdapter;
 import edu.wpi.first.shuffleboard.api.widget.ComponentType;
 import edu.wpi.first.shuffleboard.api.widget.WidgetType;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.data.type.CameraServerDataType;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.source.CameraServerSourceType;
+import edu.wpi.first.shuffleboard.plugin.cameraserver.source.CameraStreamAdapter;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.widget.CameraServerWidget;
 
 import com.google.common.collect.ImmutableList;
@@ -25,13 +27,14 @@ import java.util.logging.Logger;
 @Description(
     group = "edu.wpi.first.shuffleboard",
     name = "CameraServer",
-    version = "1.1.0",
+    version = "1.2.0",
     summary = "Provides sources and widgets for viewing CameraServer MJPEG streams"
 )
 @Requires(group = "edu.wpi.first.shuffleboard", name = "NetworkTables", minVersion = "1.0.0")
 public class CameraServerPlugin extends Plugin {
 
   private static final Logger log = Logger.getLogger(CameraServerPlugin.class.getName());
+  private final CameraStreamAdapter streamRecorder = new CameraStreamAdapter();
 
   @Override
   public void onLoad() {
@@ -59,6 +62,13 @@ public class CameraServerPlugin extends Plugin {
   public List<SourceType> getSourceTypes() {
     return ImmutableList.of(
         CameraServerSourceType.INSTANCE
+    );
+  }
+
+  @Override
+  public List<TypeAdapter> getTypeAdapters() {
+    return ImmutableList.of(
+        streamRecorder
     );
   }
 

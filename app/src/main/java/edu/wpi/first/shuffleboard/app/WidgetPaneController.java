@@ -317,6 +317,7 @@ public class WidgetPaneController {
       return;
     }
     tilesAlreadySetup.add(tile);
+    TileDragResizer.makeResizable(pane, tile);
 
     tile.setOnContextMenuRequested(event -> {
       ContextMenu contextMenu = createContextMenu(event);
