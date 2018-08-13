@@ -201,7 +201,7 @@ final class TabGenerator {
             tab.setProperties(properties(path));
             break;
           case LAYOUT_TYPE:
-            String layoutType = preferredComponent(path, null);
+            String layoutType = preferredComponent(path, () -> null);
             if (layoutType == null) {
               // No component specified for this layout - its children will be placed in its parent container
               continue;
