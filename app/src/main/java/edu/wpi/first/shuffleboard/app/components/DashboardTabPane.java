@@ -1,20 +1,30 @@
 package edu.wpi.first.shuffleboard.app.components;
 
+import edu.wpi.first.shuffleboard.api.plugin.Plugin;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceEntry;
 import edu.wpi.first.shuffleboard.api.tab.TabInfo;
+import edu.wpi.first.shuffleboard.api.tab.model.StructureChangeListener;
+import edu.wpi.first.shuffleboard.api.tab.model.TabModel;
+import edu.wpi.first.shuffleboard.api.tab.model.TabStructure;
+import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.Sourced;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
+import edu.wpi.first.shuffleboard.app.plugin.PluginLoader;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.WeakHashMap;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
 import javafx.collections.ListChangeListener;
+import javafx.collections.SetChangeListener;
 import javafx.event.Event;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
@@ -25,6 +35,21 @@ import static edu.wpi.first.shuffleboard.api.util.TypeUtils.optionalCast;
  * Represents a dashboard composed of multiple tabs.
  */
 public class DashboardTabPane extends TabPane {
+
+  private final Map<TabStructure, Map<TabModel, ProcedurallyDefinedTab>> pluginTabs = new WeakHashMap<>();
+
+  private final StructureChangeListener structureChangeListener = tabs -> {
+    FxUtils.runOnFxThread(() -> {
+      Map<TabModel, ProcedurallyDefinedTab> realTabs = pluginTabs.computeIfAbsent(tabs, __ -> new WeakHashMap<>());
+      for (TabModel model : tabs.getTabs().values()) {
+        ProcedurallyDefinedTab tab = realTabs.computeIfAbsent(model, ProcedurallyDefinedTab::new);
+        if (!getTabs().contains(tab)) {
+          getTabs().add(getTabs().size() - 1, tab);
+        }
+        tab.populate();
+      }
+    });
+  };
 
   /**
    * Creates a dashboard with no tabs.
@@ -47,6 +72,31 @@ public class DashboardTabPane extends TabPane {
     AdderTab adder = new AdderTab();
     adder.setAddTabCallback(this::addNewTab);
     getTabs().add(adder);
+    PluginLoader.getDefault().getLoadedPlugins()
+        .stream()
+        .map(Plugin::getTabs)
+        .filter(Objects::nonNull)
+        .forEach(structureChangeListener::structureChanged);
+
+    PluginLoader.getDefault().getLoadedPlugins()
+        .stream()
+        .map(Plugin::getTabs)
+        .filter(Objects::nonNull)
+        .forEach(s -> s.addStructureChangeListener(structureChangeListener));
+
+    PluginLoader.getDefault().getLoadedPlugins().addListener((SetChangeListener<Plugin>) change -> {
+      if (change.wasAdded()) {
+        TabStructure customTabs = change.getElementAdded().getTabs();
+        if (customTabs != null) {
+          customTabs.addStructureChangeListener(structureChangeListener);
+        }
+      } else if (change.wasRemoved()) {
+        TabStructure customTabs = change.getElementRemoved().getTabs();
+        if (customTabs != null) {
+          customTabs.removeStructureChangeListener(structureChangeListener);
+        }
+      }
+    });
   }
 
   private static void onTabsChanged(ListChangeListener.Change<? extends Tab> change) {

@@ -9,6 +9,7 @@ import edu.wpi.first.shuffleboard.api.prefs.Group;
 import edu.wpi.first.shuffleboard.api.prefs.Setting;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
+import edu.wpi.first.shuffleboard.api.tab.model.TabStructure;
 import edu.wpi.first.shuffleboard.api.util.PreferencesUtils;
 import edu.wpi.first.shuffleboard.api.widget.ComponentType;
 import edu.wpi.first.shuffleboard.api.widget.WidgetType;
@@ -44,6 +45,8 @@ public class NetworkTablesPlugin extends Plugin {
 
   private final StringProperty serverId = new SimpleStringProperty(this, "server", "localhost");
   private final InvalidationListener serverSaver = __ -> PreferencesUtils.save(serverId, preferences);
+
+  private final TabGenerator tabGenerator = new TabGenerator(inst);
 
   private final ChangeListener<String> serverChangeListener = (observable, oldValue, newValue) -> {
     String[] value = newValue.split(":");
@@ -95,12 +98,15 @@ public class NetworkTablesPlugin extends Plugin {
           });
     }, 0xFF);
 
+    tabGenerator.start();
+
     serverChangeListener.changed(null, null, serverId.get());
     serverId.addListener(serverChangeListener);
   }
 
   @Override
   public void onUnload() {
+    tabGenerator.stop();
     NetworkTablesJNI.removeEntryListener(recorderUid);
     NetworkTableUtils.shutdown(inst);
     serverId.removeListener(serverSaver);
@@ -137,6 +143,11 @@ public class NetworkTablesPlugin extends Plugin {
             )
         )
     );
+  }
+
+  @Override
+  public TabStructure getTabs() {
+    return tabGenerator.getStructure();
   }
 
   public String getServerId() {
