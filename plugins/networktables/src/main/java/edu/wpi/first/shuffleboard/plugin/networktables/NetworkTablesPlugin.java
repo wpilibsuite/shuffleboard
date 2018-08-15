@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.plugin.networktables;
 
+import edu.wpi.first.shuffleboard.api.DashboardMode;
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.plugin.Description;
@@ -47,6 +48,15 @@ public class NetworkTablesPlugin extends Plugin {
   private final InvalidationListener serverSaver = __ -> PreferencesUtils.save(serverId, preferences);
 
   private final TabGenerator tabGenerator = new TabGenerator(inst);
+  private final RecorderController recorderController = RecorderController.createWithDefaultEntries(inst);
+
+  private final ChangeListener<DashboardMode> dashboardModeChangeListener = (__, old, mode) -> {
+    if (mode == DashboardMode.PLAYBACK) {
+      recorderController.stop();
+    } else {
+      recorderController.start();
+    }
+  };
 
   private final ChangeListener<String> serverChangeListener = (observable, oldValue, newValue) -> {
     String[] value = newValue.split(":");
@@ -98,6 +108,8 @@ public class NetworkTablesPlugin extends Plugin {
           });
     }, 0xFF);
 
+    DashboardMode.currentModeProperty().addListener(dashboardModeChangeListener);
+    recorderController.start();
     tabGenerator.start();
 
     serverChangeListener.changed(null, null, serverId.get());
@@ -106,6 +118,8 @@ public class NetworkTablesPlugin extends Plugin {
 
   @Override
   public void onUnload() {
+    DashboardMode.currentModeProperty().removeListener(dashboardModeChangeListener);
+    recorderController.stop();
     tabGenerator.stop();
     NetworkTablesJNI.removeEntryListener(recorderUid);
     NetworkTableUtils.shutdown(inst);

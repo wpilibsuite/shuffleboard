@@ -173,7 +173,7 @@ final class TabGenerator {
       // Not enough data
       return;
     }
-    if (NetworkTable.basenameKey(event.name).charAt(0) == '.') {
+    if (event.name.contains("/.") || event.name.charAt(0) == '.') {
       // Metadata changed; we don't need to worry about it
       return;
     }

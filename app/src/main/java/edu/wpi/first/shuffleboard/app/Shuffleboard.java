@@ -108,8 +108,6 @@ public class Shuffleboard extends Application {
     notifyPreloader(new ShuffleboardPreloader.StateNotification("Loading base plugin", 0.125));
     PluginLoader.getDefault().load(new BasePlugin());
 
-    Recorder.getInstance().start();
-
     notifyPreloader(new ShuffleboardPreloader.StateNotification("Loading NetworkTables plugin", 0.25));
     PluginLoader.getDefault().load(new NetworkTablesPlugin());
     notifyPreloader(new ShuffleboardPreloader.StateNotification("Loading CameraServer plugin", 0.375));
