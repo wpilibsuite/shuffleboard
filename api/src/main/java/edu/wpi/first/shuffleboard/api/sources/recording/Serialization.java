@@ -171,7 +171,7 @@ public final class Serialization {
     int magic = raf.readInt();
     if (magic != MAGIC_NUMBER) {
       throw new IOException(
-          String.format("Wrong magic number in the header. Expected %08X, but was %08X", MAGIC_NUMBER, magic));
+          String.format("Wrong magic number in the header. Expected 0x%08X, but was 0x%08X", MAGIC_NUMBER, magic));
     }
 
     // Update the number of data points
@@ -326,7 +326,7 @@ public final class Serialization {
     final int magic = readInt(bytes, Offsets.MAGIC_NUMBER_OFFSET);
     if (magic != MAGIC_NUMBER) {
       throw new IOException(
-          String.format("Wrong magic number in the header. Expected %08X, but was %08X", MAGIC_NUMBER, magic));
+          String.format("Wrong magic number in the header. Expected 0x%08X, but was 0x%08X", MAGIC_NUMBER, magic));
     }
     final int version = readInt(bytes, Offsets.VERSION_NUMBER_OFFSET);
     if (version != VERSION) {
