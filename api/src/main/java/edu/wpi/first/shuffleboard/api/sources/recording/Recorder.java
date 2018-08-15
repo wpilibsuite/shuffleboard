@@ -23,6 +23,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 
 /**
  * Records data from sources. Each source is responsible for calling {@link #recordCurrentValue} whenever its value
@@ -32,9 +34,11 @@ public final class Recorder {
 
   private static final Logger log = Logger.getLogger(Recorder.class.getName());
 
+  public static final String DEFAULT_RECORDING_FILE_NAME_FORMAT = "recording-${time}";
   private static final Recorder instance = new Recorder();
 
   private final BooleanProperty running = new AtomicBooleanProperty(this, "running", false);
+  private final StringProperty fileNameFormat = new SimpleStringProperty(this, "fileNameFormat", DEFAULT_RECORDING_FILE_NAME_FORMAT);
   private Instant startTime = null;
   private Recording recording = null;
   private File recordingFile;
@@ -80,7 +84,7 @@ public final class Recorder {
       // Nothing to save
       return;
     }
-    Path file = Storage.createRecordingFilePath(startTime);
+    Path file = Storage.createRecordingFilePath(startTime, getFileNameFormat());
     if (recordingFile == null) {
       recordingFile = file.toFile();
     }
@@ -186,5 +190,17 @@ public final class Recorder {
 
   public File getRecordingFile() {
     return recordingFile;
+  }
+
+  public String getFileNameFormat() {
+    return fileNameFormat.get();
+  }
+
+  public StringProperty fileNameFormatProperty() {
+    return fileNameFormat;
+  }
+
+  public void setFileNameFormat(String fileNameFormat) {
+    this.fileNameFormat.set(fileNameFormat);
   }
 }

@@ -30,8 +30,6 @@ public final class Storage {
 
   private static final String BACKUPS_DIR = STORAGE_DIR + "/backups";
 
-  private static final String RECORDING_FILE_FORMAT = RECORDING_DIR + "/${date}/recording-${time}.sbr";
-
   private static final DateTimeFormatter dateFormatter = DateTimeFormatter.ISO_DATE;
   private static final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH.mm.ss", Locale.getDefault());
 
@@ -41,6 +39,11 @@ public final class Storage {
   private static final String PLUGINS_DIR = STORAGE_DIR + "/plugins";
 
   private static final String PLUGIN_CACHE_FILE = PLUGINS_DIR + "/.plugincache";
+
+  /**
+   * The file extension for data recordings.
+   */
+  private static final String RECORDING_FILE_EXTENSION = ".sbr";
 
   private Storage() {
   }
@@ -116,10 +119,37 @@ public final class Storage {
    * @param startTime the time the recording started
    */
   public static Path createRecordingFilePath(Instant startTime) throws IOException {
+    return createRecordingFilePath(startTime, "recording-${time}");
+  }
+
+  /**
+   * Generates a path to a recording file based on when a recording started. The generated path will always be in the
+   * directory {@code /Shuffleboard/recordings/<date>}, where {@code date} is the date formatted by the ISO-8601 format.
+   * The recording file name will be the parsed output of the {@code fileNameFormat} parameter; this format supports the
+   * following variables to be injected:
+   *
+   * <table>
+   * <tr><th>String</th><th>Value</th></tr>
+   * <tr><td>{@code ${date}}</td><td>The ISO-8601 formatted string for the date of the {@code startTime}</td></tr>
+   * <tr><td>{@code ${time}}</td><td>The time of the {@code startTime} in a "HH.mm.ss" format</td></tr>
+   * </table>
+   *
+   * <p>For example, a file name format of {@code "practice-match-${time}"} results in paths such as
+   * {@code /Shuffleboard/recordings/2019-03-16/practice-match-13.05.15.sbr}.</p>
+   * <br>
+   * The default file name format is {@code "recording-${time}"}
+   * <p>Users are <b>strongly</b> encouraged to use the {@code ${time}} variable to make sure that recording files
+   * have unique names, or otherwise set a new file name format every time recording starts.</p>
+   *
+   * @param startTime      the time the recording started
+   * @param fileNameFormat a custom format for the name of the recording file
+   */
+  public static Path createRecordingFilePath(Instant startTime, String fileNameFormat) throws IOException {
     String date = dateFormatter.format(LocalDateTime.ofInstant(startTime, ZoneId.systemDefault()));
     String time = timeFormatter.format(LocalDateTime.ofInstant(startTime, ZoneId.systemDefault()));
 
-    Path file = Paths.get(RECORDING_FILE_FORMAT
+    String filePathFormat = RECORDING_DIR + "/${date}/" + fileNameFormat + RECORDING_FILE_EXTENSION;
+    Path file = Paths.get(filePathFormat
         .replace("${date}", date)
         .replace("${time}", time));
 
