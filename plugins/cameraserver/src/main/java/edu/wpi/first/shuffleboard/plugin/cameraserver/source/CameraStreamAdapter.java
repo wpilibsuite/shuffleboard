@@ -7,6 +7,7 @@ import edu.wpi.first.shuffleboard.plugin.cameraserver.data.type.CameraServerData
 
 import com.google.common.primitives.Bytes;
 
+import org.bytedeco.javacv.FrameGrabber;
 import org.bytedeco.javacv.FrameRecorder;
 
 import java.io.File;
@@ -47,14 +48,21 @@ public final class CameraStreamAdapter extends TypeAdapter<CameraServerData> {
 
   @Override
   public void cleanUp() {
-    savers.values().forEach(s -> {
+    savers.forEach((name, saver) -> {
       try {
-        s.finish();
+        saver.finish();
       } catch (FrameRecorder.Exception e) {
-        log.log(Level.WARNING, "Could not finish saver", e);
+        log.log(Level.WARNING, "Could not finish saver for '" + name + "'", e);
       }
     });
     savers.clear();
+    readers.forEach((name, reader) -> {
+      try {
+        reader.finish();
+      } catch (FrameGrabber.Exception e) {
+        log.log(Level.WARNING, "Could not clean up reader for '" + name + "'", e);
+      }
+    });
     readers.clear();
   }
 
