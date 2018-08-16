@@ -81,7 +81,8 @@ public final class RecorderController {
   private void updateControl(EntryNotification event) {
     if (event.value.isBoolean() && !DashboardMode.inPlayback()) {
       if (event.value.getBoolean()) {
-        Recorder.getInstance().setFileNameFormat(fileNameFormatEntry.getString(Recorder.DEFAULT_RECORDING_FILE_NAME_FORMAT));
+        Recorder.getInstance().setFileNameFormat(
+            fileNameFormatEntry.getString(Recorder.DEFAULT_RECORDING_FILE_NAME_FORMAT));
         Recorder.getInstance().start();
       } else {
         Recorder.getInstance().stop();

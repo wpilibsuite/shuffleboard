@@ -38,7 +38,9 @@ public final class Recorder {
   private static final Recorder instance = new Recorder();
 
   private final BooleanProperty running = new AtomicBooleanProperty(this, "running", false);
-  private final StringProperty fileNameFormat = new SimpleStringProperty(this, "fileNameFormat", DEFAULT_RECORDING_FILE_NAME_FORMAT);
+  private final StringProperty fileNameFormat =
+      new SimpleStringProperty(this, "fileNameFormat", DEFAULT_RECORDING_FILE_NAME_FORMAT);
+  private String currentFileNameFormat = DEFAULT_RECORDING_FILE_NAME_FORMAT; // NOPMD - PMD can't handle lambdas
   private Instant startTime = null;
   private Recording recording = null;
   private File recordingFile;
@@ -50,6 +52,7 @@ public final class Recorder {
     // Save the recording at the start (get the initial values) and the stop
     running.addListener((__, wasRunning, isRunning) -> {
       try {
+        currentFileNameFormat = getFileNameFormat();
         saveToDisk();
       } catch (IOException e) {
         log.log(Level.WARNING, "Could not save to disk", e);
@@ -84,7 +87,7 @@ public final class Recorder {
       // Nothing to save
       return;
     }
-    Path file = Storage.createRecordingFilePath(startTime, getFileNameFormat());
+    Path file = Storage.createRecordingFilePath(startTime, currentFileNameFormat);
     if (recordingFile == null) {
       recordingFile = file.toFile();
     }
