@@ -38,7 +38,13 @@ public final class Serialization {
    * A magic number that is always the first entry in a recording file. This helps check (but does not guarantee) that
    * a loaded file is a valid recording file.
    */
-  public static final int MAGIC_NUMBER = 0xFEEDBAC4;
+  public static final int MAGIC_NUMBER = 0xBEEF_FACE;
+
+  /**
+   * The current serialization format version. This number is incremented every time the recording format changes in
+   * a way that makes it incompatible with previous versions.
+   */
+  public static final int VERSION = 2;
 
   /**
    * The size of a serialized {@code byte}, in bytes.
@@ -73,10 +79,16 @@ public final class Serialization {
      * The offset to the magic header number.
      */
     public static final int MAGIC_NUMBER_OFFSET = 0;
+
+    /**
+     * The offset to the version number.
+     */
+    public static final int VERSION_NUMBER_OFFSET = MAGIC_NUMBER_OFFSET + SIZE_OF_INT;
+
     /**
      * The offset to the <tt>int</tt> value of the number of data points.
      */
-    public static final int NUMBER_DATA_POINTS_OFFSET = MAGIC_NUMBER_OFFSET + SIZE_OF_INT;
+    public static final int NUMBER_DATA_POINTS_OFFSET = VERSION_NUMBER_OFFSET + SIZE_OF_INT;
     /**
      * The offset to the <tt>int</tt> value of the number of entries in the constant pool.
      */
@@ -96,7 +108,7 @@ public final class Serialization {
    */
   public static void saveRecording(Recording recording, Path file) throws IOException {
     Serializers.getAdapters().forEach(a -> a.setCurrentFile(file.toFile()));
-    // work on a copy of the data so changes to the recording don't mess this up
+    // Work on a copy, since the recording can have new data added to it while we're in the middle of saving
     final List<TimestampedData> dataCopy = new ArrayList<>(recording.getData());
     recording.getData().clear();
     dataCopy.sort(TimestampedData::compareTo); // make sure the data is sorted properly
@@ -158,7 +170,8 @@ public final class Serialization {
     RandomAccessFile raf = new RandomAccessFile(file.toFile(), "rw");
     int magic = raf.readInt();
     if (magic != MAGIC_NUMBER) {
-      throw new IOException("Wrong magic number in the header. Expected " + MAGIC_NUMBER + ", but was " + magic);
+      throw new IOException(
+          String.format("Wrong magic number in the header. Expected 0x%08X, but was 0x%08X", MAGIC_NUMBER, magic));
     }
 
     // Update the number of data points
@@ -312,7 +325,13 @@ public final class Serialization {
     }
     final int magic = readInt(bytes, Offsets.MAGIC_NUMBER_OFFSET);
     if (magic != MAGIC_NUMBER) {
-      throw new IOException("Wrong magic number in the header. Expected " + MAGIC_NUMBER + ", but was " + magic);
+      throw new IOException(
+          String.format("Wrong magic number in the header. Expected 0x%08X, but was 0x%08X", MAGIC_NUMBER, magic));
+    }
+    final int version = readInt(bytes, Offsets.VERSION_NUMBER_OFFSET);
+    if (version != VERSION) {
+      throw new IOException(
+          "Cannot load recording with format version " + version + ". The current format version is " + VERSION);
     }
     Serializers.getAdapters().forEach(a -> a.setCurrentFile(file.toFile()));
     //final int numDataPoints = readInt(bytes, Offsets.NUMBER_DATA_POINTS_OFFSET);
@@ -362,7 +381,8 @@ public final class Serialization {
   /**
    * Generates a header for a serialized recording. The header contains:
    * <ul>
-   * <li>The {@link #MAGIC_NUMBER} magic number, to help confirm data integrity</li>
+   * <li>The {@link #MAGIC_NUMBER magic number}, to help confirm data integrity</li>
+   * <li>The {@link #VERSION version number}, to avoid attempting to load incompatible recording files</li>
    * <li>The number of data points (signed 32-bit int)</li>
    * <li>The names of all the recorded sources, used for caching</li>
    * </ul>
@@ -370,10 +390,11 @@ public final class Serialization {
   public static byte[] header(List<TimestampedData> data) {
     List<String> sourceNames = getAllSourceNames(data);
     byte[] nameBytes = toByteArray(getAllSourceNames(data).toArray(new String[sourceNames.size()]));
-    byte[] header = new byte[(SIZE_OF_INT * 2) + nameBytes.length];
-    put(header, toByteArray(MAGIC_NUMBER), 0);
-    put(header, toByteArray(data.size()), SIZE_OF_INT);
-    put(header, nameBytes, SIZE_OF_INT * 2);
+    byte[] header = new byte[(SIZE_OF_INT * 3) + nameBytes.length];
+    put(header, toByteArray(MAGIC_NUMBER), Offsets.MAGIC_NUMBER_OFFSET);
+    put(header, toByteArray(VERSION), Offsets.VERSION_NUMBER_OFFSET);
+    put(header, toByteArray(data.size()), Offsets.NUMBER_DATA_POINTS_OFFSET);
+    put(header, nameBytes, Offsets.CONSTANT_POOL_HEADER_OFFSET);
     return header;
   }
 
