@@ -1,8 +1,10 @@
 package edu.wpi.first.shuffleboard.app;
 
+import edu.wpi.first.shuffleboard.api.components.TreeItemPredicate;
 import edu.wpi.first.shuffleboard.api.plugin.Plugin;
 import edu.wpi.first.shuffleboard.api.sources.SourceEntry;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
+import edu.wpi.first.shuffleboard.api.util.StringUtils;
 import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.app.components.InteractiveSourceTree;
@@ -30,12 +32,18 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.Accordion;
 import javafx.scene.control.Labeled;
 import javafx.scene.control.TabPane;
+import javafx.scene.control.TextField;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.Tooltip;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
 import javafx.util.Duration;
 
 public final class LeftDrawerController {
@@ -126,6 +134,8 @@ public final class LeftDrawerController {
   private void setup(Plugin plugin) {
     FxUtils.runOnFxThread(() -> {
       plugin.getSourceTypes().forEach(sourceType -> {
+        BorderPane contentRoot = new BorderPane();
+        contentRoot.setPadding(new Insets(0));
         InteractiveSourceTree tree =
             new InteractiveSourceTree(
                 sourceType,
@@ -133,7 +143,29 @@ public final class LeftDrawerController {
                 t -> createTabForSource.accept(t)
             );
 
-        TitledPane titledPane = new TitledPane(sourceType.getName(), tree);
+        TextField searchField = new TextField();
+        searchField.setPromptText("Search for data sources");
+        tree.getFilterableRoot().predicateProperty().bind(EasyBind.monadic(searchField.textProperty()).map(text -> {
+          if (text.isEmpty()) {
+            return TreeItemPredicate.always();
+          } else {
+            return (parent, entry) -> StringUtils.containsIgnoreCase(entry.getViewName(), text)
+                || StringUtils.containsIgnoreCase(entry.getName(), text)
+                || (entry.getValue() != null
+                && StringUtils.containsIgnoreCase(StringUtils.deepToString(entry.getValue()), text));
+          }
+        }));
+
+        contentRoot.setCenter(tree);
+        Glyph searchIcon = GlyphFontRegistry.font("FontAwesome").create(FontAwesome.Glyph.SEARCH);
+        searchIcon.setAlignment(Pos.CENTER);
+        searchIcon.setMaxHeight(Double.POSITIVE_INFINITY);
+        HBox.setHgrow(searchField, Priority.ALWAYS);
+        Pane footer = new HBox(4, searchIcon, searchField);
+        footer.setPadding(new Insets(2));
+        contentRoot.setBottom(footer);
+
+        TitledPane titledPane = new TitledPane(sourceType.getName(), contentRoot);
         sourcePanes.put(plugin, titledPane);
         sourcesAccordion.getPanes().add(titledPane);
         FXCollections.sort(sourcesAccordion.getPanes(), Comparator.comparing(TitledPane::getText));

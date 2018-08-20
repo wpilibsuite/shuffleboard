@@ -6,8 +6,6 @@ import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.util.AlphanumComparator;
 import edu.wpi.first.shuffleboard.api.util.EqualityUtils;
 
-import org.fxmisc.easybind.EasyBind;
-
 import java.util.Comparator;
 import java.util.List;
 
@@ -56,11 +54,7 @@ public class SourceTreeTable<S extends SourceEntry, V> extends TreeTableView<S> 
         f -> new ReadOnlyStringWrapper(getEntryForCellData(f).getViewName()));
     valueColumn.setCellValueFactory(
         f -> new ReadOnlyObjectWrapper(getEntryForCellData(f).getValueView()));
-    Label placeholder = new Label();
-    placeholder.textProperty().bind(EasyBind.monadic(sourceType)
-        .map(SourceType::getName)
-        .map(n -> "No data available. Is there a connection to " + n + "?")
-        .orElse("No data available. Is the source connected?"));
+    Label placeholder = new Label("No data available");
     setPlaceholder(placeholder);
 
     getColumns().addAll(keyColumn, valueColumn);
@@ -94,8 +88,8 @@ public class SourceTreeTable<S extends SourceEntry, V> extends TreeTableView<S> 
     final SourceType sourceType = getSourceType();
     String name = entry.getName();
     List<String> hierarchy = DataSourceUtils.getHierarchy(name);
-    TreeItem<S> current = getRoot();
-    TreeItem<S> parent = current;
+    FilterableTreeItem<S> current = (FilterableTreeItem<S>) getRoot();
+    FilterableTreeItem<S> parent = current;
     boolean structureChanged = false;
 
     // Get the appropriate node for the value, creating branches as needed
@@ -103,10 +97,10 @@ public class SourceTreeTable<S extends SourceEntry, V> extends TreeTableView<S> 
     for (int i = 1; i < hierarchy.size(); i++) {
       String path = hierarchy.get(i);
       parent = current;
-      TreeItem<S> found = null;
-      for (TreeItem<S> item : current.getChildren()) {
+      FilterableTreeItem<S> found = null;
+      for (TreeItem<S> item : current.getAllChildren()) {
         if (item.getValue().getName().equals(path)) {
-          found = item;
+          found = (FilterableTreeItem<S>) item;
           break;
         }
       }
@@ -117,9 +111,9 @@ public class SourceTreeTable<S extends SourceEntry, V> extends TreeTableView<S> 
       } else if (!deleted && i < hierarchy.size() - 1 && current == null) {
         // It's a branch (subtable); expand it
         S newEntry = (S) sourceType.createSourceEntryForUri(sourceType.toUri(path));
-        current = new TreeItem<>(newEntry);
+        current = new FilterableTreeItem<>(newEntry);
         current.setExpanded(true);
-        parent.getChildren().add(current);
+        parent.getAllChildren().add(current);
         structureChanged = true;
       }
     }
@@ -127,15 +121,15 @@ public class SourceTreeTable<S extends SourceEntry, V> extends TreeTableView<S> 
     // Remove, update, or create the value node as needed
     if (deleted) {
       if (current != null) {
-        parent.getChildren().remove(current);
+        parent.getAllChildren().remove(current);
 
         // Remove empty subtrees
-        if (parent.getChildren().isEmpty()) {
-          TreeItem<S> item = parent.getParent();
+        if (parent.getAllChildren().isEmpty()) {
+          FilterableTreeItem<S> item = (FilterableTreeItem<S>) parent.getParent();
           while (item != null) {
-            item.getChildren().remove(parent);
+            item.getAllChildren().remove(parent);
             parent = item;
-            item = item.getParent();
+            item = (FilterableTreeItem<S>) item.getParent();
           }
         }
         structureChanged = true;
@@ -143,9 +137,9 @@ public class SourceTreeTable<S extends SourceEntry, V> extends TreeTableView<S> 
     } else {
       if (current == null) {
         // Newly added value, create a tree item for it
-        current = new TreeItem<>(entry);
+        current = new FilterableTreeItem<>(entry);
         current.setExpanded(true);
-        parent.getChildren().add(current);
+        parent.getAllChildren().add(current);
         structureChanged = true;
       } else if (EqualityUtils.isDifferent(current.getValue().getValue(), entry.getValue())) {
         // The value updated, so just update the existing node
@@ -153,12 +147,11 @@ public class SourceTreeTable<S extends SourceEntry, V> extends TreeTableView<S> 
       }
     }
     if (structureChanged) {
-      sort();
+      ((FilterableTreeItem<S>) getRoot()).sortChildren();
     }
   }
 
-  protected static <T> T getEntryForCellData(
-      TreeTableColumn.CellDataFeatures<T, ?> features) {
+  protected static <T> T getEntryForCellData(TreeTableColumn.CellDataFeatures<T, ?> features) {
     return features.getValue().getValue();
   }
 

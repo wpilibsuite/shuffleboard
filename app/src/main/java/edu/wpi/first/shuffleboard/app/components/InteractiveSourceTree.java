@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.app.components;
 
+import edu.wpi.first.shuffleboard.api.components.FilterableTreeItem;
 import edu.wpi.first.shuffleboard.api.components.SourceTreeTable;
 import edu.wpi.first.shuffleboard.api.dnd.DataFormats;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
@@ -13,7 +14,6 @@ import edu.wpi.first.shuffleboard.api.widget.Components;
 import java.util.List;
 import java.util.function.Consumer;
 
-import javafx.collections.FXCollections;
 import javafx.collections.MapChangeListener;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
@@ -48,9 +48,8 @@ public final class InteractiveSourceTree extends SourceTreeTable<SourceEntry, Ob
     super();
     this.addComponentToActiveTab = addComponentToActiveTab;
     setSourceType(sourceType);
-    setRoot(new TreeItem<>(sourceType.createRootSourceEntry()));
+    setRoot(new FilterableTreeItem<>(sourceType.createRootSourceEntry()));
     setShowRoot(false);
-    setSortPolicy(__ -> sortTree(getRoot()));
     getSelectionModel().selectedItemProperty().addListener((__, oldItem, newItem) -> {
       selectedEntry = newItem == null ? null : newItem.getValue();
     });
@@ -104,20 +103,6 @@ public final class InteractiveSourceTree extends SourceTreeTable<SourceEntry, Ob
         .forEach(this::updateEntry);
   }
 
-  /**
-   * Sorts tree nodes recursively in order of branches before leaves, then alphabetically.
-   *
-   * @param root the root node to sort
-   */
-  private boolean sortTree(TreeItem<SourceEntry> root) {
-    if (!root.isLeaf()) {
-      FXCollections.sort(root.getChildren(),
-          branchesFirst.thenComparing(alphabetical));
-      root.getChildren().forEach(this::sortTree);
-    }
-    return true;
-  }
-
   private void makeSourceRowDraggable(TreeTableRow<? extends SourceEntry> row) {
     row.setOnDragDetected(event -> {
       if (selectedEntry == null) {
@@ -136,6 +121,10 @@ public final class InteractiveSourceTree extends SourceTreeTable<SourceEntry, Ob
       Components.getDefault().createComponent(componentName, source)
           .ifPresent(addComponentToActiveTab);
     });
+  }
+
+  public FilterableTreeItem<SourceEntry> getFilterableRoot() {
+    return (FilterableTreeItem<SourceEntry>) super.getRoot();
   }
 
 }
