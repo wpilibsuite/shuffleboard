@@ -76,7 +76,7 @@ public class SerializationTest {
 
   @Test
   public void testUpdateFile() throws IOException {
-    final Path file = Files.createTempFile("testEncodeRecode", "sbr");
+    final Path file = Files.createTempFile("testEncodeRecode", ".sbr");
     final Recording recording = new Recording();
     final List<TimestampedData> data = new ArrayList<>();
     data.add(new TimestampedData("foo", DataTypes.Number, 42.0, 0));
@@ -93,6 +93,43 @@ public class SerializationTest {
     final Recording loadedUpdate = Serialization.loadRecording(file);
     deleteFile(file);
     assertEquals(data, loadedUpdate.getData());
+  }
+
+  @Test
+  public void testUpdateFileWithNewDataTypes() throws IOException {
+    final Path file = Files.createTempFile("testEncodeRecode", ".sbr");
+    final Recording recording = new Recording();
+    final List<TimestampedData> data = new ArrayList<>();
+
+    // Initial data: a single String
+    TimestampedData initial = new TimestampedData("bar", DataTypes.String, "baz", 0);
+    data.add(initial);
+    recording.append(initial);
+    Serialization.saveRecording(recording, file);
+    final Recording loaded = Serialization.loadRecording(file);
+    assertEquals(data, loaded.getData(), "Initial data was wrong");
+
+    // First update: add a number and a boolean
+    TimestampedData newData = new TimestampedData("foo", DataTypes.Number, 123.0, 1);
+    TimestampedData another = new TimestampedData("another", DataTypes.Boolean, false, 2);
+    data.add(newData);
+    data.add(another);
+    recording.append(newData);
+    recording.append(another);
+    Serialization.updateRecordingSave(recording, file);
+    final Recording loadedUpdate = Serialization.loadRecording(file);
+    assertEquals(data, loadedUpdate.getData(), "First update was wrong");
+
+    // Second update: add two more booleans. Makes sure there's no constant pool duplication/overwriting
+    TimestampedData newBoolean = new TimestampedData("x", DataTypes.Boolean, false, 3);
+    TimestampedData anotherBool = new TimestampedData("y", DataTypes.Boolean, true, 4);
+    data.add(newBoolean);
+    data.add(anotherBool);
+    recording.append(newBoolean);
+    recording.append(anotherBool);
+    Serialization.updateRecordingSave(recording, file);
+    final Recording last = Serialization.loadRecording(file);
+    assertEquals(data, last.getData(), "Second update was wrong");
   }
 
   @Test
