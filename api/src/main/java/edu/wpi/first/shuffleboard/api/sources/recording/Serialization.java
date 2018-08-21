@@ -28,6 +28,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @SuppressWarnings("PMD.GodClass")
 public final class Serialization {
@@ -44,7 +45,7 @@ public final class Serialization {
    * The current serialization format version. This number is incremented every time the recording format changes in
    * a way that makes it incompatible with previous versions.
    */
-  public static final int VERSION = 2;
+  public static final int VERSION = 3;
 
   /**
    * The size of a serialized {@code byte}, in bytes.
@@ -112,11 +113,8 @@ public final class Serialization {
     final List<TimestampedData> dataCopy = new ArrayList<>(recording.getData());
     recording.getData().clear();
     dataCopy.sort(TimestampedData::compareTo); // make sure the data is sorted properly
-    final byte[] header = header(dataCopy); // NOPMD
-    final List<String> sourceNames = getAllSourceNames(dataCopy);
-    if (sourceNames.size() > Short.MAX_VALUE) {
-      throw new IOException("Too many sources (" + sourceNames.size() + "), should be at most " + Short.MAX_VALUE);
-    }
+    final byte[] header = header(dataCopy);
+    final List<String> constantPool = generateConstantPool(dataCopy);
     List<byte[]> segments = new ArrayList<>();
     segments.add(header);
     for (TimestampedData data : dataCopy) {
@@ -125,8 +123,8 @@ public final class Serialization {
 
       final byte[] timestamp = toByteArray(data.getTimestamp());
       // use int16 instead of int32 -- 32,767 sources should be enough
-      final byte[] sourceIdIndex = toByteArray((short) sourceNames.indexOf(data.getSourceId()));
-      final byte[] dataType = toByteArray(type.getName());
+      final byte[] sourceIdIndex = toByteArray((short) constantPool.indexOf(data.getSourceId()));
+      final byte[] dataType = toByteArray((short) constantPool.indexOf(data.getDataType().getName()));
       final byte[] dataBytes = encode(value, type);
 
       segments.add(timestamp);
@@ -183,34 +181,36 @@ public final class Serialization {
 
     // Update the constant pool
     raf.seek(Offsets.CONSTANT_POOL_HEADER_OFFSET);
-    int numExistingSourceIds = raf.readInt();
-    byte[] sourceIdBuffer = new byte[256];
-    final List<String> sourceIds = new ArrayList<>();
-    int constantPoolSize = 0;
+    int constantPoolSize = raf.readInt();
+    byte[] buffer = new byte[256];
+    final List<String> constantPoolEntries = new ArrayList<>(constantPoolSize);
+    int constantPoolLength = 0;
     int pos = Offsets.CONSTANT_POOL_HEADER_OFFSET + SIZE_OF_INT;
-    for (int i = 0; i < numExistingSourceIds; i++) {
+    for (int i = 0; i < constantPoolSize; i++) {
       raf.seek(pos);
       final int sourceIdLength = raf.readInt();
       pos += SIZE_OF_INT;
-      constantPoolSize += SIZE_OF_INT;
+      constantPoolLength += SIZE_OF_INT;
       raf.seek(pos);
-      final int len = raf.read(sourceIdBuffer, 0, sourceIdLength);
-      String sourceId = new String(Arrays.copyOfRange(sourceIdBuffer, 0, len), StandardCharsets.UTF_8);
+      final int len = raf.read(buffer, 0, sourceIdLength);
+      String constantPoolEntry = new String(Arrays.copyOfRange(buffer, 0, len), StandardCharsets.UTF_8);
       pos += len;
-      constantPoolSize += len;
-      sourceIds.add(sourceId);
+      constantPoolLength += len;
+      constantPoolEntries.add(constantPoolEntry);
     }
-    byte[] newConstantPoolEntries = dataCopy.stream()
+
+    Stream<String> sourceIdStream = dataCopy.stream()
         .map(TimestampedData::getSourceId)
-        .distinct()
-        .filter(id -> !sourceIds.contains(id))
-        .map(Serialization::toByteArray)
-        .reduce(new byte[0], Bytes::concat);
-    dataCopy.stream()
-        .map(TimestampedData::getSourceId)
-        .distinct()
-        .filter(s -> !sourceIds.contains(s))
-        .forEachOrdered(sourceIds::add);
+        .distinct();
+    Stream<String> dataTypeStream = dataCopy.stream()
+        .map(t -> t.getDataType().getName())
+        .distinct();
+    Stream<String> constantPoolStream = Stream.concat(sourceIdStream, dataTypeStream);
+    byte[] newConstantPoolEntries =
+        constantPoolStream.filter(id -> !constantPoolEntries.contains(id))
+            .peek(constantPoolEntries::add)
+            .map(Serialization::toByteArray)
+            .reduce(new byte[0], Bytes::concat);
     byte[] newBodyEntries = dataCopy.stream()
         .map(data -> {
           final DataType type = data.getDataType();
@@ -218,8 +218,8 @@ public final class Serialization {
 
           final byte[] timestamp = toByteArray(data.getTimestamp());
           // use int16 instead of int32 -- 32,767 sources should be enough
-          final byte[] sourceIdIndex = toByteArray((short) sourceIds.indexOf(data.getSourceId()));
-          final byte[] dataType = toByteArray(type.getName());
+          final byte[] sourceIdIndex = toByteArray((short) constantPoolEntries.indexOf(data.getSourceId()));
+          final byte[] dataType = toByteArray((short) constantPoolEntries.indexOf(type.getName()));
           final byte[] dataBytes = encode(value, type);
 
           return Bytes.concat(timestamp, sourceIdIndex, dataType, dataBytes);
@@ -228,12 +228,12 @@ public final class Serialization {
 
     if (newConstantPoolEntries.length > 0) {
       // Update the number of source IDs
-      int totalNumSourceIds = sourceIds.size();
+      int totalNumSourceIds = constantPoolEntries.size();
       raf.seek(Offsets.CONSTANT_POOL_HEADER_OFFSET);
       raf.writeInt(totalNumSourceIds);
 
       // Update the constant pool
-      int constantPoolEnd = Offsets.CONSTANT_POOL_HEADER_OFFSET + SIZE_OF_INT + constantPoolSize;
+      int constantPoolEnd = Offsets.CONSTANT_POOL_HEADER_OFFSET + SIZE_OF_INT + constantPoolLength;
       insertDataIntoFile(file, constantPoolEnd, newConstantPoolEntries);
     }
     Files.write(file, newBodyEntries, StandardOpenOption.WRITE, StandardOpenOption.APPEND);
@@ -335,18 +335,19 @@ public final class Serialization {
     }
     Serializers.getAdapters().forEach(a -> a.setCurrentFile(file.toFile()));
     //final int numDataPoints = readInt(bytes, Offsets.NUMBER_DATA_POINTS_OFFSET);
-    final String[] sourceNames = readStringArray(bytes, Offsets.CONSTANT_POOL_HEADER_OFFSET);
+    final String[] constantPool = readStringArray(bytes, Offsets.CONSTANT_POOL_HEADER_OFFSET);
 
     Recording recording = new Recording();
-    int cursor = Offsets.CONSTANT_POOL_HEADER_OFFSET + sizeOfStringArray(sourceNames);
+    int cursor = Offsets.CONSTANT_POOL_HEADER_OFFSET + sizeOfStringArray(constantPool);
     while (cursor < bytes.length) {
       final long timeStamp = readLong(bytes, cursor); // NOPMD
       cursor += SIZE_OF_LONG;
       final short sourceIdIndex = readShort(bytes, cursor);
-      final String sourceId = sourceNames[sourceIdIndex]; //NOPMD
+      final String sourceId = constantPool[sourceIdIndex]; //NOPMD
       cursor += SIZE_OF_SHORT;
-      final String dataType = readString(bytes, cursor);
-      cursor += SIZE_OF_INT + dataType.length();
+      final short dataTypeIndex = readShort(bytes, cursor);
+      final String dataType = constantPool[dataTypeIndex];
+      cursor += SIZE_OF_SHORT;
 
       final Object value;
       final Optional<DataType> type = DataTypes.getDefault().forName(dataType);
@@ -388,14 +389,21 @@ public final class Serialization {
    * </ul>
    */
   public static byte[] header(List<TimestampedData> data) {
-    List<String> sourceNames = getAllSourceNames(data);
-    byte[] nameBytes = toByteArray(getAllSourceNames(data).toArray(new String[sourceNames.size()]));
-    byte[] header = new byte[(SIZE_OF_INT * 3) + nameBytes.length];
+    List<String> strings = generateConstantPool(data);
+    byte[] constantPool = toByteArray(strings.toArray(new String[strings.size()]));
+    byte[] header = new byte[(SIZE_OF_INT * 3) + constantPool.length];
     put(header, toByteArray(MAGIC_NUMBER), Offsets.MAGIC_NUMBER_OFFSET);
     put(header, toByteArray(VERSION), Offsets.VERSION_NUMBER_OFFSET);
     put(header, toByteArray(data.size()), Offsets.NUMBER_DATA_POINTS_OFFSET);
-    put(header, nameBytes, Offsets.CONSTANT_POOL_HEADER_OFFSET);
+    put(header, constantPool, Offsets.CONSTANT_POOL_HEADER_OFFSET);
     return header;
+  }
+
+  private static List<String> generateConstantPool(List<TimestampedData> data) {
+    List<String> constantPool = new ArrayList<>();
+    constantPool.addAll(getAllSourceNames(data));
+    constantPool.addAll(getAllDataTypeNames(data));
+    return constantPool;
   }
 
   /**
@@ -405,7 +413,14 @@ public final class Serialization {
     return data.stream()
         .map(TimestampedData::getSourceId)
         .distinct()
-        .sorted()
+        .collect(Collectors.toList());
+  }
+
+  private static List<String> getAllDataTypeNames(List<TimestampedData> data) {
+    return data.stream()
+        .map(TimestampedData::getDataType)
+        .map(DataType::getName)
+        .distinct()
         .collect(Collectors.toList());
   }
 
