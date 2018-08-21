@@ -21,6 +21,7 @@ public final class RecorderController {
 
   private final NetworkTableEntry startStopControlEntry;
   private final NetworkTableEntry fileNameFormatEntry;
+  private final Recorder recorder;
 
   private static final int updateFlags =
       EntryListenerFlags.kImmediate
@@ -40,7 +41,8 @@ public final class RecorderController {
    * @return a new recorder controller listening to the default entries
    */
   public static RecorderController createWithDefaultEntries(NetworkTableInstance ntInstance) {
-    return new RecorderController(ntInstance, DEFAULT_START_STOP_KEY, DEFAULT_FILE_NAME_FORMAT_KEY);
+    return new RecorderController(
+        ntInstance, DEFAULT_START_STOP_KEY, DEFAULT_FILE_NAME_FORMAT_KEY, Recorder.getInstance());
   }
 
   /**
@@ -51,10 +53,15 @@ public final class RecorderController {
    *                          boolean values for any action to be taken
    * @param fileNameFormatKey the key for the entry used to control the file names of recording files. The entry must
    *                          contain a String value for it to be used
+   * @param recorder          the recorder to control
    */
-  public RecorderController(NetworkTableInstance ntInstance, String startStopKey, String fileNameFormatKey) {
-    this.startStopControlEntry = ntInstance.getEntry(startStopKey);
+  public RecorderController(NetworkTableInstance ntInstance,
+                            String startStopKey,
+                            String fileNameFormatKey,
+                            Recorder recorder) {
+    startStopControlEntry = ntInstance.getEntry(startStopKey);
     fileNameFormatEntry = ntInstance.getEntry(fileNameFormatKey);
+    this.recorder = recorder;
   }
 
   /**
@@ -81,11 +88,10 @@ public final class RecorderController {
   private void updateControl(EntryNotification event) {
     if (event.value.isBoolean() && !DashboardMode.inPlayback()) {
       if (event.value.getBoolean()) {
-        Recorder.getInstance().setFileNameFormat(
-            fileNameFormatEntry.getString(Recorder.DEFAULT_RECORDING_FILE_NAME_FORMAT));
-        Recorder.getInstance().start();
+        recorder.setFileNameFormat(fileNameFormatEntry.getString(Recorder.DEFAULT_RECORDING_FILE_NAME_FORMAT));
+        recorder.start();
       } else {
-        Recorder.getInstance().stop();
+        recorder.stop();
       }
     }
   }

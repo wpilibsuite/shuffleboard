@@ -48,7 +48,10 @@ public final class Recorder {
   private final Object startStopLock = new Object();
   private boolean firstSave = true;
 
-  private Recorder() {
+  private final boolean enableDiskWrites;
+
+  private Recorder(boolean enableDiskWrites) {
+    this.enableDiskWrites = enableDiskWrites;
     // Save the recording at the start (get the initial values) and the stop
     running.addListener((__, wasRunning, isRunning) -> {
       try {
@@ -67,23 +70,28 @@ public final class Recorder {
     });
 
     // Save the recording every 2 seconds
-    Executors.newSingleThreadScheduledExecutor(ThreadUtils::makeDaemonThread)
-        .scheduleAtFixedRate(
-            () -> {
-              if (isRunning()) {
-                try {
-                  saveToDisk();
-                } catch (Exception e) {
-                  log.log(Level.WARNING, "Could not save recording", e);
+    if (enableDiskWrites) {
+      Executors.newSingleThreadScheduledExecutor(ThreadUtils::makeDaemonThread)
+          .scheduleAtFixedRate(
+              () -> {
+                if (isRunning()) {
+                  try {
+                    saveToDisk();
+                  } catch (Exception e) {
+                    log.log(Level.WARNING, "Could not save recording", e);
+                  }
                 }
-              }
-            }, 0, 2, TimeUnit.SECONDS);
-
+              }, 0, 2, TimeUnit.SECONDS);
+    }
     ShutdownHooks.addHook(this::stop);
   }
 
+  private Recorder() {
+    this(true);
+  }
+
   private void saveToDisk() throws IOException {
-    if (recording == null) {
+    if (recording == null || !enableDiskWrites) {
       // Nothing to save
       return;
     }
@@ -108,6 +116,13 @@ public final class Recorder {
    */
   public static Recorder getInstance() {
     return instance;
+  }
+
+  /**
+   * Creates a new Recorder instance that does not write anything to disk.
+   */
+  public static Recorder createDummyInstance() {
+    return new Recorder(false);
   }
 
   /**
