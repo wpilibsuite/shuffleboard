@@ -61,15 +61,12 @@ public final class CameraStreamReader {
     try {
       lock.lock();
       if (fileNumber != this.fileNumber.get()) {
-        this.fileNumber.set(fileNumber);
         try {
-          grabber.stop();
-          started.set(false);
-          lastFrameIndex.set(-1);
+          finish();
         } catch (FrameGrabber.Exception e) {
           log.log(Level.WARNING, "Could not clean up grabber", e);
         }
-        mat = null;
+        this.fileNumber.set(fileNumber);
         grabber = createGrabber(fileNumber);
       }
     } finally {
@@ -139,4 +136,24 @@ public final class CameraStreamReader {
     }
   }
 
+  /**
+   * Cleans up this reader. For this reader to be used again, call {@link #setFileNumber}.
+   *
+   * @throws FrameGrabber.Exception if the grabber could not be stopped
+   */
+  public void finish() throws FrameGrabber.Exception {
+    lock.lock();
+    try {
+      fileNumber.set(-1);
+      started.set(false);
+      lastFrameIndex.set(-1);
+      if (mat != null) {
+        mat.release();
+      }
+      mat = null;
+      grabber.stop();
+    } finally {
+      lock.unlock();
+    }
+  }
 }
