@@ -30,6 +30,7 @@ plugins {
     id("com.github.johnrengelman.shadow") version "2.0.1"
     id("com.diffplug.gradle.spotless") version "3.5.1"
     id("org.ajoberstar.grgit") version "1.7.2"
+    id("com.google.osdetector") version "1.4.0"
 }
 
 allprojects {
@@ -99,6 +100,28 @@ allprojects {
     }
 }
 
+val currentPlatform: String
+    get() {
+        val os: String = when {
+            System.getProperty("os.name").contains("windows", true) -> "win"
+            System.getProperty("os.name").contains("mac", true) -> "mac"
+            System.getProperty("os.name").contains("linux", true) -> "linux"
+            else -> throw UnsupportedOperationException("Unknown OS: ${System.getProperty("os.name")}")
+        }
+        val osarch = System.getProperty("os.arch")
+        var arch: String =
+                if (osarch.contains("x86_64") || osarch.contains("amd64")) {
+                    "64"
+                } else if (osarch.contains("x86")) {
+                    "32"
+                } else {
+                    throw UnsupportedOperationException(osarch)
+                }
+        return os + arch
+    }
+
+println("Current OS: $currentPlatform")
+
 allprojects {
     apply {
         plugin("java")
@@ -112,6 +135,10 @@ allprojects {
     }
     repositories {
         mavenCentral()
+    }
+
+    project.ext {
+        this["platform"] = properties["platform"] ?: currentPlatform
     }
 
     dependencies {
@@ -239,6 +266,9 @@ project(":app") {
     apply {
         plugin("com.github.johnrengelman.shadow")
     }
+    tasks.withType<ShadowJar> {
+        classifier = ext["platform"] as String
+    }
     val sourceJar = task<Jar>("sourceJar") {
         description = "Creates a JAR that contains the source code."
         from(java.sourceSets["main"].allSource)
@@ -254,11 +284,11 @@ project(":app") {
         publications {
             create<MavenPublication>("app") {
                 groupId = "edu.wpi.first.shuffleboard"
-                artifactId = "app"
+                artifactId = "shuffleboard"
                 getWPILibVersion()?.let { version = it }
                 val shadowJar: ShadowJar by tasks
                 artifact (shadowJar) {
-                    classifier = null
+                    classifier = shadowJar.classifier
                 }
                 artifact(sourceJar)
                 artifact(javadocJar)
