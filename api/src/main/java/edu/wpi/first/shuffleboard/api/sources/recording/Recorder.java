@@ -23,6 +23,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 
 /**
  * Records data from sources. Each source is responsible for calling {@link #recordCurrentValue} whenever its value
@@ -32,9 +34,13 @@ public final class Recorder {
 
   private static final Logger log = Logger.getLogger(Recorder.class.getName());
 
+  public static final String DEFAULT_RECORDING_FILE_NAME_FORMAT = "recording-${time}";
   private static final Recorder instance = new Recorder();
 
   private final BooleanProperty running = new AtomicBooleanProperty(this, "running", false);
+  private final StringProperty fileNameFormat =
+      new SimpleStringProperty(this, "fileNameFormat", DEFAULT_RECORDING_FILE_NAME_FORMAT);
+  private String currentFileNameFormat = DEFAULT_RECORDING_FILE_NAME_FORMAT; // NOPMD - PMD can't handle lambdas
   private Instant startTime = null;
   private Recording recording = null;
   private File recordingFile;
@@ -42,10 +48,14 @@ public final class Recorder {
   private final Object startStopLock = new Object();
   private boolean firstSave = true;
 
-  private Recorder() {
+  private final boolean enableDiskWrites;
+
+  private Recorder(boolean enableDiskWrites) {
+    this.enableDiskWrites = enableDiskWrites;
     // Save the recording at the start (get the initial values) and the stop
     running.addListener((__, wasRunning, isRunning) -> {
       try {
+        currentFileNameFormat = getFileNameFormat();
         saveToDisk();
       } catch (IOException e) {
         log.log(Level.WARNING, "Could not save to disk", e);
@@ -60,27 +70,32 @@ public final class Recorder {
     });
 
     // Save the recording every 2 seconds
-    Executors.newSingleThreadScheduledExecutor(ThreadUtils::makeDaemonThread)
-        .scheduleAtFixedRate(
-            () -> {
-              if (isRunning()) {
-                try {
-                  saveToDisk();
-                } catch (Exception e) {
-                  log.log(Level.WARNING, "Could not save recording", e);
+    if (enableDiskWrites) {
+      Executors.newSingleThreadScheduledExecutor(ThreadUtils::makeDaemonThread)
+          .scheduleAtFixedRate(
+              () -> {
+                if (isRunning()) {
+                  try {
+                    saveToDisk();
+                  } catch (Exception e) {
+                    log.log(Level.WARNING, "Could not save recording", e);
+                  }
                 }
-              }
-            }, 0, 2, TimeUnit.SECONDS);
-
+              }, 0, 2, TimeUnit.SECONDS);
+    }
     ShutdownHooks.addHook(this::stop);
   }
 
+  private Recorder() {
+    this(true);
+  }
+
   private void saveToDisk() throws IOException {
-    if (recording == null) {
+    if (recording == null || !enableDiskWrites) {
       // Nothing to save
       return;
     }
-    Path file = Storage.createRecordingFilePath(startTime);
+    Path file = Storage.createRecordingFilePath(startTime, currentFileNameFormat);
     if (recordingFile == null) {
       recordingFile = file.toFile();
     }
@@ -101,6 +116,13 @@ public final class Recorder {
    */
   public static Recorder getInstance() {
     return instance;
+  }
+
+  /**
+   * Creates a new Recorder instance that does not write anything to disk.
+   */
+  public static Recorder createDummyInstance() {
+    return new Recorder(false);
   }
 
   /**
@@ -186,5 +208,17 @@ public final class Recorder {
 
   public File getRecordingFile() {
     return recordingFile;
+  }
+
+  public String getFileNameFormat() {
+    return fileNameFormat.get();
+  }
+
+  public StringProperty fileNameFormatProperty() {
+    return fileNameFormat;
+  }
+
+  public void setFileNameFormat(String fileNameFormat) {
+    this.fileNameFormat.set(fileNameFormat);
   }
 }

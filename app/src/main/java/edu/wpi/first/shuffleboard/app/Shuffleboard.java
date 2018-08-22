@@ -1,7 +1,6 @@
 package edu.wpi.first.shuffleboard.app;
 
 import edu.wpi.first.shuffleboard.api.sources.recording.Converters;
-import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
 import edu.wpi.first.shuffleboard.api.theme.Themes;
 import edu.wpi.first.shuffleboard.api.util.ShutdownHooks;
 import edu.wpi.first.shuffleboard.api.util.Storage;
@@ -107,8 +106,6 @@ public class Shuffleboard extends Application {
 
     notifyPreloader(new ShuffleboardPreloader.StateNotification("Loading base plugin", 0.125));
     PluginLoader.getDefault().load(new BasePlugin());
-
-    Recorder.getInstance().start();
 
     notifyPreloader(new ShuffleboardPreloader.StateNotification("Loading NetworkTables plugin", 0.25));
     PluginLoader.getDefault().load(new NetworkTablesPlugin());

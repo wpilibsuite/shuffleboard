@@ -27,10 +27,10 @@ import java.util.logging.Logger;
 @Description(
     group = "edu.wpi.first.shuffleboard",
     name = "CameraServer",
-    version = "1.2.0",
+    version = "2.0.0",
     summary = "Provides sources and widgets for viewing CameraServer MJPEG streams"
 )
-@Requires(group = "edu.wpi.first.shuffleboard", name = "NetworkTables", minVersion = "1.0.0")
+@Requires(group = "edu.wpi.first.shuffleboard", name = "NetworkTables", minVersion = "2.0.0")
 public class CameraServerPlugin extends Plugin {
 
   private static final Logger log = Logger.getLogger(CameraServerPlugin.class.getName());
