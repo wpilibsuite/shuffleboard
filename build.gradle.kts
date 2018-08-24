@@ -184,33 +184,12 @@ allprojects {
     }
 
     tasks.withType<Test> {
-        if (System.getProperty("os.name").toLowerCase().startsWith("windows")) {
-            doLast {
-                println("Detected a Windows platform; UI tests will not be run. See: https://github.com/javafxports/openjdk-jfx/issues/66")
-            }
-            useJUnitPlatform {
-                excludeTags("UI")
-            }
-            jvmArgs = listOf(
-                // Disable headless tests on Windows due to a bug in headless test rendering on Windows
-                // See: https://github.com/javafxports/openjdk-jfx/issues/66
-                // "-Djava.awt.headless=true",
-                // "-Dtestfx.robot=glass",
-                // "-Dtestfx.headless=true",
-                // "-Dprism.order=sw",
-                // "-Dprism.text=t2k",
-                "--add-exports", "javafx.controls/com.sun.javafx.scene.control.inputmap=ALL-UNNAMED"
-            )
-        } else {
-            useJUnitPlatform()
-            jvmArgs = listOf(
-                "-Djava.awt.headless=true",
-                "-Dtestfx.robot=glass",
-                "-Dtestfx.headless=true",
-                "-Dprism.order=sw",
-                "-Dprism.text=t2k",
-                "--add-exports", "javafx.controls/com.sun.javafx.scene.control.inputmap=ALL-UNNAMED"
-            )
+        // TODO: re-enable when TestFX (or the underlying JavaFX problem) is fixed
+        println("UI tests will not be run due to TestFX being broken when headless on Java 10.")
+        println("See: https://github.com/javafxports/openjdk-jfx/issues/66")
+        // Link: https://github.com/javafxports/openjdk-jfx/issues/66
+        useJUnitPlatform {
+            excludeTags("UI")
         }
     }
 
