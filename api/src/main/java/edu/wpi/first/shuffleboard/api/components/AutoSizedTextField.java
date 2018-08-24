@@ -1,7 +1,5 @@
 package edu.wpi.first.shuffleboard.api.components;
 
-//import com.sun.javafx.scene.control.skin.Utils;
-
 import edu.wpi.first.shuffleboard.api.util.TextUtils;
 
 import org.fxmisc.easybind.EasyBind;

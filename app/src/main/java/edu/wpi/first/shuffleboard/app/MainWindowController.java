@@ -52,7 +52,7 @@ import javafx.stage.Window;
 /**
  * Controller for the main UI window.
  */
-@SuppressWarnings({"PMD.TooManyFields", "PMD.JUnit4TestShouldUseAfterAnnotation"}) // Fucking piece of shit
+@SuppressWarnings("PMD.TooManyFields")
 public class MainWindowController {
 
   private static final Logger log = Logger.getLogger(MainWindowController.class.getName());
