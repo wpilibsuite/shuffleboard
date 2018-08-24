@@ -27,6 +27,7 @@ public final class ScaleController extends ElementController {
   private BooleanProperty farBlue;  // NOPMD - field avoids GC
 
   @FXML
+  @Override
   protected void initialize() {
     super.initialize();
     nearRed = new PseudoClassProperty(nearPlatform, "red");

@@ -9,6 +9,7 @@ public class SwitchController extends ElementController {
   private Pane root;
 
   @FXML
+  @Override
   public void initialize() {
     super.initialize();
     root.getProperties().put("fx:controller", this);

@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.testfx.framework.junit5.ApplicationTest;
-import org.testfx.matcher.base.NodeMatchers;
+import org.testfx.matcher.control.TextMatchers;
 import org.testfx.util.WaitForAsyncUtils;
 
 import javafx.fxml.FXMLLoader;
@@ -28,6 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Disabled("Move to network table plugin tests")
+@Tag("UI")
 public class MainWindowControllerTest extends ApplicationTest {
 
   @Override
@@ -55,7 +56,7 @@ public class MainWindowControllerTest extends ApplicationTest {
     inst.waitForEntryListenerQueue(-1.0);
     WaitForAsyncUtils.waitForFxEvents();
 
-    drag(NodeMatchers.hasText("a string source"), MouseButton.PRIMARY)
+    drag(TextMatchers.hasText("a string source"), MouseButton.PRIMARY)
         .dropTo(".widget-pane");
 
     WidgetTile tile = lookup(".widget-pane .tile").query();
@@ -70,8 +71,8 @@ public class MainWindowControllerTest extends ApplicationTest {
     inst.waitForEntryListenerQueue(-1.0);
     WaitForAsyncUtils.waitForFxEvents();
 
-    rightClickOn(NodeMatchers.hasText("testSourceContextMenu"));
-    Node showAsText = lookup(NodeMatchers.hasText("Show as: Text View")).query();
+    rightClickOn(TextMatchers.hasText("testSourceContextMenu"));
+    Node showAsText = lookup(TextMatchers.hasText("Show as: Text View")).query();
     assertNotNull(showAsText);
     clickOn(showAsText);
 

@@ -36,12 +36,18 @@ val theMainClassName = "edu.wpi.first.shuffleboard.app.Shuffleboard"
 
 application {
     mainClassName = theMainClassName
-    applicationDefaultJvmArgs = listOf("-Xverify:none", "-Dprism.order=d3d,es2,sw")
+    applicationDefaultJvmArgs = listOf(
+            "-Xverify:none",
+            "-Dprism.order=d3d,es2,sw",
+            "--add-exports", "javafx.controls/com.sun.javafx.scene.control.inputmap=ALL-UNNAMED"
+    )
 }
 
 tasks.withType<Jar> {
     manifest {
         attributes["Main-Class"] = theMainClassName
+        attributes["JavaFX-Main-Class"] = theMainClassName
+        attributes["JavaFX-Preloader-Class"] = "edu.wpi.first.shuffleboard.app.ShuffleboardPreloader"
     }
 }
 

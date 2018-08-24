@@ -23,6 +23,7 @@ import javafx.scene.layout.Pane;
 
 @Description(name = "PDP", dataTypes = PowerDistributionData.class)
 @ParametrizedController("PowerDistributionPanel.fxml")
+@SuppressWarnings("PMD.TooManyFields")
 public class PowerDistributionPanelWidget extends SimpleAnnotatedWidget<PowerDistributionData> {
 
   private static final UnitStringConverter voltConverter = new UnitStringConverter("V");

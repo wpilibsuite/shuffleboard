@@ -18,6 +18,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.RepeatedTest;
+import org.junit.jupiter.api.Tag;
 import org.testfx.framework.junit5.ApplicationTest;
 
 import static org.hamcrest.CoreMatchers.hasItem;
@@ -30,6 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 // Note: we do a boatload of repetitions on these tests to make sure ntcore listeners trigger
 // We also use sleep calls because NetworkTableInstance.waitForEntryListenerQueue() fails about 20% of the time
 // which makes the tests break
+@Tag("UI")
 public class CompositeNetworkTableSourceTest extends ApplicationTest {
 
   private static final String tableName = "/CompositeNetworkTableSourceTest";

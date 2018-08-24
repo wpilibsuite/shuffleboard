@@ -14,6 +14,7 @@ import edu.wpi.first.shuffleboard.plugin.base.BasePlugin;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -26,6 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 /**
  * Tests all widgets with all possible data types to make sure they all
  */
+@Tag("UI")
 public class AllWidgetSanityTest extends ApplicationTest {
 
   private static final BasePlugin plugin = new BasePlugin();

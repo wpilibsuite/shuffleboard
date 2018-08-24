@@ -1,6 +1,8 @@
 package edu.wpi.first.shuffleboard.api.components;
 
-import com.sun.javafx.tk.Toolkit;
+//import com.sun.javafx.scene.control.skin.Utils;
+
+import edu.wpi.first.shuffleboard.api.util.TextUtils;
 
 import org.fxmisc.easybind.EasyBind;
 
@@ -19,8 +21,7 @@ public class AutoSizedTextField extends TextField {
     setPadding(new Insets(3));
     prefWidthProperty().bind(
         EasyBind.combine(visibleProperty(), textProperty(), fontProperty(), (visible, text, font) -> {
-          double width = Toolkit.getToolkit().getFontLoader().computeStringWidth(text, font);
-          return visible ? width + 7 : 1;
+          return visible ? TextUtils.computeTextWidth(font, text) + 7 : 1;
         })
     );
   }

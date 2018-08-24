@@ -380,7 +380,7 @@ public class WidgetPane extends TilePane implements ComponentContainer {
     return super.isOpen(col, row, tileWidth, tileHeight, ignore.or(n -> n == gridHighlight));
   }
 
-  public final boolean getHighlight() {
+  public final boolean isHighlight() {
     return highlight.get();
   }
 

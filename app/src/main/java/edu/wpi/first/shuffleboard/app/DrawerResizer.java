@@ -73,7 +73,7 @@ final class DrawerResizer {
   }
 
 
-  private void mouseReleased(MouseEvent event) {
+  private void mouseReleased(MouseEvent event) { // NOPMD unused parameter
     if (!dragging) {
       return;
     }

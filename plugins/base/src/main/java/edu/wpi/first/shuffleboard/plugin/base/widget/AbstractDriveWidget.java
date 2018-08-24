@@ -22,6 +22,8 @@ import javafx.scene.shape.Shape;
  */
 public abstract class AbstractDriveWidget<T extends DriveBaseData<T>> extends SimpleAnnotatedWidget<T> {
 
+  private static final Double ZERO = Double.valueOf(0.0);
+
   /**
    * Overrides the intrinsic minimum dimensions of some widgets. This is useful for sane resizing of
    */
@@ -49,10 +51,10 @@ public abstract class AbstractDriveWidget<T extends DriveBaseData<T>> extends Si
     return new SubSource<>(
         SpeedControllerType.Instance,
         source,
-        d -> setter.apply(dataOrDefault.get(), d == null ? 0.0 : d.getValue()),
+        d -> setter.apply(dataOrDefault.get(), d == null ? ZERO : d.getValue()),
         t -> new SpeedControllerData(
             motorName,
-            t == null ? 0.0 : getter.applyAsDouble(t),
+            t == null ? ZERO : getter.applyAsDouble(t),
             t != null && t.isControllable()
         )
     );

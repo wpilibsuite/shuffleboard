@@ -6,6 +6,7 @@ import edu.wpi.first.shuffleboard.app.components.Tile;
 import edu.wpi.first.shuffleboard.app.components.WidgetPane;
 import edu.wpi.first.shuffleboard.app.components.WidgetTile;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.testfx.framework.junit5.ApplicationTest;
 
@@ -15,6 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
 
+@Tag("UI")
 public class TileMoverTest extends ApplicationTest {
 
   private static final TileSize ONE_BY_ONE = new TileSize(1, 1);

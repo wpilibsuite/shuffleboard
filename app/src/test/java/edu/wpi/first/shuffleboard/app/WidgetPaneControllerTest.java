@@ -23,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.testfx.matcher.control.LabeledMatchers.hasText;
 import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
 
+@Tag("UI")
 public class WidgetPaneControllerTest extends ApplicationTest {
 
   private WidgetPane pane;

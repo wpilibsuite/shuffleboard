@@ -18,6 +18,7 @@ import java.util.logging.StreamHandler;
 /**
  * Helper class for setting up the application loggers.
  */
+@SuppressWarnings("PMD.DefaultPackage")
 final class Loggers {
 
   private Loggers() {

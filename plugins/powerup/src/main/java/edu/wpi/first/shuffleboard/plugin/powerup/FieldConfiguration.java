@@ -3,6 +3,8 @@ package edu.wpi.first.shuffleboard.plugin.powerup;
 import edu.wpi.first.shuffleboard.plugin.base.data.fms.Alliance;
 import edu.wpi.first.shuffleboard.plugin.base.data.fms.FmsInfo;
 
+import com.google.common.annotations.VisibleForTesting;
+
 /**
  * Contains the configuration of the 2018 field elements.
  */
@@ -53,6 +55,7 @@ public final class FieldConfiguration {
    * @param alliance            the current alliance
    * @param gameSpecificMessage the game-specific message to parse the location from
    */
+  @VisibleForTesting
   static Configuration getConfig(Element element, Alliance alliance, String gameSpecificMessage) {
     if (gameSpecificMessage.length() != 3) {
       return Configuration.UNKNOWN;

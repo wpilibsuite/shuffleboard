@@ -16,9 +16,6 @@ import edu.wpi.first.shuffleboard.plugin.powerup.PowerUpPlugin;
 
 import com.github.zafarkhaja.semver.Version;
 import com.google.common.base.Stopwatch;
-import com.sun.javafx.application.LauncherImpl;
-
-import de.codecentric.centerdevice.javafxsvg.SvgImageLoaderFactory;
 
 import it.sauronsoftware.junique.AlreadyLockedException;
 import it.sauronsoftware.junique.JUnique;
@@ -40,7 +37,6 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.layout.Pane;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 
 @SuppressWarnings("PMD.MoreThanOneLogger") // there's only one logger used, the others are for setting up file logging
 public class Shuffleboard extends Application {
@@ -54,7 +50,7 @@ public class Shuffleboard extends Application {
   private MainWindowController mainWindowController;
 
   public static void main(String[] args) {
-    LauncherImpl.launchApplication(Shuffleboard.class, ShuffleboardPreloader.class, args);
+    launch(Shuffleboard.class, args);
   }
 
   @Override
@@ -71,9 +67,6 @@ public class Shuffleboard extends Application {
 
     Loggers.setupLoggers();
 
-    // Install SVG image loaders so SVGs can be used like any other image
-    SvgImageLoaderFactory.install();
-
     // Search for and load themes from the custom theme directory before loading application preferences
     // This avoids an issue with attempting to load a theme at startup that hasn't yet been registered
     logger.finer("Registering custom user themes from external dir");
@@ -85,22 +78,6 @@ public class Shuffleboard extends Application {
     // Before we load components that only work with Java 8, check to make sure
     // the application is running on Java 8. If we are running on an invalid
     // version, show an alert and exit before we get into trouble.
-    String javaSpec = System.getProperty("java.specification.version");
-    String javaVersion = System.getProperty("java.version");
-    if (!"1.8".equals(javaSpec)) {
-      Alert invalidVersionAlert = new Alert(Alert.AlertType.ERROR);
-      invalidVersionAlert.setHeaderText("Invalid JRE Version!");
-      invalidVersionAlert.setContentText(
-          String.format("You are using an unsupported Java version: %s%n"
-                  + "Please download Java 8 and uninstall Java %s.",
-              javaVersion, javaSpec));
-      invalidVersionAlert.initStyle(StageStyle.UNDECORATED);
-      invalidVersionAlert.getDialogPane().getStylesheets().setAll(
-          AppPreferences.getInstance().getTheme().getStyleSheets());
-      invalidVersionAlert.showAndWait();
-
-      return;
-    }
 
     Converters.getDefault().register(CsvConverter.Instance);
 

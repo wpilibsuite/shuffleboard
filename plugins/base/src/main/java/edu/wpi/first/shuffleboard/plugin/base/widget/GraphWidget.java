@@ -16,9 +16,6 @@ import edu.wpi.first.shuffleboard.api.widget.Description;
 import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 
 import com.google.common.collect.ImmutableList;
-import com.sun.prism.GraphicsPipeline;
-import com.sun.prism.j2d.J2DPipeline;
-import com.sun.prism.sw.SWPipeline;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,10 +27,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalLong;
 import java.util.WeakHashMap;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import javafx.beans.binding.Bindings;
@@ -61,19 +56,8 @@ import javafx.util.StringConverter;
 
 @Description(name = "Graph", dataTypes = {Number.class, double[].class})
 @ParametrizedController("GraphWidget.fxml")
-@SuppressWarnings("PMD.GodClass")
+@SuppressWarnings({"PMD.GodClass", "PMD.TooManyFields", "PMD.ExcessiveMethodLength"})
 public class GraphWidget implements AnnotatedWidget {
-
-  private static final Logger log = Logger.getLogger(GraphWidget.class.getName());
-
-  static {
-    GraphicsPipeline pipeline = GraphicsPipeline.getPipeline();
-    log.info("Using graphics pipeline: " + pipeline);
-    if (pipeline instanceof SWPipeline || pipeline instanceof J2DPipeline) {
-      log.warning("Software rendering detected! Graphs will be VERY slow and will most likely make the entire "
-          + "application slow down to the point of being completely unusable");
-    }
-  }
 
   @FXML
   private Pane root;
@@ -134,12 +118,14 @@ public class GraphWidget implements AnnotatedWidget {
    */
   private static final long UPDATE_PERIOD = 250;
 
-  private static final Future<?> updater = ThreadUtils.newDaemonScheduledExecutorService()
-      .scheduleAtFixedRate(() -> {
-        synchronized (graphWidgets) {
-          graphWidgets.forEach(GraphWidget::update);
-        }
-      }, 500, UPDATE_PERIOD, TimeUnit.MILLISECONDS);
+  static {
+    ThreadUtils.newDaemonScheduledExecutorService()
+        .scheduleAtFixedRate(() -> {
+          synchronized (graphWidgets) {
+            graphWidgets.forEach(GraphWidget::update);
+          }
+        }, 500, UPDATE_PERIOD, TimeUnit.MILLISECONDS);
+  }
 
   @FXML
   private void initialize() {

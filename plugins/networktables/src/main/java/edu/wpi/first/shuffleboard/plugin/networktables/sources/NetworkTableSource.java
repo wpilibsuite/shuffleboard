@@ -56,7 +56,7 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
     NetworkTableInstance inst = NetworkTableInstance.getDefault();
     inst.removeEntryListener(listenerUid);
     setConnected(true);
-    listenerUid = inst.addEntryListener(fullTableKey, (event) -> {
+    listenerUid = inst.addEntryListener(fullTableKey, event -> {
       if (isSingular() && !event.name.equals(fullTableKey)) {
         // Since NetworkTableInstance.addEntryListener() will fire on anything that starts with the key,
         // a singular source will be notified for an unrelated entry.

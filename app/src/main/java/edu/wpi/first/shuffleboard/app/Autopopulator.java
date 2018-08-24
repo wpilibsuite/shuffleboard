@@ -1,7 +1,6 @@
 package edu.wpi.first.shuffleboard.app;
 
 import edu.wpi.first.shuffleboard.api.Populatable;
-import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
 
 import java.util.ArrayList;
@@ -9,12 +8,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Predicate;
 
 import javafx.collections.ListChangeListener;
-
-import static edu.wpi.first.shuffleboard.api.data.DataTypes.Map;
-import static edu.wpi.first.shuffleboard.api.data.DataTypes.Unknown;
 
 /**
  * An autopopulator is responsible for populating {@link Populatable Populatables} with components as sources are
@@ -26,9 +21,6 @@ public class Autopopulator {
   private final SourceTypes sourceTypes;
 
   private static final Autopopulator defaultInstance = new Autopopulator(SourceTypes.getDefault());
-
-  private static final Predicate<DataSource<?>> notCatchallType
-      = source -> source.getDataType() != Map && source.getDataType() != Unknown;
 
   /**
    * Gets the default instance.

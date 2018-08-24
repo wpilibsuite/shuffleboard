@@ -4,7 +4,6 @@ import edu.wpi.first.shuffleboard.api.css.SimpleColorCssMetaData;
 import edu.wpi.first.shuffleboard.api.css.SimpleCssMetaData;
 
 import com.google.common.collect.ImmutableList;
-import com.sun.javafx.css.converters.EnumConverter;
 
 import eu.hansolo.medusa.Gauge;
 
@@ -17,6 +16,7 @@ import javafx.css.CssMetaData;
 import javafx.css.PseudoClass;
 import javafx.css.StyleConverter;
 import javafx.css.Styleable;
+import javafx.css.converter.EnumConverter;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;

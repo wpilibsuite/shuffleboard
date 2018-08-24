@@ -72,6 +72,7 @@ import java.util.Set;
     version = "1.0.2",
     summary = "Defines all the WPILib data types and stock widgets"
 )
+@SuppressWarnings("PMD.CouplingBetweenObjects")
 public class BasePlugin extends Plugin {
 
   @Override

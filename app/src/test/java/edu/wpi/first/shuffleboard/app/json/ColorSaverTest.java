@@ -3,6 +3,7 @@ package edu.wpi.first.shuffleboard.app.json;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.testfx.framework.junit5.ApplicationTest;
 
@@ -11,6 +12,7 @@ import javafx.stage.Stage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@Tag("UI")
 public class ColorSaverTest extends ApplicationTest {
 
   private Gson gson;

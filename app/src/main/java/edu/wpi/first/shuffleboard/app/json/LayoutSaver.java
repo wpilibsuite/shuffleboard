@@ -61,7 +61,6 @@ public class LayoutSaver implements ElementTypeAdapter<Layout> {
   public Layout deserialize(JsonElement json, JsonDeserializationContext context) throws JsonParseException {
     JsonObject obj = json.getAsJsonObject();
     String name = obj.get("_type").getAsString();
-    JsonArray children = obj.get("_children").getAsJsonArray();
 
     Layout layout = Components.getDefault().createComponent(name).flatMap(TypeUtils.optionalCast(Layout.class))
         .orElseThrow(() -> new JsonParseException("Can't find layout name " + name));
@@ -96,6 +95,7 @@ public class LayoutSaver implements ElementTypeAdapter<Layout> {
       layout.setTitle(title.getAsString());
     }
 
+    JsonArray children = obj.get("_children").getAsJsonArray();
     children.forEach(child -> {
       String childName = child.getAsJsonObject().get("_type").getAsString();
       Optional<Type> childType = Components.getDefault().javaTypeFor(childName);
