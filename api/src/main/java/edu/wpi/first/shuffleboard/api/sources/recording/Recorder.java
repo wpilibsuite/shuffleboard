@@ -190,6 +190,20 @@ public final class Recorder {
     recording.append(new TimestampedData(id.intern(), dataType, value, timestamp()));
   }
 
+  /**
+   * Adds a marker to the recording at the current time.
+   *
+   * @param name        the name of the marker
+   * @param description a description of the marked event
+   * @param importance  the importance of the marker
+   */
+  public void addMarker(String name, String description, MarkerImportance importance) {
+    if (!isRunning()) {
+      return;
+    }
+    recording.addMarker(new Marker(name, description, importance, timestamp()));
+  }
+
   private long timestamp() {
     return Instant.now().toEpochMilli() - startTime.toEpochMilli();
   }

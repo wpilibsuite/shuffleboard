@@ -10,6 +10,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -129,6 +130,21 @@ public class SerializationTest {
     Serialization.updateRecordingSave(recording, file);
     final Recording last = Serialization.loadRecording(file);
     assertEquals(data, last.getData(), "Second update was wrong");
+  }
+
+  @Test
+  public void testEncodeRecodeWithMarkers() throws IOException {
+    final Path file = Files.createTempFile("testEncodeRecodeWithMarkers", ".sbr");
+    Recording recording = new Recording();
+    recording.addMarker(new Marker("First", "", MarkerImportance.LOWEST, 0));
+    recording.addMarker(new Marker("Second", "The second marker", MarkerImportance.HIGHEST, 1));
+    Serialization.saveRecording(recording, file);
+    Recording loaded = Serialization.loadRecording(file);
+    System.out.println(loaded.getMarkers());
+    assertAll(
+        () -> assertEquals(recording.getData(), loaded.getData(), "Data was wrong"),
+        () -> assertEquals(recording.getMarkers(), loaded.getMarkers(), "Markers were wrong")
+    );
   }
 
   @Test

@@ -33,6 +33,25 @@ import java.util.stream.Stream;
 @SuppressWarnings("PMD.GodClass")
 public final class Serialization {
 
+  /*
+   * Recording file format:
+   * - Magic number (4 bytes)
+   * - Version number (4 bytes)
+   * - Offset to markers (4 bytes)
+   * - Offset to data (4 bytes)
+   * - Number of data points (4 bytes)
+   * - Constant string pool (variable size) (String array)
+   *   - Number of entries (4 bytes)
+   *     - String as UTF-8 byte array
+   * - Event markers (variable size) (Complex array)
+   *   - Number of markers (4 bytes)
+   *     - Timestamp (8 bytes)
+   *     - Name as UTF-8 byte array
+   *     - Description as UTF-8 byte array (may be zero-length)
+   *     - Importance level [0..4]
+   * - Data points (variable size) (Complex array)
+   */
+
   private static final Logger log = Logger.getLogger(Serialization.class.getName());
 
   /**
@@ -45,7 +64,7 @@ public final class Serialization {
    * The current serialization format version. This number is incremented every time the recording format changes in
    * a way that makes it incompatible with previous versions.
    */
-  public static final int VERSION = 3;
+  public static final int VERSION = 4;
 
   /**
    * The size of a serialized {@code byte}, in bytes.
@@ -90,10 +109,23 @@ public final class Serialization {
      * The offset to the <tt>int</tt> value of the number of data points.
      */
     public static final int NUMBER_DATA_POINTS_OFFSET = VERSION_NUMBER_OFFSET + SIZE_OF_INT;
+
     /**
-     * The offset to the <tt>int</tt> value of the number of entries in the constant pool.
+     * The offset to the <tt>int</tt> value holding the position of the markers array in the file. The byte at this
+     * position will be the first byte in the markers array, and is preceded by the final byte of the constant pool.
      */
-    public static final int CONSTANT_POOL_HEADER_OFFSET = NUMBER_DATA_POINTS_OFFSET + SIZE_OF_INT;
+    public static final int MARKER_POSITION_OFFSET = NUMBER_DATA_POINTS_OFFSET + SIZE_OF_INT;
+
+    /**
+     * The offset to the <tt>int</tt> value holding the position of the data array in the file. The byte at this
+     * position will be the first byte in the data array, and is preceded by the final byte in the markers array.
+     */
+    public static final int DATA_POSITION_OFFSET = MARKER_POSITION_OFFSET + SIZE_OF_INT;
+
+    /**
+     * The offset to the first byte in the constant pool.
+     */
+    public static final int CONSTANT_POOL_HEADER_OFFSET = DATA_POSITION_OFFSET + SIZE_OF_INT;
   }
 
   private Serialization() {
@@ -111,12 +143,27 @@ public final class Serialization {
     Serializers.getAdapters().forEach(a -> a.setCurrentFile(file.toFile()));
     // Work on a copy, since the recording can have new data added to it while we're in the middle of saving
     final List<TimestampedData> dataCopy = new ArrayList<>(recording.getData());
+    final List<Marker> markers = new ArrayList<>(recording.getMarkers());
     recording.getData().clear();
     dataCopy.sort(TimestampedData::compareTo); // make sure the data is sorted properly
     final byte[] header = header(dataCopy);
+    put(header, toByteArray(0), Offsets.DATA_POSITION_OFFSET);
     final List<String> constantPool = generateConstantPool(dataCopy);
     List<byte[]> segments = new ArrayList<>();
     segments.add(header);
+
+    // Event markers
+    put(header, toByteArray(segments.stream().mapToInt(b -> b.length).sum()), Offsets.MARKER_POSITION_OFFSET);
+    segments.add(toByteArray(markers.size()));
+    for (Marker marker : markers) {
+      segments.add(toByteArray(marker.getTimestamp()));
+      segments.add(toByteArray(marker.getName()));
+      segments.add(toByteArray(marker.getDescription()));
+      segments.add(toByteArray(marker.getImportance().ordinal()));
+    }
+
+    // Data
+    put(header, toByteArray(segments.stream().mapToInt(b -> b.length).sum()), Offsets.DATA_POSITION_OFFSET);
     for (TimestampedData data : dataCopy) {
       final DataType type = data.getDataType();
       final Object value = data.getData();
@@ -158,8 +205,10 @@ public final class Serialization {
     }
     // Use a copy to avoid synchronization locking
     List<TimestampedData> dataCopy = new ArrayList<>(recording.getData());
+    List<Marker> markers = new ArrayList<>(recording.getMarkers());
     recording.getData().clear();
-    if (dataCopy.isEmpty()) {
+    recording.getMarkers().clear();
+    if (dataCopy.isEmpty() && markers.isEmpty()) {
       // No new data
       return;
     }
@@ -178,6 +227,12 @@ public final class Serialization {
     int totalDataPoints = numExistingDataPoints + dataCopy.size();
     raf.seek(Offsets.NUMBER_DATA_POINTS_OFFSET);
     raf.writeInt(totalDataPoints); // Update the number of data points
+
+    // Get the location of the markers in the file
+    raf.seek(Offsets.MARKER_POSITION_OFFSET);
+    final int markerPosition = raf.readInt();
+    raf.seek(Offsets.DATA_POSITION_OFFSET);
+    final int dataPosition = raf.readInt();
 
     // Update the constant pool
     raf.seek(Offsets.CONSTANT_POOL_HEADER_OFFSET);
@@ -211,6 +266,15 @@ public final class Serialization {
             .peek(constantPoolEntries::add)
             .map(Serialization::toByteArray)
             .reduce(new byte[0], Bytes::concat);
+    byte[] newMarkerEntries = markers.stream()
+        .map(marker -> {
+          byte[] timestamp = toByteArray(marker.getTimestamp());
+          byte[] name = toByteArray(marker.getName());
+          byte[] description = toByteArray(marker.getDescription());
+          byte[] importance = toByteArray(marker.getImportance().ordinal());
+          return Bytes.concat(timestamp, name, description, importance);
+        })
+        .reduce(new byte[0], Bytes::concat);
     byte[] newBodyEntries = dataCopy.stream()
         .map(data -> {
           final DataType type = data.getDataType();
@@ -235,6 +299,26 @@ public final class Serialization {
       // Update the constant pool
       int constantPoolEnd = Offsets.CONSTANT_POOL_HEADER_OFFSET + SIZE_OF_INT + constantPoolLength;
       insertDataIntoFile(file, constantPoolEnd, newConstantPoolEntries);
+      raf.seek(Offsets.MARKER_POSITION_OFFSET);
+      raf.writeInt(constantPoolEnd + newConstantPoolEntries.length);
+    }
+
+    if (newMarkerEntries.length > 0) {
+      // Update the number of markers
+      int markerStart = markerPosition + newConstantPoolEntries.length;
+      raf.seek(markerStart);
+      int currentSize = raf.readInt();
+      raf.seek(markerStart);
+      raf.writeInt(currentSize + markers.size());
+
+      // Add the new entries to the markers array
+      int markerEnd = dataPosition + newConstantPoolEntries.length;
+      insertDataIntoFile(file, markerEnd, newMarkerEntries);
+
+      // Update location of data
+      raf.seek(Offsets.DATA_POSITION_OFFSET);
+      int newDataPos = dataPosition + newMarkerEntries.length + newConstantPoolEntries.length;
+      raf.writeInt(newDataPos);
     }
     Files.write(file, newBodyEntries, StandardOpenOption.WRITE, StandardOpenOption.APPEND);
   }
@@ -339,6 +423,21 @@ public final class Serialization {
 
     Recording recording = new Recording();
     int cursor = Offsets.CONSTANT_POOL_HEADER_OFFSET + sizeOfStringArray(constantPool);
+    int numMarkers = readInt(bytes, cursor);
+    cursor += SIZE_OF_INT;
+    for (int i = 0; i < numMarkers; i++) {
+      final long timestamp = readLong(bytes, cursor);
+      cursor += SIZE_OF_LONG;
+      final String name = readString(bytes, cursor);
+      cursor += toByteArray(name).length;
+      final String description = readString(bytes, cursor);
+      cursor += toByteArray(description).length;
+      final int importanceOrdinal = readInt(bytes, cursor);
+      cursor += SIZE_OF_INT;
+
+      Marker marker = new Marker(name, description, MarkerImportance.valueOf(importanceOrdinal), timestamp);
+      recording.addMarker(marker);
+    }
     while (cursor < bytes.length) {
       final long timeStamp = readLong(bytes, cursor); // NOPMD
       cursor += SIZE_OF_LONG;
@@ -391,7 +490,7 @@ public final class Serialization {
   public static byte[] header(List<TimestampedData> data) {
     List<String> strings = generateConstantPool(data);
     byte[] constantPool = toByteArray(strings.toArray(new String[strings.size()]));
-    byte[] header = new byte[(SIZE_OF_INT * 3) + constantPool.length];
+    byte[] header = new byte[(SIZE_OF_INT * 5) + constantPool.length];
     put(header, toByteArray(MAGIC_NUMBER), Offsets.MAGIC_NUMBER_OFFSET);
     put(header, toByteArray(VERSION), Offsets.VERSION_NUMBER_OFFSET);
     put(header, toByteArray(data.size()), Offsets.NUMBER_DATA_POINTS_OFFSET);

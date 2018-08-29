@@ -11,10 +11,11 @@ public class Recording {
   private TimestampedData first;
   private TimestampedData last;
   private final List<TimestampedData> data = Collections.synchronizedList(new ArrayList<>());
+  private final List<Marker> markers = Collections.synchronizedList(new ArrayList<>());
   private final List<String> sourceIds = new ArrayList<>();
 
   /**
-   * Appends the given data to the end of the data list. Note that this does not
+   * Appends the given data to the end of the data list.
    *
    * @param data the data to append
    */
@@ -30,6 +31,26 @@ public class Recording {
       if (last == null || data.getTimestamp() > last.getTimestamp()) {
         last = data;
       }
+    }
+  }
+
+  /**
+   * Adds a marker to this recording.
+   *
+   * @param marker the marker to add
+   */
+  public void addMarker(Marker marker) {
+    synchronized (modificationLock) {
+      markers.add(marker);
+    }
+  }
+
+  /**
+   * Gets the markers in this recording.
+   */
+  public List<Marker> getMarkers() {
+    synchronized (modificationLock) {
+      return markers;
     }
   }
 
@@ -86,21 +107,22 @@ public class Recording {
 
       Recording that = (Recording) obj;
 
-      return this.data.equals(that.data);
+      return this.data.equals(that.data)
+          && this.markers.equals(that.markers);
     }
   }
 
   @Override
   public int hashCode() {
     synchronized (modificationLock) {
-      return Objects.hash(data);
+      return Objects.hash(data, markers);
     }
   }
 
   @Override
   public String toString() {
     synchronized (modificationLock) {
-      return "Recording(data=" + data + ")";
+      return "Recording(data=" + data + ", markers=" + markers + ")";
     }
   }
 
