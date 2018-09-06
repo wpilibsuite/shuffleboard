@@ -1,12 +1,18 @@
 package edu.wpi.first.shuffleboard.plugin.base.widget;
 
 import edu.wpi.first.shuffleboard.api.components.LinearIndicator;
+import edu.wpi.first.shuffleboard.api.prefs.Group;
+import edu.wpi.first.shuffleboard.api.prefs.Setting;
 import edu.wpi.first.shuffleboard.api.widget.Description;
 import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 import edu.wpi.first.shuffleboard.api.widget.SimpleAnnotatedWidget;
 
+import com.google.common.collect.ImmutableList;
+
 import org.fxmisc.easybind.EasyBind;
 
+
+import java.util.List;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
@@ -44,8 +50,21 @@ public class NumberBarWidget extends SimpleAnnotatedWidget<Number> {
                 return max.doubleValue() - min.doubleValue();
               }
             }));
+  }
 
-    exportProperties(indicator.minProperty(), indicator.maxProperty(), indicator.centerProperty(), numTicks, showText);
+  @Override
+  public List<Group> getSettings() {
+    return ImmutableList.of(
+        Group.of("Range",
+            Setting.of("Min", indicator.minProperty()),
+            Setting.of("Max", indicator.maxProperty()),
+            Setting.of("Center", indicator.centerProperty())
+        ),
+        Group.of("Visuals",
+            Setting.of("Num tick marks", numTicks),
+            Setting.of("Show text", showText)
+        )
+    );
   }
 
   @Override

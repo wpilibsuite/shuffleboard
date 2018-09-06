@@ -46,4 +46,13 @@ public class Debouncer implements Runnable {
     return debounceDelay;
   }
 
+  /**
+   * Cancels the debouncer. The target will not run unless {@link #run()} is called later.
+   */
+  public void cancel() {
+    if (future != null) {
+      future.cancel(true);
+    }
+  }
+
 }

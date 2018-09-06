@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import edu.wpi.first.shuffleboard.api.components.LinearIndicator?>
+<?import edu.wpi.first.shuffleboard.api.components.NumberField?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Slider?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<StackPane xmlns="http://javafx.com/javafx"
+           xmlns:fx="http://javafx.com/fxml"
+           fx:controller="edu.wpi.first.shuffleboard.plugin.base.widget.SpeedControllerWidget"
+           fx:id="root"
+           minHeight="80" minWidth="256"
+           prefHeight="128" prefWidth="256">
+    <padding>
+        <Insets topRightBottomLeft="8"/>
+    </padding>
+    <StackPane fx:id="viewPane">
+        <LinearIndicator fx:id="view" min="-1" max="1" center="0" showTickLabels="true" showTickMarks="true" majorTickUnit="0.5"/>
+    </StackPane>
+    <VBox fx:id="controlPane">
+        <Slider fx:id="control" min="-1" max="1" VBox.vgrow="ALWAYS" blockIncrement="0.125" minHeight="24" showTickLabels="true" showTickMarks="true" majorTickUnit="0.5"/>
+        <HBox alignment="BOTTOM_CENTER" spacing="8" maxWidth="Infinity" maxHeight="32">
+            <NumberField fx:id="valueField" HBox.hgrow="ALWAYS"/>
+            <Button text="Zero" onAction="#zero" minWidth="64"/>
+        </HBox>
+    </VBox>
+</StackPane>

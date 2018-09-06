@@ -1,20 +1,23 @@
 package edu.wpi.first.shuffleboard.app.json;
 
+import edu.wpi.first.shuffleboard.api.json.AnnotatedTypeAdapter;
+import edu.wpi.first.shuffleboard.api.json.ElementTypeAdapter;
+import edu.wpi.first.shuffleboard.api.util.GridPoint;
+import edu.wpi.first.shuffleboard.api.widget.Component;
+import edu.wpi.first.shuffleboard.api.widget.Components;
+import edu.wpi.first.shuffleboard.api.widget.TileSize;
+import edu.wpi.first.shuffleboard.app.components.Tile;
+import edu.wpi.first.shuffleboard.app.components.WidgetPane;
+
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonSerializationContext;
 
-import edu.wpi.first.shuffleboard.api.util.GridPoint;
-import edu.wpi.first.shuffleboard.api.widget.Component;
-import edu.wpi.first.shuffleboard.api.widget.TileSize;
-import edu.wpi.first.shuffleboard.api.widget.Components;
-import edu.wpi.first.shuffleboard.app.components.Tile;
-import edu.wpi.first.shuffleboard.app.components.WidgetPane;
-
 import java.lang.reflect.Type;
 import java.util.Map;
+import java.util.Optional;
 
 import javafx.scene.layout.GridPane;
 
@@ -24,6 +27,11 @@ public class WidgetPaneSaver implements ElementTypeAdapter<WidgetPane> {
   @Override
   public JsonElement serialize(WidgetPane src, JsonSerializationContext context) {
     JsonObject object = new JsonObject();
+    object.addProperty("gridSize", src.getTileSize());
+    object.addProperty("showGrid", src.isShowGrid());
+    object.addProperty("hgap", src.getHgap());
+    object.addProperty("vgap", src.getVgap());
+    JsonObject tiles = new JsonObject();
 
     for (Tile<?> tile : src.getTiles()) {
       String x = GridPane.getColumnIndex(tile).toString();
@@ -34,16 +42,23 @@ public class WidgetPaneSaver implements ElementTypeAdapter<WidgetPane> {
       tileObject.add("size", context.serialize(tile.getSize(), TileSize.class));
       tileObject.add("content", context.serialize(tile.getContent(), tile.getContent().getClass()));
 
-      object.add(coordinate, tileObject);
+      tiles.add(coordinate, tileObject);
     }
+    object.add("tiles", tiles);
 
     return object;
   }
 
   @Override
   public WidgetPane deserialize(JsonElement json, JsonDeserializationContext context) throws JsonParseException {
-    JsonObject tiles = json.getAsJsonObject();
+    JsonObject object = json.getAsJsonObject();
     WidgetPane pane = new WidgetPane();
+    pane.setShowGrid(Optional.ofNullable(object.get("showGrid")).map(JsonElement::getAsBoolean).orElse(true));
+    pane.setTileSize(object.get("gridSize").getAsDouble());
+    pane.setHgap(object.get("hgap").getAsDouble());
+    pane.setVgap(object.get("vgap").getAsDouble());
+
+    JsonObject tiles = object.get("tiles").getAsJsonObject();
 
     for (Map.Entry<String, JsonElement> tileLocation : tiles.entrySet()) {
       String[] coordPart = tileLocation.getKey().split(",");

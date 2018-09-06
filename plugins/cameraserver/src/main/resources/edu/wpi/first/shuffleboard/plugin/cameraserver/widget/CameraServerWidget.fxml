@@ -1,19 +1,54 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.image.Image?>
-<?import javafx.scene.layout.StackPane?>
+<?import edu.wpi.first.shuffleboard.api.components.IntegerField?>
 <?import edu.wpi.first.shuffleboard.api.components.ResizableImageView?>
 <?import javafx.geometry.Insets?>
-<StackPane xmlns="http://javafx.com/javafx"
-           xmlns:fx="http://javafx.com/fxml"
-           fx:controller="edu.wpi.first.shuffleboard.plugin.cameraserver.widget.CameraServerWidget"
-           fx:id="root"
-           prefHeight="256" prefWidth="256">
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Slider?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Line?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.control.Button?>
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="edu.wpi.first.shuffleboard.plugin.cameraserver.widget.CameraServerWidget"
+      fx:id="root"
+      alignment="CENTER"
+      stylesheets="@cameraserverwidget.css" styleClass="camera-server-widget"
+      minWidth="416" minHeight="256">
     <padding>
         <Insets topRightBottomLeft="8"/>
     </padding>
-    <ResizableImageView fx:id="imageView" preserveRatio="true"/>
+    <AnchorPane maxWidth="${imageView.boundsInParent.width}">
+        <Label fx:id="fpsLabel" AnchorPane.leftAnchor="0" text="--- FPS"/>
+        <Label fx:id="bandwidthLabel" AnchorPane.rightAnchor="0" text="--- Mbps"/>
+    </AnchorPane>
+    <StackPane fx:id="imageContainer" VBox.vgrow="ALWAYS">
+        <ResizableImageView fx:id="imageView" preserveRatio="true"/>
+        <Pane fx:id="crosshairs" visible="${controller.showCrosshair}" StackPane.alignment="CENTER" maxWidth="-Infinity" maxHeight="-Infinity">
+            <Line startX="0" endX="${imageView.boundsInParent.width}" startY="${imageView.boundsInParent.height / 2}" endY="${imageView.boundsInParent.height / 2}" stroke="${controller.crosshairColor}" strokeDashArray="4, 4"/>
+            <Line startX="${imageView.boundsInParent.width / 2}" endX="${imageView.boundsInParent.width / 2}" startY="0" endY="${imageView.boundsInParent.height}" stroke="${controller.crosshairColor}" strokeDashArray="4, 4"/>
+        </Pane>
+    </StackPane>
+    <GridPane fx:id="controls" alignment="CENTER" visible="${controller.showControls}" managed="${controller.showControls}" hgap="16" styleClass="camera-controls">
+        <Slider fx:id="compressionSlider" min="0" max="100" value="-1" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+        <Label text="Compression" minWidth="-Infinity" labelFor="${compressionSlider}" GridPane.columnIndex="0" GridPane.rowIndex="1" GridPane.halignment="CENTER"/>
+        <IntegerField fx:id="frameRateField" number="-1" minWidth="50" maxWidth="50" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+        <Label text="FPS" minWidth="-Infinity" labelFor="${frameRateField}" GridPane.columnIndex="1" GridPane.rowIndex="1" GridPane.halignment="CENTER"/>
+        <HBox fx:id="resolutionBox" alignment="CENTER" GridPane.columnIndex="2" GridPane.rowIndex="0">
+            <IntegerField fx:id="width" promptText="Width" number="-1" minWidth="60" maxWidth="60"/>
+            <Label text="x" minWidth="-Infinity"/>
+            <IntegerField fx:id="height" promptText="Height" number="-1" minWidth="60" maxWidth="60"/>
+        </HBox>
+        <Label text="Resolution" minWidth="-Infinity" labelFor="${resolutionBox}" GridPane.columnIndex="2" GridPane.rowIndex="1" GridPane.halignment="CENTER"/>
+        <Button text="Apply settings" onAction="#applySettings" minWidth="-Infinity" GridPane.columnIndex="3" GridPane.rowIndex="0" GridPane.rowSpan="2"/>
+    </GridPane>
     <fx:define>
-        <Image fx:id="emptyImage" url="http://www.fmwconcepts.com/misc_tests/mandril_panm90zc.jpg"/>
+        <Image fx:id="emptyImage" url="/black_square.jpg"/>
     </fx:define>
-</StackPane>
+</VBox>

@@ -1,7 +1,13 @@
+### Shuffleboard ###
+
+# Ignore the test plugins jar, force it to be rebuilt locally
+app/src/test/resources/test_plugins.jar
+
 ### Gradle ###
 .gradle
 build/
 out/
+!gradle-wrapper.jar
 
 # Ignore Gradle GUI config
 gradle-app.setting
@@ -70,3 +76,5 @@ local.properties
 
 # JDT-specific (Eclipse Java Development Tools)
 .classpath
+
+*.jar

@@ -6,11 +6,11 @@ import edu.wpi.first.shuffleboard.plugin.cameraserver.data.CameraServerData;
 import java.util.Map;
 import java.util.function.Function;
 
-public class CameraServerDataType extends ComplexDataType<CameraServerData> {
+public final class CameraServerDataType extends ComplexDataType<CameraServerData> {
 
-  public static final CameraServerDataType INSTANCE = new CameraServerDataType();
+  public static final CameraServerDataType Instance = new CameraServerDataType();
 
-  public CameraServerDataType() {
+  private CameraServerDataType() {
     super("CameraServer", CameraServerData.class);
   }
 
@@ -21,7 +21,7 @@ public class CameraServerDataType extends ComplexDataType<CameraServerData> {
 
   @Override
   public CameraServerData getDefaultValue() {
-    return new CameraServerData("Example", null);
+    return new CameraServerData("Example", null, 0, 0);
   }
 
 }

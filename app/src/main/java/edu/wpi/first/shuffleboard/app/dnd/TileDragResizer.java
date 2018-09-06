@@ -1,8 +1,10 @@
 package edu.wpi.first.shuffleboard.app.dnd;
 
+import edu.wpi.first.shuffleboard.api.util.RoundingMode;
 import edu.wpi.first.shuffleboard.api.widget.TileSize;
 import edu.wpi.first.shuffleboard.app.components.Tile;
-import edu.wpi.first.shuffleboard.app.components.TilePane;
+import edu.wpi.first.shuffleboard.app.components.TileLayout;
+import edu.wpi.first.shuffleboard.app.components.WidgetPane;
 import edu.wpi.first.shuffleboard.app.components.WidgetTile;
 
 import java.util.Map;
@@ -12,9 +14,10 @@ import javafx.scene.Cursor;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Pane;
 
 /**
- * {@link TileDragResizer} can be used to add mouse listeners to a {@link WidgetTile} and make it
+ * {@code TileDragResizer} can be used to add mouse listeners to a {@link WidgetTile} and make it
  * resizable by the user by clicking and dragging the border in the same way as a window.
  */
 public final class TileDragResizer {
@@ -29,7 +32,7 @@ public final class TileDragResizer {
    */
   private static final int RESIZE_MARGIN = 10;
 
-  private final TilePane tilePane;
+  private final WidgetPane tilePane;
   private final Tile tile;
 
   private double lastX;
@@ -70,7 +73,7 @@ public final class TileDragResizer {
     }
   }
 
-  private TileDragResizer(TilePane tilePane, Tile tile) {
+  private TileDragResizer(WidgetPane tilePane, Tile tile) {
     this.tilePane = tilePane;
     this.tile = tile;
     tile.addEventHandler(MouseEvent.MOUSE_PRESSED, this::mousePressed);
@@ -86,7 +89,7 @@ public final class TileDragResizer {
    * @param tilePane the pane containing the tile to make resizable
    * @param tile     the tile to make resizable
    */
-  public static TileDragResizer makeResizable(TilePane tilePane, Tile tile) {
+  public static TileDragResizer makeResizable(WidgetPane tilePane, Tile tile) {
     return resizers.computeIfAbsent(tile, __ -> new TileDragResizer(tilePane, tile));
   }
 
@@ -106,19 +109,37 @@ public final class TileDragResizer {
     tile.setCursor(Cursor.DEFAULT);
     resizeLocation = ResizeLocation.NONE;
 
+    TileSize size = finalSize();
+
+    tile.setSize(size);
+    GridPane.setColumnSpan(tile, size.getWidth());
+    GridPane.setRowSpan(tile, size.getHeight());
+    tilePane.setHighlight(false);
+    ResizeUtils.setCurrentTile(null);
+  }
+
+  /**
+   * Gets the final size of the tile if resizing were to be completed at the instant this method is called.
+   */
+  private TileSize finalSize() {
     // round size to nearest tile size
     final int tileWidth = tilePane.roundWidthToNearestTile(tile.getWidth());
     final int tileHeight = tilePane.roundHeightToNearestTile(tile.getHeight());
 
-    // limit size to prevent exceeding the bounds of the grid
-    final int boundedWidth = Math.min(tilePane.getNumColumns() - GridPane.getColumnIndex(tile),
-        tileWidth);
-    final int boundedHeight = Math.min(tilePane.getNumRows() - GridPane.getRowIndex(tile),
-        tileHeight);
+    // Make sure the tile never gets smaller than it's content minimum size, otherwise weird clipping occurs
+    Pane view = tile.getContent().getView();
+    int minWidth = tilePane.roundWidthToNearestTile(view.getMinWidth(), RoundingMode.UP);
+    int minHeight = tilePane.roundHeightToNearestTile(view.getMinHeight(), RoundingMode.UP);
 
-    tile.setSize(new TileSize(boundedWidth, boundedHeight));
-    GridPane.setColumnSpan(tile, boundedWidth);
-    GridPane.setRowSpan(tile, boundedHeight);
+    // limit size to prevent exceeding the bounds of the grid
+    int boundedWidth = Math.min(tilePane.getNumColumns() - GridPane.getColumnIndex(tile), tileWidth);
+    int boundedHeight = Math.min(tilePane.getNumRows() - GridPane.getRowIndex(tile), tileHeight);
+
+    // limit size to never be less than the minimum size of the content
+    boundedWidth = Math.max(minWidth, boundedWidth);
+    boundedHeight = Math.max(minHeight, boundedHeight);
+
+    return new TileSize(boundedWidth, boundedHeight);
   }
 
   private void mouseOver(MouseEvent event) {
@@ -205,6 +226,10 @@ public final class TileDragResizer {
 
     lastX = mouseX;
     lastY = mouseY;
+    TileLayout layout = tilePane.getTileLayout(tile);
+    tilePane.setHighlight(true);
+    tilePane.setHighlightPoint(layout.origin);
+    tilePane.setHighlightSize(finalSize());
   }
 
   private void mousePressed(MouseEvent event) {
@@ -225,6 +250,11 @@ public final class TileDragResizer {
 
     lastX = event.getX();
     lastY = event.getY();
+    ResizeUtils.setCurrentTile(tile);
+    TileLayout layout = tilePane.getTileLayout(tile);
+    tilePane.setHighlight(true);
+    tilePane.setHighlightSize(layout.size);
+    tilePane.setHighlightPoint(layout.origin);
   }
 
   public boolean isDragging() {

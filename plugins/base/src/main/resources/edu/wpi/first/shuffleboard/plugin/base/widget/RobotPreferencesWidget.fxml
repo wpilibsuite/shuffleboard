@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import edu.wpi.first.shuffleboard.api.components.ExtendedPropertySheet?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.geometry.Insets?>
+<StackPane xmlns="http://javafx.com/javafx"
+           xmlns:fx="http://javafx.com/fxml"
+           fx:controller="edu.wpi.first.shuffleboard.plugin.base.widget.RobotPreferencesWidget"
+           fx:id="root"
+           minWidth="192" minHeight="100">
+    <padding>
+        <Insets topRightBottomLeft="4"/>
+    </padding>
+    <ExtendedPropertySheet fx:id="propertySheet" searchBoxVisible="true"/>
+</StackPane>

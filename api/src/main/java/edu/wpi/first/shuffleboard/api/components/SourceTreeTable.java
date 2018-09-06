@@ -1,10 +1,12 @@
 package edu.wpi.first.shuffleboard.api.components;
 
+import edu.wpi.first.shuffleboard.api.sources.DataSourceUtils;
 import edu.wpi.first.shuffleboard.api.sources.SourceEntry;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.util.AlphanumComparator;
 import edu.wpi.first.shuffleboard.api.util.EqualityUtils;
-import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
+
+import org.fxmisc.easybind.EasyBind;
 
 import java.util.Comparator;
 import java.util.List;
@@ -13,6 +15,7 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.scene.control.Label;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableColumn;
 import javafx.scene.control.TreeTableView;
@@ -53,6 +56,12 @@ public class SourceTreeTable<S extends SourceEntry, V> extends TreeTableView<S> 
         f -> new ReadOnlyStringWrapper(getEntryForCellData(f).getViewName()));
     valueColumn.setCellValueFactory(
         f -> new ReadOnlyObjectWrapper(getEntryForCellData(f).getValueView()));
+    Label placeholder = new Label();
+    placeholder.textProperty().bind(EasyBind.monadic(sourceType)
+        .map(SourceType::getName)
+        .map(n -> "No data available. Is there a connection to " + n + "?")
+        .orElse("No data available. Is the source connected?"));
+    setPlaceholder(placeholder);
 
     getColumns().addAll(keyColumn, valueColumn);
   }
@@ -84,7 +93,7 @@ public class SourceTreeTable<S extends SourceEntry, V> extends TreeTableView<S> 
   private void makeBranches(S entry, boolean deleted) {
     final SourceType sourceType = getSourceType();
     String name = entry.getName();
-    List<String> hierarchy = NetworkTableUtils.getHierarchy(name);
+    List<String> hierarchy = DataSourceUtils.getHierarchy(name);
     TreeItem<S> current = getRoot();
     TreeItem<S> parent = current;
     boolean structureChanged = false;
@@ -119,6 +128,16 @@ public class SourceTreeTable<S extends SourceEntry, V> extends TreeTableView<S> 
     if (deleted) {
       if (current != null) {
         parent.getChildren().remove(current);
+
+        // Remove empty subtrees
+        if (parent.getChildren().isEmpty()) {
+          TreeItem<S> item = parent.getParent();
+          while (item != null) {
+            item.getChildren().remove(parent);
+            parent = item;
+            item = item.getParent();
+          }
+        }
         structureChanged = true;
       }
     } else {

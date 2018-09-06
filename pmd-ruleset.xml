@@ -23,7 +23,9 @@
         <exclude name="RedundantFieldInitializer"/>
         <exclude name="AvoidInstantiatingObjectsInLoops"/>
     </rule>
-    <rule ref="rulesets/java/strings.xml"/>
+    <rule ref="rulesets/java/strings.xml">
+        <exclude name="AvoidDuplicateLiterals"/>
+    </rule>
     <rule ref="rulesets/java/imports.xml">
         <exclude name="TooManyStaticImports"/>
     </rule>

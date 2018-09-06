@@ -1,11 +1,13 @@
 package edu.wpi.first.shuffleboard.plugin.networktables;
 
+import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.shuffleboard.api.components.SourceTreeTable;
 import edu.wpi.first.shuffleboard.api.data.MapData;
+import edu.wpi.first.shuffleboard.api.sources.DataSourceUtils;
 import edu.wpi.first.shuffleboard.api.sources.SourceEntry;
 import edu.wpi.first.shuffleboard.api.widget.Description;
 import edu.wpi.first.shuffleboard.api.widget.SimpleAnnotatedWidget;
-import edu.wpi.first.shuffleboard.plugin.networktables.sources.NetworkTableEntry;
+import edu.wpi.first.shuffleboard.plugin.networktables.sources.NetworkTableSourceEntry;
 import edu.wpi.first.shuffleboard.plugin.networktables.sources.NetworkTableSourceType;
 
 import java.util.Map;
@@ -22,13 +24,13 @@ import static edu.wpi.first.shuffleboard.api.components.SourceTreeTable.branches
 public class NetworkTableTreeWidget extends SimpleAnnotatedWidget<MapData> {
 
   private final StackPane pane = new StackPane();
-  private final SourceTreeTable<NetworkTableEntry, String> tree = new SourceTreeTable<>();
+  private final SourceTreeTable<NetworkTableSourceEntry, String> tree = new SourceTreeTable<>();
 
-  private final TreeItem<NetworkTableEntry> root = new TreeItem<>(new NetworkTableEntry("/", null));
+  private final TreeItem<NetworkTableSourceEntry> root = new TreeItem<>(new NetworkTableSourceEntry("/", null));
 
   @SuppressWarnings("JavadocMethod")
   public NetworkTableTreeWidget() {
-    tree.setSourceType(NetworkTableSourceType.INSTANCE);
+    tree.setSourceType(NetworkTableSourceType.getInstance());
     pane.getChildren().add(tree);
     root.setExpanded(true);
     tree.setRoot(root);
@@ -37,16 +39,22 @@ public class NetworkTableTreeWidget extends SimpleAnnotatedWidget<MapData> {
       sort(root);
       return true;
     });
-    dataProperty().addListener((__, oldData, newData) -> {
+    dataOrDefault.addListener((__, oldData, newData) -> {
       final Map<String, Object> newMap = newData.asMap();
       // Remove deleted keys
       if (oldData != null) {
         oldData.asMap().entrySet().stream()
             .filter(e -> !newMap.containsKey(e.getKey()))
-            .forEach(e -> tree.updateEntry(new NetworkTableEntry(e.getKey(), e.getValue())));
+            .forEach(e -> tree.removeEntry(new NetworkTableSourceEntry(e.getKey(), e.getValue())));
       }
 
-      newData.changesFrom(oldData).forEach((key, value) -> tree.removeEntry(new NetworkTableEntry(key, value)));
+      newData.changesFrom(oldData)
+          .forEach((key, value) -> {
+            if (DataSourceUtils.isNotMetadata(key)) {
+              tree.updateEntry(new NetworkTableSourceEntry(
+                  NetworkTable.normalizeKey(key), value));
+            }
+          });
     });
   }
 
@@ -68,7 +76,7 @@ public class NetworkTableTreeWidget extends SimpleAnnotatedWidget<MapData> {
     }
   }
 
-  public SourceTreeTable<NetworkTableEntry, String> getTree() {
+  public SourceTreeTable<NetworkTableSourceEntry, String> getTree() {
     return tree;
   }
 

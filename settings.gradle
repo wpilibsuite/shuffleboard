@@ -1,11 +1,17 @@
 include ":api"
 include ":app"
-include "integ-test"
+include ":app:test_plugins"
+include "integ_test"
 include ":plugins:base"
 include ":plugins:cameraserver"
 include ":plugins:networktables"
+include ":plugins:powerup"
 
-rootProject.children.each { project ->
+rootProject.children.each {
+    setUpChildProject(it)
+}
+
+private void setUpChildProject(ProjectDescriptor project) {
     /*
      * Instead of every file being named build.gradle.kts we instead use the name ${project.name}.gradle.kts.
      * This is much nicer for searching for the file in your IDE.
@@ -16,5 +22,6 @@ rootProject.children.each { project ->
     if (!project.buildFile.isFile()) {
         project.buildFileName = kotlinName
     }
-    assert project.buildFile.isFile() : "File named $groovyName or $kotlinName must exist."
+    assert project.buildFile.isFile(): "File named $groovyName or $kotlinName must exist."
+    project.children.each { setUpChildProject(it) }
 }

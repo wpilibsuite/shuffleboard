@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TreeItem?>
+<?import javafx.scene.control.TreeView?>
+<?import javafx.scene.layout.StackPane?>
+<SplitPane xmlns="http://javafx.com/javafx"
+           xmlns:fx="http://javafx.com/fxml"
+           fx:controller="edu.wpi.first.shuffleboard.app.prefs.SettingsDialogController"
+           fx:id="root"
+           styleClass="settings-pane">
+    <TreeView fx:id="categories" minWidth="180" showRoot="false" styleClass="settings-categories">
+        <TreeItem fx:id="rootItem" expanded="true"/>
+    </TreeView>
+    <StackPane fx:id="view" minWidth="340"/>
+</SplitPane>

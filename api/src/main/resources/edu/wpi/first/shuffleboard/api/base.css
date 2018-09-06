@@ -14,6 +14,17 @@
  ******************************************************************************/
 .root {
     -fx-font-family: "Roboto";
+    -procedurally-defined-tab-color: derive(-swatch-500, -12%);
+    -procedurally-defined-tab-text-color: yellow;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Widget pane                                                                 *
+ *                                                                             *
+ ******************************************************************************/
+.widget-pane {
+    -fx-grid-line-color: -swatch-light-gray;
 }
 
 /*******************************************************************************
@@ -32,6 +43,63 @@
     -fx-border-color: transparent;
 }
 
+.tab-container {
+    /* Rotate the tab container to put the close button on the left-hand side */
+    -fx-rotate: 180;
+}
+
+.tab-container > * {
+    /* Re-rotate the contents to keep the text right-side up */
+    -fx-rotate: 180;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Sources and Widget Drawer                                                   *
+ *                                                                             *
+ ******************************************************************************/
+.drawer {
+    -fx-background-color: -swatch-light-gray;
+}
+
+.drawer .tab-pane .tab-header-background {
+    -fx-background-color: -swatch-200;
+}
+
+.drawer .tab-pane .tab .tab-label {
+    -fx-text-fill: -fx-text-base-color;
+    -fx-border-color: -swatch-200;
+}
+
+.drawer .tab-pane .tab:selected .tab-label {
+    -fx-border-color: -fx-text-base-color;
+}
+
+.drawer .drawer-separator {
+    -fx-background-color: -swatch-light-gray;
+    -fx-cursor: h-resize;
+    -fx-border-width: 0 2 0 0, 0 1 0 0;
+    -fx-border-color: -swatch-dark-gray, -swatch-gray;
+}
+
+.drawer .drawer-separator .toggle-button {
+    -fx-background-color: null;
+    -fx-text-fill: -fx-text-base-color;
+    -fx-effect: none;
+    -fx-max-width: 12 !important;
+    -fx-pref-width: 12 !important;
+    -fx-padding: 0 0 0 0;
+    -fx-cursor: hand;
+}
+
+.drawer .drawer-separator .toggle-button:hover {
+    -fx-text-fill: derive(-fx-text-base-color, 25%);
+}
+
+.drawer .drawer-separator .toggle-button:pressed {
+    -fx-text-fill: derive(-fx-text-base-color, -15%);
+}
+
 /*******************************************************************************
  *                                                                             *
  * Dashboard Tabs                                                              *
@@ -42,7 +110,19 @@
 }
 
 .tab-header-area {
-    -fx-padding: 2px;
+    -fx-padding: 0;
+}
+
+.tab {
+    -fx-background-color: transparent;
+    -fx-align: center;
+    -fx-padding: 4;
+    -fx-border-radius: 0;
+    -fx-background-radius: 0;
+}
+
+.tab .tab-close-button {
+    -fx-padding: 0 0 0 10px;
 }
 
 .tab:hover {
@@ -58,16 +138,36 @@
     -fx-highlight-fill: -swatch-200;
 }
 
-.tab {
-    -fx-background-color: transparent;
-    -fx-border-color: transparent;
-    -fx-align: center;
+.dashboard-tabs .tab {
+    -fx-padding: 4 12 4 16;
 }
 
-.tab .tab-close-button {
-    -fx-padding: 0 0 0 10px;
+.dashboard-tabs .tab:selected {
+    -fx-padding: 4 12 4 0;
 }
 
+.dashboard-tabs .procedurally-defined-tab .text-field,
+.dashboard-tabs .procedurally-defined-tab .label {
+    -fx-text-fill: -procedurally-defined-tab-text-color;
+}
+
+.dashboard-tabs .procedurally-defined-tab {
+    -fx-background-color: -procedurally-defined-tab-color;
+    -fx-border-width: 1;
+    -fx-border-color: -procedurally-defined-tab-color;
+}
+
+.dashboard-tabs .procedurally-defined-tab .tab-label {
+    -fx-border-color: -procedurally-defined-tab-color;
+}
+
+.dashboard-tabs .procedurally-defined-tab:selected .tab-label {
+    -fx-border-color: -procedurally-defined-tab-text-color;
+}
+
+.dashboard-tabs .procedurally-defined-tab:selected .tab-close-button {
+    -fx-background-color: -procedurally-defined-tab-text-color;
+}
 
 /*******************************************************************************
  *                                                                             *
@@ -76,26 +176,39 @@
  ******************************************************************************/
 .tile {
     -fx-font-size: 11pt;
-}
-
-.tile .toggle-switch {
-    -fx-font-size: 12pt;
+    -fx-effect: dropshadow(gaussian, #999, 6, 0.1, 0, 4);
 }
 
 .tile:selected {
-    -fx-effect: dropshadow(gaussian, -swatch-500, 6, 0.1, 0, 4);
+    -fx-effect: dropshadow(gaussian, indigo, 8, 0.00005, 0, 4);
+    -fx-background-color: #f0f0f0;
+}
+
+.tile:selected .tile-title-bar {
+    -fx-background-color: -swatch-500;
 }
 
 .tile-title-bar {
     -fx-padding: 4px;
-    -fx-background-color: linear-gradient(to bottom, -swatch-100, -swatch-200);
+    -fx-background-color: -swatch-200;
     -fx-font-weight: bold;
     -fx-font-size: 11pt;
 }
 
-.tile .property-sheet * {
-    /* TODO figure out exactly what needs to be set */
+.tile .scroll-pane, .tile .viewport,
+.tile .property-sheet .property-pane, .tile .property-sheet .tool-bar {
     -fx-background-color: transparent;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Layouts                                                                     *
+ *                                                                             *
+ ******************************************************************************/
+.layout-stack {
+    -fx-background-color: rgba(0, 0, 0, 0.005);
+    -fx-border-width: 1;
+    -fx-border-color: -swatch-100;
 }
 
 .layout-label {
@@ -103,13 +216,8 @@
     -fx-font-size: 12px;
 }
 
-
 .layout-label * {
-    -fx-text-fill: #aaa;
-}
-
-.tile .scroll-pane, .tile .viewport {
-    -fx-background-color: transparent;
+    -fx-text-fill: #333;
 }
 
 /*******************************************************************************
@@ -126,6 +234,17 @@
 .grid-highlight:colliding {
     -fx-border-color: rgba(255, 0, 0, 0.75);
     -fx-background-color: rgba(255, 0, 0, 0.1);
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Grid Selection                                                              *
+ *                                                                             *
+ ******************************************************************************/
+.grid-selection {
+    -fx-fill: rgba(0, 255, 0, 0.1);
+    -fx-stroke: rgba(0, 255, 0, 0.75);
+    -fx-stroke-width: 0.25em;
 }
 
 /*******************************************************************************
@@ -174,6 +293,10 @@
     -fx-pref-width: 1em;
 }
 
+.linear-indicator .range-bar {
+    -fx-background-color: -swatch-200;
+}
+
 .linear-indicator .low-thumb, .linear-indicator .high-thumb {
     -fx-background-radius: 0;
     -fx-border-radius: 0;
@@ -184,10 +307,221 @@
     -fx-background-color: transparent;
 }
 
+.linear-indicator-text {
+    -fx-text-fill: black;
+}
+
+.linear-indicator-text .text {
+    -fx-font-size: 9pt;
+}
+
 .voltage-view .range-bar {
     -fx-background-color: linear-gradient(to bottom, gold, derive(gold, -10%));
 }
 
 .voltage-view:vertical .range-bar {
     -fx-background-color: linear-gradient(to right, gold, derive(gold, -10%));
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Medusa gauges                                                               *
+ *                                                                             *
+ ******************************************************************************/
+.gauge {
+    -fx-needle-color: -swatch-500;
+    -fx-bar-color: -swatch-200;
+    -fx-bar-background-color: -swatch-light-gray;
+    -fx-tick-label-color: -fx-text-base-color;
+    -fx-tick-mark-color: black;
+    -fx-major-tick-color: #333;
+    -fx-minor-tick-color: #aaa;
+    -fx-medium-tick-color: #aaa;
+    -fx-knob-color: -swatch-light-gray;
+    -fx-unit-color: -fx-text-base-color;
+    -fx-value-color: -fx-text-base-color;
+    -fx-title-color: -fx-text-title-color;
+    -fx-subtitle-color: -fx-text-subtitle-color;
+    -fx-tick-mark-ring-visible: true;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Dialog pane                                                                 *
+ *                                                                             *
+ ******************************************************************************/
+.dialog-pane .content {
+    /* Bring the content to all edges */
+    -fx-padding: 0; /* 10 0 0 10 */
+}
+
+.dialog-pane .header-panel {
+    -fx-background-color: -swatch-500;
+}
+
+.dialog-pane .header-panel .label {
+    -fx-text-fill: white;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Shuffleboard dialogs                                                        *
+ *                                                                             *
+ ******************************************************************************/
+.shuffleboard-dialog-pane .content {
+    -fx-padding: 10 10 0 24; /* top right bottom left */
+}
+
+.shuffleboard-dialog-header {
+    -fx-background-color: -swatch-500;
+    -fx-padding: 0 0 0 24;
+}
+
+.shuffleboard-dialog-header-title {
+    -fx-text-fill: white;
+    -fx-font-size: 46;
+}
+
+.shuffleboard-dialog-header-subtitle {
+    -fx-text-fill: derive(white, -10%);
+    -fx-alignment: center-right;
+}
+
+.h5 {
+    -fx-font-weight: bold;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Footer                                                                      *
+ *                                                                             *
+ ******************************************************************************/
+.footer {
+    -fx-background-color: -swatch-gray;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Update footer                                                               *
+ *                                                                             *
+ ******************************************************************************/
+.update-footer {
+    -fx-background-color: -swatch-100;
+}
+
+.update-footer > .label {
+    -fx-text-fill: black;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Playback controls                                                           *
+ *                                                                             *
+ ******************************************************************************/
+.playback-controls .button {
+    -fx-background-radius: 1;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Connection labels                                                           *
+ *                                                                             *
+ ******************************************************************************/
+.connection-indicator-area {
+    -fx-background-color: transparent;
+}
+
+/*
+.connection-indicator:connected {
+    -fx-text-fill: green;
+}
+
+.connection-indicator:disconnected {
+    -fx-text-fill: red;
+}
+*/
+
+/*******************************************************************************
+ *                                                                             *
+ * Drive bases                                                                 *
+ *                                                                             *
+ ******************************************************************************/
+.robot-drive {
+    -fx-stroke: none;
+    -fx-fill: #333;
+}
+
+.robot-direction-vector {
+    -fx-stroke: -swatch-400;
+    -fx-fill: -fx-stroke;
+    -fx-stroke-width: 1.5;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Link labels                                                                 *
+ *                                                                             *
+ ******************************************************************************/
+.link-label {
+    -fx-underline: true;
+    -fx-cursor: hand;
+}
+
+.link-label:hover {
+    -fx-text-fill: #6dbdff;
+}
+
+.link-label:pressed {
+    -fx-text-fill: #6b8acb
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Settings dialogs                                                            *
+ *                                                                             *
+ ******************************************************************************/
+.settings-pane {
+    -fx-border-width: 0 0 2px 0;
+    -fx-border-color: derive(-swatch-light-gray, 12%);
+}
+
+.settings-pane > .split-pane-divider {
+    -fx-padding: 0 1 0 1;
+    -fx-background-color: -swatch-light-gray;
+    -fx-background-insets: 0;
+}
+
+.settings-pane .settings-categories {
+    -fx-background-color: transparent;
+}
+
+.settings-pane .settings-categories .tree-cell {
+    -fx-background-color: transparent;
+}
+
+.settings-pane .settings-categories:focused .tree-cell:selected {
+    -fx-background-color: -swatch-100;
+    -fx-text-fill: -fx-text-base-color;
+}
+
+.settings-pane .settings-categories .tree-cell:selected {
+    -fx-background-color: -swatch-500;
+    -fx-text-fill: -fx-text-base-color;
+}
+
+.settings-pane .settings-categories .tree-cell > .tree-disclosure-node > .arrow {
+    -fx-background-color: -fx-text-base-color;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Sendable Chooser                                                            *
+ *                                                                             *
+ ******************************************************************************/
+.combobox-chooser .confirmation-label {
+    -fx-text-fill: -confirmation-color-confirmed !important;
+}
+
+.combobox-chooser .confirmation-label:error {
+    -fx-text-fill: -confirmation-color-error !important;
 }

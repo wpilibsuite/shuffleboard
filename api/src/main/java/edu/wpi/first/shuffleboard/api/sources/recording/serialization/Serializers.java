@@ -1,6 +1,8 @@
 package edu.wpi.first.shuffleboard.api.sources.recording.serialization;
 
 import edu.wpi.first.shuffleboard.api.data.DataType;
+import edu.wpi.first.shuffleboard.api.data.DataTypes;
+import edu.wpi.first.shuffleboard.api.sources.recording.Serialization;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -16,7 +18,15 @@ public final class Serializers {
   private static final Map<DataType, TypeAdapter> serializers = new HashMap<>();
 
   static {
-    Runtime.getRuntime().addShutdownHook(new Thread(Serializers::cleanUpAll));
+    add(new SimpleAdapter<>(DataTypes.Number,
+        n -> Serialization.toByteArray(n.doubleValue()), Serialization::readDouble, Serialization.SIZE_OF_DOUBLE));
+    add(new SimpleAdapter<>(DataTypes.Boolean,
+        Serialization::toByteArray, Serialization::readBoolean, Serialization.SIZE_OF_BOOL));
+    add(new BooleanArrayAdapter());
+    add(new NumberArrayAdapter());
+    add(new StringAdapter());
+    add(new StringArrayAdapter());
+    add(new ByteArrayAdapter());
   }
 
   private Serializers() {

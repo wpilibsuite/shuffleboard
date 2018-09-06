@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.api.util;
 
+import javafx.beans.NamedArg;
 import javafx.util.StringConverter;
 
 /**
@@ -16,7 +17,7 @@ public class UnitStringConverter extends StringConverter<Number> {
    *
    * @param unit the unit string to use, such as "Volts" or "Feet"
    */
-  public UnitStringConverter(String unit) {
+  public UnitStringConverter(@NamedArg("unit") String unit) {
     this.unit = unit;
   }
 

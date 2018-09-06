@@ -9,25 +9,20 @@ import java.util.Set;
  * A type of widget that has its name and data types set with a {@link Description} annotation on the class. Widget
  * classes that are also FXML controllers should specify the FXML file with a {@link ParametrizedController} annotation.
  */
-public abstract class AnnotatedWidget extends AbstractWidget {
-
-  private Description description = getClass().getAnnotation(Description.class);
+public interface AnnotatedWidget extends Widget {
 
   @Override
-  public final String getName() {
+  default String getName() {
     return getDescription().name();
   }
 
   @Override
-  public final Set<DataType> getDataTypes() {
+  default Set<DataType> getDataTypes() {
     return DataTypes.getDefault().forJavaTypes(getDescription().dataTypes());
   }
 
-  private Description getDescription() {
-    if (description == null) {
-      description = getClass().getAnnotation(Description.class);
-    }
-    return description;
+  default Description getDescription() {
+    return getClass().getAnnotation(Description.class);
   }
 
 }

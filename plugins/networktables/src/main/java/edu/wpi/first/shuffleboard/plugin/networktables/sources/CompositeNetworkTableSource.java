@@ -2,14 +2,18 @@ package edu.wpi.first.shuffleboard.plugin.networktables.sources;
 
 import edu.wpi.first.shuffleboard.api.data.ComplexData;
 import edu.wpi.first.shuffleboard.api.data.ComplexDataType;
+import edu.wpi.first.shuffleboard.api.data.IncompleteDataException;
 import edu.wpi.first.shuffleboard.api.sources.Sources;
-import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
-import edu.wpi.first.wpilibj.networktables.NetworkTable;
-import edu.wpi.first.wpilibj.tables.ITable;
+import edu.wpi.first.shuffleboard.plugin.networktables.util.NetworkTableUtils;
+
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A network table source for composite data, ie data stored in multiple key-value pairs or nested
@@ -19,6 +23,8 @@ import java.util.Objects;
  * under a certain nested namespace.
  */
 public class CompositeNetworkTableSource<D extends ComplexData<D>> extends NetworkTableSource<D> {
+
+  private static final Logger log = Logger.getLogger(CompositeNetworkTableSource.class.getName());
 
   private final Map<String, Object> backingMap = new HashMap<>();
   private final ComplexDataType<D> dataType;
@@ -34,20 +40,24 @@ public class CompositeNetworkTableSource<D extends ComplexData<D>> extends Netwo
   public CompositeNetworkTableSource(String tableName, ComplexDataType<D> dataType) {
     super(tableName, dataType);
     this.dataType = dataType;
-    String path = NetworkTableUtils.normalizeKey(tableName, false);
-    ITable table = NetworkTable.getTable(path);
+    String path = NetworkTable.normalizeKey(tableName, false);
+    NetworkTable table = NetworkTableInstance.getDefault().getTable(path);
     setData(dataType.getDefaultValue());
 
     setTableListener((key, value, flags) -> {
       boolean delete = NetworkTableUtils.isDelete(flags);
-      String relativeKey = NetworkTableUtils.normalizeKey(key.substring(path.length() + 1), false);
+      String relativeKey = NetworkTable.normalizeKey(key.substring(path.length() + 1), false);
       if (delete) {
         backingMap.remove(relativeKey);
       } else {
         backingMap.put(relativeKey, value);
       }
       setActive(Objects.equals(NetworkTableUtils.dataTypeForEntry(fullTableKey), dataType));
-      setData(dataType.fromMap(backingMap));
+      try {
+        setData(dataType.fromMap(backingMap));
+      } catch (IncompleteDataException e) {
+        log.log(Level.WARNING, "Incomplete data for type " + dataType.getName(), e);
+      }
     });
 
     data.addListener((__, oldData, newData) -> {
@@ -58,7 +68,9 @@ public class CompositeNetworkTableSource<D extends ComplexData<D>> extends Netwo
       Map<String, Object> diff = newData.changesFrom(oldData);
       backingMap.putAll(diff);
       if (isConnected()) {
-        diff.forEach(table::putValue);
+        for (Map.Entry<String, Object> elem : diff.entrySet()) {
+          table.getEntry(elem.getKey()).setValue(elem.getValue());
+        }
       }
     });
 
@@ -70,4 +82,8 @@ public class CompositeNetworkTableSource<D extends ComplexData<D>> extends Netwo
     return dataType;
   }
 
+  @Override
+  protected boolean isSingular() {
+    return false;
+  }
 }

@@ -2,6 +2,7 @@ package edu.wpi.first.shuffleboard.api.util;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.function.Function;
 
 /**
@@ -59,6 +60,46 @@ public final class Maps {
     }
   }
 
+  /**
+   * Gets the element mapped to {@code K} in a map, casting it as needed.
+   *
+   * @param map the map to get an element from
+   * @param key the key the element should be mapped to
+   * @param <K> the type of keys in the map
+   * @param <T> the type of the value to return
+   *
+   * @throws NoSuchElementException if the key is not in the map
+   * @throws ClassCastException     if the value is present, but is not an instance of {@code T}
+   */
+  public static <K, T> T get(Map<? super K, ?> map, K key) throws NoSuchElementException {
+    if (map.containsKey(key)) {
+      return (T) map.get(key);
+    } else {
+      throw new NoSuchElementException("No such key: " + key);
+    }
+  }
+
+  /**
+   * Gets the element mapped to {@code key} in a map, casting it as needed.
+   *
+   * @param map          the map to get an element from
+   * @param key          the key the element should be mapped to
+   * @param defaultValue the default value to use if the map does not contain the given key
+   * @param <K>          the type of keys in the map
+   * @param <V>          the type of values in the map
+   * @param <T>          the expected type of the element
+   *
+   * @return the
+   *
+   * @throws ClassCastException if the element is present in the map, but is not an instance of {@code T}
+   */
+  public static <K, V, T extends V> T getOrDefault(Map<? super K, V> map, K key, T defaultValue) {
+    if (map.containsKey(key)) {
+      return (T) map.get(key);
+    } else {
+      return defaultValue;
+    }
+  }
 
   /**
    * A builder class for maps.
@@ -84,6 +125,21 @@ public final class Maps {
         throw new IllegalStateException("Cannot modify a builder after it has built");
       }
       built.put(key, value);
+      return this;
+    }
+
+    /**
+     * Puts all the contents of a map into the builder.
+     *
+     * @param map the map whose contents to add
+     *
+     * @return this builder
+     */
+    public MapBuilder<K, V> putAll(Map<? extends K, ? extends V> map) {
+      if (completed) {
+        throw new IllegalStateException("Cannot modify a builder after it has built");
+      }
+      built.putAll(map);
       return this;
     }
 

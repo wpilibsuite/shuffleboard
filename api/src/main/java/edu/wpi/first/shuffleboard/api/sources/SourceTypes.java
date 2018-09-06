@@ -1,6 +1,8 @@
 package edu.wpi.first.shuffleboard.api.sources;
 
+import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
+import edu.wpi.first.shuffleboard.api.sources.recording.TimestampedData;
 import edu.wpi.first.shuffleboard.api.util.PropertyUtils;
 import edu.wpi.first.shuffleboard.api.util.Registry;
 
@@ -24,15 +26,8 @@ public final class SourceTypes extends Registry<SourceType> {
   private final ObservableList<String> typeNames = FXCollections.observableArrayList();
   private final ObservableList<String> allUris = FXCollections.observableArrayList();
 
-  public static final SourceType None = new SourceType("None", false, "", __ -> DataSource.none());
-  public static final SourceType Static =
-      new SourceType(
-          "Static",
-          false,
-          "example://",
-          uri -> {
-            return DummySource.forTypes(DataTypes.getDefault().forName(uri).get()).get();
-          });
+  public static final SourceType None = new NoneType();
+  public static final SourceType Static = new StaticType();
 
   /**
    * Gets the default source type registry.
@@ -152,4 +147,43 @@ public final class SourceTypes extends Registry<SourceType> {
   public ObservableList<String> allAvailableSourceUris() {
     return allUris;
   }
+
+  @UiHints(showConnectionIndicator = false)
+  private static class NoneType extends SourceType {
+
+    public NoneType() {
+      super("None", false, "", __ -> DataSource.none());
+    }
+
+    @Override
+    public DataType<?> dataTypeForSource(DataTypes registry, String sourceUri) {
+      return DataTypes.None;
+    }
+
+    @Override
+    public void read(TimestampedData recordedData) {
+      // NOPE
+    }
+  }
+
+  @UiHints(showConnectionIndicator = false)
+  private static class StaticType extends SourceType {
+
+    public StaticType() {
+      super("Example", false, "example://", StaticType::sourceForUri);
+    }
+
+    @Override
+    public DataType<?> dataTypeForSource(DataTypes registry, String sourceUri) {
+      return registry.forName(removeProtocol(sourceUri)).orElse(DataTypes.Unknown);
+    }
+
+    private static DataSource sourceForUri(String uri) {
+      return DummySource.forTypes(DataTypes.getDefault().forName(uri).orElse(DataTypes.Unknown))
+          .orElseGet(DataSource::none);
+    }
+
+  }
+
+
 }

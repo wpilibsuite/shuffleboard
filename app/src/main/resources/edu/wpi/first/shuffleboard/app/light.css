@@ -21,7 +21,7 @@
  *                                                                             *
  ******************************************************************************/
 .tile:selected {
-    -fx-effect: dropshadow(gaussian, -swatch-500, 6, 0.1, 0, 4);
+    -fx-background-color: derive(-swatch-100, +75%);
 }
 
 .tile-title-label * {
@@ -39,17 +39,4 @@
  ******************************************************************************/
 .text-area, .text-field {
     -underline-color: #eee;
-}
-
-/*******************************************************************************
- *                                                                             *
- * Playback controls                                                           *
- *                                                                             *
- ******************************************************************************/
-.playback-controls {
-    -fx-background-color: -swatch-gray;
-}
-
-.playback-controls .button {
-    -fx-background-radius: 1;
 }

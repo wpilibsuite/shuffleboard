@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.ScrollPane?>
+<StackPane xmlns="http://javafx.com/javafx"
+           xmlns:fx="http://javafx.com/fxml"
+           fx:controller="edu.wpi.first.shuffleboard.plugin.base.layout.SubsystemLayout"
+           fx:id="root"
+           styleClass="layout-root"
+           prefHeight="512" prefWidth="256">
+    <ScrollPane fitToWidth="true" fitToHeight="true" styleClass="layout-scroll">
+        <VBox fx:id="container" styleClass="layout-container" spacing="2">
+
+        </VBox>
+    </ScrollPane>
+</StackPane>

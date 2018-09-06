@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.api.util;
 
+import java.util.Collection;
 import java.util.Objects;
 
 import javafx.collections.FXCollections;
@@ -26,6 +27,21 @@ public abstract class Registry<T> {
    * @implSpec implementations <i>must</i> call the protected method {@link #addItem} at the end of this method
    */
   public abstract void register(T item);
+
+  /**
+   * Registers an item only if it is not already registered.
+   *
+   * @param item the item to register
+   *
+   * @return true if the item was registered, false if not
+   */
+  public final boolean registerIfAbsent(T item) {
+    if (isRegistered(item)) {
+      return false;
+    }
+    register(item);
+    return true;
+  }
 
   /**
    * Unregisters an item from this registry.
@@ -67,12 +83,48 @@ public abstract class Registry<T> {
    * </code></pre>
    *
    * @param items the items to register
+   *
+   * @throws IllegalArgumentException if any of the items is already registered
    */
   public final void registerAll(T... items) {
     Objects.requireNonNull(items, "items");
     for (T item : items) {
       register(item);
     }
+  }
+
+  /**
+   * Registers many items at once.
+   *
+   * @param items the items to register
+   *
+   * @throws IllegalArgumentException if any of the items in the collection is already registered
+   */
+  public final void registerAll(Collection<? extends T> items) {
+    Objects.requireNonNull(items, "items");
+    items.forEach(this::register);
+  }
+
+  /**
+   * Unregisters many items at once.
+   *
+   * @param items the items to unregister
+   */
+  public final void unregisterAll(T... items) {
+    Objects.requireNonNull(items, "items");
+    for (T item : items) {
+      unregister(item);
+    }
+  }
+
+  /**
+   * Unregisters many items at once.
+   *
+   * @param items the items to unregister
+   */
+  public final void unregisterAll(Collection<? extends T> items) {
+    Objects.requireNonNull(items, "items");
+    items.forEach(this::unregister);
   }
 
   /**

@@ -1,0 +1,80 @@
+/*******************************************************************************
+ *                                                                             *
+ * Power cube plates                                                           *
+ *                                                                             *
+ ******************************************************************************/
+.powerup-plate {
+    -fx-background-color: #7f7f7f;
+}
+
+.powerup-plate:red {
+    -fx-background-color: red;
+}
+
+.powerup-plate:blue {
+    -fx-background-color: blue;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Switch                                                                      *
+ *                                                                             *
+ ******************************************************************************/
+.powerup-switch {
+    -fx-border-color: gray;
+    -fx-border-width: 2px;
+    -fx-padding: 2px;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Arms                                                                        *
+ *                                                                             *
+ ******************************************************************************/
+.arm {
+    -fx-background-color: #bbb;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Scale and platforms                                                         *
+ *                                                                             *
+ ******************************************************************************/
+.powerup-scale .powerup-plate {
+    /* Dropshadow to suggest height  */
+    -fx-effect: dropshadow(gaussian, black, 9, .125, 2, 2);
+}
+
+.platform {
+    -fx-background-color: #878787;
+}
+
+.platform .platform-surface {
+    -fx-background-color: #9f9f9f;
+    -fx-border-color: black;
+    -fx-border-width: 1px;
+}
+
+.platform-line {
+    -fx-stroke: black;
+    -fx-stroke-width: 1px;
+    -fx-stroke-type: centered;
+    -fx-stroke-line-join: miter;
+    -fx-stroke-line-cap: butt;
+}
+
+.platform:red .platform-surface {
+    -fx-background-color: red;
+}
+
+.platform:red {
+    -fx-background-color: derive(red, -15%);
+}
+
+.platform:blue .platform-surface {
+    -fx-background-color: blue;
+}
+
+.platform:blue {
+    -fx-background-color: derive(blue, -25%);
+}

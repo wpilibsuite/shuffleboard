@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import edu.wpi.first.shuffleboard.api.components.StyleableGauge?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.geometry.Insets?>
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="edu.wpi.first.shuffleboard.plugin.base.widget.GyroWidget"
+      fx:id="root"
+      spacing="8"
+      minWidth="192" minHeight="192">
+    <padding>
+        <Insets topRightBottomLeft="4"/>
+    </padding>
+    <StyleableGauge fx:id="gauge" minValue="0" maxValue="359" startAngle="180" angleRange="360"
+                    valueVisible="false"
+                    majorTickSpace="45" tickLabelLocation="OUTSIDE"
+                    autoScale="false"
+                    interactive="false"
+                    VBox.vgrow="ALWAYS"
+                    needleType="STANDARD" needleShape="FLAT" knobType="FLAT"/>
+    <StackPane>
+        <Label fx:id="valueLabel"/>
+    </StackPane>
+</VBox>

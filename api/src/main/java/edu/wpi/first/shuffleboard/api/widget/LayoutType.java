@@ -7,6 +7,6 @@ package edu.wpi.first.shuffleboard.api.widget;
  * <p>Inheriting from this interface is required for a Component to show up in the
  * "Add to new layout..." menu, among other things.
  */
-public interface LayoutType extends ComponentType {
+public interface LayoutType<T extends Layout> extends ComponentType<T> {
 
 }

@@ -12,7 +12,7 @@ public class DummySource<T> extends AbstractDataSource<T> {
   /**
    * Create a new static, unchanging source for the given data type and value.
    */
-  public DummySource(DataType dataType, T value) {
+  public DummySource(DataType<T> dataType, T value) {
     super(dataType);
     this.setActive(true);
     this.setName(dataType.getName());
@@ -24,12 +24,16 @@ public class DummySource<T> extends AbstractDataSource<T> {
     return SourceTypes.Static;
   }
 
+  public static <T> DummySource<T> forType(DataType<T> type) {
+    return new DummySource<>(type, type.getDefaultValue());
+  }
+
   /**
    * Return an example source value for the given data types.
    * If no example source value could be found, then None is returned instead.
    */
   @SuppressWarnings("unchecked")
-  public static Optional<DummySource> forTypes(Set<DataType> types) {
+  public static Optional<DataSource<?>> forTypes(Set<DataType> types) {
     if (types.isEmpty()) {
       return Optional.empty();
     }
@@ -42,7 +46,7 @@ public class DummySource<T> extends AbstractDataSource<T> {
     }
   }
 
-  public static Optional<DummySource> forTypes(DataType... types) {
+  public static Optional<DataSource<?>> forTypes(DataType... types) {
     return forTypes(ImmutableSet.copyOf(types));
   }
 

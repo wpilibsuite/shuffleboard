@@ -1,0 +1,23 @@
+#root {
+    /* YInMn blue */
+    -fx-background-color: #2626f7;
+}
+
+#stateLabel {
+    -fx-text-fill: #eee;
+}
+
+#progressBar {
+    -fx-max-height: 6;
+    -fx-min-height: 0;
+    -fx-border-radius: 0;
+}
+
+#progressBar > .bar {
+    -fx-background-color: #ffffffbf;
+    -fx-border-radius: 0;
+}
+
+#progressBar > .track {
+    -fx-background-color: #ffffff4f;
+}

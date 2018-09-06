@@ -22,7 +22,7 @@ public class LayoutClass<T extends Layout> implements LayoutType {
   }
 
   @Override
-  public Component get() {
+  public Layout get() {
     return Components.viewFor(layoutClass).orElseGet(() -> {
       try {
         return layoutClass.newInstance();
@@ -32,4 +32,10 @@ public class LayoutClass<T extends Layout> implements LayoutType {
       }
     });
   }
+
+  @Override
+  public Class<T> getType() {
+    return layoutClass;
+  }
+
 }

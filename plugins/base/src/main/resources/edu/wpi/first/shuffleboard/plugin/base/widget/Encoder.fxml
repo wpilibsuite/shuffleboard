@@ -11,7 +11,7 @@
           xmlns:fx="http://javafx.com/fxml/1"
           fx:controller="edu.wpi.first.shuffleboard.plugin.base.widget.EncoderWidget"
           fx:id="root"
-          prefHeight="128" prefWidth="256" minWidth="256">
+          prefHeight="128" prefWidth="256" minHeight="96" minWidth="192">
     <padding>
         <Insets topRightBottomLeft="8"/>
     </padding>

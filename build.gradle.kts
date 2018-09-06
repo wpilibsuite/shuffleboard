@@ -1,4 +1,5 @@
 
+import com.diffplug.spotless.FormatterStep
 import edu.wpi.first.wpilib.versioning.ReleaseType
 import org.gradle.api.Project
 import org.gradle.api.plugins.quality.FindBugs
@@ -6,27 +7,38 @@ import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.tasks.wrapper.Wrapper
 import org.gradle.jvm.tasks.Jar
 import org.gradle.testing.jacoco.tasks.JacocoReport
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import org.ajoberstar.grgit.Grgit
+import org.ajoberstar.grgit.exception.GrgitException
+import org.ajoberstar.grgit.operation.DescribeOp
+import java.time.Instant
 
 buildscript {
     repositories {
         mavenCentral()
+        jcenter()
     }
     dependencies {
         classpath("org.junit.platform:junit-platform-gradle-plugin:1.0.0")
+        classpath("org.ajoberstar:grgit:1.7.2")
     }
 }
 plugins {
     `maven-publish`
     jacoco
-    id("edu.wpi.first.wpilib.versioning.WPILibVersioningPlugin") version "1.6"
+    id("edu.wpi.first.wpilib.versioning.WPILibVersioningPlugin") version "2.0"
     id("com.github.johnrengelman.shadow") version "2.0.1"
     id("com.diffplug.gradle.spotless") version "3.5.1"
+    id("org.ajoberstar.grgit") version "1.7.2"
 }
 
 allprojects {
     apply {
         plugin("com.diffplug.gradle.spotless")
     }
+
+    getWPILibVersion()?.let { version = it }
+
     // Spotless is used to lint and reformat source files.
     spotless {
         kotlinGradle {
@@ -35,7 +47,46 @@ allprojects {
             endWithNewline()
         }
         freshmark {
-            trimTrailingWhitespace()
+            // Default timeWhitespace() doesn't respect lines ending with two spaces for a tight line break
+            // So we have to implement it ourselves
+            class TrimTrailingSpaces : FormatterStep {
+                override fun getName(): String = "trimTrailingSpaces"
+
+                override fun format(rawUnix: String?, file: File?): String? {
+                    if (rawUnix == null || file == null) {
+                        return null
+                    }
+                    return rawUnix.split('\n')
+                            .joinToString(separator = "\n", transform = this::formatLine)
+                }
+
+                fun formatLine(line: String): String {
+                    if (!line.endsWith(" ")) {
+                        // No trailing whitespace
+                        return line
+                    }
+                    if (line.matches(Regex("^.*[^ \t] {2}$"))) {
+                        // Ends with two spaces - it's a tight line break, so leave it
+                        return line
+                    }
+                    val endsWithMoreThanTwoSpaces = Regex("^(.*[^ \t]) {3,}^")
+                    val match = endsWithMoreThanTwoSpaces.matchEntire(line)
+                    if (match != null) {
+                        // Ends with at least 3 spaces
+                        // Trim the excess, but leave two spaces at the end for a tight line break
+                        return match.groupValues[1] + "  "
+                    }
+                    if (line.endsWith(" ")) {
+                        // Ends with a single space - remove it
+                        return line.substring(0, line.length - 1)
+                    }
+                    // Not sure how we got here; every case should have been covered.
+                    // Print an error but do not change the line
+                    System.err.println("Could not trim whitespace from line '$line'")
+                    return line
+                }
+            }
+            addStep(TrimTrailingSpaces())
             indentWithSpaces()
             endWithNewline()
         }
@@ -48,7 +99,7 @@ allprojects {
     }
 }
 
-subprojects {
+allprojects {
     apply {
         plugin("java")
         plugin("checkstyle")
@@ -66,11 +117,12 @@ subprojects {
     dependencies {
         fun junitJupiter(name: String, version: String = "5.0.0") =
                 create(group = "org.junit.jupiter", name = name, version = version)
+        "compileOnly"(create(group = "com.google.code.findbugs", name = "annotations", version = "3.0.1"))
         "testCompile"(junitJupiter(name = "junit-jupiter-api"))
         "testCompile"(junitJupiter(name = "junit-jupiter-engine"))
         "testCompile"(junitJupiter(name = "junit-jupiter-params"))
         "testRuntime"(create(group = "org.junit.platform", name = "junit-platform-launcher", version = "1.0.0"))
-        fun testFx(name: String, version: String = "4.0.+") =
+        fun testFx(name: String, version: String = "4.0.10-alpha") =
                 create(group = "org.testfx", name = name, version = version)
         "testCompile"(testFx(name = "testfx-core"))
         "testCompile"(testFx(name = "testfx-junit5"))
@@ -141,10 +193,9 @@ subprojects {
     }
 
     /*
-     * Allows you to run the UI tests in headless mode by calling gradle with the -Pheadless argument
+     * Run UI tests in headless mode on Jenkins or when the `visibleUiTests` property is not set.
      */
-    if (project.hasProperty("jenkinsBuild") || project.hasProperty("headless")) {
-        println("Running UI Tests Headless")
+    if (project.hasProperty("jenkinsBuild") || !project.hasProperty("visibleUiTests")) {
         junitPlatform {
             filters {
                 tags {
@@ -178,6 +229,10 @@ subprojects {
             }
         }
     }
+
+    tasks.withType<Javadoc> {
+        isFailOnError = false
+    }
 }
 
 project(":app") {
@@ -189,16 +244,71 @@ project(":app") {
         from(java.sourceSets["main"].allSource)
         classifier = "sources"
     }
+    val javadocJar = task<Jar>("javadocJar") {
+        dependsOn("javadoc")
+        description = "Creates a JAR that contains the javadocs."
+        from(java.docsDir)
+        classifier = "javadoc"
+    }
     publishing {
         publications {
             create<MavenPublication>("app") {
                 groupId = "edu.wpi.first.shuffleboard"
-                artifactId = "Shuffleboard"
+                artifactId = "app"
                 getWPILibVersion()?.let { version = it }
-                shadow.component(this)
-                from(components["java"])
+                val shadowJar: ShadowJar by tasks
+                artifact (shadowJar) {
+                    classifier = null
+                }
                 artifact(sourceJar)
+                artifact(javadocJar)
             }
+        }
+    }
+
+    version = getWPILibVersion() ?: getVersionFromGitTag(fallback = "0.0.0") // fall back to git describe if no WPILib version is set
+    tasks.withType<Jar> {
+        manifest {
+            attributes["Implementation-Version"] = version
+            attributes["Built-Date"] = Instant.now().toString()
+        }
+    }
+}
+
+project(":api") {
+    apply {
+        plugin("com.github.johnrengelman.shadow")
+    }
+    val sourceJar = task<Jar>("sourceJar") {
+        description = "Creates a JAR that contains the source code."
+        from(java.sourceSets["main"].allSource)
+        classifier = "sources"
+    }
+    val javadocJar = task<Jar>("javadocJar") {
+        dependsOn("javadoc")
+        description = "Creates a JAR that contains the javadocs."
+        from(java.docsDir)
+        classifier = "javadoc"
+    }
+    publishing {
+        publications {
+            create<MavenPublication>("api") {
+                groupId = "edu.wpi.first.shuffleboard"
+                artifactId = "api"
+                getWPILibVersion()?.let { version = it }
+                afterEvaluate {
+                    from(components["java"])
+                }
+                artifact(sourceJar)
+                artifact(javadocJar)
+            }
+        }
+    }
+
+    version = getWPILibVersion() ?: getVersionFromGitTag(fallback = "v0.0.0")
+    tasks.withType<Jar> {
+        manifest {
+            attributes["Implementation-Version"] = version
         }
     }
 }
@@ -274,3 +384,21 @@ val Project.`junitPlatform`: org.junit.platform.gradle.plugin.JUnitPlatformExten
  */
 fun Project.`junitPlatform`(configure: org.junit.platform.gradle.plugin.JUnitPlatformExtension.() -> Unit) =
     extensions.configure("junitPlatform", configure)
+
+/**
+ * Gets the build version from git-describe. This is a combination of the most recent tag, the number of commits since
+ * that tag, and the abbreviated hash of the most recent commit, in this format: `<tag>-<n>-<hash>`; for example,
+ * v1.0.0-11-9ab123f when the most recent tag is `"v1.0.0"`, with 11 commits since that tag, and the most recent commit
+ * hash starting with `9ab123f`.
+ *
+ * @param fallback the version string to fall back to if git-describe fails. Default value is `"v0.0.0"`.
+ *
+ * @see <a href="https://git-scm.com/docs/git-describe">git-describe documentation</a>
+ */
+fun getVersionFromGitTag(fallback: String = "v0.0.0"): String = try {
+    val git = Grgit.open()
+    DescribeOp(git.repository).call()
+} catch (e: GrgitException) {
+    logger.log(LogLevel.WARN, "Cannot get the version from git-describe, falling back to $fallback", e)
+    fallback
+}

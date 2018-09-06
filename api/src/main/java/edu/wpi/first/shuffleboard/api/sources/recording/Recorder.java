@@ -1,20 +1,30 @@
 package edu.wpi.first.shuffleboard.api.sources.recording;
 
+import edu.wpi.first.shuffleboard.api.DashboardMode;
 import edu.wpi.first.shuffleboard.api.data.DataType;
+import edu.wpi.first.shuffleboard.api.data.DataTypes;
+import edu.wpi.first.shuffleboard.api.properties.AtomicBooleanProperty;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
+import edu.wpi.first.shuffleboard.api.sources.SourceType;
+import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
+import edu.wpi.first.shuffleboard.api.sources.recording.serialization.Serializer;
 import edu.wpi.first.shuffleboard.api.sources.recording.serialization.Serializers;
+import edu.wpi.first.shuffleboard.api.util.ShutdownHooks;
 import edu.wpi.first.shuffleboard.api.util.Storage;
 import edu.wpi.first.shuffleboard.api.util.ThreadUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.time.Instant;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 
 /**
  * Records data from sources. Each source is responsible for calling {@link #recordCurrentValue} whenever its value
@@ -24,42 +34,81 @@ public final class Recorder {
 
   private static final Logger log = Logger.getLogger(Recorder.class.getName());
 
+  public static final String DEFAULT_RECORDING_FILE_NAME_FORMAT = "recording-${time}";
   private static final Recorder instance = new Recorder();
 
-  private final BooleanProperty running = new SimpleBooleanProperty(this, "running", false);
+  private final BooleanProperty running = new AtomicBooleanProperty(this, "running", false);
+  private final StringProperty fileNameFormat =
+      new SimpleStringProperty(this, "fileNameFormat", DEFAULT_RECORDING_FILE_NAME_FORMAT);
+  private String currentFileNameFormat = DEFAULT_RECORDING_FILE_NAME_FORMAT; // NOPMD - PMD can't handle lambdas
   private Instant startTime = null;
   private Recording recording = null;
   private File recordingFile;
 
-  private Recorder() {
+  private final Object startStopLock = new Object();
+  private boolean firstSave = true;
+
+  private final boolean enableDiskWrites;
+
+  private Recorder(boolean enableDiskWrites) {
+    this.enableDiskWrites = enableDiskWrites;
     // Save the recording at the start (get the initial values) and the stop
-    running.addListener((__, wasRunning, isRunning) -> saveToDisk());
+    running.addListener((__, wasRunning, isRunning) -> {
+      try {
+        currentFileNameFormat = getFileNameFormat();
+        saveToDisk();
+      } catch (IOException e) {
+        log.log(Level.WARNING, "Could not save to disk", e);
+      }
+    });
+    running.addListener((__, was, is) -> {
+      if (is) {
+        DashboardMode.setCurrentMode(DashboardMode.RECORDING);
+      } else {
+        DashboardMode.setCurrentMode(DashboardMode.NORMAL);
+      }
+    });
 
     // Save the recording every 2 seconds
-    Executors.newSingleThreadScheduledExecutor(ThreadUtils::makeDaemonThread)
-        .scheduleAtFixedRate(
-            () -> {
-              if (isRunning()) {
-                saveToDisk();
-              }
-            }, 0, 2, TimeUnit.SECONDS);
+    if (enableDiskWrites) {
+      Executors.newSingleThreadScheduledExecutor(ThreadUtils::makeDaemonThread)
+          .scheduleAtFixedRate(
+              () -> {
+                if (isRunning()) {
+                  try {
+                    saveToDisk();
+                  } catch (Exception e) {
+                    log.log(Level.WARNING, "Could not save recording", e);
+                  }
+                }
+              }, 0, 2, TimeUnit.SECONDS);
+    }
+    ShutdownHooks.addHook(this::stop);
   }
 
-  private void saveToDisk() {
-    if (recording == null) {
+  private Recorder() {
+    this(true);
+  }
+
+  private void saveToDisk() throws IOException {
+    if (recording == null || !enableDiskWrites) {
       // Nothing to save
       return;
     }
-    try {
-      String file = Storage.createRecordingFilePath(startTime);
-      if (recordingFile == null) {
-        recordingFile = new File(file);
-      }
-      Serialization.saveRecording(recording, file);
-      log.fine("Saved recording to " + file);
-    } catch (IOException e) {
-      throw new RuntimeException("Could not save the recording", e);
+    Path file = Storage.createRecordingFilePath(startTime, currentFileNameFormat);
+    if (recordingFile == null) {
+      recordingFile = file.toFile();
     }
+    synchronized (startStopLock) {
+      if (firstSave) {
+        Serialization.saveRecording(recording, file);
+        firstSave = false;
+      } else {
+        Serialization.updateRecordingSave(recording, file);
+      }
+      Serializers.getAdapters().forEach(Serializer::flush);
+    }
+    log.fine("Saved recording to " + file);
   }
 
   /**
@@ -70,11 +119,29 @@ public final class Recorder {
   }
 
   /**
+   * Creates a new Recorder instance that does not write anything to disk.
+   */
+  public static Recorder createDummyInstance() {
+    return new Recorder(false);
+  }
+
+  /**
    * Starts recording data.
    */
   public void start() {
-    startTime = Instant.now();
-    recording = new Recording();
+    synchronized (startStopLock) {
+      startTime = Instant.now();
+      firstSave = true;
+      recording = new Recording();
+      // Record initial conditions
+      SourceTypes.getDefault().getItems().stream()
+          .map(SourceType::getAvailableSources)
+          .forEach(sources -> sources.forEach((id, value) -> {
+            DataTypes.getDefault().forJavaType(value.getClass())
+                .map(t -> new TimestampedData(id, t, value, 0L))
+                .ifPresent(recording::append);
+          }));
+    }
     setRunning(true);
   }
 
@@ -82,9 +149,16 @@ public final class Recorder {
    * Stops recording data.
    */
   public void stop() {
-    Serializers.cleanUpAll();
-    recordingFile = null;
-    setRunning(false);
+    try {
+      saveToDisk();
+    } catch (IOException e) {
+      log.log(Level.WARNING, "Could not save last data to disk", e);
+    }
+    synchronized (startStopLock) {
+      setRunning(false);
+      recordingFile = null;
+      Serializers.cleanUpAll();
+    }
   }
 
   /**
@@ -113,7 +187,7 @@ public final class Recorder {
     if (!isRunning()) {
       return;
     }
-    recording.append(new TimestampedData(id, dataType, value, timestamp()));
+    recording.append(new TimestampedData(id.intern(), dataType, value, timestamp()));
   }
 
   private long timestamp() {
@@ -134,5 +208,17 @@ public final class Recorder {
 
   public File getRecordingFile() {
     return recordingFile;
+  }
+
+  public String getFileNameFormat() {
+    return fileNameFormat.get();
+  }
+
+  public StringProperty fileNameFormatProperty() {
+    return fileNameFormat;
+  }
+
+  public void setFileNameFormat(String fileNameFormat) {
+    this.fileNameFormat.set(fileNameFormat);
   }
 }

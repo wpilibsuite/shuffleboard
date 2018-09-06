@@ -1,41 +1,100 @@
 package edu.wpi.first.shuffleboard.api.sources.recording;
 
-import com.google.common.primitives.Bytes;
-
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
-import edu.wpi.first.shuffleboard.api.sources.recording.serialization.TypeAdapter;
+import edu.wpi.first.shuffleboard.api.data.types.StringArrayType;
+import edu.wpi.first.shuffleboard.api.data.types.StringType;
 import edu.wpi.first.shuffleboard.api.sources.recording.serialization.Serializers;
+import edu.wpi.first.shuffleboard.api.sources.recording.serialization.TypeAdapter;
+
+import com.google.common.primitives.Bytes;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
+import java.nio.channels.FileChannel;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @SuppressWarnings("PMD.GodClass")
 public final class Serialization {
 
   private static final Logger log = Logger.getLogger(Serialization.class.getName());
 
-  public static final int MAGIC_NUMBER = 0xFEEDBAC4;
+  /**
+   * A magic number that is always the first entry in a recording file. This helps check (but does not guarantee) that
+   * a loaded file is a valid recording file.
+   */
+  public static final int MAGIC_NUMBER = 0xBEEF_FACE;
 
+  /**
+   * The current serialization format version. This number is incremented every time the recording format changes in
+   * a way that makes it incompatible with previous versions.
+   */
+  public static final int VERSION = 3;
+
+  /**
+   * The size of a serialized {@code byte}, in bytes.
+   */
   public static final int SIZE_OF_BYTE = 1;
+  /**
+   * The size of a serialized {@code boolean}, in bytes.
+   */
   public static final int SIZE_OF_BOOL = 1;
+  /**
+   * The size of a serialized {@code short}, in bytes.
+   */
   public static final int SIZE_OF_SHORT = 2;
+  /**
+   * The size of a serialized {@code int}, in bytes.
+   */
   public static final int SIZE_OF_INT = 4;
+  /**
+   * The size of a serialized {@code short}, in bytes.
+   */
   public static final int SIZE_OF_LONG = 8;
+  /**
+   * The size of a serialized {@code double}, in bytes.
+   */
   public static final int SIZE_OF_DOUBLE = 8;
+
+  /**
+   * Constant offsets for the binary save files.
+   */
+  private static final class Offsets {
+    /**
+     * The offset to the magic header number.
+     */
+    public static final int MAGIC_NUMBER_OFFSET = 0;
+
+    /**
+     * The offset to the version number.
+     */
+    public static final int VERSION_NUMBER_OFFSET = MAGIC_NUMBER_OFFSET + SIZE_OF_INT;
+
+    /**
+     * The offset to the <tt>int</tt> value of the number of data points.
+     */
+    public static final int NUMBER_DATA_POINTS_OFFSET = VERSION_NUMBER_OFFSET + SIZE_OF_INT;
+    /**
+     * The offset to the <tt>int</tt> value of the number of entries in the constant pool.
+     */
+    public static final int CONSTANT_POOL_HEADER_OFFSET = NUMBER_DATA_POINTS_OFFSET + SIZE_OF_INT;
+  }
 
   private Serialization() {
   }
@@ -48,48 +107,184 @@ public final class Serialization {
    *
    * @throws IOException if the recording could not be saved to the given file
    */
-  public static void saveRecording(Recording recording, String file) throws IOException {
-    // work on a copy of the data so changes to the recording don't mess this up
+  public static void saveRecording(Recording recording, Path file) throws IOException {
+    Serializers.getAdapters().forEach(a -> a.setCurrentFile(file.toFile()));
+    // Work on a copy, since the recording can have new data added to it while we're in the middle of saving
     final List<TimestampedData> dataCopy = new ArrayList<>(recording.getData());
+    recording.getData().clear();
     dataCopy.sort(TimestampedData::compareTo); // make sure the data is sorted properly
-    final byte[] header = header(dataCopy); // NOPMD
-    final List<String> sourceNames = getAllSourceNames(dataCopy);
-    if (sourceNames.size() > Short.MAX_VALUE) {
-      throw new IOException("Too many sources (" + sourceNames.size() + "), should be at most " + Short.MAX_VALUE);
-    }
+    final byte[] header = header(dataCopy);
+    final List<String> constantPool = generateConstantPool(dataCopy);
     List<byte[]> segments = new ArrayList<>();
     segments.add(header);
     for (TimestampedData data : dataCopy) {
       final DataType type = data.getDataType();
       final Object value = data.getData();
 
-      final byte[] timestamp = toByteArray(data.getTimestamp()); // NOPMD
+      final byte[] timestamp = toByteArray(data.getTimestamp());
       // use int16 instead of int32 -- 32,767 sources should be enough
-      final byte[] sourceIdIndex = toByteArray((short) sourceNames.indexOf(data.getSourceId())); //NOPMD
-      final byte[] dataType = toByteArray(type.getName()); // NOPMD
-      final byte[] dataBytes = encode(value, type); // NOPMD
-
-      if (dataBytes == null) {
-        throw new IOException("Cannot serialize value of type " + type.getName());
-      }
+      final byte[] sourceIdIndex = toByteArray((short) constantPool.indexOf(data.getSourceId()));
+      final byte[] dataType = toByteArray((short) constantPool.indexOf(data.getDataType().getName()));
+      final byte[] dataBytes = encode(value, type);
 
       segments.add(timestamp);
       segments.add(sourceIdIndex);
       segments.add(dataType);
       segments.add(dataBytes);
     }
-    byte[] all = new byte[segments.stream().mapToInt(b -> b.length).sum()];
-    for (int i = 0, j = 0; i < all.length; ) {
-      byte[] next = segments.get(j);
-      put(all, next, i);
-      i += next.length;
-      j++;
-    }
-    Path saveDir = Paths.get(file).getParent();
+    byte[] all = segments
+        .stream()
+        .reduce(new byte[0], Bytes::concat);
+    Path saveDir = file.getParent();
     if (saveDir != null) {
       Files.createDirectories(saveDir);
     }
-    Files.write(Paths.get(file), all);
+    Files.write(file, all);
+  }
+
+  /**
+   * Updates a saved recording file with the contents of the given recording. Note: the recording should <i>not</i>
+   * contain any data that has already been saved to disk, or it will be saved again.
+   *
+   * @param recording the recording to update the save file with
+   * @param file      the path to the save file to update
+   *
+   * @throws IOException if the save file could not be updated
+   */
+  public static void updateRecordingSave(Recording recording, Path file) throws IOException {
+    if (Files.notExists(file) || Files.size(file) == 0) {
+      saveRecording(recording, file);
+      return;
+    }
+    // Use a copy to avoid synchronization locking
+    List<TimestampedData> dataCopy = new ArrayList<>(recording.getData());
+    recording.getData().clear();
+    if (dataCopy.isEmpty()) {
+      // No new data
+      return;
+    }
+    Serializers.getAdapters().forEach(a -> a.setCurrentFile(file.toFile()));
+    // Use a RandomAccessFile to avoid having to read its entire contents into memory
+    RandomAccessFile raf = new RandomAccessFile(file.toFile(), "rw");
+    int magic = raf.readInt();
+    if (magic != MAGIC_NUMBER) {
+      throw new IOException(
+          String.format("Wrong magic number in the header. Expected 0x%08X, but was 0x%08X", MAGIC_NUMBER, magic));
+    }
+
+    // Update the number of data points
+    raf.seek(Offsets.NUMBER_DATA_POINTS_OFFSET);
+    int numExistingDataPoints = raf.readInt();
+    int totalDataPoints = numExistingDataPoints + dataCopy.size();
+    raf.seek(Offsets.NUMBER_DATA_POINTS_OFFSET);
+    raf.writeInt(totalDataPoints); // Update the number of data points
+
+    // Update the constant pool
+    raf.seek(Offsets.CONSTANT_POOL_HEADER_OFFSET);
+    int constantPoolSize = raf.readInt();
+    byte[] buffer = new byte[256];
+    final List<String> constantPoolEntries = new ArrayList<>(constantPoolSize);
+    int constantPoolLength = 0;
+    int pos = Offsets.CONSTANT_POOL_HEADER_OFFSET + SIZE_OF_INT;
+    for (int i = 0; i < constantPoolSize; i++) {
+      raf.seek(pos);
+      final int sourceIdLength = raf.readInt();
+      pos += SIZE_OF_INT;
+      constantPoolLength += SIZE_OF_INT;
+      raf.seek(pos);
+      final int len = raf.read(buffer, 0, sourceIdLength);
+      String constantPoolEntry = new String(Arrays.copyOfRange(buffer, 0, len), StandardCharsets.UTF_8);
+      pos += len;
+      constantPoolLength += len;
+      constantPoolEntries.add(constantPoolEntry);
+    }
+
+    Stream<String> sourceIdStream = dataCopy.stream()
+        .map(TimestampedData::getSourceId)
+        .distinct();
+    Stream<String> dataTypeStream = dataCopy.stream()
+        .map(t -> t.getDataType().getName())
+        .distinct();
+    Stream<String> constantPoolStream = Stream.concat(sourceIdStream, dataTypeStream);
+    byte[] newConstantPoolEntries =
+        constantPoolStream.filter(id -> !constantPoolEntries.contains(id))
+            .peek(constantPoolEntries::add)
+            .map(Serialization::toByteArray)
+            .reduce(new byte[0], Bytes::concat);
+    byte[] newBodyEntries = dataCopy.stream()
+        .map(data -> {
+          final DataType type = data.getDataType();
+          final Object value = data.getData();
+
+          final byte[] timestamp = toByteArray(data.getTimestamp());
+          // use int16 instead of int32 -- 32,767 sources should be enough
+          final byte[] sourceIdIndex = toByteArray((short) constantPoolEntries.indexOf(data.getSourceId()));
+          final byte[] dataType = toByteArray((short) constantPoolEntries.indexOf(type.getName()));
+          final byte[] dataBytes = encode(value, type);
+
+          return Bytes.concat(timestamp, sourceIdIndex, dataType, dataBytes);
+        })
+        .reduce(new byte[0], Bytes::concat);
+
+    if (newConstantPoolEntries.length > 0) {
+      // Update the number of source IDs
+      int totalNumSourceIds = constantPoolEntries.size();
+      raf.seek(Offsets.CONSTANT_POOL_HEADER_OFFSET);
+      raf.writeInt(totalNumSourceIds);
+
+      // Update the constant pool
+      int constantPoolEnd = Offsets.CONSTANT_POOL_HEADER_OFFSET + SIZE_OF_INT + constantPoolLength;
+      insertDataIntoFile(file, constantPoolEnd, newConstantPoolEntries);
+    }
+    Files.write(file, newBodyEntries, StandardOpenOption.WRITE, StandardOpenOption.APPEND);
+  }
+
+  /**
+   * Inserts binary data into a file at a specific position.
+   *
+   * @param path the path to the file to insert into
+   * @param pos  the position in the file to insert the data at
+   * @param data the data to insert
+   *
+   * @throws IOException if the file could not be modified
+   */
+  static void insertDataIntoFile(Path path, long pos, byte[] data) throws IOException {
+    if (Files.notExists(path)) {
+      throw new NoSuchFileException("The file specified does not exist: " + path);
+    }
+    if (!Files.isRegularFile(path, LinkOption.NOFOLLOW_LINKS)) {
+      // Make sure it's a normal file (not a directory and not a symlink/shortcut to another file)
+      throw new IllegalArgumentException("Cannot insert into " + path);
+    }
+    Objects.requireNonNull(data, "Data cannot be null");
+    if (data.length == 0) {
+      // Nothing to insert, do nothing
+      return;
+    }
+    Path fileName = path.getFileName();
+    if (fileName == null) {
+      // Shouldn't be possible
+      throw new AssertionError("File name is null - this should have been checked earlier");
+    }
+    File tmpFile = new File(path.toString().replace(fileName.toString(), "." + fileName));
+    RandomAccessFile file = new RandomAccessFile(path.toFile(), "rw");
+    RandomAccessFile tmp = new RandomAccessFile(tmpFile, "rw");
+    try (FileChannel src = file.getChannel(); FileChannel dst = tmp.getChannel()) {
+      final long fileSize = file.length();
+      final long count = fileSize - pos;
+      src.transferTo(pos, count, dst);
+      src.truncate(pos);
+      file.seek(pos);
+      file.write(data);
+      long newOffset = file.getFilePointer();
+      dst.position(0);
+      src.transferFrom(dst, newOffset, count);
+    } finally {
+      boolean deleted = tmpFile.delete();
+      if (!deleted) {
+        log.fine(() -> "Could not delete temp file");
+      }
+    }
   }
 
   public static <T> byte[] encode(T value) {
@@ -123,29 +318,36 @@ public final class Serialization {
    *
    * @throws IOException if the file could not be read, or if it is in an unexpected binary format
    */
-  public static Recording loadRecording(String file) throws IOException {
-    final byte[] bytes = Files.readAllBytes(Paths.get(file));
+  public static Recording loadRecording(Path file) throws IOException {
+    final byte[] bytes = Files.readAllBytes(file);
     if (bytes.length < 8) {
       throw new IOException("Recording file too small");
     }
-    final int magic = readInt(bytes, 0);
+    final int magic = readInt(bytes, Offsets.MAGIC_NUMBER_OFFSET);
     if (magic != MAGIC_NUMBER) {
-      throw new IOException("Wrong magic number in the header. Expected " + MAGIC_NUMBER + ", but was " + magic);
+      throw new IOException(
+          String.format("Wrong magic number in the header. Expected 0x%08X, but was 0x%08X", MAGIC_NUMBER, magic));
     }
-    Serializers.getAdapters().forEach(a -> a.setCurrentFile(new File(file)));
-    //final int numDataPoints = readInt(bytes, 4);
-    final String[] sourceNames = readStringArray(bytes, 8);
+    final int version = readInt(bytes, Offsets.VERSION_NUMBER_OFFSET);
+    if (version != VERSION) {
+      throw new IOException(
+          "Cannot load recording with format version " + version + ". The current format version is " + VERSION);
+    }
+    Serializers.getAdapters().forEach(a -> a.setCurrentFile(file.toFile()));
+    //final int numDataPoints = readInt(bytes, Offsets.NUMBER_DATA_POINTS_OFFSET);
+    final String[] constantPool = readStringArray(bytes, Offsets.CONSTANT_POOL_HEADER_OFFSET);
 
     Recording recording = new Recording();
-    int cursor = 8 + sizeOfStringArray(sourceNames);
+    int cursor = Offsets.CONSTANT_POOL_HEADER_OFFSET + sizeOfStringArray(constantPool);
     while (cursor < bytes.length) {
       final long timeStamp = readLong(bytes, cursor); // NOPMD
       cursor += SIZE_OF_LONG;
       final short sourceIdIndex = readShort(bytes, cursor);
-      final String sourceId = sourceNames[sourceIdIndex]; //NOPMD
+      final String sourceId = constantPool[sourceIdIndex]; //NOPMD
       cursor += SIZE_OF_SHORT;
-      final String dataType = readString(bytes, cursor);
-      cursor += SIZE_OF_INT + dataType.length();
+      final short dataTypeIndex = readShort(bytes, cursor);
+      final String dataType = constantPool[dataTypeIndex];
+      cursor += SIZE_OF_SHORT;
 
       final Object value;
       final Optional<DataType> type = DataTypes.getDefault().forName(dataType);
@@ -154,7 +356,7 @@ public final class Serialization {
         value = adapter.deserialize(bytes, cursor);
         cursor += adapter.getSerializedSize(value);
       } else {
-        throw new IOException("No serializer for " + dataType);
+        throw new IOException("No serializer for data type '" + dataType + "'");
       }
 
       // Since the data is guaranteed to be ordered in the file, we call recording.append()
@@ -172,7 +374,7 @@ public final class Serialization {
   public static int sizeOfStringArray(String[] array) { // NOPMD varargs
     int size = SIZE_OF_INT;
     for (String s : array) {
-      size += s.length() + SIZE_OF_INT;
+      size += toByteArray(s).length; // maintains UTF-8 encoding of multi-byte chars
     }
     return size;
   }
@@ -180,19 +382,28 @@ public final class Serialization {
   /**
    * Generates a header for a serialized recording. The header contains:
    * <ul>
-   * <li>The {@link #MAGIC_NUMBER} magic number, to help confirm data integrity</li>
+   * <li>The {@link #MAGIC_NUMBER magic number}, to help confirm data integrity</li>
+   * <li>The {@link #VERSION version number}, to avoid attempting to load incompatible recording files</li>
    * <li>The number of data points (signed 32-bit int)</li>
    * <li>The names of all the recorded sources, used for caching</li>
    * </ul>
    */
   public static byte[] header(List<TimestampedData> data) {
-    List<String> sourceNames = getAllSourceNames(data);
-    byte[] nameBytes = toByteArray(getAllSourceNames(data).toArray(new String[sourceNames.size()]));
-    byte[] header = new byte[(SIZE_OF_INT * 2) + nameBytes.length];
-    put(header, toByteArray(MAGIC_NUMBER), 0);
-    put(header, toByteArray(data.size()), SIZE_OF_INT);
-    put(header, nameBytes, SIZE_OF_INT * 2);
+    List<String> strings = generateConstantPool(data);
+    byte[] constantPool = toByteArray(strings.toArray(new String[strings.size()]));
+    byte[] header = new byte[(SIZE_OF_INT * 3) + constantPool.length];
+    put(header, toByteArray(MAGIC_NUMBER), Offsets.MAGIC_NUMBER_OFFSET);
+    put(header, toByteArray(VERSION), Offsets.VERSION_NUMBER_OFFSET);
+    put(header, toByteArray(data.size()), Offsets.NUMBER_DATA_POINTS_OFFSET);
+    put(header, constantPool, Offsets.CONSTANT_POOL_HEADER_OFFSET);
     return header;
+  }
+
+  private static List<String> generateConstantPool(List<TimestampedData> data) {
+    List<String> constantPool = new ArrayList<>();
+    constantPool.addAll(getAllSourceNames(data));
+    constantPool.addAll(getAllDataTypeNames(data));
+    return constantPool;
   }
 
   /**
@@ -202,7 +413,14 @@ public final class Serialization {
     return data.stream()
         .map(TimestampedData::getSourceId)
         .distinct()
-        .sorted()
+        .collect(Collectors.toList());
+  }
+
+  private static List<String> getAllDataTypeNames(List<TimestampedData> data) {
+    return data.stream()
+        .map(TimestampedData::getDataType)
+        .map(DataType::getName)
+        .distinct()
         .collect(Collectors.toList());
   }
 
@@ -265,12 +483,13 @@ public final class Serialization {
   }
 
   /**
-   * Encodes a string as a big-endian byte array. The resulting array encodes the length of the string in the first
-   * four bytes, then the contents of the string.
+   * Encodes a string as a big-endian byte array. The resulting array encodes the number bytes that encode the string
+   * in a 4-byte int, followed by the encoded character bytes.
    */
   public static byte[] toByteArray(String string) {
     try {
-      return Bytes.concat(toByteArray(string.length()), string.getBytes("UTF-8"));
+      byte[] bytes = string.getBytes("UTF-8");
+      return Bytes.concat(toByteArray(bytes.length), bytes);
     } catch (UnsupportedEncodingException e) {
       throw new AssertionError("UTF-8 is not supported (the JVM is not to spec!)", e);
     }
@@ -280,15 +499,29 @@ public final class Serialization {
    * Encodes a string array as a big-endian byte array. These can be read with {@link #readStringArray(byte[], int)}.
    */
   public static byte[] toByteArray(String[] array) { // NOPMD varargs
-    return useSerializer(String[].class, s -> s.serialize(array));
+    return Serializers.get(StringArrayType.Instance).serialize(array);
   }
 
+  /**
+   * Creates a new array with the same contents as {@code raw} in the range {@code (start, end]}. Note: the two arrays
+   * are <i>distinct</i>; modifying one will <i>not</i> modify the other.
+   *
+   * @param raw   the array to get a subarray from
+   * @param start the starting index, inclusive, of the subarray in the original
+   * @param end   the final index, exclusive, of the subarray in the original
+   *
+   * @return a new array with the same contents as {@code raw} in the range {@code (start, end]}
+   *
+   * @deprecated use {@link Arrays#copyOfRange(byte[], int, int)} instead
+   */
+  @Deprecated
   public static byte[] subArray(byte[] raw, int start, int end) {
     return Arrays.copyOfRange(raw, start, end);
   }
 
   /**
-   * Puts {@code src} into {@code dst} at the given position.
+   * Puts {@code src} into {@code dst} at the given position. This is a shortcut for
+   * {@code System.arraycopy(src, 0, dst, pos, stc.length)}.
    *
    * @param dst the array to be copied into
    * @param src the array to copy
@@ -394,7 +627,7 @@ public final class Serialization {
    * @param pos   the starting position of the encoded string
    */
   public static String readString(byte[] array, int pos) {
-    return useSerializer(String.class, s -> s.deserialize(array, pos));
+    return Serializers.get(StringType.Instance).deserialize(array, pos);
   }
 
   /**
@@ -404,14 +637,7 @@ public final class Serialization {
    * @param pos   the starting position of the encoded string array
    */
   public static String[] readStringArray(byte[] array, int pos) {
-    return useSerializer(String[].class, s -> s.deserialize(array, pos));
-  }
-
-  private static <T, U> U useSerializer(Class<T> type, Function<TypeAdapter<T>, U> function) {
-    return DataTypes.getDefault().forJavaType(type)
-        .map(Serializers::get)
-        .map(function)
-        .orElseThrow(() -> new UnsupportedOperationException("No type adapter for " + type.getSimpleName()));
+    return Serializers.get(StringArrayType.Instance).deserialize(array, pos);
   }
 
 }

@@ -1,9 +1,11 @@
 package edu.wpi.first.shuffleboard.app;
 
-import edu.wpi.first.shuffleboard.app.components.WidgetTile;
-import edu.wpi.first.shuffleboard.api.util.NetworkTableUtils;
+import edu.wpi.first.shuffleboard.api.sources.DataSource;
+import edu.wpi.first.shuffleboard.plugin.networktables.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
-import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
+import edu.wpi.first.shuffleboard.app.components.WidgetTile;
+
+import edu.wpi.first.networktables.NetworkTableInstance;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -48,8 +50,9 @@ public class MainWindowControllerTest extends ApplicationTest {
 
   @Test
   public void testDragSingleNetworkTableSourceToWidgetPane() {
-    NetworkTablesJNI.putString("/a string source", "foo");
-    NetworkTableUtils.waitForNtcoreEvents();
+    NetworkTableInstance inst = NetworkTableInstance.getDefault();
+    inst.getEntry("/a string source").setString("foo");
+    inst.waitForEntryListenerQueue(-1.0);
     WaitForAsyncUtils.waitForFxEvents();
 
     drag(NodeMatchers.hasText("a string source"), MouseButton.PRIMARY)
@@ -62,8 +65,9 @@ public class MainWindowControllerTest extends ApplicationTest {
   @Test
   @Tag("NonHeadlessTests")
   public void testNetworkTableSourceContextMenu() {
-    NetworkTablesJNI.putString("/testSourceContextMenu", "value");
-    NetworkTableUtils.waitForNtcoreEvents();
+    NetworkTableInstance inst = NetworkTableInstance.getDefault();
+    inst.getEntry("/testSourceContextMenu").setString("value");
+    inst.waitForEntryListenerQueue(-1.0);
     WaitForAsyncUtils.waitForFxEvents();
 
     rightClickOn(NodeMatchers.hasText("testSourceContextMenu"));
@@ -74,9 +78,10 @@ public class MainWindowControllerTest extends ApplicationTest {
     WidgetTile tile = lookup(".tile").query();
     assertNotNull(tile);
     Widget widget = tile.getContent();
-    assertTrue(widget.getSource().isActive());
-    assertEquals("testSourceContextMenu", widget.getSource().getName());
-    assertEquals("value", widget.getSource().getData());
+    DataSource source = widget.getSources().get(0);
+    assertTrue(source.isActive());
+    assertEquals("testSourceContextMenu", source.getName());
+    assertEquals("value",source.getData());
   }
 
 }

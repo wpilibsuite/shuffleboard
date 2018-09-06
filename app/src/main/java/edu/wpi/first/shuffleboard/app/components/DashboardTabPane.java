@@ -1,35 +1,33 @@
 package edu.wpi.first.shuffleboard.app.components;
 
-import edu.wpi.first.shuffleboard.api.data.DataTypes;
+import edu.wpi.first.shuffleboard.api.plugin.Plugin;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
-import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
-import edu.wpi.first.shuffleboard.api.util.Debouncer;
+import edu.wpi.first.shuffleboard.api.sources.SourceEntry;
+import edu.wpi.first.shuffleboard.api.tab.TabInfo;
+import edu.wpi.first.shuffleboard.api.tab.model.StructureChangeListener;
+import edu.wpi.first.shuffleboard.api.tab.model.TabModel;
+import edu.wpi.first.shuffleboard.api.tab.model.TabStructure;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
-import edu.wpi.first.shuffleboard.api.widget.Components;
+import edu.wpi.first.shuffleboard.api.util.TypeUtils;
+import edu.wpi.first.shuffleboard.api.widget.Component;
+import edu.wpi.first.shuffleboard.api.widget.Sourced;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
-import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
+import edu.wpi.first.shuffleboard.app.plugin.PluginLoader;
 
-import org.fxmisc.easybind.EasyBind;
-
-import java.time.Duration;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.WeakHashMap;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
-import javafx.application.Platform;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.Dialog;
+import javafx.collections.SetChangeListener;
+import javafx.event.Event;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
-import javafx.scene.layout.BorderPane;
 
 import static edu.wpi.first.shuffleboard.api.util.TypeUtils.optionalCast;
 
@@ -38,19 +36,30 @@ import static edu.wpi.first.shuffleboard.api.util.TypeUtils.optionalCast;
  */
 public class DashboardTabPane extends TabPane {
 
+  private final Map<TabStructure, Map<TabModel, ProcedurallyDefinedTab>> pluginTabs = new WeakHashMap<>();
+
+  private final StructureChangeListener structureChangeListener = tabs -> {
+    FxUtils.runOnFxThread(() -> {
+      Map<TabModel, ProcedurallyDefinedTab> realTabs = pluginTabs.computeIfAbsent(tabs, __ -> new WeakHashMap<>());
+      for (TabModel model : tabs.getTabs().values()) {
+        ProcedurallyDefinedTab tab = realTabs.computeIfAbsent(model, ProcedurallyDefinedTab::new);
+        if (!getTabs().contains(tab)) {
+          getTabs().add(getTabs().size() - 1, tab);
+        }
+        tab.populate();
+      }
+    });
+  };
+
   /**
-   * Creates a dashboard with one default tab.
+   * Creates a dashboard with no tabs.
    */
   public DashboardTabPane() {
-    this(createAutoPopulateTab("SmartDashboard", "/SmartDashboard/"),
-        createAutoPopulateTab("LiveWindow", "/LiveWindow/"));
+    this((Tab[]) null);
   }
 
-  private static DashboardTab createAutoPopulateTab(String name, String sourcePrefix) {
-    DashboardTab tab = new DashboardTab(name);
-    tab.setAutoPopulate(true);
-    tab.setSourcePrefix(sourcePrefix);
-    return tab;
+  public DashboardTabPane(Collection<TabInfo> tabInfo) {
+    this(tabInfo.stream().map(DashboardTab::new).toArray(DashboardTab[]::new));
   }
 
   /**
@@ -58,10 +67,55 @@ public class DashboardTabPane extends TabPane {
    */
   public DashboardTabPane(Tab... tabs) {
     super(tabs);
+    getTabs().addListener(DashboardTabPane::onTabsChanged);
     getStyleClass().add("dashboard-tabs");
     AdderTab adder = new AdderTab();
     adder.setAddTabCallback(this::addNewTab);
     getTabs().add(adder);
+    PluginLoader.getDefault().getLoadedPlugins()
+        .stream()
+        .map(Plugin::getTabs)
+        .filter(Objects::nonNull)
+        .forEach(structureChangeListener::structureChanged);
+
+    PluginLoader.getDefault().getLoadedPlugins()
+        .stream()
+        .map(Plugin::getTabs)
+        .filter(Objects::nonNull)
+        .forEach(s -> s.addStructureChangeListener(structureChangeListener));
+
+    PluginLoader.getDefault().getLoadedPlugins().addListener((SetChangeListener<Plugin>) change -> {
+      if (change.wasAdded()) {
+        TabStructure customTabs = change.getElementAdded().getTabs();
+        if (customTabs != null) {
+          customTabs.addStructureChangeListener(structureChangeListener);
+        }
+      } else if (change.wasRemoved()) {
+        TabStructure customTabs = change.getElementRemoved().getTabs();
+        if (customTabs != null) {
+          customTabs.removeStructureChangeListener(structureChangeListener);
+        }
+      }
+    });
+  }
+
+  private static void onTabsChanged(ListChangeListener.Change<? extends Tab> change) {
+    while (change.next()) {
+      if (change.wasRemoved()) {
+        change.getRemoved().stream()
+            .flatMap(TypeUtils.castStream(DashboardTab.class))
+            .forEach(tab -> {
+              tab.getPopulateDebouncer().cancel();
+              WidgetPane widgetPane = tab.getWidgetPane();
+              List<Tile> tiles = new ArrayList<>(widgetPane.getTiles());
+              tiles.stream()
+                  .map((Function<Tile, Component>) widgetPane::removeTile)
+                  .flatMap(c -> c.allComponents())
+                  .flatMap(TypeUtils.castStream(Sourced.class))
+                  .forEach(Sourced::removeAllSources);
+            });
+      }
+    }
   }
 
   /**
@@ -97,16 +151,19 @@ public class DashboardTabPane extends TabPane {
    * Closes the currently selected tab.
    */
   public void closeCurrentTab() {
-    getTabs().remove(getSelectionModel().getSelectedItem());
+    Tab tab = getSelectionModel().getSelectedItem();
+    Event event = new Event(tab, tab, Tab.TAB_CLOSE_REQUEST_EVENT);
+    Event.fireEvent(tab, event);
+    getTabs().remove(tab);
   }
 
   /**
-   * Add a widget to the active tab pane.
+   * Add a component to the active tab pane.
    * Should only be done by the result of specific user interaction.
    */
-  public void addWidgetToActivePane(Widget widget) {
+  public void addComponentToActivePane(Component widget) {
     optionalCast(getSelectionModel().getSelectedItem(), DashboardTab.class)
-        .ifPresent(tab -> tab.getWidgetPane().addWidget(widget));
+        .ifPresent(tab -> tab.getWidgetPane().addComponent(widget));
   }
 
   /**
@@ -118,177 +175,20 @@ public class DashboardTabPane extends TabPane {
             .ifPresent(pane -> pane.selectWidgets(selector)));
   }
 
-  public static class DashboardTab extends Tab implements HandledTab {
-    private final ObjectProperty<WidgetPane> widgetPane = new SimpleObjectProperty<>(this, "widgetPane");
-    private final StringProperty title = new SimpleStringProperty(this, "title", "");
-    private final BooleanProperty autoPopulate = new SimpleBooleanProperty(this, "autoPopulate", false);
-    private final StringProperty sourcePrefix = new SimpleStringProperty(this, "sourcePrefix", "");
-    private static final ObservableList<String> availableSourceIds = SourceTypes.getDefault().allAvailableSourceUris();
-
-    /**
-     * Debounces populate() calls so we don't freeze the app while a source type is doing its initial discovery of
-     * available source URIs. Not debouncing makes typical application startup take at least 5 seconds on an i7-6700HQ
-     * where the user sees nothing but a blank screen - no UI elements or anything!
-     */
-    private final Debouncer populateDebouncer =
-        new Debouncer(() -> FxUtils.runOnFxThread(this::populate), Duration.ofMillis(50));
-
-    private boolean deferPopulation = true;
-
-    /**
-     * Creates a single dashboard tab with the given title.
-     */
-    public DashboardTab(String title) {
-      super();
-      this.title.set(title);
-      setGraphic(new TabHandle(this));
-
-      setWidgetPane(new WidgetPane());
-
-      this.contentProperty().bind(widgetPane);
-
-      autoPopulate.addListener(__ -> populateDebouncer.run());
-      sourcePrefix.addListener(__ -> populateDebouncer.run());
-      availableSourceIds.addListener((ListChangeListener<String>) c -> populateDebouncer.run());
-
-      setContextMenu(new ContextMenu(FxUtils.menuItem("Preferences", __ -> showPrefsDialog())));
+  /**
+   * Creates a new tab to autopopulate with data in a complex data source, then selects that tab.
+   *
+   * @param entry the source entry to create a tab for
+   */
+  public void createTabForSource(SourceEntry entry) {
+    DataSource<?> source = entry.get();
+    if (!source.getDataType().isComplex()) {
+      throw new IllegalArgumentException("Data source does not provide complex data");
     }
-
-    /**
-     * Shows a dialog for editing the properties of this tab.
-     */
-    public void showPrefsDialog() {
-      // Use a dummy property here to prevent a call to populate() on every keystroke in the editor (!)
-      StringProperty dummySourcePrefix
-          = new SimpleStringProperty(sourcePrefix.getBean(), sourcePrefix.getName(), sourcePrefix.getValue());
-      WidgetPropertySheet propertySheet = new WidgetPropertySheet(
-          Arrays.asList(
-              this.title,
-              this.autoPopulate,
-              dummySourcePrefix,
-              getWidgetPane().tileSizeProperty()
-          ));
-      propertySheet.getItems().addAll(
-          new WidgetPropertySheet.PropertyItem<>(getWidgetPane().hgapProperty(), "Horizontal spacing"),
-          new WidgetPropertySheet.PropertyItem<>(getWidgetPane().vgapProperty(), "Vertical spacing")
-      );
-      Dialog<ButtonType> dialog = new Dialog<>();
-      dialog.getDialogPane().getStylesheets().setAll(AppPreferences.getInstance().getTheme().getStyleSheets());
-      dialog.setResizable(true);
-      dialog.titleProperty().bind(EasyBind.map(this.title, t -> t + " Preferences"));
-      dialog.getDialogPane().setContent(new BorderPane(propertySheet));
-      dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CLOSE);
-      dialog.setOnCloseRequest(__ -> {
-        this.sourcePrefix.setValue(dummySourcePrefix.getValue());
-      });
-      dialog.showAndWait();
-    }
-
-    /**
-     * Populates this tab with all available sources that begin with the set source prefix and don't already have a
-     * widget to display it or any higher-level source.
-     */
-    private void populate() {
-      if (getWidgetPane().getScene() == null || getWidgetPane().getParent() == null) {
-        // Defer until the pane is visible and is laid out in the scene
-        deferPopulation = true;
-        Platform.runLater(this::populate);
-        return;
-      }
-      if (deferPopulation) {
-        // Defer one last time; this method tends to trigger before row/column bindings on the widget pane
-        // This makes sure the pane is properly sized before populating it
-        deferPopulation = false;
-        Platform.runLater(this::populate);
-      }
-      if (!isAutoPopulate() || getSourcePrefix().isEmpty()) {
-        return;
-      }
-      for (String id : availableSourceIds) {
-        if (shouldAutopopulate(id)
-            && noExistingWidgetsForSource(id)) {
-          DataSource<?> source = SourceTypes.getDefault().forUri(id);
-
-          // Don't create widgets for the catchall types
-          if (source.getDataType() != DataTypes.Unknown
-              && source.getDataType() != DataTypes.Map
-              && !Components.getDefault().widgetNamesForSource(source).isEmpty()) {
-            Components.getDefault().createWidget(Components.getDefault().widgetNamesForSource(source).get(0), source)
-                .ifPresent(w -> getWidgetPane().addWidget(w));
-          }
-        }
-      }
-    }
-
-    private boolean shouldAutopopulate(String sourceId) {
-      return sourceId.startsWith(getSourcePrefix())
-          || SourceTypes.getDefault().stripProtocol(sourceId).startsWith(getSourcePrefix());
-    }
-
-    /**
-     * Checks if there are any widgets in the widget pane backed by a source with the given ID.
-     *
-     * @param id the ID of the source to check for
-     */
-    private boolean noExistingWidgetsForSource(String id) {
-      return getWidgetPane().getTiles().stream()
-          .flatMap(t -> t.getContent().allWidgets())
-          .map(Widget::getSource)
-          .noneMatch(s -> id.startsWith(s.getId()));
-    }
-
-    public WidgetPane getWidgetPane() {
-      return widgetPane.get();
-    }
-
-    public ObjectProperty<WidgetPane> widgetPaneProperty() {
-      return widgetPane;
-    }
-
-    public void setWidgetPane(WidgetPane widgetPane) {
-      this.widgetPane.set(widgetPane);
-    }
-
-    @Override
-    public Tab getTab() {
-      return this;
-    }
-
-    @Override
-    public StringProperty titleProperty() {
-      return title;
-    }
-
-    public String getTitle() {
-      return title.get();
-    }
-
-    public void setTitle(String title) {
-      this.title.set(title);
-    }
-
-    public boolean isAutoPopulate() {
-      return autoPopulate.get();
-    }
-
-    public BooleanProperty autoPopulateProperty() {
-      return autoPopulate;
-    }
-
-    public void setAutoPopulate(boolean autoPopulate) {
-      this.autoPopulate.set(autoPopulate);
-    }
-
-    public String getSourcePrefix() {
-      return sourcePrefix.get();
-    }
-
-    public StringProperty sourcePrefixProperty() {
-      return sourcePrefix;
-    }
-
-    public void setSourcePrefix(String sourceRegex) {
-      this.sourcePrefix.set(sourceRegex);
-    }
+    DashboardTab newTab = new DashboardTab(entry.getViewName());
+    getTabs().add(getTabs().size() - 1, newTab);
+    newTab.setSourcePrefix(source.getId() + "/");
+    newTab.setAutoPopulate(true);
+    getSelectionModel().select(newTab);
   }
 }

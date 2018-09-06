@@ -9,8 +9,11 @@ import edu.wpi.first.shuffleboard.api.widget.TileSize;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 
 import org.fxmisc.easybind.EasyBind;
+import org.fxmisc.easybind.monadic.MonadicBinding;
+import org.fxmisc.easybind.monadic.PropertyBinding;
 
 import java.io.IOException;
+import java.util.Optional;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.Property;
@@ -19,6 +22,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Label;
 import javafx.scene.control.OverrunStyle;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Pane;
 
 /**
  * Contains any component directly embedded in a WidgetPane. Has a size, content, and title.
@@ -26,9 +30,14 @@ import javafx.scene.layout.BorderPane;
 public class Tile<T extends Component> extends BorderPane {
 
   private final Property<T> content = new SimpleObjectProperty<>(this, "content", null);
+  private final MonadicBinding<Pane> contentView = EasyBind.monadic(content).map(Component::getView); // NOPMD
 
   private final Property<TileSize> size = new SimpleObjectProperty<>(this, "size", null);
   private final BooleanProperty selected = new PseudoClassProperty(this, "selected");
+
+  private final PropertyBinding<String> contentTitle = // NOPMD local variable
+      EasyBind.monadic(content)
+          .selectProperty(Component::titleProperty);
 
   /**
    * Creates an empty tile. The content and size must be set with {@link #setContent(T)} and
@@ -45,11 +54,25 @@ public class Tile<T extends Component> extends BorderPane {
 
     getStyleClass().addAll("tile", "card");
     PropertyUtils.bindWithConverter(idProperty(), contentProperty(), w -> "tile[" + w + "]");
-    ((EditableLabel) lookup("#titleLabel")).textProperty().bindBidirectional(
-        EasyBind.monadic(contentProperty()).selectProperty(Component::titleProperty)
-    );
+    EditableLabel editableLabel = (EditableLabel) lookup("#titleLabel");
+    editableLabel.textProperty().bindBidirectional(contentTitle);
     ((Label) lookup("#titleLabel").lookup(".label")).setTextOverrun(OverrunStyle.LEADING_ELLIPSIS);
-    centerProperty().bind(EasyBind.monadic(contentProperty()).map(Component::getView));
+    contentView.addListener((__, oldContent, newContent) -> {
+      getContentPane()
+          .map(Pane::getChildren)
+          .ifPresent(c -> {
+            if (newContent == null) {
+              c.clear();
+            } else {
+              c.setAll(newContent);
+            }
+          });
+    });
+    contentTitle.addListener((__, prev, cur) -> editableLabel.setText(cur));
+  }
+
+  private Optional<Pane> getContentPane() {
+    return Optional.ofNullable((Pane) lookup("#contentPane"));
   }
 
   public final T getContent() {
@@ -100,13 +123,13 @@ public class Tile<T extends Component> extends BorderPane {
   /**
    * Create a tile for an arbitrary component.
    */
-  public static Tile<?> tileFor(Component component, TileSize size) {
+  public static <C extends Component> Tile<C> tileFor(C component, TileSize size) {
     if (component instanceof Widget) {
-      return new WidgetTile((Widget) component, size);
+      return (Tile<C>) new WidgetTile((Widget) component, size);
     } else if (component instanceof Layout) {
-      return new LayoutTile((Layout) component, size);
+      return (Tile<C>) new LayoutTile((Layout) component, size);
     } else {
-      Tile<Component> tile = new Tile<>();
+      Tile<C> tile = new Tile<>();
       tile.setContent(component);
       tile.setSize(size);
       return tile;

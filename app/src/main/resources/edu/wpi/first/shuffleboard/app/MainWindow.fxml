@@ -1,27 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import edu.wpi.first.shuffleboard.app.components.DashboardTabPane?>
-<?import edu.wpi.first.shuffleboard.app.components.WidgetGallery?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
-<?import javafx.scene.control.Tab?>
-<?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.SeparatorMenuItem?>
-<?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.control.Accordion?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.control.SplitPane?>
 <VBox fx:id="root" maxHeight="Infinity" maxWidth="Infinity"
       xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="edu.wpi.first.shuffleboard.app.MainWindowController">
 
     <MenuBar>
         <Menu mnemonicParsing="false" text="File">
+            <MenuItem onAction="#newLayout" text="New" accelerator="SHORTCUT+N"/>
             <MenuItem onAction="#save" text="Save" accelerator="SHORTCUT+S"/>
             <MenuItem onAction="#saveAs" text="Save as..." accelerator="SHORTCUT+SHIFT+S"/>
             <MenuItem onAction="#load" text="Load layout" accelerator="SHORTCUT+O"/>
             <MenuItem onAction="#showPrefs" text="Preferences" accelerator="SHORTCUT+,"/>
+            <MenuItem onAction="#checkForUpdates" text="Check for updates" accelerator="SHORTCUT+U"/>
             <SeparatorMenuItem/>
             <MenuItem onAction="#showPlugins" text="Plugins" accelerator="SHORTCUT+L"/>
             <SeparatorMenuItem/>
@@ -31,30 +30,38 @@
             <MenuItem text="Start recording" fx:id="recordingMenu" onAction="#toggleRecording"
                       accelerator="SHORTCUT+SHIFT+R"/>
             <MenuItem text="Load playback..." onAction="#loadPlayback" accelerator="SHORTCUT+SHIFT+P"/>
+            <SeparatorMenuItem/>
+            <MenuItem text="Convert recordings" onAction="#exportRecordings"/>
         </Menu>
         <Menu text="Tab">
             <MenuItem text="New tab" onAction="#newTab" accelerator="SHORTCUT+T"/>
             <MenuItem text="Close current tab" onAction="#closeCurrentTab" accelerator="SHORTCUT+W"/>
-            <MenuItem text="Current tab preferences" onAction="#showCurrentTabPrefs" accelerator="SHORTCUT+SHIFT+,"/>
+            <MenuItem text="Tab preferences" onAction="#showTabPrefs" accelerator="SHORTCUT+SHIFT+,"/>
+        </Menu>
+        <Menu text="Help">
+            <MenuItem text="About" onAction="#showAboutDialog" accelerator="F1"/>
         </Menu>
     </MenuBar>
-    <SplitPane fx:id="centerSplitPane" dividerPositions="0.02">
-        <TabPane tabClosingPolicy="UNAVAILABLE" prefWidth="400">
-            <Tab text="Sources">
-                <ScrollPane fitToWidth="true" fitToHeight="true">
-                    <Accordion fx:id="sourcesAccordion"/>
-                </ScrollPane>
-            </Tab>
-            <Tab text="Widgets">
-                <ScrollPane fitToWidth="true">
-                    <WidgetGallery vgap="10" hgap="10" prefColumns="3" fx:id="widgetGallery"/>
-                </ScrollPane>
-            </Tab>
-        </TabPane>
+    <StackPane fx:id="contentRoot">
         <DashboardTabPane fx:id="dashboard"/>
-    </SplitPane>
-    <fx:include source="PlaybackControls.fxml"/>
-    <fx:define>
-        <fx:include source="PluginPane.fxml" fx:id="pluginPane"/>
-    </fx:define>
+        <fx:include source="LeftDrawer.fxml" fx:id="leftDrawer" maxWidth="-Infinity" StackPane.alignment="CENTER_LEFT">
+            <StackPane.margin>
+                <Insets top="31"/>
+            </StackPane.margin>
+        </fx:include>
+    </StackPane>
+    <VBox>
+        <fx:include source="UpdateFooter.fxml" fx:id="updateFooter" managed="false"/>
+        <BorderPane styleClass="footer">
+            <padding>
+                <Insets left="4" right="4"/>
+            </padding>
+            <center>
+                <fx:include source="PlaybackControls.fxml"/>
+            </center>
+            <right>
+                <fx:include source="ConnectionIndicators.fxml"/>
+            </right>
+        </BorderPane>
+    </VBox>
 </VBox>

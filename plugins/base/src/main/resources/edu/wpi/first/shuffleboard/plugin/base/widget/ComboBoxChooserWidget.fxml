@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<HBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="edu.wpi.first.shuffleboard.plugin.base.widget.ComboBoxChooserWidget"
+      fx:id="root"
+      minWidth="64" minHeight="64"
+      styleClass="combobox-chooser"
+      alignment="CENTER"
+      spacing="4">
+    <StackPane>
+        <ComboBox fx:id="comboBox"/>
+    </StackPane>
+    <StackPane fx:id="selectionLabelContainer" minWidth="16"/>
+</HBox>

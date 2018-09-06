@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import edu.wpi.first.shuffleboard.app.components.WidgetGallery?>
+<?import javafx.scene.control.Accordion?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<HBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="edu.wpi.first.shuffleboard.app.LeftDrawerController"
+      maxWidth="800"
+      fx:id="root" styleClass="drawer">
+    <TabPane tabClosingPolicy="UNAVAILABLE" minWidth="0" prefWidth="${tabs.maxWidth}" fx:id="tabs">
+        <Tab text="Sources">
+            <ScrollPane fitToWidth="true" fitToHeight="true">
+                <Accordion fx:id="sourcesAccordion"/>
+            </ScrollPane>
+        </Tab>
+        <Tab text="Widgets">
+            <ScrollPane fitToWidth="true">
+                <WidgetGallery vgap="10" hgap="10" prefColumns="3" fx:id="widgetGallery"/>
+            </ScrollPane>
+        </Tab>
+    </TabPane>
+    <StackPane fx:id="handle" minWidth="12" maxWidth="12" styleClass="drawer-separator">
+        <ToggleButton fx:id="expandContractButton" StackPane.alignment="TOP_CENTER" onMouseClicked="#toggleView"/>
+    </StackPane>
+</HBox>

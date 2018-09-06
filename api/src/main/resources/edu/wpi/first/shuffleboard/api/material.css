@@ -73,6 +73,9 @@
     /* A bright blue for highlighting/accenting objects.  For example: selected
      * text; selected items in menus, lists, trees, and tables; progress bars */
     -fx-accent: -swatch-400;
+    -confirmation-color-confirmed: lightgreen;
+    -confirmation-color-warning: yellow;
+    -confirmation-color-error: darkred;
 }
 
 /*******************************************************************************
@@ -119,11 +122,17 @@
 
 .toggle-button, .button {
     -fx-text-fill: -fx-text-button-normal;
-    -fx-font-family: 'Roboto';
     -fx-font-weight: bold;
     -fx-background-insets: 0.0;
-    -fx-background-radius: 4.0;
+    -fx-background-radius: 0.0;
     -fx-alignment: CENTER;
+    -fx-background-color: rgba(250, 250, 250);
+    -fx-effect: dropshadow(gaussian, rgba(0.0, 0.0, 0.0, 0.30), 6.0, 0.3, 0, 2);
+}
+
+.toggle-button:selected, .button:selected {
+    -fx-background-color: -swatch-500;
+    -fx-text-fill: white;
 }
 
 .button-raised .button .text, .button-flat .button .text {
@@ -132,23 +141,22 @@
 
 .button:default {
     -fx-background-color: -swatch-500;
-    -fx-text-fill: -fx-text-button-colored;
+    -fx-text-fill: white;
 }
 
 .toggle-button:focused, .button:focused, .button:default:focused {
-    -fx-background-color: -swatch-light-gray;
+    -fx-background-color: rgb(240, 240, 240);
+    -fx-text-fill: -swatch-500;
 }
 
 .toggle-button:focused:selected {
-    -fx-background-color: derive(-swatch-500, 50.0%),
-    derive(-swatch-500, -20.0%);
-    -fx-background-insets: 0.0, 0.2em;
-    -fx-text-fill: -fx-text-button-colored;
+    -fx-background-color: derive(-swatch-500, -12%);
+    -fx-text-fill: white;
 }
 
 .toggle-button:armed, .toggle-button:selected, .button:armed, .button:default:armed {
-    -fx-background-color: -swatch-gray;
-    -fx-text-fill: -fx-text-button-colored;
+    -fx-background-color: -swatch-500;
+    -fx-text-fill: white;
 }
 
 .icon-button {
@@ -374,13 +382,25 @@
  *                                                                             *
  ******************************************************************************/
 .list-view:focused .list-cell:filled:focused:selected {
-    -fx-background-color: -swatch-light-gray;
-    -fx-text-fill: -swatch-500;
+    -fx-background-color: -swatch-300;
+    -fx-text-fill: -fx-text-base-color;
 }
 
-.list-view:hover .list-cell:hover {
+.list-view:hover .list-cell:filled:hover {
     -fx-background-color: -swatch-light-gray;
     -fx-text-fill: -fx-text-base-color;
+}
+
+.list-view .list-cell:filled:selected {
+    -fx-background-color: -swatch-200;
+}
+
+.list-view {
+    -fx-background-color: transparent;
+}
+
+.list-view .list-cell {
+    -fx-background-color: derive(-fx-base, 26.4%);
 }
 
 /*******************************************************************************
@@ -471,6 +491,18 @@
  *                                                                             *
  ******************************************************************************/
 .separator {
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Split panes                                                                 *
+ *                                                                             *
+ ******************************************************************************/
+.split-pane {
+}
+
+.split-pane > .split-pane-divider {
+    -fx-background-color: -swatch-light-gray;
 }
 
 /*******************************************************************************
@@ -713,7 +745,15 @@
     -fx-text-fill: white;
 }
 
-.tab:selected .tab-label {
+.tab .tab-label {
+    /*
+     * Set a border to the same color as the background to keep the label text in the same position
+     * when the tab is selected.
+     */
     -fx-border-width: 0 0 0.125em 0;
+    -fx-border-color: -swatch-500;
+}
+
+.tab:selected .tab-label {
     -fx-border-color: -fx-text-fill;
 }

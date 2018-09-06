@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import edu.wpi.first.shuffleboard.api.components.NumberField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.StackPane?>
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="edu.wpi.first.shuffleboard.plugin.base.widget.TextViewWidget"
+            minWidth="64" minHeight="32"
+            fx:id="root">
+    <center>
+        <StackPane>
+            <TextField fx:id="textField"/>
+            <NumberField fx:id="numberField"/>
+        </StackPane>
+    </center>
+</BorderPane>

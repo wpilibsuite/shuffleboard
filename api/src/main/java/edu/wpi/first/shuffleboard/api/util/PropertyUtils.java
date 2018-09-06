@@ -29,24 +29,37 @@ public final class PropertyUtils {
   /**
    * Binds two properties bidirectionally. This is more powerful than the methods in
    * {@link javafx.beans.binding.Bindings} because the two properties can be of any type, not just
-   * the same type (eg {@code firstProperty} can be {@code String} and {@code secondProperty} can be
+   * the same type (eg {@code sourceProperty} can be {@code String} and {@code bindingTarget} can be
    * {@code Double} and the bindings will "just work").
    *
-   * @param firstProperty  the first property to bind
-   * @param secondProperty the second property to bind
+   * <p>Note: the source property will have its value set to the converted value of the binding target.
+   * The converters will not be called if a value changes to {@code null}; instead, the corresponding
+   * property has its value set directly to {@code null}.
+   *
+   * @param sourceProperty the property to apply the binding to
+   * @param bindingTarget  the property to bind to
    * @param t2uConverter   the conversion function to convert values of type {@code T} to {@code U}
    * @param u2tConverter   the conversion function to convert values of type {@code U} to {@code T}
    */
   public static <T, U> void bindBidirectionalWithConverter(
-      Property<T> firstProperty,
-      Property<U> secondProperty,
-      Function<T, U> t2uConverter,
-      Function<U, T> u2tConverter) {
-    firstProperty.setValue(u2tConverter.apply(secondProperty.getValue()));
-    firstProperty.addListener((__, old, newValue) ->
-        secondProperty.setValue(t2uConverter.apply(newValue)));
-    secondProperty.addListener((__, old, newValue) ->
-        firstProperty.setValue(u2tConverter.apply(newValue)));
+      Property<T> sourceProperty,
+      Property<U> bindingTarget,
+      Function<? super T, ? extends U> t2uConverter,
+      Function<? super U, ? extends T> u2tConverter) {
+    U targetValue = bindingTarget.getValue();
+    sourceProperty.setValue(targetValue == null ? null : u2tConverter.apply(targetValue));
+    sourceProperty.addListener((__, old, newValue) -> {
+      U newMappedValue = newValue == null ? null : t2uConverter.apply(newValue);
+      if (EqualityUtils.isDifferent(bindingTarget.getValue(), newMappedValue)) {
+        bindingTarget.setValue(newMappedValue);
+      }
+    });
+    bindingTarget.addListener((__, old, newValue) -> {
+      T newMappedValue = newValue == null ? null : u2tConverter.apply(newValue);
+      if (EqualityUtils.isDifferent(sourceProperty.getValue(), newMappedValue)) {
+        sourceProperty.setValue(newMappedValue);
+      }
+    });
   }
 
   /**

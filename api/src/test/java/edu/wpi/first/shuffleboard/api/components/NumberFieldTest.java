@@ -23,7 +23,7 @@ public class NumberFieldTest extends ApplicationTest {
 
   @Test
   public void numberPropertyIsUpdatedTest() {
-    numberField.clear();
+    interact(numberField::clear);
     clickOn(".text-field").write("123.456");
 
     assertEquals(123.456, numberField.numberProperty().getValue().doubleValue());
@@ -32,10 +32,10 @@ public class NumberFieldTest extends ApplicationTest {
   @ParameterizedTest
   @ValueSource(strings = {"0.0", "1.0", "12.56", "-0", "-1", "-10", "+0", "+55.99", "-54.21"})
   public void validNumberTest(String number) {
-    numberField.clear();
+    interact(numberField::clear);
     clickOn(".text-field").write(number);
 
-    assertEquals(Double.parseDouble(number), numberField.getNumber());
+    assertEquals(Double.parseDouble(number), numberField.getNumber().doubleValue());
   }
 
   @ParameterizedTest
@@ -45,7 +45,7 @@ public class NumberFieldTest extends ApplicationTest {
                  "0.0, 0.......0",
                  "0.0, 0.0."})
   public void invalidNumberTest(String expectedResult, String test) {
-    numberField.clear();
+    interact(numberField::clear);
     clickOn(".text-field").write(test);
 
     assertEquals(expectedResult, numberField.getText());
