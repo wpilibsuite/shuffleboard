@@ -5,8 +5,6 @@ import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
 import edu.wpi.first.shuffleboard.api.plugin.Description;
 import edu.wpi.first.shuffleboard.api.plugin.InvalidPluginDefinitionException;
 import edu.wpi.first.shuffleboard.api.plugin.Plugin;
-import edu.wpi.first.shuffleboard.api.plugin.Requirements;
-import edu.wpi.first.shuffleboard.api.plugin.Requires;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
 import edu.wpi.first.shuffleboard.api.sources.recording.Converters;
@@ -19,7 +17,7 @@ import edu.wpi.first.shuffleboard.app.sources.DataTypeChangedException;
 import edu.wpi.first.shuffleboard.app.sources.DestroyedSource;
 import edu.wpi.first.shuffleboard.app.tab.TabInfoRegistry;
 
-import com.cedarsoft.version.Version;
+import com.github.zafarkhaja.semver.Version;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Stopwatch;
 
@@ -44,7 +42,6 @@ import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -160,7 +157,7 @@ public class PluginLoader {
           .filter(e -> e.getName().endsWith(".class"))
           .map(e -> e.getName().replace('/', '.'))
           .map(n -> n.substring(0, n.length() - 6)) // ".class".length() == 6
-          .flatMap(className -> tryLoadClass(className, classLoader))
+          .flatMap(className -> PluginLoaderHelper.tryLoadClass(className, classLoader))
           .filter(Plugin.class::isAssignableFrom)
           .map(c -> (Class<? extends Plugin>) c)
           .filter(c -> {
@@ -175,7 +172,7 @@ public class PluginLoader {
           .collect(Collectors.toList());
       knownPluginClasses.addAll(pluginClasses);
       pluginClasses.stream()
-          .sorted(Comparator.<Class<? extends Plugin>>comparingInt(p -> getRequirements(p).size())
+          .sorted(Comparator.<Class<? extends Plugin>>comparingInt(p -> PluginLoaderHelper.getRequirements(p).size())
               .thenComparing(this::comparePluginsByDependencyGraph)
               .thenComparing(Comparator.comparing(Class::getName)))
           .forEach(this::loadPluginClass);
@@ -203,15 +200,6 @@ public class PluginLoader {
     } else {
       // No dependencies
       return 0;
-    }
-  }
-
-  private static Stream<Class<?>> tryLoadClass(String name, ClassLoader classLoader) {
-    try {
-      return Stream.of(Class.forName(name, false, classLoader));
-    } catch (ClassNotFoundException e) {
-      log.log(Level.WARNING, "Could not load class for name '" + name + "' with classloader " + classLoader, e);
-      return Stream.empty();
     }
   }
 
@@ -317,45 +305,6 @@ public class PluginLoader {
   }
 
   /**
-   * Gets the description of a plugin.
-   *
-   * @param pluginClass the class to get the description of
-   *
-   * @return the description of a plugin
-   *
-   * @throws InvalidPluginDefinitionException if the plugin class does not have a {@code @Description} annotation
-   */
-  private static Description getDescription(Class<? extends Plugin> pluginClass)
-      throws InvalidPluginDefinitionException {
-    if (pluginClass.isAnnotationPresent(Description.class)) {
-      return pluginClass.getAnnotation(Description.class);
-    } else {
-      // Shouldn't happen; the plugin should have been validated earlier
-      throw new InvalidPluginDefinitionException("A plugin MUST have a @Description annotation");
-    }
-  }
-
-  /**
-   * Gets all the <i>direct requirements</i> of a plugin by extracting that data from any present
-   * {@link Requirements @Requirements} and {@link Requires @Requires} annotations on the class.
-   *
-   * @param pluginClass the plugin class to get the dependencies of
-   *
-   * @return a list of the direct plugin requirements of a plugin class
-   */
-  private static List<Requires> getRequirements(Class<? extends Plugin> pluginClass) {
-    Requirements requirements = pluginClass.getAnnotation(Requirements.class);
-    Requires[] requires = pluginClass.getAnnotationsByType(Requires.class);
-    return Stream.concat(
-        Stream.of(requirements)
-            .filter(Objects::nonNull)
-            .map(Requirements::value)
-            .flatMap(Stream::of),
-        Stream.of(requires)
-    ).collect(Collectors.toList());
-  }
-
-  /**
    * Checks if plugin <tt>A</tt> requires plugin <tt>B</tt>, either directly or through transitive dependencies.
    *
    * @param pluginA the plugin to check
@@ -379,29 +328,12 @@ public class PluginLoader {
    * @return true if plugin <tt>A</tt> directly requires plugin <tt>B</tt>, false if not
    */
   private static boolean isDirectRequirement(Class<? extends Plugin> pluginA, Class<? extends Plugin> pluginB) {
-    Description description = getDescription(pluginB);
-    return getRequirements(pluginA).stream()
+    Description description = PluginLoaderHelper.getDescription(pluginB);
+    return PluginLoaderHelper.getRequirements(pluginA).stream()
         .filter(d -> d.group().equals(description.group()))
         .filter(d -> d.name().equals(description.name()))
-        .map(d -> Version.parse(d.minVersion()))
-        .anyMatch(v -> isCompatible(Version.parse(description.version()), v));
-  }
-
-  /**
-   * Checks if version <tt>A</tt> is a backwards-compatible with version <tt>B</tt>; that is, something that depends on
-   * version <tt>B</tt> will still function when version <tt>A</tt> is present. This assumes that the versioning scheme
-   * strictly follows semantic versioning guidelines and increments the major number whenever the API has a change that
-   * breaks backwards compatibility.
-   *
-   * @param versionA the newer version
-   * @param versionB the older version
-   *
-   * @return true if version <tt>A</tt> is backwards compatible with version <tt>B</tt>
-   */
-  @VisibleForTesting
-  static boolean isCompatible(Version versionA, Version versionB) {
-    return versionA.getMajor() == versionB.getMajor()
-        && versionA.sameOrGreaterThan(versionB);
+        .map(d -> Version.valueOf(d.minVersion()))
+        .anyMatch(v -> PluginLoaderHelper.isCompatible(Version.valueOf(description.version()), v));
   }
 
   /**
@@ -418,14 +350,14 @@ public class PluginLoader {
    */
   public boolean canLoad(Plugin plugin) {
     return plugin != null
-        && getRequirements(plugin.getClass()).stream()
+        && PluginLoaderHelper.getRequirements(plugin.getClass()).stream()
         .allMatch(a ->
             loadedPlugins.stream()
                 .filter(p -> p.getGroupId().equals(a.group()) && p.getName().equals(a.name()))
                 .anyMatch(p ->
-                    isCompatible(
+                    PluginLoaderHelper.isCompatible(
                         p.getVersion(),
-                        Version.parse(a.minVersion())
+                        Version.valueOf(a.minVersion())
                     )
                 )
         );

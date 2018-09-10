@@ -30,6 +30,7 @@ plugins {
     id("com.github.johnrengelman.shadow") version "2.0.1"
     id("com.diffplug.gradle.spotless") version "3.5.1"
     id("org.ajoberstar.grgit") version "1.7.2"
+    id("com.google.osdetector") version "1.4.0"
 }
 
 allprojects {
@@ -112,6 +113,10 @@ allprojects {
     }
     repositories {
         mavenCentral()
+    }
+
+    project.ext {
+        this["platform"] = properties["platform"] ?: currentPlatform
     }
 
     dependencies {
@@ -239,6 +244,9 @@ project(":app") {
     apply {
         plugin("com.github.johnrengelman.shadow")
     }
+    tasks.withType<ShadowJar> {
+        classifier = ext["platform"] as String
+    }
     val sourceJar = task<Jar>("sourceJar") {
         description = "Creates a JAR that contains the source code."
         from(java.sourceSets["main"].allSource)
@@ -254,11 +262,11 @@ project(":app") {
         publications {
             create<MavenPublication>("app") {
                 groupId = "edu.wpi.first.shuffleboard"
-                artifactId = "app"
+                artifactId = "shuffleboard"
                 getWPILibVersion()?.let { version = it }
                 val shadowJar: ShadowJar by tasks
                 artifact (shadowJar) {
-                    classifier = null
+                    classifier = shadowJar.classifier
                 }
                 artifact(sourceJar)
                 artifact(javadocJar)
