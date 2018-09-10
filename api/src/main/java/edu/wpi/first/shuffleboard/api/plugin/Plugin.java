@@ -13,7 +13,8 @@ import edu.wpi.first.shuffleboard.api.theme.Theme;
 import edu.wpi.first.shuffleboard.api.util.Storage;
 import edu.wpi.first.shuffleboard.api.widget.ComponentType;
 
-import com.cedarsoft.version.Version;
+import com.github.zafarkhaja.semver.ParseException;
+import com.github.zafarkhaja.semver.Version;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
@@ -71,7 +72,7 @@ public class Plugin {
 
     this.groupId = description.group();
     this.name = description.name();
-    this.version = Version.parse(description.version());
+    this.version = Version.valueOf(description.version());
     this.summary = description.summary();
   }
 
@@ -98,9 +99,10 @@ public class Plugin {
     }
     String version = description.version();
     try {
-      Version.parse(version);
-    } catch (IllegalArgumentException e) {
-      throw new InvalidPluginDefinitionException("The version string does not follow semantic versioning", e);
+      Version.valueOf(version);
+    } catch (IllegalArgumentException | ParseException e) {
+      throw new InvalidPluginDefinitionException(
+          "The version string '" + version + "' does not follow semantic versioning", e);
     }
   }
 

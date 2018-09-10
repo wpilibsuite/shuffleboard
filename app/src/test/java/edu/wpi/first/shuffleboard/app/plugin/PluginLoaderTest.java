@@ -18,7 +18,7 @@ import edu.wpi.first.shuffleboard.app.tab.TabInfoRegistry;
 import edu.wpi.first.shuffleboard.testplugins.BasicPlugin;
 import edu.wpi.first.shuffleboard.testplugins.DependentOnUnknownPlugin;
 
-import com.cedarsoft.version.Version;
+import com.github.zafarkhaja.semver.Version;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
@@ -239,44 +239,44 @@ public class PluginLoaderTest {
 
   @Test
   public void testVersionCompatibilitySameMajor() {
-    Version lower = new Version(1, 0, 0);
-    Version higher = new Version(1, 1, 0);
+    Version lower = Version.forIntegers(1, 0, 0);
+    Version higher = Version.forIntegers(1, 1, 0);
     assertAll(() ->
         assertTrue(
-            PluginLoader.isCompatible(higher, lower),
+            PluginLoaderHelper.isCompatible(higher, lower),
             "Version " + higher + " should be backward compatible with version " + lower
         ), () ->
         assertFalse(
-            PluginLoader.isCompatible(lower, higher),
+            PluginLoaderHelper.isCompatible(lower, higher),
             "Version " + lower + " should not be backward compatible with version " + higher
         ));
   }
 
   @Test
   public void testVersionCompatibilityDifferentMajor() {
-    Version lower = new Version(1, 1, 0);
-    Version higher = new Version(lower.getMajor() + 1, 1, 0);
+    Version lower = Version.forIntegers(1, 1, 0);
+    Version higher = Version.forIntegers(lower.getMajorVersion() + 1, 1, 0);
     assertAll(() ->
         assertFalse(
-            PluginLoader.isCompatible(higher, lower),
+            PluginLoaderHelper.isCompatible(higher, lower),
             "Version " + higher + " should not be backward compatible with version " + lower
         ), () ->
         assertFalse(
-            PluginLoader.isCompatible(lower, higher),
+            PluginLoaderHelper.isCompatible(lower, higher),
             "Version " + lower + " should not be backward compatible with version " + higher
         ));
   }
 
   @Test
   public void testVersionCompatibilitySameVersion() {
-    Version version = new Version(1, 0, 0);
-    Version same = new Version(version.getMajor(), version.getMinor(), version.getBuild());
+    Version version = Version.forIntegers(1, 0, 0);
+    Version same = Version.forIntegers(version.getMajorVersion(), version.getMinorVersion(), version.getPatchVersion());
     assertTrue(
-        PluginLoader.isCompatible(version, same),
+        PluginLoaderHelper.isCompatible(version, same),
         "Identical versions should always be compatible"
     );
     assertTrue(
-        PluginLoader.isCompatible(same, version),
+        PluginLoaderHelper.isCompatible(same, version),
         "Identical versions should always be compatible"
     );
   }

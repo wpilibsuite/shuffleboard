@@ -16,7 +16,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
@@ -168,7 +167,7 @@ public class WidgetSaverTest extends ApplicationTest {
 
     // Test loading
     Widget read = gson.fromJson(jsonObject, Widget.class);
-    Assertions.assertThat(read).isExactlyInstanceOf(WidgetWithSavedProperties.class);
+    assertEquals(WidgetWithSavedProperties.class, read.getClass());
 
     WidgetWithSavedProperties actualRead = (WidgetWithSavedProperties) read;
 
@@ -200,7 +199,7 @@ public class WidgetSaverTest extends ApplicationTest {
 
     // Test loading
     Widget read = gson.fromJson(jsonObject, Widget.class);
-    Assertions.assertThat(read).isExactlyInstanceOf(WidgetSavingPropertiesFromFields.class);
+    assertEquals(WidgetSavingPropertiesFromFields.class, read.getClass());
 
     WidgetSavingPropertiesFromFields actualRead = (WidgetSavingPropertiesFromFields) read;
 
