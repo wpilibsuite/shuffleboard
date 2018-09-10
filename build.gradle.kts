@@ -100,28 +100,6 @@ allprojects {
     }
 }
 
-val currentPlatform: String
-    get() {
-        val os: String = when {
-            System.getProperty("os.name").contains("windows", true) -> "win"
-            System.getProperty("os.name").contains("mac", true) -> "mac"
-            System.getProperty("os.name").contains("linux", true) -> "linux"
-            else -> throw UnsupportedOperationException("Unknown OS: ${System.getProperty("os.name")}")
-        }
-        val osarch = System.getProperty("os.arch")
-        var arch: String =
-                if (osarch.contains("x86_64") || osarch.contains("amd64")) {
-                    "64"
-                } else if (osarch.contains("x86")) {
-                    "32"
-                } else {
-                    throw UnsupportedOperationException(osarch)
-                }
-        return os + arch
-    }
-
-println("Current OS: $currentPlatform")
-
 allprojects {
     apply {
         plugin("java")
