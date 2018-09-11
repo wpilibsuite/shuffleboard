@@ -13,6 +13,9 @@ inside of Travis CI.
 This build configuration is inspired by the
 [openSUSE/snapper](https://github.com/openSUSE/snapper) project.
 
+The Docker image Travis caching mechanism logic was inspired by
+[this Github comment](https://github.com/travis-ci/travis-ci/issues/5358#issuecomment-248915326).
+
 ## Setup
 The `Dockerfile` defines the steps needed for building the Docker image that
 Shuffleboard is tested within.
