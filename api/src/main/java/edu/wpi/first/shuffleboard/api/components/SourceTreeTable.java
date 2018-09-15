@@ -19,7 +19,10 @@ import javafx.scene.control.TreeTableColumn;
 import javafx.scene.control.TreeTableView;
 
 /**
- * A tree table view or displaying hierarchical sources.
+ * A tree table view or displaying hierarchical sources.  Note: the root item <strong>must</strong> be a
+ * {@link FilterableTreeItem}. This allows source trees to be searchable.  Not setting the root item to a
+ * {@code FilterableTreeItem} will result in exceptions being thrown when items in the tree table are added,
+ * removed, or updated.
  *
  * @param <S> the type of the source entries in the tree
  * @param <V> the type of the values of the sources
