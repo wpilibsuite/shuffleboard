@@ -192,7 +192,11 @@ public final class ShuffleboardUpdateChecker {
         } else {
           target = Paths.get("Shuffleboard-" + newestVersion + ".jar");
           Files.copy(temp.toPath(), target, StandardCopyOption.REPLACE_EXISTING);
-          temp.delete();
+          try {
+            Files.delete(temp.toPath());
+          } catch (IOException e) {
+            log.log(Level.WARNING, "Could not delete temporary download file: " + temp, e);
+          }
         }
         onComplete.accept(Result.success(target));
       } catch (IOException e) {
@@ -233,9 +237,11 @@ public final class ShuffleboardUpdateChecker {
         }
         progressNotifier.accept(1.0);
         log.info("Done downloading");
+      } finally {
+        out.close();
       }
+      return temp;
     }
-    return temp;
   }
 
   /**

@@ -73,8 +73,8 @@ public class PowerUpFieldWidget extends SimpleAnnotatedWidget<FmsInfo> {
   }
 
   private static final class Size {
-    final double width;
-    final double height;
+    public final double width;
+    public final double height;
 
     Size(Number width, Number height) {
       this(width.doubleValue(), height.doubleValue());

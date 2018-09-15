@@ -67,6 +67,7 @@ public class TabHandle extends StackPane {
     setOnDragEntered(this::startDelayedDrag);
   }
 
+  @SuppressWarnings("PMD.UnusedFormalParameter")
   private void startDelayedDrag(DragEvent dragEvent) {
     Future<?> task = delayedDragService.schedule(
         () -> FxUtils.runOnFxThread(tab::onDragOver),

@@ -9,9 +9,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 
 import org.controlsfx.control.PropertySheet;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.testfx.framework.junit5.ApplicationTest;
-import org.testfx.matcher.base.NodeMatchers;
+import org.testfx.matcher.control.TextMatchers;
 
 import java.util.Collections;
 import java.util.Set;
@@ -32,6 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
 
+@Tag("UI")
 public class SettingsDialogControllerTest extends ApplicationTest {
 
   private SettingsDialogController controller;
@@ -82,10 +84,10 @@ public class SettingsDialogControllerTest extends ApplicationTest {
 
     // Check settings editors are present
     assertAll("Check presence of editors for the settings",
-        () -> assertNotNull(lookup(NodeMatchers.hasText("Setting 1")).query()),
-        () -> assertNotNull(lookup(NodeMatchers.hasText("Setting 2")).query()),
-        () -> assertNotNull(lookup(NodeMatchers.hasText("Setting 3")).query()),
-        () -> assertNotNull(lookup(NodeMatchers.hasText("Setting 4")).query())
+        () -> assertNotNull(lookup(TextMatchers.hasText("Setting 1")).query()),
+        () -> assertNotNull(lookup(TextMatchers.hasText("Setting 2")).query()),
+        () -> assertNotNull(lookup(TextMatchers.hasText("Setting 3")).query()),
+        () -> assertNotNull(lookup(TextMatchers.hasText("Setting 4")).query())
     );
   }
 

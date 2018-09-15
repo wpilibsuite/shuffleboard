@@ -248,7 +248,7 @@ public final class Serialization {
    *
    * @throws IOException if the file could not be modified
    */
-  static void insertDataIntoFile(Path path, long pos, byte[] data) throws IOException {
+  private static void insertDataIntoFile(Path path, long pos, byte[] data) throws IOException {
     if (Files.notExists(path)) {
       throw new NoSuchFileException("The file specified does not exist: " + path);
     }

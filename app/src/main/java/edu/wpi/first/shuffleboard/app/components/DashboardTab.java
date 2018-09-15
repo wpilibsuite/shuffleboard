@@ -232,6 +232,7 @@ public class DashboardTab extends Tab implements HandledTab, Populatable {
     this.widgetPane.set(widgetPane);
   }
 
+  @SuppressWarnings("PMD.DefaultPackage")
   Debouncer getPopulateDebouncer() {
     return populateDebouncer;
   }

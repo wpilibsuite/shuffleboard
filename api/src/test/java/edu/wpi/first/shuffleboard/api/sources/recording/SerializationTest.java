@@ -91,7 +91,6 @@ public class SerializationTest {
     recording.getData().add(newData);
     Serialization.updateRecordingSave(recording, file);
     final Recording loadedUpdate = Serialization.loadRecording(file);
-    deleteFile(file);
     assertEquals(data, loadedUpdate.getData());
   }
 

@@ -27,7 +27,7 @@ final class PluginLoaderHelper {
     throw new UnsupportedOperationException("This is a utility class");
   }
 
-  static Stream<Class<?>> tryLoadClass(String name, ClassLoader classLoader) {
+  public static Stream<Class<?>> tryLoadClass(String name, ClassLoader classLoader) {
     try {
       return Stream.of(Class.forName(name, false, classLoader));
     } catch (ClassNotFoundException e) {
@@ -45,7 +45,7 @@ final class PluginLoaderHelper {
    *
    * @throws InvalidPluginDefinitionException if the plugin class does not have a {@code @Description} annotation
    */
-  static Description getDescription(Class<? extends Plugin> pluginClass)
+  public static Description getDescription(Class<? extends Plugin> pluginClass)
       throws InvalidPluginDefinitionException {
     if (pluginClass.isAnnotationPresent(Description.class)) {
       return pluginClass.getAnnotation(Description.class);
@@ -63,7 +63,7 @@ final class PluginLoaderHelper {
    *
    * @return a list of the direct plugin requirements of a plugin class
    */
-  static List<Requires> getRequirements(Class<? extends Plugin> pluginClass) {
+  public static List<Requires> getRequirements(Class<? extends Plugin> pluginClass) {
     Requirements requirements = pluginClass.getAnnotation(Requirements.class);
     Requires[] requires = pluginClass.getAnnotationsByType(Requires.class);
     return Stream.concat(

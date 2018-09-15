@@ -6,33 +6,55 @@
     <description>
         The PMD RuleSet for shuffleboard.
     </description>
-
-    <rule ref="rulesets/java/basic.xml"/>
-    <rule ref="rulesets/java/braces.xml"/>
-    <rule ref="rulesets/java/design.xml">
+    <rule ref="category/java/bestpractices.xml">
         <exclude name="AccessorClassGeneration"/>
-        <exclude name="ConstructorCallsOverridableMethod"/>
+        <exclude name="AccessorMethodGeneration"/>
+        <exclude name="UseVarargs"/>
+        <exclude name="GuardLogStatement"/>
+        <exclude name="JUnit4TestShouldUseAfterAnnotation"/>
     </rule>
-    <rule ref="rulesets/java/empty.xml"/>
-    <rule ref="rulesets/java/logging-java.xml">
-        <exclude name="GuardLogStatementJavaUtil"/>
+    <rule ref="category/java/bestpractices.xml/UnusedPrivateMethod">
+        <properties>
+            <property name="ignoredAnnotations" value="javafx.fxml.FXML"/>
+        </properties>
     </rule>
-    <rule ref="rulesets/java/optimizations.xml">
+    <rule ref="category/java/codestyle.xml">
+        <exclude name="AtLeastOneConstructor"/>
         <exclude name="LocalVariableCouldBeFinal"/>
         <exclude name="MethodArgumentCouldBeFinal"/>
-        <exclude name="RedundantFieldInitializer"/>
-        <exclude name="AvoidInstantiatingObjectsInLoops"/>
-    </rule>
-    <rule ref="rulesets/java/strings.xml">
-        <exclude name="AvoidDuplicateLiterals"/>
-    </rule>
-    <rule ref="rulesets/java/imports.xml">
+        <exclude name="OnlyOneReturn"/>
+        <exclude name="ShortVariable"/>
         <exclude name="TooManyStaticImports"/>
-    </rule>
-    <rule ref="rulesets/java/junit.xml">
-        <exclude name="JUnitTestContainsTooManyAsserts"/>
-    </rule>
-    <rule ref="rulesets/java/unnecessary.xml">
+        <exclude name="VariableNamingConventions"/>
+        <exclude name="ClassNamingConventions"/>
+        <exclude name="CallSuperInConstructor"/>
+        <exclude name="LongVariable"/>
         <exclude name="UselessParentheses"/>
+        <exclude name="AvoidFinalLocalVariable"/>
+        <exclude name="CommentDefaultAccessModifier"/>
+    </rule>
+    <rule ref="category/java/codestyle.xml/ShortMethodName">
+        <properties>
+            <property name="minimum" value="2"/>
+        </properties>
+    </rule>
+    <rule ref="category/java/codestyle.xml/ShortClassName">
+        <properties>
+            <property name="minimum" value="4"/>
+        </properties>
+    </rule>
+    <rule ref="category/java/design.xml">
+        <exclude name="DataClass"/>
+        <exclude name="LawOfDemeter"/>
+        <exclude name="LoosePackageCoupling"/>
+        <exclude name="TooManyMethods"/>
+        <exclude name="NcssCount"/>
+        <exclude name="CyclomaticComplexity"/>
+        <exclude name="NPathComplexity"/>
+        <exclude name="AvoidCatchingGenericException"/>
+        <exclude name="AvoidThrowingRawExceptionTypes"/>
+        <exclude name="SignatureDeclareThrowsException"/>
+        <exclude name="ExcessiveImports"/>
+        <exclude name="ExcessivePublicCount"/>
     </rule>
 </ruleset>

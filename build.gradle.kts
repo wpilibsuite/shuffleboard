@@ -1,8 +1,8 @@
-
 import com.diffplug.spotless.FormatterStep
+import com.github.spotbugs.SpotBugsTask
+import com.github.spotbugs.SpotBugsExtension
 import edu.wpi.first.wpilib.versioning.ReleaseType
 import org.gradle.api.Project
-import org.gradle.api.plugins.quality.FindBugs
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.tasks.wrapper.Wrapper
 import org.gradle.jvm.tasks.Jar
@@ -19,7 +19,6 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath("org.junit.platform:junit-platform-gradle-plugin:1.0.0")
         classpath("org.ajoberstar:grgit:1.7.2")
     }
 }
@@ -28,8 +27,9 @@ plugins {
     jacoco
     id("edu.wpi.first.wpilib.versioning.WPILibVersioningPlugin") version "2.0"
     id("com.github.johnrengelman.shadow") version "2.0.1"
-    id("com.diffplug.gradle.spotless") version "3.5.1"
+    id("com.diffplug.gradle.spotless") version "3.13.0"
     id("org.ajoberstar.grgit") version "1.7.2"
+    id("com.github.spotbugs") version "1.6.2"
     id("com.google.osdetector") version "1.4.0"
 }
 
@@ -43,11 +43,19 @@ allprojects {
     // Spotless is used to lint and reformat source files.
     spotless {
         kotlinGradle {
-            // Configure the formatting of the Gradle Kotlin DSL files (*.gradle.kts)
-            ktlint("0.9.1")
+            ktlint("0.24.0")
+            trimTrailingWhitespace()
+            indentWithSpaces()
             endWithNewline()
         }
-        freshmark {
+        format("extraneous") {
+            target("Dockerfile", "*.sh", "*.yml")
+            trimTrailingWhitespace()
+            indentWithSpaces()
+            endWithNewline()
+        }
+        format("markdown") {
+            target("*.md")
             // Default timeWhitespace() doesn't respect lines ending with two spaces for a tight line break
             // So we have to implement it ourselves
             class TrimTrailingSpaces : FormatterStep {
@@ -91,12 +99,6 @@ allprojects {
             indentWithSpaces()
             endWithNewline()
         }
-        format("extraneous") {
-            target("Dockerfile", "*.sh", "*.yml")
-            trimTrailingWhitespace()
-            indentWithSpaces()
-            endWithNewline()
-        }
     }
 }
 
@@ -105,10 +107,9 @@ allprojects {
         plugin("java")
         plugin("checkstyle")
         plugin("pmd")
-        plugin("findbugs")
+        plugin("com.github.spotbugs")
         plugin("jacoco")
         plugin("maven-publish")
-        plugin("org.junit.platform.gradle.plugin")
         plugin("edu.wpi.first.wpilib.versioning.WPILibVersioningPlugin")
     }
     repositories {
@@ -120,34 +121,36 @@ allprojects {
     }
 
     dependencies {
-        fun junitJupiter(name: String, version: String = "5.0.0") =
+        fun junitJupiter(name: String, version: String = "5.2.0") =
                 create(group = "org.junit.jupiter", name = name, version = version)
         "compileOnly"(create(group = "com.google.code.findbugs", name = "annotations", version = "3.0.1"))
         "testCompile"(junitJupiter(name = "junit-jupiter-api"))
         "testCompile"(junitJupiter(name = "junit-jupiter-engine"))
         "testCompile"(junitJupiter(name = "junit-jupiter-params"))
         "testRuntime"(create(group = "org.junit.platform", name = "junit-platform-launcher", version = "1.0.0"))
-        fun testFx(name: String, version: String = "4.0.10-alpha") =
+        fun testFx(name: String, version: String = "4.0.13-alpha") =
                 create(group = "org.testfx", name = name, version = version)
         "testCompile"(testFx(name = "testfx-core"))
         "testCompile"(testFx(name = "testfx-junit5"))
-        "testRuntime"(testFx(name = "openjfx-monocle", version = "8u76-b04"))
+        "testRuntime"(testFx(name = "openjfx-monocle", version = "jdk-9+181"))
     }
 
     checkstyle {
         configFile = file("$rootDir/checkstyle.xml")
-        toolVersion = "8.1"
+        toolVersion = "8.11"
     }
 
     pmd {
+        toolVersion = "6.5.0"
         isConsoleOutput = true
-        sourceSets = setOf(java.sourceSets["main"], java.sourceSets["test"])
+        sourceSets = setOf(java.sourceSets["main"])
         reportsDir = file("${project.buildDir}/reports/pmd")
         ruleSetFiles = files(file("$rootDir/pmd-ruleset.xml"))
         ruleSets = emptyList()
     }
 
-    findbugs {
+    spotbugs {
+        toolVersion = "3.1.6"
         sourceSets = setOf(java.sourceSets["main"], java.sourceSets["test"])
         excludeFilter = file("$rootDir/findBugsSuppressions.xml")
         effort = "max"
@@ -158,7 +161,7 @@ allprojects {
         options.encoding = "UTF-8"
     }
 
-    tasks.withType<FindBugs> {
+    tasks.withType<SpotBugsTask> {
         reports {
             xml.isEnabled = false
             emacs.isEnabled = true
@@ -167,13 +170,13 @@ allprojects {
             mustRunAfter(this@withType)
             doLast {
                 this@withType
-                    .reports
-                    .emacs
-                    .destination
-                    .takeIf { it.exists() }
-                    ?.readText()
-                    .takeIf { !it.isNullOrBlank() }
-                    ?.also { logger.warn(it) }
+                        .reports
+                        .emacs
+                        .destination
+                        .takeIf { it.exists() }
+                        ?.readText()
+                        .takeIf { !it.isNullOrBlank() }
+                        ?.also { logger.warn(it) }
             }
         })
     }
@@ -184,54 +187,14 @@ allprojects {
             html.isEnabled = true
         }
     }
-    afterEvaluate {
-        val junitPlatformTest : JavaExec by tasks
-        jacoco {
-            applyTo(junitPlatformTest)
-        }
-        task<JacocoReport>("jacocoJunit5TestReport") {
-            executionData(junitPlatformTest)
-            sourceSets(java.sourceSets["main"])
-            sourceDirectories = files(java.sourceSets["main"].allSource.srcDirs)
-            classDirectories = files(java.sourceSets["main"].output)
-        }
-    }
 
-    /*
-     * Run UI tests in headless mode on Jenkins or when the `visibleUiTests` property is not set.
-     */
-    if (project.hasProperty("jenkinsBuild") || !project.hasProperty("visibleUiTests")) {
-        junitPlatform {
-            filters {
-                tags {
-                    /*
-                     * A category for UI tests that cannot run in headless mode, ie work properly with real windows
-                     * but not with the virtualized ones in headless mode.
-                     */
-                    exclude("NonHeadlessTests")
-                }
-            }
-        }
-        tasks {
-            "junitPlatformTest"(JavaExec::class) {
-                jvmArgs = listOf(
-                        "-Djava.awt.headless=true",
-                        "-Dtestfx.robot=glass",
-                        "-Dtestfx.headless=true",
-                        "-Dprism.order=sw",
-                        "-Dprism.text=t2k"
-                )
-            }
-        }
-    }
-
-    if (project.hasProperty("jenkinsBuild")) {
-        junitPlatform {
-            filters {
-                tags {
-                    exclude("NonJenkinsTest")
-                }
-            }
+    tasks.withType<Test> {
+        // TODO: re-enable when TestFX (or the underlying JavaFX problem) is fixed
+        println("UI tests will not be run due to TestFX being broken when headless on Java 10.")
+        println("See: https://github.com/javafxports/openjdk-jfx/issues/66")
+        // Link: https://github.com/javafxports/openjdk-jfx/issues/66
+        useJUnitPlatform {
+            excludeTags("UI")
         }
     }
 
@@ -265,7 +228,7 @@ project(":app") {
                 artifactId = "shuffleboard"
                 getWPILibVersion()?.let { version = it }
                 val shadowJar: ShadowJar by tasks
-                artifact (shadowJar) {
+                artifact(shadowJar) {
                     classifier = shadowJar.classifier
                 }
                 artifact(sourceJar)
@@ -336,62 +299,48 @@ if (!hasProperty("releaseType")) {
 fun getWPILibVersion(): String? = if (WPILibVersion.version != "") WPILibVersion.version else null
 
 task<Wrapper>("wrapper") {
-    gradleVersion = "4.1"
+    gradleVersion = "4.9"
 }
 
 /**
  * Retrieves the [java][org.gradle.api.plugins.JavaPluginConvention] project convention.
  */
-val Project.`java`: org.gradle.api.plugins.JavaPluginConvention get() =
-    convention.getPluginByName("java")
+val Project.`java`: org.gradle.api.plugins.JavaPluginConvention
+    get() =
+        convention.getPluginByName("java")
 
 /**
  * Retrieves the [checkstyle][org.gradle.api.plugins.quality.CheckstyleExtension] project extension.
  */
-val Project.`checkstyle`: org.gradle.api.plugins.quality.CheckstyleExtension get() =
-    extensions.getByName("checkstyle") as org.gradle.api.plugins.quality.CheckstyleExtension
+val Project.`checkstyle`: org.gradle.api.plugins.quality.CheckstyleExtension
+    get() =
+        extensions.getByName("checkstyle") as org.gradle.api.plugins.quality.CheckstyleExtension
 
 /**
  * Configures the [checkstyle][org.gradle.api.plugins.quality.CheckstyleExtension] project extension.
  */
 fun Project.`checkstyle`(configure: org.gradle.api.plugins.quality.CheckstyleExtension.() -> Unit) =
-    extensions.configure("checkstyle", configure)
+        extensions.configure("checkstyle", configure)
 
 /**
  * Retrieves the [pmd][org.gradle.api.plugins.quality.PmdExtension] project extension.
  */
-val Project.`pmd`: org.gradle.api.plugins.quality.PmdExtension get() =
-    extensions.getByName("pmd") as org.gradle.api.plugins.quality.PmdExtension
+val Project.`pmd`: org.gradle.api.plugins.quality.PmdExtension
+    get() =
+        extensions.getByName("pmd") as org.gradle.api.plugins.quality.PmdExtension
 
 /**
  * Configures the [pmd][org.gradle.api.plugins.quality.PmdExtension] project extension.
  */
 fun Project.`pmd`(configure: org.gradle.api.plugins.quality.PmdExtension.() -> Unit) =
-    extensions.configure("pmd", configure)
+        extensions.configure("pmd", configure)
 
-/**
- * Retrieves the [findbugs][org.gradle.api.plugins.quality.FindBugsExtension] project extension.
- */
-val Project.`findbugs`: org.gradle.api.plugins.quality.FindBugsExtension get() =
-    extensions.getByName("findbugs") as org.gradle.api.plugins.quality.FindBugsExtension
+val Project.`spotbugs`: SpotBugsExtension
+    get() =
+        extensions.getByName("spotbugs") as SpotBugsExtension
 
-/**
- * Configures the [findbugs][org.gradle.api.plugins.quality.FindBugsExtension] project extension.
- */
-fun Project.`findbugs`(configure: org.gradle.api.plugins.quality.FindBugsExtension.() -> Unit) =
-    extensions.configure("findbugs", configure)
-
-/**
- * Retrieves the [junitPlatform][org.junit.platform.gradle.plugin.JUnitPlatformExtension] project extension.
- */
-val Project.`junitPlatform`: org.junit.platform.gradle.plugin.JUnitPlatformExtension get() =
-    extensions.getByName("junitPlatform") as org.junit.platform.gradle.plugin.JUnitPlatformExtension
-
-/**
- * Configures the [junitPlatform][org.junit.platform.gradle.plugin.JUnitPlatformExtension] project extension.
- */
-fun Project.`junitPlatform`(configure: org.junit.platform.gradle.plugin.JUnitPlatformExtension.() -> Unit) =
-    extensions.configure("junitPlatform", configure)
+fun Project.`spotbugs`(configure: SpotBugsExtension.() -> Unit) =
+        extensions.configure("spotbugs", configure)
 
 /**
  * Gets the build version from git-describe. This is a combination of the most recent tag, the number of commits since
@@ -405,7 +354,7 @@ fun Project.`junitPlatform`(configure: org.junit.platform.gradle.plugin.JUnitPla
  */
 fun getVersionFromGitTag(fallback: String = "v0.0.0"): String = try {
     val git = Grgit.open()
-    DescribeOp(git.repository).call()
+    DescribeOp(git.repository).call() ?: fallback
 } catch (e: GrgitException) {
     logger.log(LogLevel.WARN, "Cannot get the version from git-describe, falling back to $fallback", e)
     fallback

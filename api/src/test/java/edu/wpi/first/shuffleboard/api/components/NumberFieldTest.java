@@ -2,6 +2,8 @@ package edu.wpi.first.shuffleboard.api.components;
 
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -10,6 +12,7 @@ import org.testfx.framework.junit5.ApplicationTest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@Tag("UI")
 public class NumberFieldTest extends ApplicationTest {
 
   private NumberField numberField;

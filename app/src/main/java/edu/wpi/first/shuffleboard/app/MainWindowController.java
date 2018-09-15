@@ -52,6 +52,7 @@ import javafx.stage.Window;
 /**
  * Controller for the main UI window.
  */
+@SuppressWarnings("PMD.TooManyFields")
 public class MainWindowController {
 
   private static final Logger log = Logger.getLogger(MainWindowController.class.getName());
@@ -109,7 +110,7 @@ public class MainWindowController {
          * Numpad digits have a name of "Numpad n"; where n is the number. We need to remove the
          * leading "Numpad " to parse the number.  Digit keys do not have this issue.
          */
-        int digitPressed = Integer.valueOf(e.getCode().getName().replace("Numpad ", ""));
+        int digitPressed = Integer.parseInt(e.getCode().getName().replace("Numpad ", ""));
         dashboard.selectTab(digitPressed - 1);
       }
     });

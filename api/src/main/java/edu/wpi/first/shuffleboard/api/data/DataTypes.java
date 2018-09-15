@@ -273,8 +273,7 @@ public class DataTypes extends Registry<DataType> {
       } else if (o2 == target) {
         return -1;
       }
-      // Negate the integer comparison, otherwise the order is backwards
-      return -Integer.compare(distance(o1, target), distance(o2, target));
+      return Integer.compare(distance(o2, target), distance(o1, target));
     };
   }
 

@@ -24,7 +24,7 @@ import javafx.scene.control.MenuItem;
  * a single Menu.</p>
  */
 public class ActionList {
-  private static Object ACTION_LIST_KEY = new Object();
+  private static final Object ACTION_LIST_KEY = new Object();
 
   private final String name;
   private final List<Supplier<MenuItem>> actions;

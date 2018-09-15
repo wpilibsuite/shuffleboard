@@ -3,6 +3,7 @@ package edu.wpi.first.shuffleboard.api.widget;
 import edu.wpi.first.shuffleboard.api.components.EditableLabel;
 import edu.wpi.first.shuffleboard.api.widget.LayoutBase.ChildContainer;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.testfx.framework.junit5.ApplicationTest;
 
@@ -13,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
+@Tag("UI")
 public class ChildContainerTest extends ApplicationTest {
 
   @Description(name = "Mock Widget", dataTypes = Object.class)

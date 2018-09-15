@@ -101,6 +101,7 @@ public final class TileDragResizer {
     lastY = 0;
   }
 
+  @SuppressWarnings("PMD.UnusedFormalParameter")
   private void mouseReleased(MouseEvent event) {
     if (!dragging) {
       return;

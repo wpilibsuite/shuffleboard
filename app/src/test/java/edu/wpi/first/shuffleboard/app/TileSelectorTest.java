@@ -20,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
 
+@Tag("UI")
 public class TileSelectorTest extends ApplicationTest {
 
   private TileSelector selector;

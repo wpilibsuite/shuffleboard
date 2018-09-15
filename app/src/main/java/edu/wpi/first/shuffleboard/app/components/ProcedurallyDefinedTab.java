@@ -60,6 +60,7 @@ public class ProcedurallyDefinedTab extends DashboardTab {
   }
 
   @Override
+  @SuppressWarnings("PMD.DefaultPackage")
   Debouncer getPopulateDebouncer() {
     return populateDebouncer;
   }

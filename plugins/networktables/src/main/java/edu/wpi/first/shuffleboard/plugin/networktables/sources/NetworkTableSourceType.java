@@ -25,7 +25,7 @@ import javafx.collections.ObservableMap;
 
 public final class NetworkTableSourceType extends SourceType {
 
-  private static NetworkTableSourceType INSTANCE;
+  private static NetworkTableSourceType instance;
 
   private final ObservableList<String> availableSourceIds = FXCollections.observableArrayList();
   private final ObservableMap<String, Object> availableSources = FXCollections.observableHashMap();
@@ -48,7 +48,7 @@ public final class NetworkTableSourceType extends SourceType {
         });
       }
     }, false);
-    inst.addEntryListener("", (event) -> {
+    inst.addEntryListener("", event -> {
       AsyncUtils.runAsync(() -> {
         final boolean delete = NetworkTableUtils.isDelete(event.flags);
         List<String> hierarchy = NetworkTable.getHierarchy(event.name);
@@ -91,11 +91,11 @@ public final class NetworkTableSourceType extends SourceType {
    * For internal use only.
    */
   public static void setInstance(NetworkTableSourceType instance) {
-    INSTANCE = instance;
+    NetworkTableSourceType.instance = instance;
   }
 
   public static NetworkTableSourceType getInstance() {
-    return INSTANCE;
+    return instance;
   }
 
   @Override

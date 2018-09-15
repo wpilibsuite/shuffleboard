@@ -6,6 +6,8 @@ import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
 import edu.wpi.first.shuffleboard.api.sources.recording.TimestampedData;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 import org.controlsfx.control.ToggleSwitch;
 import org.fxmisc.easybind.EasyBind;
 
@@ -102,27 +104,29 @@ public class PlaybackController {
   }
 
   @FXML
-  void previousFrame() {
+  @SuppressFBWarnings(value = "UPM_UNCALLED_PRIVATE_METHOD", justification = "False positive on @FXML method")
+  private void previousFrame() {
     Playback.getCurrentPlayback().ifPresent(Playback::previousFrame);
   }
 
   @FXML
-  void nextFrame() {
+  @SuppressFBWarnings(value = "UPM_UNCALLED_PRIVATE_METHOD", justification = "False positive on @FXML method")
+  private void nextFrame() {
     Playback.getCurrentPlayback().ifPresent(Playback::nextFrame);
   }
 
   @FXML
-  void togglePlayPause() {
+  private void togglePlayPause() {
     Playback.getCurrentPlayback().ifPresent(playback -> playback.setPaused(!playback.isPaused()));
   }
 
   @FXML
-  void stopPlayback() {
+  private void stopPlayback() {
     Playback.getCurrentPlayback().ifPresent(Playback::stop);
   }
 
   @FXML
-  void toggleRecord() {
+  private void toggleRecord() {
     Recorder recorder = Recorder.getInstance();
     if (recorder.isRunning()) {
       recorder.stop();

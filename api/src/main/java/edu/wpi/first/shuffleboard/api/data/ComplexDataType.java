@@ -34,6 +34,7 @@ public abstract class ComplexDataType<T extends ComplexData> extends DataType<T>
     }
   }
 
+  @Override
   public final boolean isComplex() {
     return true;
   }

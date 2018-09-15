@@ -35,6 +35,7 @@ import javafx.scene.paint.Color;
 
 @Description(name = "Camera Stream", dataTypes = CameraServerData.class)
 @ParametrizedController("CameraServerWidget.fxml")
+@SuppressWarnings("PMD.TooManyFields")
 public class CameraServerWidget extends SimpleAnnotatedWidget<CameraServerData> {
 
   @FXML

@@ -75,7 +75,7 @@ public class SubsystemLayout extends ListLayout implements Populatable, Sourced 
     }
   }
 
-  DataSource<?> getSource() {
+  private DataSource<?> getSource() {
     return sources.isEmpty() ? null : sources.get(0);
   }
 

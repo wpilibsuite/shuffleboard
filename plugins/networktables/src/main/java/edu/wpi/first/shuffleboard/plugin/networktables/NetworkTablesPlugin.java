@@ -96,7 +96,7 @@ public class NetworkTablesPlugin extends Plugin {
     // This is done here because each key under N subtables would have N+1 copies
     // in the recording (eg "/a/b/c" has 2 tables and 3 copies: "/a", "/a/b", and "/a/b/c")
     // This significantly reduces the size of recording files.
-    recorderUid = inst.addEntryListener("", (event) -> {
+    recorderUid = inst.addEntryListener("", event -> {
       Object value = event.value.getValue();
       DataTypes.getDefault().forJavaType(value.getClass())
           .ifPresent(type -> {

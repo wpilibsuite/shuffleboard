@@ -93,6 +93,7 @@ public class GridPoint implements Serializable {
     return row;
   }
 
+  @Override
   public String toString() {
     return String.format("GridPoint(%d, %d)", col, row);
   }

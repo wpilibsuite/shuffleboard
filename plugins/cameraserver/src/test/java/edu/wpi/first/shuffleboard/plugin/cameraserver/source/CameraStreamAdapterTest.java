@@ -120,11 +120,11 @@ public class CameraStreamAdapterTest {
   public void testVideoFileName() {
     assertAll("Video file names",
         () -> assertEquals(
-            new File("/recording-Camera.0.mp4").getAbsolutePath(),
-            videoFilePath(new File("/recording.sbr"), "Camera", 0)),
+            new File("recording-Camera.0.mp4").getAbsolutePath(),
+            videoFilePath(new File("recording.sbr"), "Camera", 0)),
         () -> assertEquals(
-            new File("/foo/bar-a b c.45.mp4").getAbsolutePath(),
-            videoFilePath(new File("/foo/bar.sbr"), "a b c", 45)
+            new File("foo/bar-a b c.45.mp4").getAbsolutePath(),
+            videoFilePath(new File("foo/bar.sbr"), "a b c", 45)
         )
     );
   }

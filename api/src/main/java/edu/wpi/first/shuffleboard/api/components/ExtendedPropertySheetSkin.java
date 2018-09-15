@@ -33,8 +33,10 @@ import javafx.scene.layout.VBox;
  * Custom skin for {@link ExtendedPropertySheet}. This is very similar to the default skin, but has a different display
  * for {@link PropertySheet.Mode#CATEGORY} that displays categories with static headings instead of an accordion pane.
  */
+@SuppressWarnings("PMD.DefaultPackage")
 class ExtendedPropertySheetSkin extends SkinBase<ExtendedPropertySheet> {
 
+  /* Not private to avoid generated accessor methods */
   static final double MIN_COLUMN_WIDTH = 100;
   private final BorderPane content = new BorderPane();
   private final ScrollPane scrollPane = new ScrollPane();

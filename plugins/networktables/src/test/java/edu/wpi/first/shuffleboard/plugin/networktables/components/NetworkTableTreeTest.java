@@ -10,6 +10,7 @@ import edu.wpi.first.shuffleboard.plugin.networktables.sources.NetworkTableSourc
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.testfx.framework.junit5.ApplicationTest;
 
@@ -30,10 +31,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.testfx.matcher.base.NodeMatchers.hasText;
+import static org.testfx.util.NodeQueryUtils.hasText;
 import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
 
 @Disabled("Everything is broken")
+@Tag("UI")
 public class NetworkTableTreeTest extends ApplicationTest {
 
   private NetworkTable table;

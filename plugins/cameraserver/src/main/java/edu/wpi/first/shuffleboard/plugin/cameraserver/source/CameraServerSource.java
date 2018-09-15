@@ -40,6 +40,7 @@ import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.Property;
 import javafx.beans.value.ChangeListener;
 
+@SuppressWarnings("PMD.TooManyFields")
 public final class CameraServerSource extends AbstractDataSource<CameraServerData> {
 
   private static final Logger log = Logger.getLogger(CameraServerSource.class.getName());

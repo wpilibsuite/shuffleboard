@@ -69,15 +69,15 @@ public final class CameraStreamAdapter extends TypeAdapter<CameraServerData> {
   @Override
   public CameraServerData deserialize(byte[] buffer, int bufferPosition) {
     int cursor = bufferPosition;
-    String name = readString(buffer, cursor);
+    final String name = readString(buffer, cursor);
     cursor += name.length() + SIZE_OF_INT;
-    byte fileNum = buffer[cursor];
+    final byte fileNum = buffer[cursor];
     cursor++;
-    short frameNum = readShort(buffer, cursor);
+    final short frameNum = readShort(buffer, cursor);
     cursor += SIZE_OF_SHORT;
-    int bandwidth = readInt(buffer, cursor);
+    final int bandwidth = readInt(buffer, cursor);
     cursor += SIZE_OF_INT;
-    double fps = readShort(buffer, cursor) / 100.0;
+    final double fps = readShort(buffer, cursor) / 100.0;
 
     CameraStreamReader reader = readers.computeIfAbsent(name, __ -> new CameraStreamReader(__, getCurrentFile()));
 

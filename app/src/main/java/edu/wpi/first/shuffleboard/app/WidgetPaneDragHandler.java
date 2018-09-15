@@ -293,7 +293,7 @@ final class WidgetPaneDragHandler implements EventHandler<DragEvent> {
   private void dropSource(DataSource<?> source, GridPoint point) {
     Components.getDefault().pickComponentNameFor(source.getDataType())
         .flatMap(name -> Components.getDefault().createComponent(name, source))
-        .filter(widget -> pane.isOpen(point, pane.sizeOfWidget(widget), n -> widget == n))
+        .filter(widget -> pane.isOpen(point, pane.sizeOfWidget(widget), n -> widget.getView() == n))
         .map(pane::addComponentToTile)
         .ifPresent(tile -> pane.moveNode(tile, point));
   }

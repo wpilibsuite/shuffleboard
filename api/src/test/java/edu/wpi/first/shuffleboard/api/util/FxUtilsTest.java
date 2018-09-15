@@ -5,6 +5,7 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -25,6 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class FxUtilsTest extends UtilityClassTest<FxUtils> {
 
   @Nested
+  @Tag("UI")
   public class FxTests extends ApplicationTest {
 
     @Override

@@ -11,6 +11,7 @@ public interface WidgetType<W extends Widget> extends ComponentType<W> {
   /**
    * Get data types the widget should be suggested for.
    */
+  @Override
   Set<DataType> getDataTypes();
 
   /**
