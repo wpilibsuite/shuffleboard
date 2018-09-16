@@ -161,9 +161,6 @@ public class Shuffleboard extends Application {
       });
     });
 
-    if (AppPreferences.getInstance().isCheckForUpdatesOnStartup()) {
-      mainWindowController.checkForUpdatesSubdued();
-    }
     primaryStage.show();
     Time.setStartTime(Time.now());
     long startupTime = startupTimer.elapsed(TimeUnit.MILLISECONDS);
