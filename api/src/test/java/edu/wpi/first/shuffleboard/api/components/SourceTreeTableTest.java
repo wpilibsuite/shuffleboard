@@ -24,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class SourceTreeTableTest extends ApplicationTest {
 
   private final SourceType sourceType = new MockSourceType();
-  private final TreeItem<SourceEntry> root = new TreeItem<>(sourceType.createRootSourceEntry());
+  private final TreeItem<SourceEntry> root = new FilterableTreeItem<>(sourceType.createRootSourceEntry());
   private SourceTreeTable<SourceEntry, ?> tree;
 
   @Override
