@@ -13,12 +13,6 @@ description = """
 All of the application specific code that makes shuffleboard run.
 """.trimMargin()
 
-repositories {
-    maven {
-        setUrl("https://dl.bintray.com/samcarlberg/maven-artifacts/")
-    }
-}
-
 dependencies {
     compile(project(":api"))
     compile(project(path = ":plugins:base"))
