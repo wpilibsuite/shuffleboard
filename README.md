@@ -16,8 +16,10 @@ Shuffleboard is installed by the WPILib Eclipse Plugins. It can be launched from
 It can also be run manually `java -jar C:\Users\<username\>wpilib\tools\Shuffleboard.jar`
 
 ### Requirements
-- [JRE 10](http://www.oracle.com/technetwork/java/javase/downloads/jre10-downloads-4417026.html). Java 10 is required.
-No other version of Java is supported.
+- [JRE 11](http://jdk.java.net/11/). Java 11 is required.
+No other version of Java is supported. Java 11 is installed on Windows by the
+[FRC vscode extension](https://github.com/wpilibsuite/vscode-wpilib). Users on Mac or Linux will have to install Java 11
+manually.
 
 ## Building
 
@@ -34,5 +36,5 @@ following:
 - `linux64` for 64-bit Linux
 
 ### Requirements
-- [JDK 10](http://www.oracle.com/technetwork/java/javase/downloads/jdk10-downloads-4416644.html). JDK 10 is required.
+- [JDK 11](http://jdk.java.net/11/). JDK 11 is required.
 No other version of Java is supported.

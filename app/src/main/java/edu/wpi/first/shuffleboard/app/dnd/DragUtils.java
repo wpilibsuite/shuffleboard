@@ -16,6 +16,7 @@ public final class DragUtils {
   /**
    * A predicate for testing if a node is a widget tile being dragged.
    */
+  @SuppressWarnings("PMD.LinguisticNaming") // Predicates prefixed with "is" makes PMD mad
   public static final Predicate<Node> isDraggedWidget = DragUtils::isDraggedWidget;
 
   private DragUtils() {

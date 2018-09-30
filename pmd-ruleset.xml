@@ -32,6 +32,12 @@
         <exclude name="UselessParentheses"/>
         <exclude name="AvoidFinalLocalVariable"/>
         <exclude name="CommentDefaultAccessModifier"/>
+        <exclude name="FieldNamingConventions"/>
+    </rule>
+    <rule ref="category/java/codestyle.xml/FormalParameterNamingConventions">
+        <properties>
+            <property name="lambdaParameterPattern" value="__|[a-z][a-zA-Z0-9]*"/>
+        </properties>
     </rule>
     <rule ref="category/java/codestyle.xml/ShortMethodName">
         <properties>

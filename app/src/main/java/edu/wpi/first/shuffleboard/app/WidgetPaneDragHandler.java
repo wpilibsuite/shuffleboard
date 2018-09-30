@@ -193,8 +193,8 @@ final class WidgetPaneDragHandler implements EventHandler<DragEvent> {
     int newCol = layout.origin.getCol() + dx;
     int newRow = layout.origin.getRow() + dy;
     WidgetPane.Highlight highlight = highlights.computeIfAbsent(tile, t -> pane.addHighlight());
-    highlight.setLocation(new GridPoint(newCol, newRow));
-    highlight.setSize(layout.size);
+    highlight.withLocation(new GridPoint(newCol, newRow));
+    highlight.withSize(layout.size);
     highlights.put(tile, highlight);
     return highlight;
   }
@@ -337,7 +337,7 @@ final class WidgetPaneDragHandler implements EventHandler<DragEvent> {
   private void dropGalleryWidget(String componentType, GridPoint point) {
     Components.getDefault().createComponent(componentType).ifPresent(c -> {
       TileSize size = pane.sizeOfWidget(c);
-      if (pane.isOpen(point, size, _t -> false)) {
+      if (pane.isOpen(point, size, __ -> false)) {
         Tile<?> tile = pane.addComponentToTile(c);
         moveTile(tile, point);
       }

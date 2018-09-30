@@ -29,7 +29,7 @@ plugins {
     id("com.github.johnrengelman.shadow") version "2.0.1"
     id("com.diffplug.gradle.spotless") version "3.13.0"
     id("org.ajoberstar.grgit") version "1.7.2"
-    id("com.github.spotbugs") version "1.6.2"
+    id("com.github.spotbugs") version "1.6.4"
     id("com.google.osdetector") version "1.4.0"
 }
 
@@ -133,6 +133,16 @@ allprojects {
         "testCompile"(testFx(name = "testfx-core"))
         "testCompile"(testFx(name = "testfx-junit5"))
         "testRuntime"(testFx(name = "openjfx-monocle", version = "jdk-9+181"))
+
+        "compileOnly"(javafx("base"))
+        "compileOnly"(javafx("controls"))
+        "compileOnly"(javafx("fxml"))
+        "compileOnly"(javafx("graphics"))
+
+        "testCompile"(javafx("base"))
+        "testCompile"(javafx("controls"))
+        "testCompile"(javafx("fxml"))
+        "testCompile"(javafx("graphics"))
     }
 
     checkstyle {
@@ -141,7 +151,7 @@ allprojects {
     }
 
     pmd {
-        toolVersion = "6.5.0"
+        toolVersion = "6.7.0"
         isConsoleOutput = true
         sourceSets = setOf(java.sourceSets["main"])
         reportsDir = file("${project.buildDir}/reports/pmd")
@@ -150,7 +160,7 @@ allprojects {
     }
 
     spotbugs {
-        toolVersion = "3.1.6"
+        toolVersion = "3.1.7"
         sourceSets = setOf(java.sourceSets["main"], java.sourceSets["test"])
         excludeFilter = file("$rootDir/findBugsSuppressions.xml")
         effort = "max"
@@ -179,6 +189,10 @@ allprojects {
                         ?.also { logger.warn(it) }
             }
         })
+    }
+
+    jacoco {
+        toolVersion = "0.8.2"
     }
 
     tasks.withType<JacocoReport> {

@@ -49,10 +49,6 @@ public class Shuffleboard extends Application {
   private final Stopwatch startupTimer = Stopwatch.createStarted();
   private MainWindowController mainWindowController;
 
-  public static void main(String[] args) {
-    launch(Shuffleboard.class, args);
-  }
-
   @Override
   public void init() throws AlreadyLockedException, IOException, InterruptedException {
     try {

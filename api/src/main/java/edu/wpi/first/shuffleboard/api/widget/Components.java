@@ -172,7 +172,7 @@ public class Components extends Registry<ComponentType> {
    */
   public Optional<? extends Component> createComponent(String name) {
     // Widgets need to be created using the createWidget function due to state
-    Optional<Widget> widget = typeFor(name).filter(WidgetType.class::isInstance).flatMap(_w -> createWidget(name));
+    Optional<Widget> widget = typeFor(name).filter(WidgetType.class::isInstance).flatMap(__ -> createWidget(name));
     widget.ifPresent(this::setId);
     if (widget.isPresent()) {
       return widget;
