@@ -10,10 +10,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import javafx.beans.property.Property;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
+import javafx.beans.property.*;
 import javafx.scene.Node;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Label;
@@ -31,6 +28,7 @@ public abstract class LayoutBase implements Layout {
 
   private final List<Component> children = new ArrayList<>();
   private final StringProperty title = new SimpleStringProperty(this, "title", getName());
+  private final BooleanProperty titleVisible = new SimpleBooleanProperty(this, "titleVisible", getTitleVisible());
   private final Property<LabelPosition> labelPosition =
       new SimpleObjectProperty<>(this, "labelPosition", LabelPosition.BOTTOM);
 
@@ -76,6 +74,11 @@ public abstract class LayoutBase implements Layout {
   @Override
   public Property<String> titleProperty() {
     return title;
+  }
+
+  @Override
+  public Property<Boolean> titleVisibleProperty() {
+    return titleVisible;
   }
 
   /**

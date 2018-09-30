@@ -7,6 +7,7 @@ import java.util.stream.Stream;
 
 import javafx.beans.property.Property;
 import javafx.scene.layout.Pane;
+import org.apache.xpath.operations.Bool;
 
 /**
  * A Component is base interface for any part of the dashboard that can be instantiated by the user. For example, a
@@ -35,6 +36,19 @@ public interface Component {
 
   default void setTitle(String title) {
     titleProperty().setValue(title);
+  }
+
+  /**
+   * Gets the title bar visibility for this component.
+   */
+  Property<Boolean> titleVisibleProperty();
+
+  default Boolean getTitleVisible() {
+    return titleVisibleProperty().getValue();
+  }
+
+  default void setTitleVisible(Boolean visible) {
+    titleVisibleProperty().setValue(visible);
   }
 
   /**

@@ -8,6 +8,7 @@ import edu.wpi.first.shuffleboard.api.widget.Layout;
 import edu.wpi.first.shuffleboard.api.widget.TileSize;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 
+import javafx.scene.layout.StackPane;
 import org.fxmisc.easybind.EasyBind;
 import org.fxmisc.easybind.monadic.MonadicBinding;
 import org.fxmisc.easybind.monadic.PropertyBinding;
@@ -38,6 +39,9 @@ public class Tile<T extends Component> extends BorderPane {
   private final PropertyBinding<String> contentTitle = // NOPMD local variable
       EasyBind.monadic(content)
           .selectProperty(Component::titleProperty);
+  private final PropertyBinding<Boolean> contentTitleVisible = // NOPMD local variable
+      EasyBind.monadic(content)
+          .selectProperty(Component::titleVisibleProperty);
 
   /**
    * Creates an empty tile. The content and size must be set with {@link #setContent(T)} and
@@ -54,6 +58,8 @@ public class Tile<T extends Component> extends BorderPane {
 
     getStyleClass().addAll("tile", "card");
     PropertyUtils.bindWithConverter(idProperty(), contentProperty(), w -> "tile[" + w + "]");
+    StackPane titlePane = (StackPane) lookup("#titlePane");
+    titlePane.visibleProperty().bindBidirectional(contentTitleVisible);
     EditableLabel editableLabel = (EditableLabel) lookup("#titleLabel");
     editableLabel.textProperty().bindBidirectional(contentTitle);
     ((Label) lookup("#titleLabel").lookup(".label")).setTextOverrun(OverrunStyle.LEADING_ELLIPSIS);
@@ -69,6 +75,13 @@ public class Tile<T extends Component> extends BorderPane {
           });
     });
     contentTitle.addListener((__, prev, cur) -> editableLabel.setText(cur));
+    contentTitleVisible.addListener((__, prev, cur) -> {
+      if (cur) {
+        titlePane.getStyleClass().remove("not-visible");
+      } else {
+        titlePane.getStyleClass().add("not-visible");
+      }
+    });
   }
 
   private Optional<Pane> getContentPane() {

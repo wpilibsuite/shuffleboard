@@ -10,7 +10,7 @@
          type="Tile"
          fx:id="tile">
     <top>
-        <StackPane styleClass="tile-title-bar">
+        <StackPane fx:id="titlePane" styleClass="tile-title-bar">
             <EditableLabel fx:id="titleLabel" styleClass="tile-title-label"/>
         </StackPane>
     </top>

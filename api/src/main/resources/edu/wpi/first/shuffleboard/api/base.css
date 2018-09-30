@@ -195,6 +195,10 @@
     -fx-font-size: 11pt;
 }
 
+.not-visible {
+    -fx-padding: -50px;
+}
+
 .tile .scroll-pane, .tile .viewport,
 .tile .property-sheet .property-pane, .tile .property-sheet .tool-bar {
     -fx-background-color: transparent;

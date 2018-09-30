@@ -9,6 +9,8 @@ import com.google.common.collect.ImmutableList;
 import java.util.List;
 
 import javafx.beans.InvalidationListener;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
@@ -24,6 +26,7 @@ public abstract class AbstractWidget implements Widget {
   protected final ObservableList<DataSource> sources = FXCollections.observableArrayList();
 
   private final StringProperty title = new SimpleStringProperty(this, "title", "");
+  private final BooleanProperty titleVisible = new SimpleBooleanProperty(this, "titleVisible", true);
 
   private final ChangeListener<Boolean> connectionListener = (__, was, is) -> {
     if (is) {
@@ -78,6 +81,11 @@ public abstract class AbstractWidget implements Widget {
   @Override
   public StringProperty titleProperty() {
     return title;
+  }
+
+  @Override
+  public BooleanProperty titleVisibleProperty() {
+    return titleVisible;
   }
 
   @Override

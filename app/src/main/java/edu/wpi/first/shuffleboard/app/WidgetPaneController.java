@@ -639,6 +639,11 @@ public class WidgetPaneController {
             "Title",
             "The title of this " + component.getName().toLowerCase(Locale.US),
             component.titleProperty()
+        ),
+        Setting.of(
+            "Title visible",
+            "The title bar's visibility of this " + component.getName().toLowerCase(Locale.US),
+            component.titleVisibleProperty()
         )
     );
   }
