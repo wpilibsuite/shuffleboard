@@ -1,0 +1,85 @@
+# Gradle
+# Build your Java project and run tests with Gradle using a Gradle wrapper script.
+# Add steps that analyze code, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/java
+
+jobs:
+ - job: Linux
+ 
+   pool:
+    vmImage: 'Ubuntu 16.04'
+ 
+    steps:
+    - task: Gradle@2
+      inputs:
+        workingDirectory: ''
+        gradleWrapperFile: 'gradlew'
+        gradleOptions: '-Xmx3072m'
+        javaHomeOption: 'JDKVersion'
+        jdkVersionOption: '1.10'
+        jdkArchitectureOption: 'x64'
+        publishJUnitResults: false
+        testResultsFiles: '**/TEST-*.xml'
+        tasks: 'build'
+        checkStyleRunAnalysis: true
+        pmdRunAnalysis: true
+      
+ - job: Windows_64_Bit
+ 
+   pool:
+    vmImage: 'vs2017-win2017'
+ 
+    steps:
+    - task: Gradle@2
+      inputs:
+        workingDirectory: ''
+        gradleWrapperFile: 'gradlew'
+        gradleOptions: '-Xmx3072m'
+        javaHomeOption: 'JDKVersion'
+        jdkVersionOption: '1.10'
+        jdkArchitectureOption: 'x64'
+        publishJUnitResults: false
+        testResultsFiles: '**/TEST-*.xml'
+        tasks: 'build'
+        checkStyleRunAnalysis: true
+        pmdRunAnalysis: true
+
+  - job: Windows_32_Bit
+ 
+   pool:
+    vmImage: 'vs2017-win2017'
+ 
+    steps:
+    - task: Gradle@2
+      inputs:
+        workingDirectory: ''
+        gradleWrapperFile: 'gradlew'
+        gradleOptions: '-Xmx1024m'
+        javaHomeOption: 'JDKVersion'
+        jdkVersionOption: '1.10'
+        jdkArchitectureOption: 'x86'
+        publishJUnitResults: false
+        testResultsFiles: '**/TEST-*.xml'
+        tasks: 'build'
+        checkStyleRunAnalysis: true
+        pmdRunAnalysis: true
+        
+ - job: Mac
+ 
+   pool:
+    vmImage: 'xcode9-macos10.13'
+ 
+    steps:
+    - task: Gradle@2
+      inputs:
+        workingDirectory: ''
+        gradleWrapperFile: 'gradlew'
+        gradleOptions: '-Xmx3072m'
+        javaHomeOption: 'JDKVersion'
+        jdkVersionOption: '1.10'
+        jdkArchitectureOption: 'x64'
+        publishJUnitResults: false
+        testResultsFiles: '**/TEST-*.xml'
+        tasks: 'build'
+        checkStyleRunAnalysis: true
+        pmdRunAnalysis: true
