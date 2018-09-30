@@ -18,16 +18,18 @@ repositories {
     }
 }
 
+val platform: String by extra
+
 dependencies {
     // JavaFX dependencies
-    compile(javafx("base"))
-    compile(javafx("controls"))
-    compile(javafx("fxml"))
-    compile(javafx("graphics"))
+    compile(javafx("base", platform))
+    compile(javafx("controls", platform))
+    compile(javafx("fxml", platform))
+    compile(javafx("graphics", platform))
     // Note: we don't use these modules, but third-party plugins might
-    runtime(javafx("media"))
-    runtime(javafx("swing"))
-    runtime(javafx("web"))
+    runtime(javafx("media", platform))
+    runtime(javafx("swing", platform))
+    runtime(javafx("web", platform))
 
     compile(project(":api"))
     compile(project(path = ":plugins:base"))

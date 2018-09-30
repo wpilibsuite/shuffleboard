@@ -119,6 +119,7 @@ allprojects {
     project.ext {
         this["platform"] = properties["platform"] ?: currentPlatform
     }
+    val platform: String by extra
 
     dependencies {
         fun junitJupiter(name: String, version: String = "5.2.0") =
@@ -134,15 +135,15 @@ allprojects {
         "testCompile"(testFx(name = "testfx-junit5"))
         "testRuntime"(testFx(name = "openjfx-monocle", version = "jdk-9+181"))
 
-        "compileOnly"(javafx("base"))
-        "compileOnly"(javafx("controls"))
-        "compileOnly"(javafx("fxml"))
-        "compileOnly"(javafx("graphics"))
+        "compileOnly"(javafx("base", platform))
+        "compileOnly"(javafx("controls", platform))
+        "compileOnly"(javafx("fxml", platform))
+        "compileOnly"(javafx("graphics", platform))
 
-        "testCompile"(javafx("base"))
-        "testCompile"(javafx("controls"))
-        "testCompile"(javafx("fxml"))
-        "testCompile"(javafx("graphics"))
+        "testCompile"(javafx("base", platform))
+        "testCompile"(javafx("controls", platform))
+        "testCompile"(javafx("fxml", platform))
+        "testCompile"(javafx("graphics", platform))
     }
 
     checkstyle {
