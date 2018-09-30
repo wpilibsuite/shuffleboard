@@ -36,7 +36,7 @@ public class EditableLabel extends StackPane {
       }
     });
 
-    editField.setOnAction(__ae -> editing.set(false));
+    editField.setOnAction(__ -> editing.set(false));
 
     editField.focusedProperty().addListener((__, wasFocused, isFocused) -> {
       if (!isFocused) {

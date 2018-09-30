@@ -13,6 +13,8 @@ import com.github.samcarlberg.updatechecker.UpdateChecker;
 import com.github.samcarlberg.updatechecker.UpdateStatus;
 import com.github.zafarkhaja.semver.Version;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -274,6 +276,7 @@ public final class ShuffleboardUpdateChecker {
    *
    * @throws InterruptedException if the calling thread is interrupted while the script is running
    */
+  @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE") // Complains about Files.copy(in, scriptFile) ...
   private static void runCopyScript(File temp, Path target) throws InterruptedException {
     try {
       final String scriptFileExtension;

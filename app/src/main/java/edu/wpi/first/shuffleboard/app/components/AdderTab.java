@@ -23,7 +23,7 @@ public class AdderTab extends Tab implements HandledTab {
     TabHandle handle = new TabHandle(this);
     this.setGraphic(handle);
 
-    this.setOnSelectionChanged(__event -> {
+    this.setOnSelectionChanged(__ -> {
       TabPane tabPane = getTabPane();
       if (tabPane == null) {
         return;

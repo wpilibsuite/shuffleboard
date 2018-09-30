@@ -73,6 +73,6 @@ public class TabHandle extends StackPane {
         () -> FxUtils.runOnFxThread(tab::onDragOver),
         DRAG_FOCUS_DELAY, TimeUnit.MILLISECONDS);
 
-    setOnDragExited(__de -> task.cancel(false));
+    setOnDragExited(__ -> task.cancel(false));
   }
 }

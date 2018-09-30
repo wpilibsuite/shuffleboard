@@ -41,6 +41,7 @@ public final class GridLayout extends LayoutBase {
   @FXML
   private GridPane grid;
 
+  @SuppressWarnings("PMD.LinguisticNaming") // Predicates prefixed with "is" makes PMD mad
   private static final Predicate<Node> isPlaceholder = n -> n instanceof Placeholder;
 
   private final IntegerProperty numColumns = new SimpleIntegerProperty(this, "columns", 3);

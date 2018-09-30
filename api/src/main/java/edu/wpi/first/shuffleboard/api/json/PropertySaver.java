@@ -214,7 +214,7 @@ public final class PropertySaver {
     // Convert the first character to uppercase, so property name "foo" becomes "getFoo" or "isFoo"
     String base = Character.toUpperCase(propertyName.charAt(0)) + propertyName.substring(1);
     String getterName = "get" + base;
-    String isName = "is" + base;
+    String isName = "is" + base; // NOPMD linguistics antipattern - this is the name of a boolean "isX" method
     List<Method> possibleGetters = Arrays.stream(clazz.getMethods())
         .filter(m -> m.getName().equals(getterName) || isBooleanGetterWithName(m, isName))
         .filter(m -> m.getParameterCount() == 0)
