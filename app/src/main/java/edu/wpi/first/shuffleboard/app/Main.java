@@ -10,6 +10,7 @@ import com.sun.javafx.application.LauncherImpl;
  */
 @SuppressWarnings("PMD.UseUtilityClass") // Nope.
 public final class Main {
+  @SuppressWarnings("JavadocMethod")
   public static void main(String[] args) {
     // JavaFX 11+ uses GTK3 by default, and has problems on some display servers
     // This flag forces JavaFX to use GTK2
