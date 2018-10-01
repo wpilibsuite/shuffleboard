@@ -13,6 +13,8 @@ public final class TabStructure {
   private final Map<String, TabModel> tabs = new LinkedHashMap<>();
   private final List<StructureChangeListener> structureChangeListeners = new ArrayList<>();
 
+  private int selectedIndex;
+
   /**
    * Gets the tab with the given title, creating it if it does not already exist.
    *
@@ -34,6 +36,35 @@ public final class TabStructure {
    */
   public Map<String, TabModel> getTabs() {
     return tabs;
+  }
+
+  /**
+   * Sets the currently selected tab.
+   *
+   * @param tabIndex the index of the tab to select
+   */
+  public void setSelectedTab(int tabIndex) {
+    selectedIndex = tabIndex;
+  }
+
+  /**
+   * Sets the currently selected tab.
+   *
+   * @param title the title of the tab to select
+   */
+  public void setSelectedTab(String title) {
+    if (tabs.containsKey(title)) {
+      selectedIndex = new ArrayList<>(tabs.keySet()).indexOf(title);
+    }
+  }
+
+  /**
+   * Gets the currently selected tab.
+   *
+   * @return the index of the currently selected tab
+   */
+  public int getSelectedTab() {
+    return selectedIndex;
   }
 
   /**
