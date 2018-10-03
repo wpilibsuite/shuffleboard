@@ -66,13 +66,13 @@ fun javaCppClassifier(platform: String): String = when (platform) {
  * Generates a classifier string for a platform-specific JavaFX artifact.
  *
  * @param platform the platform string to get the WPILib classifier for. Platform strings should be one of:
- * - win32 (pending WPILib builds and releases)
+ * - win32
  * - win64
  * - mac64
  * - linux64
  */
 fun javaFxClassifier(platform: String): String = when (platform) {
-    // "win32" -> "win32" // TODO: WPILib builds and releases
+    "win32" -> "win32"
     "win64" -> "win"
     "mac64" -> "mac"
     "linux64" -> "linux"

@@ -7,5 +7,10 @@ import org.gradle.api.artifacts.dsl.DependencyHandler
  * which wants the dependencies as `compile` or `runtime` dependencies so they can be included in the fatjar
  * distribution.
  */
-fun DependencyHandler.javafx(name: String, platform: String, version: String = "11") =
-        "org.openjfx:javafx-$name:$version:${javaFxClassifier(platform)}"
+fun DependencyHandler.javafx(name: String, platform: String, version: String = "11"): String {
+        if (platform == "win32") {
+                return "edu.wpi.first.openjfx:javafx-$name:$version:${javaFxClassifier(platform)}"
+        } else {
+                return "org.openjfx:javafx-$name:$version:${javaFxClassifier(platform)}"
+        }
+}
