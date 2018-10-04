@@ -51,7 +51,7 @@ public class TabGeneratorTest {
   }
 
   private static void waitForNtUpdate() {
-    WaitForAsyncUtils.sleep(25, TimeUnit.MILLISECONDS);
+    WaitForAsyncUtils.sleep(100, TimeUnit.MILLISECONDS);
   }
 
   @Test
