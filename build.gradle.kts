@@ -137,9 +137,7 @@ allprojects {
     }
 
     checkstyle {
-        configFile = file("$rootDir/checkstyle.xml")
-        configDir = rootDir
-        toolVersion = "8.11"
+        toolVersion = "8.12"
     }
 
     pmd {
