@@ -10,6 +10,7 @@ import org.gradle.testing.jacoco.tasks.JacocoReport
 import org.ajoberstar.grgit.Grgit
 import org.ajoberstar.grgit.exception.GrgitException
 import org.ajoberstar.grgit.operation.DescribeOp
+import java.time.Instant
 
 buildscript {
     repositories {
@@ -207,7 +208,14 @@ allprojects {
     }
 
     afterEvaluate {
+        // Note: plugins should override this
         version = getWPILibVersion() ?: getVersionFromGitTag()
+        tasks.withType<Jar> {
+            manifest {
+                attributes["Implementation-Version"] = project.version as String
+                attributes["Built-Date"] = Instant.now().toString()
+            }
+        }
     }
 }
 
@@ -234,14 +242,6 @@ project(":api") {
                 }
                 artifact(sourceJar)
                 artifact(javadocJar)
-            }
-        }
-    }
-
-    afterEvaluate {
-        tasks.withType<Jar> {
-            manifest {
-                attributes["Implementation-Version"] = version
             }
         }
     }

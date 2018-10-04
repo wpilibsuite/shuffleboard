@@ -1,6 +1,5 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.gradle.jvm.tasks.Jar
-import java.time.Instant
 
 plugins {
     application
@@ -111,6 +110,7 @@ publishing {
         create<MavenPublication>("app") {
             groupId = "edu.wpi.first.shuffleboard"
             artifactId = "shuffleboard"
+            version = project.version as String
             nativeShadowTasks.forEach {
                 artifact(it) {
                     classifier = it.classifier
@@ -122,20 +122,7 @@ publishing {
     }
 }
 
-tasks.withType<Jar> {
-    manifest {
-        attributes["Implementation-Version"] = version ?: "v0.0.0"
-        attributes["Built-Date"] = Instant.now().toString()
-    }
-}
-
 /**
  * Lets tests use the output of the test_plugins build.
  */
 java.sourceSets["test"].resources.srcDirs += File(project("test_plugins").buildDir, "libs")
-
-/**
- * @return [edu.wpi.first.wpilib.versioning.WPILibVersioningPluginExtension.version] value or null
- * if that value is the empty string.
- */
-fun getWPILibVersion(): String? = if (WPILibVersion.version != "") WPILibVersion.version else null
