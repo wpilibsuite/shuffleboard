@@ -1,6 +1,5 @@
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
-import org.gradle.api.artifacts.ProjectDependency
 import org.gradle.kotlin.dsl.DependencyHandlerScope
 import org.gradle.kotlin.dsl.project
 
@@ -18,13 +17,18 @@ enum class NativePlatforms(val platformName: String) {
 }
 
 /**
+ * Adds a dependency to the configuration for the given platform.
+ */
+fun DependencyHandlerScope.add(platform: NativePlatforms, dependencyNotation: Any) = add(platform.platformName, dependencyNotation)
+
+/**
  * Creates a [Configuration] for the given platform.  If the given platform is also the current platform (i.e. the
  * operating system running the Gradle build), then the `compileOnly`, `runtimeOnly`, and `testCompile` configurations
  * will extend from the native configuration for purposes of being able to run the application and tests.
  */
-fun Project.nativeConfig(platformName: String): Configuration {
-    val configuration = configurations.create(platformName)
-    if (platformName == currentPlatform) {
+internal fun Project.nativeConfig(platform: NativePlatforms): Configuration {
+    val configuration = configurations.create(platform.platformName)
+    if (platform == currentPlatform) {
         configurations.getByName("compileOnly").extendsFrom(configuration)
         configurations.getByName("runtimeOnly").extendsFrom(configuration)
         configurations.getByName("testCompile").extendsFrom(configuration)
@@ -35,7 +39,7 @@ fun Project.nativeConfig(platformName: String): Configuration {
 /**
  * Creates all the native configurations for the project.
  */
-fun Project.createNativeConfigurations() = forEachPlatform { platform -> nativeConfig(platform.platformName) }
+fun Project.createNativeConfigurations() = forEachPlatform { platform -> nativeConfig(platform) }
 
 /**
  * Adds a dependency on a native (platform-specific) artifact.
@@ -48,32 +52,38 @@ fun Project.createNativeConfigurations() = forEachPlatform { platform -> nativeC
  */
 fun DependencyHandlerScope.native(group: String, name: String, version: String, classifierFunction: (NativePlatforms) -> String) {
     forEachPlatform {
-        add(it.platformName, "$group:$name:$version:${classifierFunction(it)}")
+        add(it, "$group:$name:$version:${classifierFunction(it)}")
     }
 }
 
-fun DependencyHandlerScope.native(dep: ProjectDependency) {
-    forEachPlatform {
-        add(it.platformName, dep)
-    }
-}
-
+/**
+ * Adds a dependency on a project that has dependencies on native libraries. The native dependencies for the project
+ * will be added to the same native dependency configuration for this project.  The project's `compile` configuration
+ * will also be copied to this project's.  Additionally, the project's native dependencies corresponding to the build
+ * platform project will be added to this project's `compileOnly`, `runtime`, and `testCompile` configurations to allow
+ * the app's `run` task and all projects' test suites to be able to compile and run.
+ *
+ * @param path the path to the project, e.g. `":plugins:networktables"`
+ */
 fun DependencyHandlerScope.nativeProject(path: String) {
     forEachPlatform {
         nativeProject(path, it)
     }
 }
 
-fun DependencyHandlerScope.nativeProject(path: String, platform: NativePlatforms) {
-    add(platform.platformName, project(path, platform.platformName))
+internal fun DependencyHandlerScope.nativeProject(path: String, platform: NativePlatforms) {
+    add(platform, project(path, platform.platformName))
     add("compile", project(path, "compile"))
-    if (platform.platformName == currentPlatform) {
+    if (platform == currentPlatform) {
         add("compileOnly", project(path))
         add("runtime", project(path))
         add("testCompile", project(path))
     }
 }
 
+/**
+ * Performs some action for all supported native platforms.
+ */
 fun forEachPlatform(action: (NativePlatforms) -> Unit) {
     NativePlatforms.values().forEach(action)
 }
