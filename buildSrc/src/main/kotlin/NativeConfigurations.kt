@@ -70,6 +70,7 @@ fun DependencyHandlerScope.nativeProject(path: String, platform: NativePlatforms
     if (platform.platformName == currentPlatform) {
         add("compileOnly", project(path))
         add("runtime", project(path))
+        add("testCompile", project(path))
     }
 }
 
