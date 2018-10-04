@@ -207,6 +207,10 @@ allprojects {
     tasks.withType<Javadoc> {
         isFailOnError = false
     }
+
+    afterEvaluate {
+        version = getWPILibVersion() ?: getVersionFromGitTag()
+    }
 }
 
 project(":api") {
@@ -236,10 +240,11 @@ project(":api") {
         }
     }
 
-    version = getWPILibVersion() ?: getVersionFromGitTag(fallback = "v0.0.0")
-    tasks.withType<Jar> {
-        manifest {
-            attributes["Implementation-Version"] = version
+    afterEvaluate {
+        tasks.withType<Jar> {
+            manifest {
+                attributes["Implementation-Version"] = version
+            }
         }
     }
 }
