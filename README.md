@@ -28,12 +28,18 @@ To run shuffleboard use the command `./gradlew :app:run`.
 To build the APIs and utility classes used in plugin creation, use the command `./gradlew :api:shadowJar`
 
 To build the Shuffleboard application, use the command `./gradlew :app:shadowJar`. By default, this will create an
-executable JAR for your operating system. To build for another OS, add `-Pplatform={os}`, where `os` is one of the
-following:
-- `win32` for 32-bit Windows
-- `win64` for 64-bit Windows
-- `mac64` for macOS
-- `linux64` for 64-bit Linux
+executable JAR for your operating system. To build for another OS, use one of the platform-specific builds:
+
+| OS | Command |
+|---|---|
+| Windows 64-bit | `./gradlew :app:shadowJar-win64` |
+| Windows 32-bit | `./gradlew :app:shadowJar-win32` |
+| Mac | `./gradlew :app:shadowJar-mac64` |
+| Linux 64-bit | `./gradlew :app:shadowJar-linux64` |
+
+Only the listed platforms are supported
+
+To build _all_ platform-specific JARs at once, use the command `./gradlew :app:shadowJarAllPlatforms`
 
 ### Requirements
 - [JDK 11](http://jdk.java.net/11/). JDK 11 is required.

@@ -66,7 +66,7 @@ tasks.withType<Test> {
 }
 
 val nativeShadowTasks = NativePlatforms.values().map { platform ->
-    tasks.create<ShadowJar>("shadowJar-platform_${platform.platformName}") {
+    tasks.create<ShadowJar>("shadowJar-${platform.platformName}") {
         classifier = platform.platformName
         configurations = listOf(
                 project.configurations.compile,
