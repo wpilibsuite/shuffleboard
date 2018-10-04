@@ -89,7 +89,7 @@ tasks.create("shadowJarAllPlatforms") {
     }
 }
 
-tasks.withType<ShadowJar> {
+tasks.withType<ShadowJar>().configureEach {
     exclude("module-info.class")
 }
 

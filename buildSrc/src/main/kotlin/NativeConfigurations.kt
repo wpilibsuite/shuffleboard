@@ -1,6 +1,6 @@
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
-import org.gradle.kotlin.dsl.DependencyHandlerScope
+import org.gradle.api.artifacts.dsl.DependencyHandler
 import org.gradle.kotlin.dsl.project
 
 enum class NativePlatforms(val platformName: String) {
@@ -19,7 +19,7 @@ enum class NativePlatforms(val platformName: String) {
 /**
  * Adds a dependency to the configuration for the given platform.
  */
-fun DependencyHandlerScope.add(platform: NativePlatforms, dependencyNotation: Any) = add(platform.platformName, dependencyNotation)
+fun DependencyHandler.add(platform: NativePlatforms, dependencyNotation: Any) = add(platform.platformName, dependencyNotation)
 
 /**
  * Creates a [Configuration] for the given platform.  If the given platform is also the current platform (i.e. the
@@ -50,7 +50,7 @@ fun Project.createNativeConfigurations() = forEachPlatform { platform -> nativeC
  * @param classifierFunction a function that takes a native platform and returns the classifier
  *                           for the platform-specific artifact to resolve
  */
-fun DependencyHandlerScope.native(group: String, name: String, version: String, classifierFunction: (NativePlatforms) -> String) {
+fun DependencyHandler.native(group: String, name: String, version: String, classifierFunction: (NativePlatforms) -> String) {
     forEachPlatform {
         add(it, "$group:$name:$version:${classifierFunction(it)}")
     }
@@ -65,13 +65,13 @@ fun DependencyHandlerScope.native(group: String, name: String, version: String, 
  *
  * @param path the path to the project, e.g. `":plugins:networktables"`
  */
-fun DependencyHandlerScope.nativeProject(path: String) {
+fun DependencyHandler.nativeProject(path: String) {
     forEachPlatform {
         nativeProject(path, it)
     }
 }
 
-internal fun DependencyHandlerScope.nativeProject(path: String, platform: NativePlatforms) {
+internal fun DependencyHandler.nativeProject(path: String, platform: NativePlatforms) {
     add(platform, project(path, platform.platformName))
     add("compile", project(path, "compile"))
     if (platform == currentPlatform) {
