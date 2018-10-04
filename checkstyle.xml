@@ -23,7 +23,7 @@
     <property name="fileExtensions" value="java, properties, xml"/>
 
     <module name="SuppressionFilter">
-        <property name="file" value="checkstyleSuppressions.xml"/>
+        <property name="file" value="${config_loc}/checkstyleSuppressions.xml"/>
     </module>
 
     <!-- Checks for whitespace                               -->

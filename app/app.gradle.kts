@@ -1,4 +1,6 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.gradle.jvm.tasks.Jar
+import java.time.Instant
 
 plugins {
     application
@@ -18,24 +20,22 @@ repositories {
     }
 }
 
-val platform: String by extra
-
 dependencies {
     // JavaFX dependencies
-    compile(javafx("base", platform))
-    compile(javafx("controls", platform))
-    compile(javafx("fxml", platform))
-    compile(javafx("graphics", platform))
+    javafx("base")
+    javafx("controls")
+    javafx("fxml")
+    javafx("graphics")
     // Note: we don't use these modules, but third-party plugins might
-    runtime(javafx("media", platform))
-    runtime(javafx("swing", platform))
-    runtime(javafx("web", platform))
+    javafx("media")
+    javafx("swing")
+    javafx("web")
 
-    compile(project(":api"))
-    compile(project(path = ":plugins:base"))
-    compile(project(path = ":plugins:cameraserver"))
-    compile(project(path = ":plugins:networktables"))
-    compile(project(path = ":plugins:powerup"))
+    nativeProject(path = ":api")
+    nativeProject(path = ":plugins:base")
+    nativeProject(path = ":plugins:cameraserver")
+    nativeProject(path = ":plugins:networktables")
+    nativeProject(path = ":plugins:powerup")
     compile(group = "de.huxhorn.lilith", name = "de.huxhorn.lilith.3rdparty.junique", version = "1.0.4")
     compile(group = "com.github.samcarlberg", name = "update-checker", version = "+")
     compile(group = "org.apache.commons", name = "commons-csv", version = "1.5")
@@ -63,6 +63,69 @@ tasks.withType<Jar> {
  */
 tasks.withType<Test> {
     dependsOn(project("test_plugins").tasks["jar"])
+}
+
+val nativeShadowTasks = NativePlatforms.values().map { platform ->
+    tasks.create<ShadowJar>("shadowJar-platform_${platform.platformName}") {
+        classifier = platform.platformName
+        configurations = listOf(
+                project.configurations.compile,
+                project.configurations.getByName(platform.platformName)
+        )
+        from(
+                java.sourceSets["main"].output,
+                project(":api").java.sourceSets["main"].output,
+                project(":plugins:base").java.sourceSets["main"].output,
+                project(":plugins:cameraserver").java.sourceSets["main"].output,
+                project(":plugins:networktables").java.sourceSets["main"].output,
+                project(":plugins:powerup").java.sourceSets["main"].output
+        )
+    }
+}
+
+tasks.create("shadowJarAllPlatforms") {
+    nativeShadowTasks.forEach {
+        this.dependsOn(it)
+    }
+}
+
+tasks.withType<ShadowJar> {
+    exclude("module-info.class")
+}
+
+val sourceJar = task<Jar>("sourceJar") {
+    description = "Creates a JAR that contains the source code."
+    from(java.sourceSets["main"].allSource)
+    classifier = "sources"
+}
+
+val javadocJar = task<Jar>("javadocJar") {
+    dependsOn("javadoc")
+    description = "Creates a JAR that contains the javadocs."
+    from(java.docsDir)
+    classifier = "javadoc"
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("app") {
+            groupId = "edu.wpi.first.shuffleboard"
+            artifactId = "shuffleboard"
+            val shadowJar: ShadowJar by tasks
+            artifact(shadowJar) {
+                classifier = shadowJar.classifier
+            }
+            artifact(sourceJar)
+            artifact(javadocJar)
+        }
+    }
+}
+
+tasks.withType<Jar> {
+    manifest {
+        attributes["Implementation-Version"] = version ?: "v0.0.0"
+        attributes["Built-Date"] = Instant.now().toString()
+    }
 }
 
 /**

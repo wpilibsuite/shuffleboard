@@ -7,11 +7,9 @@ import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.tasks.wrapper.Wrapper
 import org.gradle.jvm.tasks.Jar
 import org.gradle.testing.jacoco.tasks.JacocoReport
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.ajoberstar.grgit.Grgit
 import org.ajoberstar.grgit.exception.GrgitException
 import org.ajoberstar.grgit.operation.DescribeOp
-import java.time.Instant
 
 buildscript {
     repositories {
@@ -116,10 +114,7 @@ allprojects {
         mavenCentral()
     }
 
-    project.ext {
-        this["platform"] = properties["platform"] ?: currentPlatform
-    }
-    val platform: String by extra
+    createNativeConfigurations()
 
     dependencies {
         fun junitJupiter(name: String, version: String = "5.2.0") =
@@ -135,19 +130,15 @@ allprojects {
         "testCompile"(testFx(name = "testfx-junit5"))
         "testRuntime"(testFx(name = "openjfx-monocle", version = "jdk-9+181"))
 
-        "compileOnly"(javafx("base", platform))
-        "compileOnly"(javafx("controls", platform))
-        "compileOnly"(javafx("fxml", platform))
-        "compileOnly"(javafx("graphics", platform))
-
-        "testCompile"(javafx("base", platform))
-        "testCompile"(javafx("controls", platform))
-        "testCompile"(javafx("fxml", platform))
-        "testCompile"(javafx("graphics", platform))
+        javafx("base")
+        javafx("controls")
+        javafx("fxml")
+        javafx("graphics")
     }
 
     checkstyle {
         configFile = file("$rootDir/checkstyle.xml")
+        configDir = rootDir
         toolVersion = "8.11"
     }
 
@@ -218,53 +209,7 @@ allprojects {
     }
 }
 
-project(":app") {
-    apply {
-        plugin("com.github.johnrengelman.shadow")
-    }
-    tasks.withType<ShadowJar> {
-        classifier = ext["platform"] as String
-    }
-    val sourceJar = task<Jar>("sourceJar") {
-        description = "Creates a JAR that contains the source code."
-        from(java.sourceSets["main"].allSource)
-        classifier = "sources"
-    }
-    val javadocJar = task<Jar>("javadocJar") {
-        dependsOn("javadoc")
-        description = "Creates a JAR that contains the javadocs."
-        from(java.docsDir)
-        classifier = "javadoc"
-    }
-    publishing {
-        publications {
-            create<MavenPublication>("app") {
-                groupId = "edu.wpi.first.shuffleboard"
-                artifactId = "shuffleboard"
-                getWPILibVersion()?.let { version = it }
-                val shadowJar: ShadowJar by tasks
-                artifact(shadowJar) {
-                    classifier = shadowJar.classifier
-                }
-                artifact(sourceJar)
-                artifact(javadocJar)
-            }
-        }
-    }
-
-    version = getWPILibVersion() ?: getVersionFromGitTag(fallback = "0.0.0") // fall back to git describe if no WPILib version is set
-    tasks.withType<Jar> {
-        manifest {
-            attributes["Implementation-Version"] = version
-            attributes["Built-Date"] = Instant.now().toString()
-        }
-    }
-}
-
 project(":api") {
-    apply {
-        plugin("com.github.johnrengelman.shadow")
-    }
     val sourceJar = task<Jar>("sourceJar") {
         description = "Creates a JAR that contains the source code."
         from(java.sourceSets["main"].allSource)
@@ -371,6 +316,6 @@ fun getVersionFromGitTag(fallback: String = "v0.0.0"): String = try {
     val git = Grgit.open()
     DescribeOp(git.repository).call() ?: fallback
 } catch (e: GrgitException) {
-    logger.log(LogLevel.WARN, "Cannot get the version from git-describe, falling back to $fallback", e)
+    logger.log(LogLevel.WARN, "Cannot get the version from git-describe, falling back to $fallback")
     fallback
 }

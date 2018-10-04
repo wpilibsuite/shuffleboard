@@ -41,6 +41,8 @@ fun wpilibClassifier(platform: String) = when (platform) {
     else -> throw UnsupportedOperationException("WPILib does not support the '$platform' platform")
 }
 
+fun wpilibClassifier(platform: NativePlatforms) = wpilibClassifier(platform.platformName)
+
 
 /**
  * Generates a classifier string for a platform-specific JavaCPP native library.
@@ -61,6 +63,8 @@ fun javaCppClassifier(platform: String): String = when (platform) {
     else -> throw UnsupportedOperationException("JavaCPP does not support the '$platform' platform")
 }
 
+fun javaCppClassifier(platform: NativePlatforms) = javaCppClassifier(platform.platformName)
+
 
 /**
  * Generates a classifier string for a platform-specific JavaFX artifact.
@@ -78,3 +82,5 @@ fun javaFxClassifier(platform: String): String = when (platform) {
     "linux64" -> "linux"
     else -> throw UnsupportedOperationException("JavaFX does not support the '$platform' platform")
 }
+
+fun javaFxClassifier(platform: NativePlatforms) = javaFxClassifier(platform.platformName)

@@ -25,3 +25,5 @@ private void setUpChildProject(ProjectDescriptor project) {
     assert project.buildFile.isFile(): "File named $groovyName or $kotlinName must exist."
     project.children.each { setUpChildProject(it) }
 }
+
+enableFeaturePreview("STABLE_PUBLISHING")
