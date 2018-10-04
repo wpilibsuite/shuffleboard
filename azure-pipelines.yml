@@ -23,7 +23,7 @@ jobs:
         gradleOptions: '-Xmx3072m'
         publishJUnitResults: false
         testResultsFiles: '**/TEST-*.xml'
-        tasks: 'shadowJar'
+        tasks: 'shadowJar test'
 
     # - task: CopyFiles@2
     #   inputs:
@@ -56,7 +56,7 @@ jobs:
         gradleOptions: '-Xmx3072m'
         publishJUnitResults: false
         testResultsFiles: '**/TEST-*.xml'
-        tasks: 'shadowJar'
+        tasks: 'shadowJar test'
 
     # - task: CopyFiles@2
     #   inputs:
@@ -89,7 +89,7 @@ jobs:
         gradleOptions: '-Xmx1024m'
         publishJUnitResults: false
         testResultsFiles: '**/TEST-*.xml'
-        tasks: 'shadowJar'
+        tasks: 'shadowJar test'
 
     # - task: CopyFiles@2
     #   inputs:
@@ -120,7 +120,7 @@ jobs:
         jdkDirectory: '/Library/Java/JavaVirtualMachines/jdk-11.jdk/Contents/Home/'
         publishJUnitResults: false
         testResultsFiles: '**/TEST-*.xml'
-        tasks: 'shadowJar'
+        tasks: 'shadowJar test'
 
     # - task: CopyFiles@2
     #   inputs:
