@@ -111,9 +111,10 @@ publishing {
         create<MavenPublication>("app") {
             groupId = "edu.wpi.first.shuffleboard"
             artifactId = "shuffleboard"
-            val shadowJar: ShadowJar by tasks
-            artifact(shadowJar) {
-                classifier = shadowJar.classifier
+            nativeShadowTasks.forEach {
+                artifact(it) {
+                    classifier = it.classifier
+                }
             }
             artifact(sourceJar)
             artifact(javadocJar)
