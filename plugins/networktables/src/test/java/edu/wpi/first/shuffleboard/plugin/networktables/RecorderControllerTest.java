@@ -9,7 +9,6 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.testfx.framework.junit5.ApplicationTest;
 
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
@@ -18,8 +17,9 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.testfx.util.WaitForAsyncUtils.sleep;
 
-public class RecorderControllerTest extends ApplicationTest {
+public class RecorderControllerTest {
 
   private static final Logger log = Logger.getLogger(RecorderControllerTest.class.getName());
 
@@ -52,7 +52,7 @@ public class RecorderControllerTest extends ApplicationTest {
     ntInstance.getEntry(RecorderController.DEFAULT_START_STOP_KEY).setBoolean(true);
     ntInstance.getEntry(RecorderController.DEFAULT_FILE_NAME_FORMAT_KEY).setString(format);
     controller.start();
-    sleep(20, TimeUnit.MILLISECONDS); // wait for nt events
+    sleep(100, TimeUnit.MILLISECONDS); // wait for nt events
     assertAll(
         () -> assertTrue(recorder.isRunning(), "Recorder should be running"),
         () -> assertEquals(format, recorder.getFileNameFormat(), "File name format should have been set")
@@ -63,7 +63,7 @@ public class RecorderControllerTest extends ApplicationTest {
   public void testStartWhenEntryUpdates() {
     controller.start();
     ntInstance.getEntry(RecorderController.DEFAULT_START_STOP_KEY).setBoolean(true);
-    sleep(20, TimeUnit.MILLISECONDS);
+    sleep(100, TimeUnit.MILLISECONDS);
     assertTrue(recorder.isRunning(), "Recorder should have been started");
   }
 
@@ -71,7 +71,7 @@ public class RecorderControllerTest extends ApplicationTest {
   public void testNoUpdatesWhenNotRunning() {
     controller.start();
     controller.stop();
-    sleep(20, TimeUnit.MILLISECONDS);
+    sleep(100, TimeUnit.MILLISECONDS);
     ntInstance.getEntry(RecorderController.DEFAULT_START_STOP_KEY).setBoolean(true);
     assertFalse(recorder.isRunning(), "Recording should not be running");
   }
@@ -80,10 +80,10 @@ public class RecorderControllerTest extends ApplicationTest {
   public void testStopsRecorder() {
     controller.start();
     ntInstance.getEntry(RecorderController.DEFAULT_START_STOP_KEY).setBoolean(true);
-    sleep(20, TimeUnit.MILLISECONDS);
+    sleep(100, TimeUnit.MILLISECONDS);
     assertTrue(recorder.isRunning());
     ntInstance.getEntry(RecorderController.DEFAULT_START_STOP_KEY).setBoolean(false);
-    sleep(20, TimeUnit.MILLISECONDS);
+    sleep(100, TimeUnit.MILLISECONDS);
     assertFalse(recorder.isRunning(), "Recorder should have been stopped");
   }
 
@@ -92,7 +92,7 @@ public class RecorderControllerTest extends ApplicationTest {
     controller.start();
     DashboardMode.setCurrentMode(DashboardMode.PLAYBACK);
     ntInstance.getEntry(RecorderController.DEFAULT_START_STOP_KEY).setBoolean(true);
-    sleep(20, TimeUnit.MILLISECONDS);
+    sleep(100, TimeUnit.MILLISECONDS);
     assertFalse(recorder.isRunning(), "Recorder should not have been started");
   }
 }
