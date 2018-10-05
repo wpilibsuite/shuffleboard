@@ -1,4 +1,3 @@
-
 import org.gradle.jvm.tasks.Jar
 
 plugins {
@@ -13,7 +12,19 @@ description = """
 All of the application specific code that makes shuffleboard run.
 """.trimMargin()
 
+val platform: String by extra
+
 dependencies {
+    // JavaFX dependencies
+    compile(javafx("base", platform))
+    compile(javafx("controls", platform))
+    compile(javafx("fxml", platform))
+    compile(javafx("graphics", platform))
+    // Note: we don't use these modules, but third-party plugins might
+    runtime(javafx("media", platform))
+    runtime(javafx("swing", platform))
+    runtime(javafx("web", platform))
+
     compile(project(":api"))
     compile(project(path = ":plugins:base"))
     compile(project(path = ":plugins:cameraserver"))
@@ -24,22 +35,19 @@ dependencies {
     testCompile(project("test_plugins"))
 }
 
-val theMainClassName = "edu.wpi.first.shuffleboard.app.Shuffleboard"
+val theMainClassName = "edu.wpi.first.shuffleboard.app.Main"
 
 application {
     mainClassName = theMainClassName
     applicationDefaultJvmArgs = listOf(
             "-Xverify:none",
-            "-Dprism.order=d3d,es2,sw",
-            "--add-exports", "javafx.controls/com.sun.javafx.scene.control.inputmap=ALL-UNNAMED"
+            "-Dprism.order=d3d,es2,sw"
     )
 }
 
 tasks.withType<Jar> {
     manifest {
         attributes["Main-Class"] = theMainClassName
-        attributes["JavaFX-Main-Class"] = theMainClassName
-        attributes["JavaFX-Preloader-Class"] = "edu.wpi.first.shuffleboard.app.ShuffleboardPreloader"
     }
 }
 

@@ -292,6 +292,7 @@ public class DashboardTab extends Tab implements HandledTab, Populatable {
   }
 
   @Override
+  @SuppressWarnings("PMD.LinguisticNaming") // Predicates prefixed with "is" makes PMD mad
   public boolean hasComponentFor(String sourceId) {
     List<Component> topLevelComponents = getWidgetPane().getTiles().stream()
         .map(t -> (Tile<?>) t)

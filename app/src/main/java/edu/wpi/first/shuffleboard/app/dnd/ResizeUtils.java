@@ -12,6 +12,7 @@ import javafx.scene.Node;
  */
 public final class ResizeUtils {
 
+  @SuppressWarnings("PMD.LinguisticNaming") // Predicates prefixed with "is" makes PMD mad
   public static final Predicate<Node> isResizedTile = n -> n instanceof Tile && isResizedTile((Tile) n);
 
   private static final AtomicReference<Tile<?>> currentTile = new AtomicReference<>(null);
