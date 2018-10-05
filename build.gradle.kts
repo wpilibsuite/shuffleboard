@@ -4,13 +4,8 @@ import com.github.spotbugs.SpotBugsExtension
 import edu.wpi.first.wpilib.versioning.ReleaseType
 import org.gradle.api.Project
 import org.gradle.api.publish.maven.MavenPublication
-import org.gradle.api.tasks.wrapper.Wrapper
 import org.gradle.jvm.tasks.Jar
 import org.gradle.testing.jacoco.tasks.JacocoReport
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import org.ajoberstar.grgit.Grgit
-import org.ajoberstar.grgit.exception.GrgitException
-import org.ajoberstar.grgit.operation.DescribeOp
 import java.time.Instant
 
 buildscript {
@@ -18,27 +13,42 @@ buildscript {
         mavenCentral()
         jcenter()
     }
-    dependencies {
-        classpath("org.ajoberstar:grgit:1.7.2")
-    }
 }
 plugins {
     `maven-publish`
     jacoco
-    id("edu.wpi.first.wpilib.versioning.WPILibVersioningPlugin") version "2.0"
+    id("edu.wpi.first.wpilib.versioning.WPILibVersioningPlugin") version "2.2"
     id("com.github.johnrengelman.shadow") version "2.0.1"
     id("com.diffplug.gradle.spotless") version "3.13.0"
-    id("org.ajoberstar.grgit") version "1.7.2"
     id("com.github.spotbugs") version "1.6.4"
     id("com.google.osdetector") version "1.4.0"
 }
+
+// Ensure that the WPILibVersioningPlugin is setup by setting the release type, if releaseType wasn't
+// already specified on the command line
+if (!hasProperty("releaseType")) {
+    WPILibVersion {
+        releaseType = ReleaseType.DEV
+    }
+}
+
+// Only load the project version once, then share it
+val projectVerion = getWPILibVersion()
 
 allprojects {
     apply {
         plugin("com.diffplug.gradle.spotless")
     }
 
-    getWPILibVersion()?.let { version = it }
+    version = projectVerion
+
+    // Note: plugins should override this
+    tasks.withType<Jar>().configureEach {
+        manifest {
+            attributes["Implementation-Version"] = project.version as String
+            attributes["Built-Date"] = Instant.now().toString()
+        }
+    }
 
     // Spotless is used to lint and reformat source files.
     spotless {
@@ -110,16 +120,12 @@ allprojects {
         plugin("com.github.spotbugs")
         plugin("jacoco")
         plugin("maven-publish")
-        plugin("edu.wpi.first.wpilib.versioning.WPILibVersioningPlugin")
     }
     repositories {
         mavenCentral()
     }
 
-    project.ext {
-        this["platform"] = properties["platform"] ?: currentPlatform
-    }
-    val platform: String by extra
+    createNativeConfigurations()
 
     dependencies {
         fun junitJupiter(name: String, version: String = "5.2.0") =
@@ -135,20 +141,14 @@ allprojects {
         "testCompile"(testFx(name = "testfx-junit5"))
         "testRuntime"(testFx(name = "openjfx-monocle", version = "jdk-9+181"))
 
-        "compileOnly"(javafx("base", platform))
-        "compileOnly"(javafx("controls", platform))
-        "compileOnly"(javafx("fxml", platform))
-        "compileOnly"(javafx("graphics", platform))
-
-        "testCompile"(javafx("base", platform))
-        "testCompile"(javafx("controls", platform))
-        "testCompile"(javafx("fxml", platform))
-        "testCompile"(javafx("graphics", platform))
+        javafx("base")
+        javafx("controls")
+        javafx("fxml")
+        javafx("graphics")
     }
 
     checkstyle {
-        configFile = file("$rootDir/checkstyle.xml")
-        toolVersion = "8.11"
+        toolVersion = "8.12"
     }
 
     pmd {
@@ -218,53 +218,7 @@ allprojects {
     }
 }
 
-project(":app") {
-    apply {
-        plugin("com.github.johnrengelman.shadow")
-    }
-    tasks.withType<ShadowJar> {
-        classifier = ext["platform"] as String
-    }
-    val sourceJar = task<Jar>("sourceJar") {
-        description = "Creates a JAR that contains the source code."
-        from(java.sourceSets["main"].allSource)
-        classifier = "sources"
-    }
-    val javadocJar = task<Jar>("javadocJar") {
-        dependsOn("javadoc")
-        description = "Creates a JAR that contains the javadocs."
-        from(java.docsDir)
-        classifier = "javadoc"
-    }
-    publishing {
-        publications {
-            create<MavenPublication>("app") {
-                groupId = "edu.wpi.first.shuffleboard"
-                artifactId = "shuffleboard"
-                getWPILibVersion()?.let { version = it }
-                val shadowJar: ShadowJar by tasks
-                artifact(shadowJar) {
-                    classifier = shadowJar.classifier
-                }
-                artifact(sourceJar)
-                artifact(javadocJar)
-            }
-        }
-    }
-
-    version = getWPILibVersion() ?: getVersionFromGitTag(fallback = "0.0.0") // fall back to git describe if no WPILib version is set
-    tasks.withType<Jar> {
-        manifest {
-            attributes["Implementation-Version"] = version
-            attributes["Built-Date"] = Instant.now().toString()
-        }
-    }
-}
-
 project(":api") {
-    apply {
-        plugin("com.github.johnrengelman.shadow")
-    }
     val sourceJar = task<Jar>("sourceJar") {
         description = "Creates a JAR that contains the source code."
         from(java.sourceSets["main"].allSource)
@@ -281,7 +235,7 @@ project(":api") {
             create<MavenPublication>("api") {
                 groupId = "edu.wpi.first.shuffleboard"
                 artifactId = "api"
-                getWPILibVersion()?.let { version = it }
+                version = project.version.toString()
                 afterEvaluate {
                     from(components["java"])
                 }
@@ -290,30 +244,25 @@ project(":api") {
             }
         }
     }
-
-    version = getWPILibVersion() ?: getVersionFromGitTag(fallback = "v0.0.0")
-    tasks.withType<Jar> {
-        manifest {
-            attributes["Implementation-Version"] = version
-        }
-    }
-}
-
-// Ensure that the WPILibVersioningPlugin is setup by setting the release type, if releaseType wasn't
-// already specified on the command line
-if (!hasProperty("releaseType")) {
-    WPILibVersion {
-        releaseType = ReleaseType.DEV
-    }
 }
 
 /**
- * @return [edu.wpi.first.wpilib.versioning.WPILibVersioningPluginExtension.version] value or null
+ * @return publishVersion property if exists, otherwise
+ * [edu.wpi.first.wpilib.versioning.WPILibVersioningPluginExtension.version] value or fallback
  * if that value is the empty string.
  */
-fun getWPILibVersion(): String? = if (WPILibVersion.version != "") WPILibVersion.version else null
+fun getWPILibVersion(fallback: String = "v0.0.0"): String {
+    if (project.hasProperty("publishVersion")) {
+        val publishVersion: String by project
+        return publishVersion
+    } else if (WPILibVersion.version != "") {
+        return WPILibVersion.version
+    } else {
+        return fallback
+    }
+}
 
-task<Wrapper>("wrapper") {
+tasks.withType<Wrapper>().configureEach {
     gradleVersion = "4.9"
 }
 
@@ -356,21 +305,3 @@ val Project.`spotbugs`: SpotBugsExtension
 
 fun Project.`spotbugs`(configure: SpotBugsExtension.() -> Unit) =
         extensions.configure("spotbugs", configure)
-
-/**
- * Gets the build version from git-describe. This is a combination of the most recent tag, the number of commits since
- * that tag, and the abbreviated hash of the most recent commit, in this format: `<tag>-<n>-<hash>`; for example,
- * v1.0.0-11-9ab123f when the most recent tag is `"v1.0.0"`, with 11 commits since that tag, and the most recent commit
- * hash starting with `9ab123f`.
- *
- * @param fallback the version string to fall back to if git-describe fails. Default value is `"v0.0.0"`.
- *
- * @see <a href="https://git-scm.com/docs/git-describe">git-describe documentation</a>
- */
-fun getVersionFromGitTag(fallback: String = "v0.0.0"): String = try {
-    val git = Grgit.open()
-    DescribeOp(git.repository).call() ?: fallback
-} catch (e: GrgitException) {
-    logger.log(LogLevel.WARN, "Cannot get the version from git-describe, falling back to $fallback", e)
-    fallback
-}

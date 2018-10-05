@@ -1,15 +1,8 @@
-import edu.wpi.first.wpilib.versioning.ReleaseType
+
 import org.gradle.jvm.tasks.Jar
 
 subprojects {
     afterEvaluate {
-        // Ensure that the WPILibVersioningPlugin is setup by setting the release type, if releaseType wasn't
-        // already specified on the command line
-        if (!hasProperty("releaseType")) {
-            WPILibVersion {
-                releaseType = ReleaseType.DEV
-            }
-        }
         apply(plugin = "java-library")
         dependencies {
             compileOnly(group = "com.google.code.findbugs", name = "annotations", version = "+")
@@ -30,7 +23,7 @@ subprojects {
             create<MavenPublication>("plugin.${project.name}") {
                 groupId = "edu.wpi.first.shuffleboard.plugin"
                 artifactId = project.name
-                getWPILibVersion()?.let { version = it }
+                version = project.version as String
                 from(components["java"])
                 artifact(javadocJar)
                 artifact(sourceJar)
@@ -38,9 +31,3 @@ subprojects {
         }
     }
 }
-
-/**
- * @return [edu.wpi.first.wpilib.versioning.WPILibVersioningPluginExtension.version] value or null
- * if that value is the empty string.
- */
-fun getWPILibVersion(): String? = if (WPILibVersion.version != "") WPILibVersion.version else null
