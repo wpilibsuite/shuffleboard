@@ -5,10 +5,8 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 
 import org.junit.jupiter.api.Test;
 
-import java.util.concurrent.TimeUnit;
-
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.testfx.util.WaitForAsyncUtils.sleep;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class StreamDiscovererTest {
 
@@ -70,8 +68,10 @@ public class StreamDiscovererTest {
     assertArrayEquals(new String[0], discoverer.getUrls());
   }
 
-  private static void waitForNtEvents() {
-    sleep(100, TimeUnit.MILLISECONDS);
+  private void waitForNtEvents() {
+    if (!ntInstance.waitForEntryListenerQueue(0.5)) {
+      fail("Timed out while waiting for entry listeners to fire");
+    }
   }
 
 }

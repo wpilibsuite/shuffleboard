@@ -27,6 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 // Note: we do a boatload of repetitions on these tests to make sure ntcore listeners trigger
 // We also use sleep calls because NetworkTableInstance.waitForEntryListenerQueue() fails about 20% of the time
@@ -35,6 +36,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class CompositeNetworkTableSourceTest extends ApplicationTest {
 
   private static final String tableName = "/CompositeNetworkTableSourceTest";
+
+  private final NetworkTableInstance ntInstance = NetworkTableInstance.getDefault();
+
+  private void waitForNtEvents() {
+    if (!ntInstance.waitForEntryListenerQueue(0.5)) {
+      fail("Timed out while waiting for entry listeners to fire");
+    }
+  }
 
   @BeforeAll
   public static void clinit() {
@@ -45,13 +54,13 @@ public class CompositeNetworkTableSourceTest extends ApplicationTest {
   public void setUp() {
     AsyncUtils.setAsyncRunner(Runnable::run);
     NetworkTableUtils.shutdown();
-    sleep(100);
+    waitForNtEvents();
   }
 
   @AfterEach
   public void tearDown() {
     NetworkTableUtils.shutdown();
-    sleep(100);
+    waitForNtEvents();
     AsyncUtils.setAsyncRunner(FxUtils::runOnFxThread);
   }
 
@@ -73,11 +82,11 @@ public class CompositeNetworkTableSourceTest extends ApplicationTest {
     final NetworkTableInstance inst = NetworkTableInstance.getDefault();
 
     inst.getTable(tableName).getEntry(key).setString("value1");
-    sleep(100);
+    waitForNtEvents();
     assertEquals("value1", source.getData().get(key));
 
     inst.getTable(tableName).getEntry(key).setString("value2");
-    sleep(100);
+    waitForNtEvents();
     assertEquals("value2", source.getData().get(key));
     source.close();
   }
@@ -89,7 +98,7 @@ public class CompositeNetworkTableSourceTest extends ApplicationTest {
     final NetworkTableInstance inst = NetworkTableInstance.getDefault();
 
     inst.getTable(tableName).getEntry(".type").setString("Map");
-    sleep(100);
+    waitForNtEvents();
     assertTrue(source.isActive(), "Source not active");
     source.close();
   }
@@ -105,7 +114,7 @@ public class CompositeNetworkTableSourceTest extends ApplicationTest {
 
     // when
     source.setData(new MapData(ImmutableMap.of("testUpdatesCorrectEntry", "It does!")));
-    sleep(100);
+    waitForNtEvents();
 
     // then
     assertAll(
