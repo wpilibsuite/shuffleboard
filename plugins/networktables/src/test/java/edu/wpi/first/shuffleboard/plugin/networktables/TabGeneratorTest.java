@@ -15,19 +15,19 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.testfx.util.WaitForAsyncUtils;
 
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class TabGeneratorTest {
 
+  private NetworkTableInstance ntInstance;
   private NetworkTable rootTable;
   private NetworkTable rootMetaTable;
   private TabGenerator generator;
@@ -35,7 +35,7 @@ public class TabGeneratorTest {
 
   @BeforeEach
   public void setup() {
-    NetworkTableInstance ntInstance = NetworkTableInstance.create();
+    ntInstance = NetworkTableInstance.create();
     ntInstance.setUpdateRate(0.01);
     rootTable = ntInstance.getTable("/Shuffleboard");
     rootMetaTable = rootTable.getSubTable(".metadata");
@@ -50,8 +50,10 @@ public class TabGeneratorTest {
     Components.setDefault(new Components());
   }
 
-  private static void waitForNtUpdate() {
-    WaitForAsyncUtils.sleep(100, TimeUnit.MILLISECONDS);
+  private void waitForNtUpdate() {
+    if (!ntInstance.waitForEntryListenerQueue(0.5)) {
+      fail("Timed out while waiting for entry listeners to fire");
+    }
   }
 
   @Test
