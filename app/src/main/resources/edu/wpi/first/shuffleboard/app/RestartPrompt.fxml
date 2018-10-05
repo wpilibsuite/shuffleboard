@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.layout.AnchorPane?>
-<AnchorPane xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1"
-            prefHeight="65.0" prefWidth="545.0">
-    <Label text="The update has been downloaded. It will be installed when Shuffleboard restarts." AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="14.0"/>
-    <Label text="The current version has been backed up to Shuffleboard/backups in your home directory." AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="36.0"/>
-</AnchorPane>

@@ -13,12 +13,6 @@ description = """
 All of the application specific code that makes shuffleboard run.
 """.trimMargin()
 
-repositories {
-    maven {
-        setUrl("https://dl.bintray.com/samcarlberg/maven-artifacts/")
-    }
-}
-
 dependencies {
     // JavaFX dependencies
     javafx("base")
@@ -36,7 +30,6 @@ dependencies {
     nativeProject(path = ":plugins:networktables")
     nativeProject(path = ":plugins:powerup")
     compile(group = "de.huxhorn.lilith", name = "de.huxhorn.lilith.3rdparty.junique", version = "1.0.4")
-    compile(group = "com.github.samcarlberg", name = "update-checker", version = "+")
     compile(group = "org.apache.commons", name = "commons-csv", version = "1.5")
     testCompile(project("test_plugins"))
 }

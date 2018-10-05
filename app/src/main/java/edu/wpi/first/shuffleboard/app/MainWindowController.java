@@ -7,7 +7,6 @@ import edu.wpi.first.shuffleboard.api.tab.TabInfo;
 import edu.wpi.first.shuffleboard.api.theme.Theme;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.Storage;
-import edu.wpi.first.shuffleboard.api.util.ThreadUtils;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 import edu.wpi.first.shuffleboard.app.components.AdderTab;
 import edu.wpi.first.shuffleboard.app.components.DashboardTab;
@@ -16,8 +15,6 @@ import edu.wpi.first.shuffleboard.app.dialogs.AboutDialog;
 import edu.wpi.first.shuffleboard.app.dialogs.ExportRecordingDialog;
 import edu.wpi.first.shuffleboard.app.dialogs.PluginDialog;
 import edu.wpi.first.shuffleboard.app.dialogs.PrefsDialog;
-import edu.wpi.first.shuffleboard.app.dialogs.RestartPromptDialog;
-import edu.wpi.first.shuffleboard.app.dialogs.UpdateDownloadDialog;
 import edu.wpi.first.shuffleboard.app.plugin.PluginLoader;
 import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
 import edu.wpi.first.shuffleboard.app.prefs.SettingsDialog;
@@ -28,12 +25,7 @@ import org.fxmisc.easybind.EasyBind;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.DoubleConsumer;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -41,7 +33,6 @@ import javafx.application.Platform;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
 import javafx.scene.control.MenuItem;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
@@ -67,24 +58,16 @@ public class MainWindowController {
   private Pane leftDrawer;
   @FXML
   private DashboardTabPane dashboard;
-  @FXML
-  private Pane updateFooter;
 
   private final PluginDialog pluginDialog = new PluginDialog();
   private final AboutDialog aboutDialog = new AboutDialog();
   private final ExportRecordingDialog exportRecordingDialog = new ExportRecordingDialog();
-  private final UpdateDownloadDialog updateDownloadDialog = new UpdateDownloadDialog();
-  private final RestartPromptDialog restartPromptDialog = new RestartPromptDialog();
   private final PrefsDialog prefsDialog = new PrefsDialog();
 
   private final SaveFileHandler saveFileHandler = new SaveFileHandler();
 
   private final ObservableValue<List<String>> stylesheets
       = EasyBind.map(AppPreferences.getInstance().themeProperty(), Theme::getStyleSheets);
-
-  private final ShuffleboardUpdateChecker shuffleboardUpdateChecker = new ShuffleboardUpdateChecker();
-  private final ExecutorService updateCheckingExecutor
-      = Executors.newSingleThreadExecutor(ThreadUtils::makeDaemonThread);
 
   @FXML
   private void initialize() {
@@ -331,61 +314,6 @@ public class MainWindowController {
   @FXML
   private void showAboutDialog() {
     aboutDialog.show();
-  }
-
-  /**
-   * Checks for updates to shuffleboard and prompts the user to update, if an update is available. The prompt
-   * is displayed as a small footer bar across the bottom of the scene. If the check fails, no notifications are shown.
-   * This differs from {@link #checkForUpdates()}, which will display all status updates as dialogs.
-   */
-  public void checkForUpdatesSubdued() {
-    UpdateFooterController controller = FxUtils.getController(updateFooter);
-    controller.setShuffleboardUpdateChecker(shuffleboardUpdateChecker);
-    controller.checkForUpdatesAndPrompt();
-  }
-
-  /**
-   * Checks for updates to shuffleboard, then prompts the user to update (if applicable) and restart to apply the
-   * update. This also shows the download progress in a separate dialog, which can be closed or hidden.
-   */
-  @FXML
-  public void checkForUpdates() {
-    AtomicBoolean firstShow = new AtomicBoolean(true);
-    final DoubleConsumer progressNotifier = value -> {
-      FxUtils.runOnFxThread(() -> {
-        // Show the dialog on the first update
-        // Close the dialog when the download completes
-        // If the user closes the dialog before then, don't re-open it
-        if (value == 1) {
-          updateDownloadDialog.close();
-        } else if (!updateDownloadDialog.isShowing() && firstShow.get()) {
-          updateDownloadDialog.show();
-          firstShow.set(false);
-        }
-        updateDownloadDialog.setDownloadProgress(value);
-      });
-    };
-    updateCheckingExecutor.submit(() ->
-        shuffleboardUpdateChecker.checkForUpdatesAndPromptToInstall(progressNotifier, this::handleUpdateResult));
-  }
-
-  private void handleUpdateResult(ShuffleboardUpdateChecker.Result<Path> result) {
-    // Make sure this runs on the JavaFX thread -- this method is not guaranteed to be called from it
-    FxUtils.runOnFxThread(() -> {
-      if (result.succeeded()) {
-        restartPromptDialog.show(root.getScene().getWindow());
-      } else {
-        showFailureAlert(result);
-      }
-    });
-  }
-
-  private void showFailureAlert(ShuffleboardUpdateChecker.Result<Path> result) {
-    Alert failureAlert = new Alert(Alert.AlertType.ERROR);
-    FxUtils.bind(failureAlert.getDialogPane().getStylesheets(), stylesheets);
-    failureAlert.setTitle("Update failed");
-    failureAlert.setContentText("Error: " + result.getError().getMessage() + "\nSee the log for detailed information");
-    failureAlert.showAndWait();
   }
 
 }

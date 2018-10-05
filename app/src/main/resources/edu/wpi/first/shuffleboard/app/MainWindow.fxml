@@ -6,7 +6,6 @@
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.SeparatorMenuItem?>
-<?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <VBox fx:id="root" maxHeight="Infinity" maxWidth="Infinity"
@@ -20,7 +19,6 @@
             <MenuItem onAction="#saveAs" text="Save as..." accelerator="SHORTCUT+SHIFT+S"/>
             <MenuItem onAction="#load" text="Load layout" accelerator="SHORTCUT+O"/>
             <MenuItem onAction="#showPrefs" text="Preferences" accelerator="SHORTCUT+,"/>
-            <MenuItem onAction="#checkForUpdates" text="Check for updates" accelerator="SHORTCUT+U"/>
             <SeparatorMenuItem/>
             <MenuItem onAction="#showPlugins" text="Plugins" accelerator="SHORTCUT+L"/>
             <SeparatorMenuItem/>
@@ -50,18 +48,4 @@
             </StackPane.margin>
         </fx:include>
     </StackPane>
-    <VBox>
-        <fx:include source="UpdateFooter.fxml" fx:id="updateFooter" managed="false"/>
-        <BorderPane styleClass="footer">
-            <padding>
-                <Insets left="4" right="4"/>
-            </padding>
-            <center>
-                <fx:include source="PlaybackControls.fxml"/>
-            </center>
-            <right>
-                <fx:include source="ConnectionIndicators.fxml"/>
-            </right>
-        </BorderPane>
-    </VBox>
 </VBox>
