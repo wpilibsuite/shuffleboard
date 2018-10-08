@@ -52,6 +52,7 @@ import edu.wpi.first.shuffleboard.plugin.base.widget.RelayWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.RobotPreferencesWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.SimpleDialWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.SpeedControllerWidget;
+import edu.wpi.first.shuffleboard.plugin.base.widget.SplitButtonChooserWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.TextViewWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.ThreeAxisAccelerometerWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.ToggleButtonWidget;
@@ -69,7 +70,7 @@ import java.util.Set;
 @Description(
     group = "edu.wpi.first.shuffleboard",
     name = "Base",
-    version = "1.0.2",
+    version = "1.1.0",
     summary = "Defines all the WPILib data types and stock widgets"
 )
 @SuppressWarnings("PMD.CouplingBetweenObjects")
@@ -114,6 +115,7 @@ public class BasePlugin extends Plugin {
         WidgetType.forAnnotatedWidget(VoltageViewWidget.class),
         WidgetType.forAnnotatedWidget(PowerDistributionPanelWidget.class),
         WidgetType.forAnnotatedWidget(ComboBoxChooserWidget.class),
+        WidgetType.forAnnotatedWidget(SplitButtonChooserWidget.class),
         WidgetType.forAnnotatedWidget(EncoderWidget.class),
         WidgetType.forAnnotatedWidget(RobotPreferencesWidget.class),
         WidgetType.forAnnotatedWidget(SpeedControllerWidget.class),

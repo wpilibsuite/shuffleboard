@@ -518,10 +518,41 @@
  * Sendable Chooser                                                            *
  *                                                                             *
  ******************************************************************************/
-.combobox-chooser .confirmation-label {
+.combobox-chooser .confirmation-label,
+.split-button-chooser .confirmation-label {
     -fx-text-fill: -confirmation-color-confirmed !important;
 }
 
-.combobox-chooser .confirmation-label:error {
+.combobox-chooser .confirmation-label:error,
+.split-button-chooser .confirmation-label:error {
     -fx-text-fill: -confirmation-color-error !important;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Segmented Button                                                            *
+ *                                                                             *
+ ******************************************************************************/
+.segmented-button {
+    -fx-effect: dropshadow(gaussian, rgba(0.0, 0.0, 0.0, 0.30), 6.0, 0.3, 0, 2);
+}
+
+.segmented-button .toggle-button {
+    -fx-effect: none;
+}
+
+.segmented-button .toggle-button:selected {
+    -fx-background-color: -swatch-500;
+}
+
+.segmented-button .toggle-button.left-pill {
+    -fx-background-radius: 4 0 0 4;
+}
+
+.segmented-button .toggle-button.right-pill {
+    -fx-background-radius: 0 4 4 0;
+}
+
+.segmented-button .toggle-button.only-button {
+    -fx-background-radius: 4 4 4 4;
 }

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import org.controlsfx.control.SegmentedButton?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.HBox?>
+<HBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="edu.wpi.first.shuffleboard.plugin.base.widget.SplitButtonChooserWidget"
+      fx:id="root"
+      minWidth="64" minHeight="64"
+      styleClass="split-button-chooser"
+      alignment="CENTER"
+      spacing="4">
+    <StackPane>
+        <SegmentedButton fx:id="buttons"/>
+    </StackPane>
+    <StackPane fx:id="selectionLabelContainer" minWidth="16"/>
+</HBox>
