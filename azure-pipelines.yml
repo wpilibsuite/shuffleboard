@@ -41,6 +41,7 @@ jobs:
    steps:
     - powershell: |
         mkdir build
+        $ProgressPreference = 'SilentlyContinue'
         wget "https://download.java.net/java/ga/jdk11/openjdk-11_windows-x64_bin.zip" -O "build\jdk.zip"
       displayName: 'Download JDK'
     - task: JavaToolInstaller@0
@@ -74,6 +75,7 @@ jobs:
    steps:
     - powershell: |
         mkdir build
+        $ProgressPreference = 'SilentlyContinue'
         wget "https://github.com/wpilibsuite/frc-openjdk-windows/releases/download/v11.0.0u28-1/jdk-x86-11.0.0u28-1.zip" -O "build\jdk.zip"
       displayName: 'Download JDK'
     - task: JavaToolInstaller@0
