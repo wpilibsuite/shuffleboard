@@ -251,7 +251,7 @@ project(":api") {
  * [edu.wpi.first.wpilib.versioning.WPILibVersioningPluginExtension.version] value or fallback
  * if that value is the empty string.
  */
-fun getWPILibVersion(fallback: String = "v0.0.0"): String {
+fun getWPILibVersion(fallback: String = "0.0.0"): String {
     if (project.hasProperty("publishVersion")) {
         val publishVersion: String by project
         return publishVersion
