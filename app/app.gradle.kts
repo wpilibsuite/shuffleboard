@@ -102,7 +102,7 @@ publishing {
     publications {
         create<MavenPublication>("app") {
             groupId = "edu.wpi.first.shuffleboard"
-            artifactId = "shuffleboard"
+            artifactId = "Shuffleboard"
             version = project.version as String
             nativeShadowTasks.forEach {
                 artifact(it) {
