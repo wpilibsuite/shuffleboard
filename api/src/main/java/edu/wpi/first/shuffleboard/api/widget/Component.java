@@ -7,7 +7,6 @@ import java.util.stream.Stream;
 
 import javafx.beans.property.Property;
 import javafx.scene.layout.Pane;
-import org.apache.xpath.operations.Bool;
 
 /**
  * A Component is base interface for any part of the dashboard that can be instantiated by the user. For example, a
