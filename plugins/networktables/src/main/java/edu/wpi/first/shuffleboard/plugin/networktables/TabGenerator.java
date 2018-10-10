@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 /**
  * Helper class for generating tabs in the UI from data in NetworkTables.
  */
+@SuppressWarnings("PMD.GodClass")
 final class TabGenerator {
 
   public static final String ROOT_TABLE_NAME = "/Shuffleboard";
