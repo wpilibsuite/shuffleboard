@@ -13,6 +13,7 @@ import edu.wpi.first.shuffleboard.app.components.DashboardTab;
 import edu.wpi.first.shuffleboard.app.components.DashboardTabPane;
 import edu.wpi.first.shuffleboard.app.components.Tile;
 
+import javafx.beans.property.SimpleBooleanProperty;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
@@ -114,6 +115,11 @@ public class DashboardTabPaneSaverTest extends ApplicationTest {
     @Override
     public Property<String> titleProperty() {
       return new SimpleStringProperty();
+    }
+
+    @Override
+    public Property<Boolean> titleVisibleProperty() {
+      return new SimpleBooleanProperty(true);
     }
 
     @Override

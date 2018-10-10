@@ -9,7 +9,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.Property;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
@@ -44,6 +46,11 @@ public final class MockLayout implements Layout {
   @Override
   public Property<String> titleProperty() {
     return new SimpleStringProperty();
+  }
+
+  @Override
+  public Property<Boolean> titleVisibleProperty() {
+    return new SimpleBooleanProperty(true);
   }
 
   @Override
