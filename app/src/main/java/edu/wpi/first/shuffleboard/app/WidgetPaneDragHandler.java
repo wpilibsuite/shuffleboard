@@ -338,6 +338,7 @@ final class WidgetPaneDragHandler implements EventHandler<DragEvent> {
     Components.getDefault().createComponent(componentType).ifPresent(c -> {
       TileSize size = pane.sizeOfWidget(c);
       if (pane.isOpen(point, size, __ -> false)) {
+        c.setTitle(componentType);
         Tile<?> tile = pane.addComponentToTile(c);
         moveTile(tile, point);
       }

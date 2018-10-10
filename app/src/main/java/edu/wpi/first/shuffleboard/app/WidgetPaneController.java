@@ -615,13 +615,14 @@ public class WidgetPaneController {
   private Category createSettingsCategoriesForComponent(Component component) {
     List<Group> groups = new ArrayList<>(component.getSettings());
     groups.add(titleGroup(component));
+    String categoryName = component.getTitle().isEmpty() ? "Unnamed " + component.getName() : component.getTitle();
     if (component instanceof ComponentContainer) {
       List<Category> subCategories = ((ComponentContainer) component).components()
           .map(this::createSettingsCategoriesForComponent)
           .collect(Collectors.toList());
-      return Category.of(component.getTitle(), subCategories, groups);
+      return Category.of(categoryName, subCategories, groups);
     } else {
-      return Category.of(component.getTitle(), groups);
+      return Category.of(categoryName, groups);
     }
   }
 
