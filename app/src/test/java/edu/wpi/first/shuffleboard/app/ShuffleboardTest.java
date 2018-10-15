@@ -20,6 +20,7 @@ public class ShuffleboardTest extends ApplicationTest {
     Pane mainPane = FXMLLoader.load(MainWindowController.class.getResource("MainWindow.fxml"));
     Scene scene = new Scene(mainPane);
     stage.setScene(scene);
+    stage.setMaximized(true);
     stage.show();
   }
 
