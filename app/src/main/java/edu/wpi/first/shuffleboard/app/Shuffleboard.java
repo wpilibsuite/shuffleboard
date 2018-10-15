@@ -34,7 +34,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.layout.Pane;
-import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 @SuppressWarnings("PMD.MoreThanOneLogger") // there's only one logger used, the others are for setting up file logging
@@ -129,8 +128,7 @@ public class Shuffleboard extends Application {
     primaryStage.setTitle("Shuffleboard");
     primaryStage.setMinWidth(640);
     primaryStage.setMinHeight(480);
-    primaryStage.setWidth(Screen.getPrimary().getVisualBounds().getWidth());
-    primaryStage.setHeight(Screen.getPrimary().getVisualBounds().getHeight());
+    primaryStage.setMaximized(true);
     primaryStage.setOnCloseRequest(closeEvent -> {
       if (!AppPreferences.getInstance().isConfirmExit()) {
         // Don't show the confirmation dialog, just exit
