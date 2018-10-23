@@ -1,5 +1,7 @@
 package edu.wpi.first.shuffleboard.api.tab.model;
 
+import com.google.common.collect.Iterables;
+
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -12,6 +14,8 @@ public final class TabStructure {
 
   private final Map<String, TabModel> tabs = new LinkedHashMap<>();
   private final List<StructureChangeListener> structureChangeListeners = new ArrayList<>();
+
+  private int selectedIndex = -1;
 
   /**
    * Gets the tab with the given title, creating it if it does not already exist.
@@ -34,6 +38,38 @@ public final class TabStructure {
    */
   public Map<String, TabModel> getTabs() {
     return tabs;
+  }
+
+  /**
+   * Sets the currently selected tab.
+   *
+   * @param tabIndex the index of the tab to select
+   */
+  public void setSelectedTab(int tabIndex) {
+    if (selectedIndex != tabIndex) {
+      selectedIndex = tabIndex;
+      dirty();
+    }
+  }
+
+  /**
+   * Sets the currently selected tab.
+   *
+   * @param title the title of the tab to select
+   */
+  public void setSelectedTab(String title) {
+    if (tabs.containsKey(title)) {
+      setSelectedTab(Iterables.indexOf(tabs.keySet(), title::equals));
+    }
+  }
+
+  /**
+   * Gets the currently selected tab.
+   *
+   * @return the index of the currently selected tab
+   */
+  public int getSelectedTab() {
+    return selectedIndex;
   }
 
   /**

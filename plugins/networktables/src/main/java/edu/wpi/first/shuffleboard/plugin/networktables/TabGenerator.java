@@ -17,6 +17,7 @@ import edu.wpi.first.networktables.EntryNotification;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.NetworkTableValue;
+import edu.wpi.first.networktables.NetworkTableType;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -28,6 +29,7 @@ import java.util.stream.Collectors;
 /**
  * Helper class for generating tabs in the UI from data in NetworkTables.
  */
+@SuppressWarnings("PMD.GodClass")
 final class TabGenerator {
 
   public static final String ROOT_TABLE_NAME = "/Shuffleboard";
@@ -38,6 +40,7 @@ final class TabGenerator {
   public static final String TABS_ENTRY_PATH = METADATA_TABLE_NAME + "/" + TABS_ENTRY_KEY;
   public static final String POSITION_ENTRY_NAME = "Position";
   public static final String SIZE_ENTRY_NAME = "Size";
+  public static final String SELECTED_ENTRY_NAME = "Selected";
 
   public static final String TAB_TYPE = "ShuffleboardTab";
   public static final String LAYOUT_TYPE = "ShuffleboardLayout";
@@ -122,6 +125,16 @@ final class TabGenerator {
       double[] size = inst.getEntry(name).getDoubleArray(new double[0]);
       if (size.length == 2) {
         tab.getChild(real).setPreferredSize(new TileSize((int) size[0], (int) size[1]));
+      }
+    }
+
+    // Selected tab
+    if (name.endsWith("/" + SELECTED_ENTRY_NAME)) {
+      // If the value is a double, assume it's the tab index. If it's a string, assume tab title.
+      if (event.getEntry().getType() == NetworkTableType.kDouble) {
+        tabs.setSelectedTab((int) event.getEntry().getValue().getDouble());
+      } else if (event.getEntry().getType() == NetworkTableType.kString) {
+        tabs.setSelectedTab(event.getEntry().getValue().getString());
       }
     }
 

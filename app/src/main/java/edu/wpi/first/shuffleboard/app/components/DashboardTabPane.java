@@ -48,6 +48,8 @@ public class DashboardTabPane extends TabPane {
         }
         tab.populate();
       }
+
+      selectTab(tabs.getSelectedTab());
     });
   };
 
