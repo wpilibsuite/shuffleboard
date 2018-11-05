@@ -1,7 +1,7 @@
 package edu.wpi.first.shuffleboard.api.properties;
 
+import edu.wpi.first.shuffleboard.api.util.AsyncUtils;
 import edu.wpi.first.shuffleboard.api.util.EqualityUtils;
-import edu.wpi.first.shuffleboard.api.util.FxUtils;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -73,10 +73,10 @@ public final class AtomicPropertyListenerDelegate<T> {
    * application thread.
    */
   public void invalidated(T oldValue, T newValue) {
-    invalidationListeners.forEach(l -> FxUtils.runOnFxThread(() -> l.invalidated(atomicProperty)));
+    invalidationListeners.forEach(l -> AsyncUtils.runAsync(() -> l.invalidated(atomicProperty)));
     if (EqualityUtils.isDifferent(oldValue, newValue)) {
       immediateListeners.forEach(l -> l.changed(atomicProperty, oldValue, newValue));
-      changeListeners.forEach(l -> FxUtils.runOnFxThread(() -> l.changed(atomicProperty, oldValue, newValue)));
+      changeListeners.forEach(l -> AsyncUtils.runAsync(() -> l.changed(atomicProperty, oldValue, newValue)));
     }
   }
 

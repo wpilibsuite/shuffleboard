@@ -22,6 +22,7 @@ public final class RecorderController {
   private final NetworkTableEntry startStopControlEntry;
   private final NetworkTableEntry fileNameFormatEntry;
   private final Recorder recorder;
+  private final MarkerGenerator markerGenerator;
 
   private static final int updateFlags =
       EntryListenerFlags.kImmediate
@@ -62,6 +63,7 @@ public final class RecorderController {
     startStopControlEntry = ntInstance.getEntry(startStopKey);
     fileNameFormatEntry = ntInstance.getEntry(fileNameFormatKey);
     this.recorder = recorder;
+    this.markerGenerator = new MarkerGenerator(ntInstance, recorder);
   }
 
   /**
@@ -70,6 +72,7 @@ public final class RecorderController {
    */
   public void start() {
     listenerHandle = startStopControlEntry.addListener(this::updateControl, updateFlags);
+    markerGenerator.start();
   }
 
   /**
@@ -77,6 +80,7 @@ public final class RecorderController {
    */
   public void stop() {
     startStopControlEntry.removeListener(listenerHandle);
+    markerGenerator.stop();
   }
 
   /**
