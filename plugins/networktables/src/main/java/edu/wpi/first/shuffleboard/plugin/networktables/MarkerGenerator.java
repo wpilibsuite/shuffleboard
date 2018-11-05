@@ -7,6 +7,8 @@ import edu.wpi.first.networktables.EntryListenerFlags;
 import edu.wpi.first.networktables.EntryNotification;
 import edu.wpi.first.networktables.NetworkTableInstance;
 
+import java.util.Locale;
+
 /**
  * Generates event markers from NetworkTables. If the specified marker importance is invalid,
  * {@link MarkerImportance#NORMAL} will be used.
@@ -51,13 +53,7 @@ final class MarkerGenerator {
     }
     String description = eventInfo[1] == null ? "" : eventInfo[1];
     String importanceName = eventInfo[2];
-    MarkerImportance importance = MarkerImportance.NORMAL;
-    for (MarkerImportance value : MarkerImportance.values()) {
-      if (value.name().equalsIgnoreCase(importanceName)) {
-        importance = value;
-        break;
-      }
-    }
+    MarkerImportance importance = MarkerImportance.valueOf(importanceName.toUpperCase(Locale.US));
     recorder.addMarker(name, description, importance);
   }
 }

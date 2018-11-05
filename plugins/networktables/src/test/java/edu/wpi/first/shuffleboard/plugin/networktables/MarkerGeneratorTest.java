@@ -88,9 +88,9 @@ public class MarkerGeneratorTest {
   public void testMarkerAdded() {
     String name = "name";
     String description = "description";
-    String importance = "none";
+    String importance = "trivial";
     entry.setStringArray(new String[]{name, description, importance});
-    Marker expected = new Marker(name, description, MarkerImportance.NONE, 0);
+    Marker expected = new Marker(name, description, MarkerImportance.TRIVIAL, 0);
     waitForEntry();
     assertAll(
         () -> assertEquals(1, recorder.getRecording().getMarkers().size(), "One marker should have been added"),

@@ -46,8 +46,8 @@ public final class Serialization {
    * - Event markers (variable size) (Complex array)
    *   - Number of markers (4 bytes)
    *     - Timestamp (8 bytes)
-   *     - Name as UTF-8 byte array
-   *     - Description as UTF-8 byte array (may be zero-length)
+   *     - Name string as UTF-8 byte array
+   *     - Description string as UTF-8 byte array (may be zero-length)
    *     - Importance level [0..4]
    * - Data points (variable size) (Complex array)
    */

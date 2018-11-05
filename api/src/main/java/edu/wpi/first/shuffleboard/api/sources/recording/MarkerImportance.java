@@ -4,11 +4,16 @@ package edu.wpi.first.shuffleboard.api.sources.recording;
  * The levels of importance of a marker.
  */
 public enum MarkerImportance {
+
+
+  // Maintainer note: this enum is mirrored in WPILib. Adding or removing entries, or changing the name of any entry,
+  // requires a corresponding change to WPILib.
+
   /**
    * The lowest importance level. This can be used for marking the most minor events that are nice to know if something
    * goes wrong, but otherwise has no use.
    */
-  NONE,
+  TRIVIAL,
   /**
    * Marks an event with low importance.
    */
@@ -22,7 +27,7 @@ public enum MarkerImportance {
    */
   HIGH,
   /**
-   * Marks a critical event such as a component failure or robot reboot.
+   * Marks a critically important event such as a component failure, power loss, software deadlock, or timeout.
    */
   CRITICAL;
 
@@ -36,7 +41,7 @@ public enum MarkerImportance {
   public static MarkerImportance valueOf(int ordinal) {
     switch (ordinal) {
       case 0:
-        return NONE;
+        return TRIVIAL;
       case 1:
         return LOW;
       case 2:
