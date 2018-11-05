@@ -198,6 +198,7 @@ public final class Serialization {
    *
    * @throws IOException if the save file could not be updated
    */
+  @SuppressWarnings("PMD.ExcessiveMethodLength")
   public static void updateRecordingSave(Recording recording, Path file) throws IOException {
     if (Files.notExists(file) || Files.size(file) == 0) {
       saveRecording(recording, file);
