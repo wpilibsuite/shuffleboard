@@ -59,7 +59,7 @@ allprojects {
             endWithNewline()
         }
         format("extraneous") {
-            target("Dockerfile", "*.sh", "*.yml")
+            target("*.sh", "*.yml")
             trimTrailingWhitespace()
             indentWithSpaces()
             endWithNewline()
