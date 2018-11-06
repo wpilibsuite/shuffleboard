@@ -109,7 +109,9 @@ public class NetworkTablesPlugin extends Plugin {
     }, 0xFF);
 
     DashboardMode.currentModeProperty().addListener(dashboardModeChangeListener);
-    recorderController.start();
+    if (Recorder.getInstance().isRunning()) {
+      recorderController.start();
+    }
     tabGenerator.start();
 
     serverChangeListener.changed(null, null, serverId.get());
