@@ -22,6 +22,8 @@ import static org.testfx.util.WaitForAsyncUtils.sleep;
 
 public class MarkerGeneratorTest {
 
+  private static final String MARKER_NAME = "MyEvent";
+
   private NetworkTableInstance ntInstance;
   private Recorder recorder;
   private MarkerGenerator generator;
@@ -32,7 +34,7 @@ public class MarkerGeneratorTest {
     AsyncUtils.setAsyncRunner(Runnable::run);
     ntInstance = NetworkTableInstance.create();
     ntInstance.setUpdateRate(0.01);
-    entry = ntInstance.getEntry(MarkerGenerator.MARKER_ENTRY_KEY);
+    entry = ntInstance.getEntry(MarkerGenerator.EVENT_TABLE_NAME + MARKER_NAME + MarkerGenerator.EVENT_INFO_KEY);
     recorder = Recorder.createDummyInstance();
     generator = new MarkerGenerator(ntInstance, recorder);
   }
@@ -57,19 +59,7 @@ public class MarkerGeneratorTest {
 
   @Test
   public void testStringArrayTooLarge() {
-    entry.setStringArray(new String[4]);
-    assertNoMarkersAdded();
-  }
-
-  @Test
-  public void testEmptyMarkerName() {
-    entry.setStringArray(new String[]{"", "description", "severity"});
-    assertNoMarkersAdded();
-  }
-
-  @Test
-  public void testWhitespaceMarkerName() {
-    entry.setStringArray(new String[]{"\t\r\n\n ", "description", "severity"});
+    entry.setStringArray(new String[3]);
     assertNoMarkersAdded();
   }
 
@@ -86,11 +76,10 @@ public class MarkerGeneratorTest {
 
   @Test
   public void testMarkerAdded() {
-    String name = "name";
     String description = "description";
     String importance = "trivial";
-    entry.setStringArray(new String[]{name, description, importance});
-    Marker expected = new Marker(name, description, MarkerImportance.TRIVIAL, 0);
+    entry.setStringArray(new String[]{description, importance});
+    Marker expected = new Marker(MARKER_NAME, description, MarkerImportance.TRIVIAL, 0);
     waitForEntry();
     assertAll(
         () -> assertEquals(1, recorder.getRecording().getMarkers().size(), "One marker should have been added"),
@@ -100,10 +89,9 @@ public class MarkerGeneratorTest {
 
   @Test
   public void testNoDescription() {
-    String name = "name";
     String importance = "critical";
-    entry.setStringArray(new String[]{name, "", importance});
-    Marker expected = new Marker(name, "", MarkerImportance.CRITICAL, 0);
+    entry.setStringArray(new String[]{"", importance});
+    Marker expected = new Marker(MARKER_NAME, "", MarkerImportance.CRITICAL, 0);
     waitForEntry();
     assertAll(
         () -> assertEquals(1, recorder.getRecording().getMarkers().size(), "One marker should have been added"),
