@@ -8,6 +8,7 @@
 <?import javafx.scene.control.SeparatorMenuItem?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.BorderPane?>
 <VBox fx:id="root" maxHeight="Infinity" maxWidth="Infinity"
       xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="edu.wpi.first.shuffleboard.app.MainWindowController">
@@ -48,4 +49,15 @@
             </StackPane.margin>
         </fx:include>
     </StackPane>
+    <BorderPane styleClass="footer">
+        <padding>
+            <Insets topRightBottomLeft="4"/>
+        </padding>
+        <center>
+            <fx:include source="PlaybackControls.fxml"/>
+        </center>
+        <right>
+            <fx:include source="ConnectionIndicators.fxml"/>
+        </right>
+    </BorderPane>
 </VBox>
