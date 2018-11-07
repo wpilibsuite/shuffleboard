@@ -3,9 +3,11 @@ package edu.wpi.first.shuffleboard.api.sources.recording;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junitpioneer.jupiter.TempDirectory;
+import org.junitpioneer.jupiter.TempDirectory.TempDir;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -63,41 +65,43 @@ public class SerializationTest {
   }
 
   @Test
-  public void testSimpleEncodeRecode() throws IOException {
-    final Path file = Files.createTempFile("testEncodeRecode", "sbr");
+  @ExtendWith(TempDirectory.class)
+  public void testSimpleEncodeRecode(@TempDir Path dir) throws IOException {
+    final Path file = dir.resolve("testSimpleEncodeRecode.sbr");
     final Recording recording = new Recording();
     recording.append(new TimestampedData("foo", DataTypes.Number, 0.0, 0));
     recording.append(new TimestampedData("foo", DataTypes.Number, 100.0, 1));
     ArrayList<TimestampedData> data = new ArrayList<>(recording.getData());
     Serialization.saveRecording(recording, file);
     final Recording loaded = Serialization.loadRecording(file);
-    deleteFile(file);
     assertEquals(data, loaded.getData(), "The loaded recording differs from the encoded one");
   }
 
   @Test
-  public void testUpdateFile() throws IOException {
-    final Path file = Files.createTempFile("testEncodeRecode", ".sbr");
+  @ExtendWith(TempDirectory.class)
+  public void testUpdateFile(@TempDir Path dir) throws IOException {
+    final Path file = dir.resolve("testUpdateFile.sbr");
     final Recording recording = new Recording();
     final List<TimestampedData> data = new ArrayList<>();
     data.add(new TimestampedData("foo", DataTypes.Number, 42.0, 0));
     data.add(new TimestampedData("bar", DataTypes.Boolean, true, 1));
-    recording.getData().addAll(data);
+    data.forEach(recording::append);
     Serialization.saveRecording(recording, file);
     final Recording loaded = Serialization.loadRecording(file);
     assertEquals(data, loaded.getData(), "The loaded recording differs from the encoded one");
 
     TimestampedData newData = new TimestampedData("foo", DataTypes.Number, 123.456, 2);
     data.add(newData);
-    recording.getData().add(newData);
+    recording.append(newData);
     Serialization.updateRecordingSave(recording, file);
     final Recording loadedUpdate = Serialization.loadRecording(file);
     assertEquals(data, loadedUpdate.getData());
   }
 
   @Test
-  public void testUpdateFileWithNewDataTypes() throws IOException {
-    final Path file = Files.createTempFile("testEncodeRecode", ".sbr");
+  @ExtendWith(TempDirectory.class)
+  public void testUpdateFileWithNewDataTypes(@TempDir Path dir) throws IOException {
+    final Path file = dir.resolve("testUpdateFileWithNewDataTypes.sbr");
     final Recording recording = new Recording();
     final List<TimestampedData> data = new ArrayList<>();
 
@@ -133,16 +137,19 @@ public class SerializationTest {
   }
 
   @Test
-  public void testEncodeRecodeWithMarkers() throws IOException {
-    final Path file = Files.createTempFile("testEncodeRecodeWithMarkers", ".sbr");
+  @ExtendWith(TempDirectory.class)
+  public void testEncodeRecodeWithMarkers(@TempDir Path dir) throws IOException {
+    final Path file = dir.resolve("testEncodeRecodeWithMarkers.sbr");
     Recording recording = new Recording();
     recording.addMarker(new Marker("First", "", MarkerImportance.TRIVIAL, 0));
     recording.addMarker(new Marker("Second", "The second marker", MarkerImportance.CRITICAL, 1));
+    List<TimestampedData> originalData = new ArrayList<>(recording.getData());
+    List<Marker> originalMarkers = new ArrayList<>(recording.getMarkers());
     Serialization.saveRecording(recording, file);
     Recording loaded = Serialization.loadRecording(file);
     assertAll(
-        () -> assertEquals(recording.getData(), loaded.getData(), "Data was wrong"),
-        () -> assertEquals(recording.getMarkers(), loaded.getMarkers(), "Markers were wrong")
+        () -> assertEquals(originalData, loaded.getData(), "Data was wrong"),
+        () -> assertEquals(originalMarkers, loaded.getMarkers(), "Markers were wrong")
     );
   }
 
@@ -166,13 +173,6 @@ public class SerializationTest {
     assertEquals(24, bytes.length);
     String[] read = Serialization.readStringArray(bytes, 0);
     assertArrayEquals(strings, read);
-  }
-
-  private void deleteFile(Path file) throws IOException {
-    if (System.getenv("CI") != null) {
-      return;
-    }
-    Files.delete(file);
   }
 
 }

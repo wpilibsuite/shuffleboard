@@ -13,6 +13,9 @@ public class Recording {
   private final List<TimestampedData> data = Collections.synchronizedList(new ArrayList<>());
   private final List<Marker> markers = Collections.synchronizedList(new ArrayList<>());
   private final List<String> sourceIds = new ArrayList<>();
+  private final List<TimestampedData> dataReadOnly = Collections.unmodifiableList(data);
+  private final List<Marker> markersReadOnly = Collections.unmodifiableList(markers);
+  private final List<String> sourceIdsReadOnly = Collections.unmodifiableList(sourceIds);
 
   /**
    * Appends the given data to the end of the data list.
@@ -50,21 +53,33 @@ public class Recording {
    */
   public List<Marker> getMarkers() {
     synchronized (modificationLock) {
-      return markers;
+      return markersReadOnly;
     }
   }
 
   @SuppressWarnings("JavadocMethod")
   public List<TimestampedData> getData() {
     synchronized (modificationLock) {
-      return data;
+      return dataReadOnly;
+    }
+  }
+
+  /**
+   * Clears the data and markers to free memory. This should <strong>ONLY</strong> be called by the recording mechanism
+   * after the current data is saved to disk.
+   */
+  @SuppressWarnings("PMD.DefaultPackage") // This should only be used by the Serialization class in the same package
+  void clear() {
+    synchronized (modificationLock) {
+      data.clear();
+      markers.clear();
     }
   }
 
   @SuppressWarnings("JavadocMethod")
   public List<String> getSourceIds() {
     synchronized (modificationLock) {
-      return sourceIds;
+      return sourceIdsReadOnly;
     }
   }
 

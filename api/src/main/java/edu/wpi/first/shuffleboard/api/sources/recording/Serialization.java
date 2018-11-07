@@ -144,7 +144,7 @@ public final class Serialization {
     // Work on a copy, since the recording can have new data added to it while we're in the middle of saving
     final List<TimestampedData> dataCopy = new ArrayList<>(recording.getData());
     final List<Marker> markers = new ArrayList<>(recording.getMarkers());
-    recording.getData().clear();
+    recording.clear();
     dataCopy.sort(TimestampedData::compareTo); // make sure the data is sorted properly
     final byte[] header = header(dataCopy);
     put(header, toByteArray(0), Offsets.DATA_POSITION_OFFSET);
@@ -159,7 +159,7 @@ public final class Serialization {
       segments.add(toByteArray(marker.getTimestamp()));
       segments.add(toByteArray(marker.getName()));
       segments.add(toByteArray(marker.getDescription()));
-      segments.add(toByteArray(marker.getImportance().ordinal()));
+      segments.add(new byte[]{(byte) marker.getImportance().getId()});
     }
 
     // Data
@@ -207,8 +207,7 @@ public final class Serialization {
     // Use a copy to avoid synchronization locking
     List<TimestampedData> dataCopy = new ArrayList<>(recording.getData());
     List<Marker> markers = new ArrayList<>(recording.getMarkers());
-    recording.getData().clear();
-    recording.getMarkers().clear();
+    recording.clear();
     if (dataCopy.isEmpty() && markers.isEmpty()) {
       // No new data
       return;
@@ -272,7 +271,7 @@ public final class Serialization {
           byte[] timestamp = toByteArray(marker.getTimestamp());
           byte[] name = toByteArray(marker.getName());
           byte[] description = toByteArray(marker.getDescription());
-          byte[] importance = toByteArray(marker.getImportance().ordinal());
+          byte[] importance = toByteArray((byte) marker.getImportance().getId());
           return Bytes.concat(timestamp, name, description, importance);
         })
         .reduce(new byte[0], Bytes::concat);
@@ -433,10 +432,10 @@ public final class Serialization {
       cursor += toByteArray(name).length;
       final String description = readString(bytes, cursor);
       cursor += toByteArray(description).length;
-      final int importanceOrdinal = readInt(bytes, cursor);
-      cursor += SIZE_OF_INT;
+      final int importanceId = bytes[cursor];
+      cursor += SIZE_OF_BYTE;
 
-      Marker marker = new Marker(name, description, MarkerImportance.valueOf(importanceOrdinal), timestamp);
+      Marker marker = new Marker(name, description, MarkerImportance.forId(importanceId), timestamp);
       recording.addMarker(marker);
     }
     while (cursor < bytes.length) {
