@@ -14,11 +14,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.concurrent.TimeUnit;
-
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.testfx.util.WaitForAsyncUtils.sleep;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class MarkerGeneratorTest {
 
@@ -71,7 +69,9 @@ public class MarkerGeneratorTest {
   private void waitForEntry() {
     recorder.start();
     generator.start();
-    sleep(50, TimeUnit.MILLISECONDS);
+    if (!ntInstance.waitForEntryListenerQueue(10)) {
+      fail("Entry notification timed out");
+    }
   }
 
   @Test
