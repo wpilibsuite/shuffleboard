@@ -7,6 +7,7 @@ import edu.wpi.first.shuffleboard.api.data.types.StringType;
 import edu.wpi.first.shuffleboard.api.sources.recording.serialization.Serializers;
 import edu.wpi.first.shuffleboard.api.sources.recording.serialization.TypeAdapter;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.primitives.Bytes;
 
 import java.io.File;
@@ -143,9 +144,11 @@ public final class Serialization {
     Serializers.getAdapters().forEach(a -> a.setCurrentFile(file.toFile()));
     // Work on a copy, since the recording can have new data added to it while we're in the middle of saving
     var snapshot = recording.takeSnapshotAndClear();
-    final var dataCopy = new ArrayList<>(snapshot.getData());
+    final var dataCopy = snapshot.getData()
+        .stream()
+        .sorted()
+        .collect(ImmutableList.toImmutableList());
     final var markers = snapshot.getMarkers();
-    dataCopy.sort(TimestampedData::compareTo); // make sure the data is sorted properly
     final byte[] header = header(dataCopy);
     put(header, toByteArray(0), Offsets.DATA_POSITION_OFFSET);
     final List<String> constantPool = generateConstantPool(dataCopy);
