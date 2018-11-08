@@ -142,10 +142,9 @@ public final class Serialization {
   public static void saveRecording(Recording recording, Path file) throws IOException {
     Serializers.getAdapters().forEach(a -> a.setCurrentFile(file.toFile()));
     // Work on a copy, since the recording can have new data added to it while we're in the middle of saving
-    final List<TimestampedData> dataCopy = new ArrayList<>();
-    final List<Marker> markers = new ArrayList<>();
-    recording.copyData(dataCopy, markers);
-    recording.clear();
+    var snapshot = recording.takeSnapshotAndClear();
+    final var dataCopy = new ArrayList<>(snapshot.getData());
+    final var markers = snapshot.getMarkers();
     dataCopy.sort(TimestampedData::compareTo); // make sure the data is sorted properly
     final byte[] header = header(dataCopy);
     put(header, toByteArray(0), Offsets.DATA_POSITION_OFFSET);
@@ -206,10 +205,9 @@ public final class Serialization {
       return;
     }
     // Use a copy to avoid synchronization issues
-    List<TimestampedData> dataCopy = new ArrayList<>();
-    List<Marker> markers = new ArrayList<>();
-    recording.copyData(dataCopy, markers);
-    recording.clear();
+    var snapshot = recording.takeSnapshotAndClear();
+    final var dataCopy = snapshot.getData();
+    final var markers = snapshot.getMarkers();
     if (dataCopy.isEmpty() && markers.isEmpty()) {
       // No new data
       return;

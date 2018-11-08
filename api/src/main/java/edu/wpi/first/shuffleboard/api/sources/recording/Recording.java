@@ -2,11 +2,11 @@ package edu.wpi.first.shuffleboard.api.sources.recording;
 
 import edu.wpi.first.shuffleboard.api.util.ThreadUtils;
 
+import com.google.common.collect.ImmutableList;
+
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -17,9 +17,6 @@ public class Recording {
   private final List<TimestampedData> data = Collections.synchronizedList(new ArrayList<>());
   private final List<Marker> markers = Collections.synchronizedList(new ArrayList<>());
   private final List<String> sourceIds = new ArrayList<>();
-  private final List<TimestampedData> dataReadOnly = Collections.unmodifiableList(data);
-  private final List<Marker> markersReadOnly = Collections.unmodifiableList(markers);
-  private final List<String> sourceIdsReadOnly = Collections.unmodifiableList(sourceIds);
 
   private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
@@ -57,65 +54,60 @@ public class Recording {
 
   /**
    * Gets the markers in this recording. Note: if you need to get the data objects and markers at the same time,
-   * use {@link #copyData copyData()} to avoid locking issues (the individual methods each lock, but the lists may
-   * change between method calls).
+   * use {@link #takeSnapshot takeSnapshot()} to avoid locking issues (the individual methods each lock, but the lists
+   * may change between method calls).
    *
    * <p>In live recordings, this list will not be exhaustive. Markers are removed after saving to disk to reduce
    * memory and CPU usage. Recordings loaded in playback mode will have all the markers present.
    *
-   * @return the markers in this recording
+   * @return an immutable list of the markers in this recording
    */
   public List<Marker> getMarkers() {
-    return ThreadUtils.withLock(lock.readLock(), () -> markersReadOnly);
+    return ThreadUtils.withLock(lock.readLock(), () -> ImmutableList.copyOf(markers));
   }
 
   /**
    * Gets the data in this recording. Note: if you need to get the data objects and markers at the same time,
-   * use {@link #copyData copyData()} to avoid locking issues (the individual methods each lock, but the lists may
-   * change between method calls).
+   * use {@link #takeSnapshot takeSnapshot()} to avoid locking issues (the individual methods each lock, but the lists
+   * may change between method calls).
    *
    * <p>In live recordings, this list will not be exhaustive. Data is removed after saving to disk to reduce
    * memory and CPU usage. Recordings loaded in playback mode will have all the data present.
    *
-   * @return the data in this recording
+   * @return an immutable list of the data in this recording
    */
   public List<TimestampedData> getData() {
-    return ThreadUtils.withLock(lock.readLock(), () -> dataReadOnly);
+    return ThreadUtils.withLock(lock.readLock(), () -> ImmutableList.copyOf(data));
   }
 
   /**
-   * Safely copies all data from this recording. The target collections will be cleared and overwritten with the data
-   * currently in this recording.
+   * Takes a snapshot of this recording. The snapshot is immutable and thread-safe.
    *
-   * @param data    the target collection into which to copy the data objects
-   * @param markers the target collection into which to copy the event markers
+   * @return a snapshot of this recording
    */
-  public void copyData(Collection<TimestampedData> data, Collection<Marker> markers) {
-    ThreadUtils.withLock(lock.readLock(), () -> {
-      data.clear();
-      data.addAll(this.data);
-
-      markers.clear();
-      markers.addAll(this.markers);
-    });
+  public Snapshot takeSnapshot() {
+    return ThreadUtils.withLock(lock.readLock(), () -> Snapshot.of(this));
   }
 
   /**
-   * Clears the data and markers to free memory. This should <strong>ONLY</strong> be called by the recording mechanism
-   * after the current data is saved to disk.
+   * Takes a snapshot of this recording, then clears the data in this recording. This should <strong>ONLY</strong>
+   * be called by the recording mechanism.
+   *
+   * @return a snapshot of this recording
    */
-  @SuppressWarnings("PMD.DefaultPackage")
-  // This should only be used by the Serialization class in the same package
-  void clear() {
-    ThreadUtils.withLock(lock.writeLock(), () -> {
+  @SuppressWarnings("PMD.DefaultPackage") // This should only be used by the Serialization class in the same package
+  Snapshot takeSnapshotAndClear() {
+    return ThreadUtils.withLock(lock.writeLock(), () -> {
+      var snapshot = Snapshot.of(this);
       data.clear();
       markers.clear();
+      return snapshot;
     });
   }
 
   @SuppressWarnings("JavadocMethod")
   public List<String> getSourceIds() {
-    return ThreadUtils.withLock(lock.readLock(), () -> sourceIdsReadOnly);
+    return ThreadUtils.withLock(lock.readLock(), () -> ImmutableList.copyOf(sourceIds));
   }
 
   @SuppressWarnings("JavadocMethod")
@@ -142,37 +134,37 @@ public class Recording {
   }
 
   @Override
-  public boolean equals(Object obj) {
-    try {
-      lock.readLock().lock();
-      if (this == obj) {
-        return true;
-      }
-      if (obj == null || getClass() != obj.getClass()) {
-        return false;
-      }
-
-      Recording that = (Recording) obj;
-      try {
-        that.lock.readLock().lock();
-        return this.data.equals(that.data)
-            && this.markers.equals(that.markers);
-      } finally {
-        that.lock.readLock().unlock();
-      }
-    } finally {
-      lock.readLock().unlock();
-    }
-  }
-
-  @Override
-  public int hashCode() {
-    return ThreadUtils.withLock(lock.readLock(), () -> Objects.hash(data, markers));
-  }
-
-  @Override
   public String toString() {
     return ThreadUtils.withLock(lock.readLock(), () -> "Recording(data=" + data + ", markers=" + markers + ")");
+  }
+
+  /**
+   * A snapshot of the state of a recording. Snapshots are immutable and thread-safe.
+   */
+  public static final class Snapshot {
+    private final ImmutableList<TimestampedData> data;
+    private final ImmutableList<Marker> markers;
+
+    @SuppressWarnings("PMD.DefaultPackage") // This should only be used by the Serialization class in the same package
+    static Snapshot of(Recording recording) {
+      return new Snapshot(
+          ImmutableList.copyOf(recording.data),
+          ImmutableList.copyOf(recording.markers)
+      );
+    }
+
+    private Snapshot(ImmutableList<TimestampedData> data, ImmutableList<Marker> markers) {
+      this.data = data;
+      this.markers = markers;
+    }
+
+    public ImmutableList<TimestampedData> getData() {
+      return data;
+    }
+
+    public ImmutableList<Marker> getMarkers() {
+      return markers;
+    }
   }
 
 }
