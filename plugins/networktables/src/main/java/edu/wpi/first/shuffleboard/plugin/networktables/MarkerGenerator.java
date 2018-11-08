@@ -31,7 +31,6 @@ final class MarkerGenerator {
 
   private static final Logger log = Logger.getLogger(MarkerGenerator.class.getName());
 
-  public static final String MARKER_ENTRY_KEY = "/Shuffleboard/.recording/EventMarker";
   public static final String EVENT_TABLE_NAME = "/Shuffleboard/.recording/events/";
   public static final String EVENT_INFO_KEY = "/Info";
   private static final String[] EMPTY = new String[0];
