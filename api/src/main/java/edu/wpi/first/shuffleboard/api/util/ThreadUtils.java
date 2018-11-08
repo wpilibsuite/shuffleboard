@@ -2,8 +2,6 @@ package edu.wpi.first.shuffleboard.api.util;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.locks.Lock;
-import java.util.function.Supplier;
 
 /**
  * Utilities dealing with threading.
@@ -29,36 +27,4 @@ public final class ThreadUtils {
     return thread;
   }
 
-  /**
-   * Runs a function with a synchronization lock.
-   *
-   * @param lock     the synchronization lock to use
-   * @param function the function to run
-   */
-  public static void withLock(Lock lock, Runnable function) {
-    try {
-      lock.lock();
-      function.run();
-    } finally {
-      lock.unlock();
-    }
-  }
-
-  /**
-   * Runs a function with a synchronization lock and returns its result.
-   *
-   * @param lock     the synchronization lock to use
-   * @param function the function to run
-   * @param <T>      the type of the value returned by the function
-   *
-   * @return the output of {@code function}
-   */
-  public static <T> T withLock(Lock lock, Supplier<? extends T> function) {
-    try {
-      lock.lock();
-      return function.get();
-    } finally {
-      lock.unlock();
-    }
-  }
 }

@@ -1,14 +1,12 @@
 package edu.wpi.first.shuffleboard.api.sources.recording;
 
-import edu.wpi.first.shuffleboard.api.util.ThreadUtils;
+import edu.wpi.first.shuffleboard.api.util.concurrent.FunctionalReadWriteLock;
 
 import com.google.common.collect.ImmutableList;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class Recording {
 
@@ -18,7 +16,7 @@ public class Recording {
   private final List<Marker> markers = Collections.synchronizedList(new ArrayList<>());
   private final List<String> sourceIds = new ArrayList<>();
 
-  private final ReadWriteLock lock = new ReentrantReadWriteLock();
+  private final FunctionalReadWriteLock lock = FunctionalReadWriteLock.createReentrant();
 
   /**
    * Appends the given data to the end of the data list.
@@ -49,7 +47,7 @@ public class Recording {
    * @param marker the marker to add
    */
   public void addMarker(Marker marker) {
-    ThreadUtils.withLock(lock.writeLock(), () -> markers.add(marker));
+    lock.writing(() -> markers.add(marker));
   }
 
   /**
@@ -63,7 +61,7 @@ public class Recording {
    * @return an immutable list of the markers in this recording
    */
   public List<Marker> getMarkers() {
-    return ThreadUtils.withLock(lock.readLock(), () -> ImmutableList.copyOf(markers));
+    return lock.reading(() -> ImmutableList.copyOf(markers));
   }
 
   /**
@@ -77,7 +75,7 @@ public class Recording {
    * @return an immutable list of the data in this recording
    */
   public List<TimestampedData> getData() {
-    return ThreadUtils.withLock(lock.readLock(), () -> ImmutableList.copyOf(data));
+    return lock.reading(() -> ImmutableList.copyOf(data));
   }
 
   /**
@@ -86,7 +84,7 @@ public class Recording {
    * @return a snapshot of this recording
    */
   public Snapshot takeSnapshot() {
-    return ThreadUtils.withLock(lock.readLock(), () -> Snapshot.of(this));
+    return lock.reading(() -> Snapshot.of(this));
   }
 
   /**
@@ -95,9 +93,10 @@ public class Recording {
    *
    * @return a snapshot of this recording
    */
-  @SuppressWarnings("PMD.DefaultPackage") // This should only be used by the Serialization class in the same package
+  @SuppressWarnings("PMD.DefaultPackage")
+  // This should only be used by the Serialization class in the same package
   Snapshot takeSnapshotAndClear() {
-    return ThreadUtils.withLock(lock.writeLock(), () -> {
+    return lock.writing(() -> {
       var snapshot = Snapshot.of(this);
       data.clear();
       markers.clear();
@@ -107,24 +106,24 @@ public class Recording {
 
   @SuppressWarnings("JavadocMethod")
   public List<String> getSourceIds() {
-    return ThreadUtils.withLock(lock.readLock(), () -> ImmutableList.copyOf(sourceIds));
+    return lock.reading(() -> ImmutableList.copyOf(sourceIds));
   }
 
   @SuppressWarnings("JavadocMethod")
   public TimestampedData getFirst() {
-    return ThreadUtils.withLock(lock.readLock(), () -> first);
+    return lock.reading(() -> first);
   }
 
   @SuppressWarnings("JavadocMethod")
   public TimestampedData getLast() {
-    return ThreadUtils.withLock(lock.readLock(), () -> last);
+    return lock.reading(() -> last);
   }
 
   /**
    * Gets the length of this recording in milliseconds. Recordings wth 0 or 1 data points have a length of 0.
    */
   public long getLength() {
-    return ThreadUtils.withLock(lock.readLock(), () -> {
+    return lock.reading(() -> {
       if (first == null || last == null) {
         return 0L;
       } else {
@@ -135,7 +134,7 @@ public class Recording {
 
   @Override
   public String toString() {
-    return ThreadUtils.withLock(lock.readLock(), () -> "Recording(data=" + data + ", markers=" + markers + ")");
+    return lock.reading(() -> "Recording(data=" + data + ", markers=" + markers + ")");
   }
 
   /**
@@ -145,7 +144,15 @@ public class Recording {
     private final ImmutableList<TimestampedData> data;
     private final ImmutableList<Marker> markers;
 
-    @SuppressWarnings("PMD.DefaultPackage") // This should only be used by the Serialization class in the same package
+    /**
+     * Snapshots a recording. Note: this should only be used by {@link Recording#takeSnapshot()} or
+     * {@link Recording#takeSnapshotAndClear()}. This method is not thread-safe.
+     *
+     * @param recording the recording to create a snapshot of
+     *
+     * @return a new snapshot
+     */
+    @SuppressWarnings("PMD.DefaultPackage")
     static Snapshot of(Recording recording) {
       return new Snapshot(
           ImmutableList.copyOf(recording.data),
