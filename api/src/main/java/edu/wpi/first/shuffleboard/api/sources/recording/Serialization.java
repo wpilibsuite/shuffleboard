@@ -49,7 +49,7 @@ public final class Serialization {
    *     - Timestamp (8 bytes)
    *     - Name string as UTF-8 byte array
    *     - Description string as UTF-8 byte array (may be zero-length)
-   *     - Importance level [0..4]
+   *     - Importance level ID (byte)
    * - Data points (variable size) (Complex array)
    */
 
