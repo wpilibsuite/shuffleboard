@@ -39,6 +39,8 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.ListChangeListener;
 import javafx.geometry.Insets;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tab;
@@ -121,11 +123,19 @@ public class DashboardTab extends Tab implements HandledTab, Populatable {
     setContextMenu(new ContextMenu(prefItem));
 
     setOnCloseRequest(e -> {
+      if (AppPreferences.getInstance().isConfirmTabClose()) {
+        boolean cancelClose = !requestCloseConfirmation();
+        if (cancelClose) {
+          e.consume();
+          return;
+        }
+      }
       TabPane tabPane = getTabPane();
       int index = tabPane.getTabs().indexOf(this);
       // index + 1 for the next tab, since this tab has not yet been removed
       // tabPane.getTabs().size() - 2 because -1 is the adder tab, which we do not want to select
       tabPane.getSelectionModel().select(Math.min(index + 1, tabPane.getTabs().size() - 2));
+      tabPane.getTabs().remove(this);
     });
 
     getStyleClass().add("dashboard-tab");
@@ -138,6 +148,21 @@ public class DashboardTab extends Tab implements HandledTab, Populatable {
     this(tabInfo.getName());
     setSourcePrefix(tabInfo.getSourcePrefix());
     setAutoPopulate(tabInfo.isAutoPopulate());
+  }
+
+  /**
+   * Shows a confirmation dialog to confirm that this tab should be closed.
+   *
+   * @return true if the tab should be closed
+   */
+  private boolean requestCloseConfirmation() {
+    Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+    alert.setTitle("Confirm Tab Close");
+    alert.setHeaderText("Do you want to close the tab \"" + getTitle() + "\"?");
+    alert.getDialogPane().getScene().getStylesheets().setAll(AppPreferences.getInstance().getTheme().getStyleSheets());
+    return alert.showAndWait()
+        .map(b -> b.getButtonData() == ButtonBar.ButtonData.OK_DONE)
+        .orElse(false);
   }
 
   private static StackPane wrapWidgetPane(WidgetPane widgetPane) {
