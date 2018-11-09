@@ -162,7 +162,7 @@ public final class Serialization {
       segments.add(toByteArray(marker.getTimestamp()));
       segments.add(toByteArray(marker.getName()));
       segments.add(toByteArray(marker.getDescription()));
-      segments.add(new byte[]{(byte) marker.getImportance().getId()});
+      segments.add(toByteArray((byte) marker.getImportance().getId()));
     }
 
     // Data
@@ -531,6 +531,13 @@ public final class Serialization {
    */
   public static byte[] toByteArray(boolean val) {
     return new byte[]{(byte) (val ? 1 : 0)};
+  }
+
+  /**
+   * Creates a 1-element array containing the given byte.
+   */
+  public static byte[] toByteArray(byte val) {
+    return new byte[]{val};
   }
 
   /**

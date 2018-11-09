@@ -154,6 +154,49 @@ public class SerializationTest {
   }
 
   @Test
+  @ExtendWith(TempDirectory.class)
+  public void testWithMarkersAndData(@TempDir Path dir) throws IOException {
+    final Path file = dir.resolve("testWithMarkersAndData.sbr");
+    Recording recording = new Recording();
+    recording.append(new TimestampedData("foo", DataTypes.Boolean, false, 0));
+    recording.addMarker(new Marker("M1", "Loop iteration 643", MarkerImportance.TRIVIAL, 0));
+    recording.addMarker(new Marker("M2", "Loop iteration 644", MarkerImportance.CRITICAL, 5));
+    var snapshot = recording.takeSnapshot();
+    Serialization.saveRecording(recording, file);
+    Recording loaded = Serialization.loadRecording(file);
+    assertAll(
+        () -> assertEquals(snapshot.getData(), loaded.getData(), "Data was wrong"),
+        () -> assertEquals(snapshot.getMarkers(), loaded.getMarkers(), "Markers were wrong")
+    );
+  }
+
+  @Test
+  @ExtendWith(TempDirectory.class)
+  public void testUpdateWithMarkersAndData(@TempDir Path dir) throws IOException {
+    final Path file = dir.resolve("testUpdateWithMarkersAndData.sbr");
+    final TimestampedData data = new TimestampedData("foo", DataTypes.Boolean, false, 0);
+    final Marker marker1 = new Marker("M1", "", MarkerImportance.TRIVIAL, 0);
+    final Marker marker2 = new Marker("M2", "Loop iteration 644", MarkerImportance.CRITICAL, 5);
+    final Marker marker3 = new Marker("M3", "Loop iteration 12312", MarkerImportance.NORMAL, 12);
+
+    Recording recording = new Recording();
+    recording.append(data);
+    recording.addMarker(marker1);
+    recording.addMarker(marker2);
+
+    Serialization.updateRecordingSave(recording, file);
+
+    recording.addMarker(marker3);
+    Serialization.updateRecordingSave(recording, file);
+
+    Recording loaded = Serialization.loadRecording(file);
+    assertAll(
+        () -> assertEquals(List.of(data), loaded.getData(), "Data was wrong"),
+        () -> assertEquals(List.of(marker1, marker2, marker3), loaded.getMarkers(), "Markers were wrong")
+    );
+  }
+
+  @Test
   public void testMultiByteCharsInString() {
     String string = grinningEmoji;
     byte[] bytes = Serialization.toByteArray(string);
