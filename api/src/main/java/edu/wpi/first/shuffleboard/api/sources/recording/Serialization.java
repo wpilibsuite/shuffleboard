@@ -14,7 +14,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
-import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
@@ -217,113 +216,114 @@ public final class Serialization {
     }
     Serializers.getAdapters().forEach(a -> a.setCurrentFile(file.toFile()));
     // Use a RandomAccessFile to avoid having to read its entire contents into memory
-    RandomAccessFile raf = new RandomAccessFile(file.toFile(), "rw");
-    int magic = raf.readInt();
-    if (magic != MAGIC_NUMBER) {
-      throw new IOException(
-          String.format("Wrong magic number in the header. Expected 0x%08X, but was 0x%08X", MAGIC_NUMBER, magic));
-    }
+    try (RandomAccessFile raf = new RandomAccessFile(file.toFile(), "rw")) {
+      int magic = raf.readInt();
+      if (magic != MAGIC_NUMBER) {
+        throw new IOException(
+            String.format("Wrong magic number in the header. Expected 0x%08X, but was 0x%08X", MAGIC_NUMBER, magic));
+      }
 
-    // Update the number of data points
-    raf.seek(Offsets.NUMBER_DATA_POINTS_OFFSET);
-    int numExistingDataPoints = raf.readInt();
-    int totalDataPoints = numExistingDataPoints + dataCopy.size();
-    raf.seek(Offsets.NUMBER_DATA_POINTS_OFFSET);
-    raf.writeInt(totalDataPoints); // Update the number of data points
+      // Update the number of data points
+      raf.seek(Offsets.NUMBER_DATA_POINTS_OFFSET);
+      int numExistingDataPoints = raf.readInt();
+      int totalDataPoints = numExistingDataPoints + dataCopy.size();
+      raf.seek(Offsets.NUMBER_DATA_POINTS_OFFSET);
+      raf.writeInt(totalDataPoints); // Update the number of data points
 
-    // Get the location of the markers in the file
-    raf.seek(Offsets.MARKER_POSITION_OFFSET);
-    final int markerPosition = raf.readInt();
-    raf.seek(Offsets.DATA_POSITION_OFFSET);
-    final int dataPosition = raf.readInt();
-
-    // Update the constant pool
-    raf.seek(Offsets.CONSTANT_POOL_HEADER_OFFSET);
-    int constantPoolSize = raf.readInt();
-    byte[] buffer = new byte[256];
-    final List<String> constantPoolEntries = new ArrayList<>(constantPoolSize);
-    int constantPoolLength = 0;
-    int pos = Offsets.CONSTANT_POOL_HEADER_OFFSET + SIZE_OF_INT;
-    for (int i = 0; i < constantPoolSize; i++) {
-      raf.seek(pos);
-      final int sourceIdLength = raf.readInt();
-      pos += SIZE_OF_INT;
-      constantPoolLength += SIZE_OF_INT;
-      raf.seek(pos);
-      final int len = raf.read(buffer, 0, sourceIdLength);
-      String constantPoolEntry = new String(Arrays.copyOfRange(buffer, 0, len), StandardCharsets.UTF_8);
-      pos += len;
-      constantPoolLength += len;
-      constantPoolEntries.add(constantPoolEntry);
-    }
-
-    Stream<String> sourceIdStream = dataCopy.stream()
-        .map(TimestampedData::getSourceId)
-        .distinct();
-    Stream<String> dataTypeStream = dataCopy.stream()
-        .map(t -> t.getDataType().getName())
-        .distinct();
-    Stream<String> constantPoolStream = Stream.concat(sourceIdStream, dataTypeStream);
-    byte[] newConstantPoolEntries =
-        constantPoolStream.filter(id -> !constantPoolEntries.contains(id))
-            .peek(constantPoolEntries::add)
-            .map(Serialization::toByteArray)
-            .reduce(new byte[0], Bytes::concat);
-    byte[] newMarkerEntries = markers.stream()
-        .map(marker -> {
-          byte[] timestamp = toByteArray(marker.getTimestamp());
-          byte[] name = toByteArray(marker.getName());
-          byte[] description = toByteArray(marker.getDescription());
-          byte[] importance = toByteArray((byte) marker.getImportance().getId());
-          return Bytes.concat(timestamp, name, description, importance);
-        })
-        .reduce(new byte[0], Bytes::concat);
-    byte[] newBodyEntries = dataCopy.stream()
-        .map(data -> {
-          final DataType type = data.getDataType();
-          final Object value = data.getData();
-
-          final byte[] timestamp = toByteArray(data.getTimestamp());
-          // use int16 instead of int32 -- 32,767 sources should be enough
-          final byte[] sourceIdIndex = toByteArray((short) constantPoolEntries.indexOf(data.getSourceId()));
-          final byte[] dataType = toByteArray((short) constantPoolEntries.indexOf(type.getName()));
-          final byte[] dataBytes = encode(value, type);
-
-          return Bytes.concat(timestamp, sourceIdIndex, dataType, dataBytes);
-        })
-        .reduce(new byte[0], Bytes::concat);
-
-    if (newConstantPoolEntries.length > 0) {
-      // Update the number of source IDs
-      int totalNumSourceIds = constantPoolEntries.size();
-      raf.seek(Offsets.CONSTANT_POOL_HEADER_OFFSET);
-      raf.writeInt(totalNumSourceIds);
+      // Get the location of the markers in the file
+      raf.seek(Offsets.MARKER_POSITION_OFFSET);
+      final int markerPosition = raf.readInt();
+      raf.seek(Offsets.DATA_POSITION_OFFSET);
+      final int dataPosition = raf.readInt();
 
       // Update the constant pool
-      int constantPoolEnd = Offsets.CONSTANT_POOL_HEADER_OFFSET + SIZE_OF_INT + constantPoolLength;
-      insertDataIntoFile(file, constantPoolEnd, newConstantPoolEntries);
-      raf.seek(Offsets.MARKER_POSITION_OFFSET);
-      raf.writeInt(constantPoolEnd + newConstantPoolEntries.length);
+      raf.seek(Offsets.CONSTANT_POOL_HEADER_OFFSET);
+      int constantPoolSize = raf.readInt();
+      byte[] buffer = new byte[256];
+      final List<String> constantPoolEntries = new ArrayList<>(constantPoolSize);
+      int constantPoolLength = 0;
+      int pos = Offsets.CONSTANT_POOL_HEADER_OFFSET + SIZE_OF_INT;
+      for (int i = 0; i < constantPoolSize; i++) {
+        raf.seek(pos);
+        final int sourceIdLength = raf.readInt();
+        pos += SIZE_OF_INT;
+        constantPoolLength += SIZE_OF_INT;
+        raf.seek(pos);
+        final int len = raf.read(buffer, 0, sourceIdLength);
+        String constantPoolEntry = new String(Arrays.copyOfRange(buffer, 0, len), StandardCharsets.UTF_8);
+        pos += len;
+        constantPoolLength += len;
+        constantPoolEntries.add(constantPoolEntry);
+      }
+
+      Stream<String> sourceIdStream = dataCopy.stream()
+          .map(TimestampedData::getSourceId)
+          .distinct();
+      Stream<String> dataTypeStream = dataCopy.stream()
+          .map(t -> t.getDataType().getName())
+          .distinct();
+      Stream<String> constantPoolStream = Stream.concat(sourceIdStream, dataTypeStream);
+      byte[] newConstantPoolEntries =
+          constantPoolStream.filter(id -> !constantPoolEntries.contains(id))
+              .peek(constantPoolEntries::add)
+              .map(Serialization::toByteArray)
+              .reduce(new byte[0], Bytes::concat);
+      byte[] newMarkerEntries = markers.stream()
+          .map(marker -> {
+            byte[] timestamp = toByteArray(marker.getTimestamp());
+            byte[] name = toByteArray(marker.getName());
+            byte[] description = toByteArray(marker.getDescription());
+            byte[] importance = toByteArray((byte) marker.getImportance().getId());
+            return Bytes.concat(timestamp, name, description, importance);
+          })
+          .reduce(new byte[0], Bytes::concat);
+      byte[] newBodyEntries = dataCopy.stream()
+          .map(data -> {
+            final DataType type = data.getDataType();
+            final Object value = data.getData();
+
+            final byte[] timestamp = toByteArray(data.getTimestamp());
+            // use int16 instead of int32 -- 32,767 sources should be enough
+            final byte[] sourceIdIndex = toByteArray((short) constantPoolEntries.indexOf(data.getSourceId()));
+            final byte[] dataType = toByteArray((short) constantPoolEntries.indexOf(type.getName()));
+            final byte[] dataBytes = encode(value, type);
+
+            return Bytes.concat(timestamp, sourceIdIndex, dataType, dataBytes);
+          })
+          .reduce(new byte[0], Bytes::concat);
+
+      if (newConstantPoolEntries.length > 0) {
+        // Update the number of source IDs
+        int totalNumSourceIds = constantPoolEntries.size();
+        raf.seek(Offsets.CONSTANT_POOL_HEADER_OFFSET);
+        raf.writeInt(totalNumSourceIds);
+
+        // Update the constant pool
+        int constantPoolEnd = Offsets.CONSTANT_POOL_HEADER_OFFSET + SIZE_OF_INT + constantPoolLength;
+        insertDataIntoFile(file, constantPoolEnd, newConstantPoolEntries);
+        raf.seek(Offsets.MARKER_POSITION_OFFSET);
+        raf.writeInt(constantPoolEnd + newConstantPoolEntries.length);
+      }
+
+      if (newMarkerEntries.length > 0) {
+        // Update the number of markers
+        int markerStart = markerPosition + newConstantPoolEntries.length;
+        raf.seek(markerStart);
+        int currentSize = raf.readInt();
+        raf.seek(markerStart);
+        raf.writeInt(currentSize + markers.size());
+
+        // Add the new entries to the markers array
+        int markerEnd = dataPosition + newConstantPoolEntries.length;
+        insertDataIntoFile(file, markerEnd, newMarkerEntries);
+
+        // Update location of data
+        raf.seek(Offsets.DATA_POSITION_OFFSET);
+        int newDataPos = dataPosition + newMarkerEntries.length + newConstantPoolEntries.length;
+        raf.writeInt(newDataPos);
+      }
+      Files.write(file, newBodyEntries, StandardOpenOption.WRITE, StandardOpenOption.APPEND);
     }
-
-    if (newMarkerEntries.length > 0) {
-      // Update the number of markers
-      int markerStart = markerPosition + newConstantPoolEntries.length;
-      raf.seek(markerStart);
-      int currentSize = raf.readInt();
-      raf.seek(markerStart);
-      raf.writeInt(currentSize + markers.size());
-
-      // Add the new entries to the markers array
-      int markerEnd = dataPosition + newConstantPoolEntries.length;
-      insertDataIntoFile(file, markerEnd, newMarkerEntries);
-
-      // Update location of data
-      raf.seek(Offsets.DATA_POSITION_OFFSET);
-      int newDataPos = dataPosition + newMarkerEntries.length + newConstantPoolEntries.length;
-      raf.writeInt(newDataPos);
-    }
-    Files.write(file, newBodyEntries, StandardOpenOption.WRITE, StandardOpenOption.APPEND);
   }
 
   /**
@@ -354,9 +354,10 @@ public final class Serialization {
       throw new AssertionError("File name is null - this should have been checked earlier");
     }
     File tmpFile = new File(path.toString().replace(fileName.toString(), "." + fileName));
-    RandomAccessFile file = new RandomAccessFile(path.toFile(), "rw");
-    RandomAccessFile tmp = new RandomAccessFile(tmpFile, "rw");
-    try (FileChannel src = file.getChannel(); FileChannel dst = tmp.getChannel()) {
+    try (var file = new RandomAccessFile(path.toFile(), "rw");
+         var tmp = new RandomAccessFile(tmpFile, "rw");
+         var src = file.getChannel();
+         var dst = tmp.getChannel()) {
       final long fileSize = file.length();
       final long count = fileSize - pos;
       src.transferTo(pos, count, dst);
