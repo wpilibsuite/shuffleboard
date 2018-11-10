@@ -13,6 +13,8 @@ import edu.wpi.first.shuffleboard.api.util.ShutdownHooks;
 import edu.wpi.first.shuffleboard.api.util.Storage;
 import edu.wpi.first.shuffleboard.api.util.ThreadUtils;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -190,6 +192,20 @@ public final class Recorder {
     recording.append(new TimestampedData(id.intern(), dataType, value, timestamp()));
   }
 
+  /**
+   * Adds a marker to the recording at the current time.
+   *
+   * @param name        the name of the marker
+   * @param description a description of the marked event
+   * @param importance  the importance of the marker
+   */
+  public void addMarker(String name, String description, MarkerImportance importance) {
+    if (!isRunning()) {
+      return;
+    }
+    recording.addMarker(new Marker(name, description, importance, timestamp()));
+  }
+
   private long timestamp() {
     return Instant.now().toEpochMilli() - startTime.toEpochMilli();
   }
@@ -220,5 +236,16 @@ public final class Recorder {
 
   public void setFileNameFormat(String fileNameFormat) {
     this.fileNameFormat.set(fileNameFormat);
+  }
+
+  /**
+   * Gets the recording being recorded to. This method should only be used for tests to make sure the recording is
+   * being used properly.
+   */
+  @VisibleForTesting
+  public Recording getRecording() {
+    synchronized (startStopLock) {
+      return recording;
+    }
   }
 }

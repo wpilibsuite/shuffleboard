@@ -202,7 +202,7 @@ public final class ConvertRecordingPaneController {
           Path dst = Paths.get(outputDir.getValue().getAbsolutePath(), dstFileName);
           log.info("Exporting " + file + " to " + dst);
           converter.export(recording, dst, settings);
-        } catch (IOException e) {
+        } catch (IOException | RuntimeException e) {
           log.log(Level.WARNING,
               "Could not export recording file " + file + " with converter " + converter.formatName(), e);
         }
