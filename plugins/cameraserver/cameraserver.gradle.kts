@@ -9,8 +9,8 @@ dependencies {
     nativeProject(":plugins:networktables")
     compile(group = "edu.wpi.first.cscore", name = "cscore-java", version = "2019.+")
     native(group = "edu.wpi.first.cscore", name = "cscore-jni", version = "2019.+", classifierFunction = ::wpilibClassifier)
-    compile(group = "edu.wpi.first.thirdparty.frc2019.opencv", name = "opencv-java", version = "3.4.3-7")
-    native(group = "edu.wpi.first.thirdparty.frc2019.opencv", name = "opencv-jni", version = "3.4.3-7", classifierFunction = ::wpilibClassifier)
+    compile(group = "edu.wpi.first.thirdparty.frc2019.opencv", name = "opencv-java", version = "3.4.3-18")
+    native(group = "edu.wpi.first.thirdparty.frc2019.opencv", name = "opencv-jni", version = "3.4.3-18", classifierFunction = ::wpilibClassifier)
 
     // FFMPEG binaries
     compile(group = "org.bytedeco", name = "javacv", version = javaCppVersion)
