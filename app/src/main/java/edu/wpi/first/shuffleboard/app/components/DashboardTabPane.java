@@ -154,9 +154,11 @@ public class DashboardTabPane extends TabPane {
    */
   public void closeCurrentTab() {
     Tab tab = getSelectionModel().getSelectedItem();
-    Event event = new Event(tab, tab, Tab.TAB_CLOSE_REQUEST_EVENT);
-    Event.fireEvent(tab, event);
-    getTabs().remove(tab);
+    if (tab.getOnCloseRequest() != null) { // NOPMD
+      tab.getOnCloseRequest().handle(new Event(this, tab, Tab.TAB_CLOSE_REQUEST_EVENT));
+    } else {
+      getTabs().remove(tab);
+    }
   }
 
   /**
