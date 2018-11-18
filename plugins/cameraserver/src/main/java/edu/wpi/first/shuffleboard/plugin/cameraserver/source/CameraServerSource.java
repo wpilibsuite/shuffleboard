@@ -251,7 +251,9 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
       } else {
         setData(getData().withImage(image));
       }
-      Recorder.getInstance().record(getId(), getDataType(), getData().withImage(image.clone()));
+      if (Recorder.getInstance().isRunning()) {
+        Recorder.getInstance().record(getId(), getDataType(), getData().withImage(image.clone()));
+      }
     }
     return true;
   }
