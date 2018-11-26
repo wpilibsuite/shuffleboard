@@ -13,11 +13,10 @@ subprojects {
             from(project.sourceSets["main"].allSource)
             classifier = "sources"
         }
-        val javaPluginConvention = convention.plugins["java"] as JavaPluginConvention
         val javadocJar = task<Jar>("javadocJar") {
             dependsOn("javadoc")
             description = "Creates a JAR that contains the javadocs."
-            from(javaPluginConvention.docsDir)
+            from(tasks.named("javadoc"))
             classifier = "javadoc"
         }
         publishing.publications {
