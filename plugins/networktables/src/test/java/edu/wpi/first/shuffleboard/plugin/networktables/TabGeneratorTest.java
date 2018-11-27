@@ -9,6 +9,8 @@ import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.api.widget.TileSize;
 import edu.wpi.first.shuffleboard.plugin.networktables.sources.NetworkTableSourceType;
 
+import com.google.common.collect.Iterables;
+
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 
@@ -295,6 +297,37 @@ public class TabGeneratorTest {
     assertAll(
         () -> assertEquals(1, tabs.getTabs().size()),
         () -> assertTrue(tabs.getTabs().containsKey("Foo"))
+    );
+  }
+
+  @Test
+  public void testSelectTabByIndex() {
+    int index = 1;
+    generator.start();
+    rootMetaTable.getEntry(TabGenerator.TABS_ENTRY_KEY).setStringArray(new String[]{"Foo", "Bar"});
+    rootMetaTable.getEntry(TabGenerator.SELECTED_ENTRY_NAME).setDouble(index);
+    waitForNtUpdate();
+
+    TabStructure tabs = generator.getStructure();
+    assertAll(
+        () -> assertEquals(2, tabs.getTabs().size(), "Two tabs should have been created"),
+        () -> assertEquals(index, tabs.getSelectedTab(), "Tab was not selected")
+    );
+  }
+
+  @Test
+  public void testSelectTabByName() {
+    String name = "Bar";
+    generator.start();
+    rootMetaTable.getEntry(TabGenerator.TABS_ENTRY_KEY).setStringArray(new String[]{"Foo", name});
+    rootMetaTable.getEntry(TabGenerator.SELECTED_ENTRY_NAME).setString(name);
+    waitForNtUpdate();
+
+    TabStructure tabs = generator.getStructure();
+    assertAll(
+        () -> assertEquals(2, tabs.getTabs().size(), "Two tabs should have been created"),
+        () -> assertEquals(Iterables.indexOf(tabs.getTabs().keySet(), name::equals), tabs.getSelectedTab(),
+            "Tab was not selected")
     );
   }
 

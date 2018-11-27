@@ -12,6 +12,7 @@
         <exclude name="UseVarargs"/>
         <exclude name="GuardLogStatement"/>
         <exclude name="JUnit4TestShouldUseAfterAnnotation"/>
+        <exclude name="PositionLiteralsFirstInComparisons"/>
     </rule>
     <rule ref="category/java/bestpractices.xml/UnusedPrivateMethod">
         <properties>
