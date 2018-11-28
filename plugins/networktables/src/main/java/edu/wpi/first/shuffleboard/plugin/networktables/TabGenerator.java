@@ -61,7 +61,7 @@ final class TabGenerator {
   public void start() {
     // Make sure all tabs exist if they're defined, even if they're empty
     NetworkTable rootMetaTable = inst.getTable(METADATA_TABLE_NAME);
-    tabsListener = rootMetaTable.addEntryListener("Tabs", (table, key, entry, value, flags) -> {
+    tabsListener = rootMetaTable.addEntryListener(TABS_ENTRY_KEY, (table, key, entry, value, flags) -> {
       String[] tabNames = value.getStringArray();
       for (String tabName : tabNames) {
         tabs.getTab(tabName);
@@ -98,6 +98,18 @@ final class TabGenerator {
 
   private void metadataChanged(EntryNotification event) {
     String name = event.name;
+
+    // Special case for global metadata, not tab or widget data
+    if (name.equals("/Shuffleboard/.metadata/Selected")) {
+      // If the value is a double, assume it's the tab index. If it's a string, assume tab title.
+      if (event.getEntry().getType() == NetworkTableType.kDouble) {
+        tabs.setSelectedTab((int) event.getEntry().getValue().getDouble());
+      } else if (event.getEntry().getType() == NetworkTableType.kString) {
+        tabs.setSelectedTab(event.getEntry().getValue().getString());
+      }
+      return;
+    }
+
     List<String> metaHierarchy = NetworkTable.getHierarchy(name);
     if (metaHierarchy.size() < 5) {
       // Not metadata for a component or a tab, bail
@@ -125,16 +137,6 @@ final class TabGenerator {
       double[] size = inst.getEntry(name).getDoubleArray(new double[0]);
       if (size.length == 2) {
         tab.getChild(real).setPreferredSize(new TileSize((int) size[0], (int) size[1]));
-      }
-    }
-
-    // Selected tab
-    if (name.endsWith("/" + SELECTED_ENTRY_NAME)) {
-      // If the value is a double, assume it's the tab index. If it's a string, assume tab title.
-      if (event.getEntry().getType() == NetworkTableType.kDouble) {
-        tabs.setSelectedTab((int) event.getEntry().getValue().getDouble());
-      } else if (event.getEntry().getType() == NetworkTableType.kString) {
-        tabs.setSelectedTab(event.getEntry().getValue().getString());
       }
     }
 
