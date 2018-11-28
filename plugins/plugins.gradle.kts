@@ -10,17 +10,17 @@ subprojects {
         }
         val sourceJar = task<Jar>("sourceJar") {
             description = "Creates a JAR that contains the source code."
-            from(java.sourceSets["main"].allSource)
+            from(project.sourceSets["main"].allSource)
             classifier = "sources"
         }
         val javadocJar = task<Jar>("javadocJar") {
             dependsOn("javadoc")
             description = "Creates a JAR that contains the javadocs."
-            from(java.docsDir)
+            from(tasks.named("javadoc"))
             classifier = "javadoc"
         }
         publishing.publications {
-            create<MavenPublication>("plugin.${project.name}") {
+            register<MavenPublication>("plugin.${project.name}") {
                 groupId = "edu.wpi.first.shuffleboard.plugin"
                 artifactId = project.name
                 version = project.version as String

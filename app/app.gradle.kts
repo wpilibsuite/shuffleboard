@@ -61,16 +61,16 @@ val nativeShadowTasks = NativePlatforms.values().map { platform ->
     tasks.create<ShadowJar>("shadowJar-${platform.platformName}") {
         classifier = platform.platformName
         configurations = listOf(
-                project.configurations.compile,
+                project.configurations.getByName("compile"),
                 project.configurations.getByName(platform.platformName)
         )
         from(
-                java.sourceSets["main"].output,
-                project(":api").java.sourceSets["main"].output,
-                project(":plugins:base").java.sourceSets["main"].output,
-                project(":plugins:cameraserver").java.sourceSets["main"].output,
-                project(":plugins:networktables").java.sourceSets["main"].output,
-                project(":plugins:powerup").java.sourceSets["main"].output
+                project.sourceSets["main"].output,
+                project(":api").sourceSets["main"].output,
+                project(":plugins:base").sourceSets["main"].output,
+                project(":plugins:cameraserver").sourceSets["main"].output,
+                project(":plugins:networktables").sourceSets["main"].output,
+                project(":plugins:powerup").sourceSets["main"].output
         )
     }
 }
@@ -85,19 +85,6 @@ tasks.withType<ShadowJar>().configureEach {
     exclude("module-info.class")
 }
 
-val sourceJar = task<Jar>("sourceJar") {
-    description = "Creates a JAR that contains the source code."
-    from(java.sourceSets["main"].allSource)
-    classifier = "sources"
-}
-
-val javadocJar = task<Jar>("javadocJar") {
-    dependsOn("javadoc")
-    description = "Creates a JAR that contains the javadocs."
-    from(java.docsDir)
-    classifier = "javadoc"
-}
-
 publishing {
     publications {
         create<MavenPublication>("app") {
@@ -109,8 +96,6 @@ publishing {
                     classifier = it.classifier
                 }
             }
-            artifact(sourceJar)
-            artifact(javadocJar)
         }
     }
 }
@@ -118,4 +103,4 @@ publishing {
 /**
  * Lets tests use the output of the test_plugins build.
  */
-java.sourceSets["test"].resources.srcDirs += File(project("test_plugins").buildDir, "libs")
+sourceSets["test"].resources.srcDirs.add(File(project("test_plugins").buildDir, "libs"))

@@ -18,7 +18,7 @@ plugins {
     `maven-publish`
     jacoco
     id("edu.wpi.first.wpilib.versioning.WPILibVersioningPlugin") version "2.2"
-    id("com.github.johnrengelman.shadow") version "2.0.1"
+    id("com.github.johnrengelman.shadow") version "4.0.3"
     id("com.diffplug.gradle.spotless") version "3.13.0"
     id("com.github.spotbugs") version "1.6.4"
     id("com.google.osdetector") version "1.4.0"
@@ -264,7 +264,7 @@ fun getWPILibVersion(fallback: String = "0.0.0"): String {
 }
 
 tasks.withType<Wrapper>().configureEach {
-    gradleVersion = "4.9"
+    gradleVersion = "5.0"
 }
 
 /**

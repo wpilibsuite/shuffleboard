@@ -108,6 +108,7 @@ jobs:
 
    steps:
     - script: |
+        rm /Users/vsts/.gradle/init.d/log-gradle-version-plugin.gradle
         mkdir build
         wget "https://download.java.net/java/ga/jdk11/openjdk-11_osx-x64_bin.tar.gz" -O "build/jdk.tar.gz"
         sudo tar xvzf build/jdk.tar.gz -C /Library/Java/JavaVirtualMachines/
