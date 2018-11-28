@@ -1,12 +1,16 @@
 package edu.wpi.first.shuffleboard.plugin.networktables;
 
+import edu.wpi.first.shuffleboard.api.data.DataType;
+import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.tab.model.ComponentModel;
 import edu.wpi.first.shuffleboard.api.tab.model.TabModel;
 import edu.wpi.first.shuffleboard.api.tab.model.TabStructure;
 import edu.wpi.first.shuffleboard.api.util.GridPoint;
+import edu.wpi.first.shuffleboard.api.widget.AbstractWidget;
 import edu.wpi.first.shuffleboard.api.widget.ComponentType;
 import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.api.widget.TileSize;
+import edu.wpi.first.shuffleboard.api.widget.WidgetType;
 import edu.wpi.first.shuffleboard.plugin.networktables.sources.NetworkTableSourceType;
 
 import com.google.common.collect.Iterables;
@@ -19,6 +23,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
+import java.util.Set;
+
+import javafx.scene.layout.Pane;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -41,10 +48,11 @@ public class TabGeneratorTest {
     ntInstance.setUpdateRate(0.01);
     rootTable = ntInstance.getTable("/Shuffleboard");
     rootMetaTable = rootTable.getSubTable(".metadata");
-    generator = new TabGenerator(ntInstance);
     components = new Components();
+    generator = new TabGenerator(ntInstance, components);
     Components.setDefault(components);
     NetworkTableSourceType.setInstance(new NetworkTableSourceType(new NetworkTablesPlugin()));
+    DataTypes.getDefault().getItems().forEach(t -> components.setDefaultComponent(t, new MockWidgetType()));
   }
 
   @AfterAll
@@ -361,6 +369,42 @@ public class TabGeneratorTest {
     @Override
     public Object get() {
       return null;
+    }
+  }
+
+  private static final class MockWidget extends AbstractWidget {
+
+    @Override
+    public Pane getView() {
+      return null;
+    }
+
+    @Override
+    public String getName() {
+      return "Mock Widget";
+    }
+  }
+
+  private static final class MockWidgetType implements WidgetType<MockWidget> {
+
+    @Override
+    public Class<MockWidget> getType() {
+      return MockWidget.class;
+    }
+
+    @Override
+    public String getName() {
+      return "Mock Widget";
+    }
+
+    @Override
+    public Set<DataType> getDataTypes() {
+      return Set.of();
+    }
+
+    @Override
+    public MockWidget get() {
+      return new MockWidget();
     }
   }
 }

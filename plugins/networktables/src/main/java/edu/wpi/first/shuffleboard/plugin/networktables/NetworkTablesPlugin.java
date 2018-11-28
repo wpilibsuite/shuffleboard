@@ -13,6 +13,7 @@ import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
 import edu.wpi.first.shuffleboard.api.tab.model.TabStructure;
 import edu.wpi.first.shuffleboard.api.util.PreferencesUtils;
 import edu.wpi.first.shuffleboard.api.widget.ComponentType;
+import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.api.widget.WidgetType;
 import edu.wpi.first.shuffleboard.plugin.networktables.sources.NetworkTableSourceType;
 import edu.wpi.first.shuffleboard.plugin.networktables.util.NetworkTableUtils;
@@ -35,7 +36,7 @@ import javafx.beans.value.ChangeListener;
 @Description(
     group = "edu.wpi.first.shuffleboard",
     name = "NetworkTables",
-    version = "2.2.1",
+    version = "2.2.2",
     summary = "Provides sources and widgets for NetworkTables"
 )
 public class NetworkTablesPlugin extends Plugin {
@@ -47,7 +48,7 @@ public class NetworkTablesPlugin extends Plugin {
   private final StringProperty serverId = new SimpleStringProperty(this, "server", "localhost");
   private final InvalidationListener serverSaver = __ -> PreferencesUtils.save(serverId, preferences);
 
-  private final TabGenerator tabGenerator = new TabGenerator(inst);
+  private final TabGenerator tabGenerator = new TabGenerator(inst, Components.getDefault());
   private final RecorderController recorderController = RecorderController.createWithDefaultEntries(inst);
 
   private final ChangeListener<DashboardMode> dashboardModeChangeListener = (__, old, mode) -> {

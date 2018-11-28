@@ -1,6 +1,7 @@
 package edu.wpi.first.shuffleboard.plugin.networktables;
 
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
+import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
 import edu.wpi.first.shuffleboard.api.tab.model.ComponentModel;
 import edu.wpi.first.shuffleboard.api.tab.model.LayoutModel;
 import edu.wpi.first.shuffleboard.api.tab.model.ParentModel;
@@ -8,6 +9,7 @@ import edu.wpi.first.shuffleboard.api.tab.model.TabModel;
 import edu.wpi.first.shuffleboard.api.tab.model.TabStructure;
 import edu.wpi.first.shuffleboard.api.tab.model.WidgetModel;
 import edu.wpi.first.shuffleboard.api.util.GridPoint;
+import edu.wpi.first.shuffleboard.api.util.function.MappableSupplier;
 import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.api.widget.TileSize;
 import edu.wpi.first.shuffleboard.plugin.networktables.sources.NetworkTableSource;
@@ -15,16 +17,19 @@ import edu.wpi.first.shuffleboard.plugin.networktables.sources.NetworkTableSourc
 import edu.wpi.first.networktables.EntryListenerFlags;
 import edu.wpi.first.networktables.EntryNotification;
 import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.NetworkTableValue;
 import edu.wpi.first.networktables.NetworkTableType;
+import edu.wpi.first.networktables.NetworkTableValue;
 
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Helper class for generating tabs in the UI from data in NetworkTables.
@@ -50,9 +55,11 @@ final class TabGenerator {
   private int tabsListener;
   private int metadataListener;
   private int dataListener;
+  private final Components componentRegistry;
 
-  TabGenerator(NetworkTableInstance inst) {
+  TabGenerator(NetworkTableInstance inst, Components componentRegistry) {
     this.inst = inst;
+    this.componentRegistry = componentRegistry;
   }
 
   /**
@@ -228,24 +235,12 @@ final class TabGenerator {
             break;
           default:
             end = true;
-            Optional<String> typeName = Components.getDefault()
-                .defaultComponentNameFor(NetworkTableSource.forKey(path).getDataType());
-            WidgetModel widget = parent.getOrCreate(
-                path,
-                sourceForPath(path),
-                preferredComponent(
-                    path,
-                    () -> typeName.orElseThrow(() -> new IllegalStateException("No component for '" + path + "'"))
-                ),
-                properties(path));
-            setSizeAndPosition(path, widget);
+            updateWidget(parent, path);
             break;
         }
       } else if (index > 1) {
         end = true;
-        WidgetModel widget =
-            parent.getOrCreate(path, sourceForPath(path), preferredComponent(path, () -> null), properties(path));
-        setSizeAndPosition(path, widget);
+        updateWidget(parent, path);
       }
       index++;
       if (end) {
@@ -261,8 +256,18 @@ final class TabGenerator {
    *
    * @param path the path to the data to get a data source for
    */
-  private Supplier<? extends DataSource<?>> sourceForPath(String path) {
-    return () -> NetworkTableSource.forKey(path);
+  private MappableSupplier<? extends DataSource<?>> sourceForPath(String path) {
+    NetworkTableEntry[] entries = inst.getEntries("/", 0);
+    Optional<String> customUri = Stream.of(entries)
+        .filter(e -> e.getName().equals(path + "/.ShuffleboardURI"))
+        .map(e -> e.getString(null))
+        .filter(Objects::nonNull)
+        .findFirst();
+    if (customUri.isPresent()) {
+      return () -> SourceTypes.getDefault().forUri(customUri.get());
+    } else {
+      return () -> NetworkTableSource.forKey(path);
+    }
   }
 
   /**
@@ -313,6 +318,27 @@ final class TabGenerator {
       }
     }
     return props;
+  }
+
+  /**
+   * Updates the widget for the given path. If no such widget exists, one is created and added to the given parent.
+   *
+   * @param parent the parent to add a newly created widget to
+   * @param path   the path to the widget
+   */
+  private void updateWidget(ParentModel parent, String path) {
+    WidgetModel widget = parent.getOrCreate(
+        path,
+        sourceForPath(path),
+        preferredComponent(
+            path,
+            sourceForPath(path)
+                .map(DataSource::getDataType)
+                .map(componentRegistry::defaultComponentNameFor)
+                .map(Optional::orElseThrow)
+        ),
+        properties(path));
+    setSizeAndPosition(path, widget);
   }
 
   private void setSizeAndPosition(String path, ComponentModel component) {
