@@ -1,7 +1,5 @@
 package edu.wpi.first.shuffleboard.api.tab.model;
 
-import com.google.common.collect.Iterables;
-
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -15,7 +13,8 @@ public final class TabStructure {
   private final Map<String, TabModel> tabs = new LinkedHashMap<>();
   private final List<StructureChangeListener> structureChangeListeners = new ArrayList<>();
 
-  private int selectedIndex = -1;
+  private int selectedTabIndex = -1;
+  private String selectedTabTitle = null;
 
   /**
    * Gets the tab with the given title, creating it if it does not already exist.
@@ -46,8 +45,9 @@ public final class TabStructure {
    * @param tabIndex the index of the tab to select
    */
   public void setSelectedTab(int tabIndex) {
-    if (selectedIndex != tabIndex) {
-      selectedIndex = tabIndex;
+    if (selectedTabIndex != tabIndex) {
+      selectedTabIndex = tabIndex;
+      selectedTabTitle = null;
       dirty();
     }
   }
@@ -58,18 +58,31 @@ public final class TabStructure {
    * @param title the title of the tab to select
    */
   public void setSelectedTab(String title) {
-    if (tabs.containsKey(title)) {
-      setSelectedTab(Iterables.indexOf(tabs.keySet(), title::equals));
-    }
+    selectedTabTitle = title;
+    selectedTabIndex = -1;
+    dirty();
   }
 
   /**
-   * Gets the currently selected tab.
+   * Gets the currently selected tab, or -1 if no tab is currently selected by index.
    *
    * @return the index of the currently selected tab
+   *
+   * @see #getSelectedTabTitle()
    */
-  public int getSelectedTab() {
-    return selectedIndex;
+  public int getSelectedTabIndex() {
+    return selectedTabIndex;
+  }
+
+  /**
+   * Gets the currently selected tab title, or {@code null} if no tab is currently selected by title.
+   *
+   * @return the title of the currently selected tab
+   *
+   * @see #getSelectedTabIndex()
+   */
+  public String getSelectedTabTitle() {
+    return selectedTabTitle;
   }
 
   /**
