@@ -80,7 +80,7 @@ public class RobotPreferencesWidget extends SimpleAnnotatedWidget<RobotPreferenc
   public List<Group> getSettings() {
     return ImmutableList.of(
         Group.of("Miscellaneous",
-            Setting.of("Show search box", propertySheet.searchBoxVisibleProperty())
+            Setting.of("Show search box", propertySheet.searchBoxVisibleProperty(), Boolean.class)
         )
     );
   }

@@ -38,9 +38,9 @@ public class GyroWidget extends SimpleAnnotatedWidget<GyroData> {
   public List<Group> getSettings() {
     return ImmutableList.of(
         Group.of("Visuals",
-            Setting.of("Major tick spacing", gauge.majorTickSpaceProperty()),
-            Setting.of("Starting angle", gauge.startAngleProperty()),
-            Setting.of("Show tick mark ring", gauge.tickMarkRingVisibleProperty())
+            Setting.of("Major tick spacing", gauge.majorTickSpaceProperty(), Number.class),
+            Setting.of("Starting angle", gauge.startAngleProperty(), Number.class),
+            Setting.of("Show tick mark ring", gauge.tickMarkRingVisibleProperty(), Boolean.class)
         )
     );
   }

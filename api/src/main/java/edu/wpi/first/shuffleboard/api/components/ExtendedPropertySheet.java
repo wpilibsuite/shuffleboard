@@ -323,7 +323,8 @@ public class ExtendedPropertySheet extends PropertySheet {
 
     @Override
     public Class<?> getType() {
-      return setting.getProperty().getValue().getClass();
+      Class<?> type = setting.getType();
+      return type == null ? setting.getProperty().getValue().getClass() : type;
     }
 
     @Override
@@ -349,7 +350,7 @@ public class ExtendedPropertySheet extends PropertySheet {
     @Override
     @SuppressWarnings("unchecked")
     public void setValue(Object value) {
-      ((Property) setting.getProperty()).setValue(value);
+      ((Setting) setting).setValue(value);
     }
 
     @Override

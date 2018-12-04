@@ -386,13 +386,13 @@ public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
   public List<Group> getSettings() {
     return ImmutableList.of(
         Group.of("Graph",
-            Setting.of("Visible time", visibleTime)
+            Setting.of("Visible time", visibleTime, Number.class)
         ),
         Group.of("Visible data",
             visibleSeries.values()
                 .stream()
                 .sorted(Comparator.comparing(Property::getName, AlphanumComparator.INSTANCE))
-                .map(p -> Setting.of(p.getName(), p))
+                .map(p -> Setting.of(p.getName(), p, Boolean.class))
                 .collect(Collectors.toList())
         )
     );

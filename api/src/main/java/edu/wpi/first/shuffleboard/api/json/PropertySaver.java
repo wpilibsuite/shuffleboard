@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javafx.beans.property.Property;
+import javafx.beans.value.ObservableValue;
 
 /**
  * Saves property fields annotated with {@link SaveThisProperty @SaveThisProperty} and properties of fields annotated
@@ -48,7 +49,7 @@ public final class PropertySaver {
     // Save settings
     for (Group group : object.getSettings()) {
       for (Setting<?> setting : group.getSettings()) {
-        Property property = setting.getProperty();
+        var property = setting.getProperty();
         if (!savedProperties.contains(property)) {
           PropertySaver.serializeProperty(context, jsonObject, property, group.getName() + "/" + setting.getName());
         }
@@ -124,8 +125,8 @@ public final class PropertySaver {
 
     // Load settings
     for (Group group : object.getSettings()) {
-      for (Setting<?> setting : group.getSettings()) {
-        Property property = setting.getProperty();
+      for (Setting setting : group.getSettings()) {
+        var property = setting.getProperty();
         if (savedProperties.contains(property)) {
           continue;
         }
@@ -133,7 +134,7 @@ public final class PropertySaver {
             jsonObject.get(group.getName() + "/" + setting.getName()),
             property.getValue().getClass());
         if (deserialized != null) {
-          property.setValue(deserialized);
+          setting.setValue(deserialized);
         }
       }
     }
@@ -288,7 +289,10 @@ public final class PropertySaver {
     }
   }
 
-  public static void serializeProperty(JsonSerializationContext context, JsonObject object, Property p, String name) {
+  public static void serializeProperty(JsonSerializationContext context,
+                                       JsonObject object,
+                                       ObservableValue<?> p,
+                                       String name) {
     object.add(name, context.serialize(p.getValue()));
   }
 

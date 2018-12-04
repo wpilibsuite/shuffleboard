@@ -77,7 +77,7 @@ public class SpeedControllerWidget extends SimpleAnnotatedWidget<SpeedController
   public List<Group> getSettings() {
     return ImmutableList.of(
         Group.of("Visuals",
-            Setting.of("Orientation", orientation)
+            Setting.of("Orientation", orientation, Orientation.class)
         )
     );
   }

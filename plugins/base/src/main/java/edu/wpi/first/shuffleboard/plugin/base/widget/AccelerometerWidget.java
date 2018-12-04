@@ -50,13 +50,13 @@ public class AccelerometerWidget extends SimpleAnnotatedWidget<AccelerometerData
   public List<Group> getSettings() {
     return ImmutableList.of(
         Group.of("Visuals",
-            Setting.of("Show text", showText),
-            Setting.of("Precision", numDecimals),
-            Setting.of("Show tick marks", indicator.showTickMarksProperty())
+            Setting.of("Show text", showText, Boolean.class),
+            Setting.of("Precision", numDecimals, Integer.class),
+            Setting.of("Show tick marks", indicator.showTickMarksProperty(), Boolean.class)
         ),
         Group.of("Range",
-            Setting.of("Min", indicator.minProperty()),
-            Setting.of("Max", indicator.maxProperty())
+            Setting.of("Min", indicator.minProperty(), Number.class),
+            Setting.of("Max", indicator.maxProperty(), Number.class)
         )
     );
   }

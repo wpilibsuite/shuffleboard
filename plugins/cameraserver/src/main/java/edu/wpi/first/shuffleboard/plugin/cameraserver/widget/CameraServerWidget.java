@@ -141,12 +141,12 @@ public class CameraServerWidget extends SimpleAnnotatedWidget<CameraServerData> 
   public List<Group> getSettings() {
     return ImmutableList.of(
         Group.of("Crosshair",
-            Setting.of("Show crosshair", showCrosshair),
-            Setting.of("Crosshair color", crosshairColor)
+            Setting.of("Show crosshair", showCrosshair, Boolean.class),
+            Setting.of("Crosshair color", crosshairColor, Color.class)
         ),
         Group.of("Controls",
-            Setting.of("Show controls", showControls),
-            Setting.of("Rotation", rotation)
+            Setting.of("Show controls", showControls, Boolean.class),
+            Setting.of("Rotation", rotation, Rotation.class)
         )
     );
   }

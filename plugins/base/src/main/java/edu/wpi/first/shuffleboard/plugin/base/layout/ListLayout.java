@@ -104,7 +104,7 @@ public class ListLayout extends LayoutBase {
   public List<Group> getSettings() {
     return ImmutableList.of(
         Group.of("Layout",
-            Setting.of("Label position", labelPositionProperty())
+            Setting.of("Label position", labelPositionProperty(), LabelPosition.class)
         )
     );
   }

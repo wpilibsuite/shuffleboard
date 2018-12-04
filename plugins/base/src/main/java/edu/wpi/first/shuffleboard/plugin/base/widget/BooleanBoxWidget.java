@@ -45,8 +45,8 @@ public class BooleanBoxWidget extends SimpleAnnotatedWidget<Boolean> {
   public List<Group> getSettings() {
     return ImmutableList.of(
         Group.of("Colors",
-            Setting.of("Color when true", "The color to use when the value is `true`", trueColor),
-            Setting.of("Color when false", "The color to use when the value is `false`", falseColor)
+            Setting.of("Color when true", "The color to use when the value is `true`", trueColor, Color.class),
+            Setting.of("Color when false", "The color to use when the value is `false`", falseColor, Color.class)
         )
     );
   }

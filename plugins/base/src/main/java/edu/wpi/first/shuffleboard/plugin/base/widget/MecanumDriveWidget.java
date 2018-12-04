@@ -139,7 +139,7 @@ public final class MecanumDriveWidget extends AbstractDriveWidget<MecanumDriveDa
   public List<Group> getSettings() {
     return ImmutableList.of(
         Group.of("Visuals",
-            Setting.of("Show velocity vectors", showForceVectors)
+            Setting.of("Show velocity vectors", showForceVectors, Boolean.class)
         )
     );
   }

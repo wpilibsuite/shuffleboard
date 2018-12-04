@@ -56,13 +56,13 @@ public class NumberBarWidget extends SimpleAnnotatedWidget<Number> {
   public List<Group> getSettings() {
     return ImmutableList.of(
         Group.of("Range",
-            Setting.of("Min", indicator.minProperty()),
-            Setting.of("Max", indicator.maxProperty()),
-            Setting.of("Center", indicator.centerProperty())
+            Setting.of("Min", indicator.minProperty(), Number.class),
+            Setting.of("Max", indicator.maxProperty(), Number.class),
+            Setting.of("Center", indicator.centerProperty(), Number.class)
         ),
         Group.of("Visuals",
-            Setting.of("Num tick marks", numTicks),
-            Setting.of("Show text", showText)
+            Setting.of("Num tick marks", numTicks, Integer.class),
+            Setting.of("Show text", showText, Boolean.class)
         )
     );
   }
