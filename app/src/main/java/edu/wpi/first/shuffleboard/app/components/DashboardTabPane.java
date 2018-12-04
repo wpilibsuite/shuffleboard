@@ -49,7 +49,17 @@ public class DashboardTabPane extends TabPane {
         tab.populate();
       }
 
-      selectTab(tabs.getSelectedTab());
+      if (tabs.getSelectedTabIndex() >= 0) {
+        selectTab(tabs.getSelectedTabIndex());
+      } else if (tabs.getSelectedTabTitle() != null) {
+        String title = tabs.getSelectedTabTitle();
+        getTabs()
+            .stream()
+            .flatMap(TypeUtils.castStream(DashboardTab.class))
+            .filter(t -> title.equals(t.getTitle()))
+            .findFirst()
+            .ifPresent(getSelectionModel()::select);
+      }
     });
   };
 

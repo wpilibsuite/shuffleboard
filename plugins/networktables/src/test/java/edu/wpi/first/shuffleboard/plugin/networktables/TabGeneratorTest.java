@@ -319,7 +319,8 @@ public class TabGeneratorTest {
     TabStructure tabs = generator.getStructure();
     assertAll(
         () -> assertEquals(2, tabs.getTabs().size(), "Two tabs should have been created"),
-        () -> assertEquals(index, tabs.getSelectedTab(), "Tab was not selected")
+        () -> assertEquals(index, tabs.getSelectedTabIndex(), "Tab was not selected"),
+        () -> assertEquals(null, tabs.getSelectedTabTitle(), "Tab should not be selected by title")
     );
   }
 
@@ -334,8 +335,8 @@ public class TabGeneratorTest {
     TabStructure tabs = generator.getStructure();
     assertAll(
         () -> assertEquals(2, tabs.getTabs().size(), "Two tabs should have been created"),
-        () -> assertEquals(Iterables.indexOf(tabs.getTabs().keySet(), name::equals), tabs.getSelectedTab(),
-            "Tab was not selected")
+        () -> assertEquals(-1, tabs.getSelectedTabIndex(),"Tab should not be selected by index"),
+        () -> assertEquals(name, tabs.getSelectedTabTitle(), "Tab was not selected")
     );
   }
 
