@@ -67,7 +67,7 @@ public final class PropertyParsers extends Registry<PropertyParser<?>> {
   public <T> Optional<T> parse(Class<T> outputType, Object input) {
     Set<T> possibilities = getItems()
         .stream()
-        .filter(p -> p.outputType().isAssignableFrom(outputType))
+        .filter(p -> outputType.isAssignableFrom(p.outputType()))
         .filter(p -> p.canParse(input))
         .map(p -> (PropertyParser<T>) p)
         .map(p -> p.parse(input))
