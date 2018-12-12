@@ -11,6 +11,7 @@ import edu.wpi.first.shuffleboard.api.util.AlphanumComparator;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.ThreadUtils;
 import edu.wpi.first.shuffleboard.api.util.Time;
+import edu.wpi.first.shuffleboard.api.widget.AbstractWidget;
 import edu.wpi.first.shuffleboard.api.widget.AnnotatedWidget;
 import edu.wpi.first.shuffleboard.api.widget.Description;
 import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
@@ -37,11 +38,8 @@ import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -57,7 +55,7 @@ import javafx.util.StringConverter;
 @Description(name = "Graph", dataTypes = {Number.class, double[].class})
 @ParametrizedController("GraphWidget.fxml")
 @SuppressWarnings({"PMD.GodClass", "PMD.TooManyFields", "PMD.ExcessiveMethodLength"})
-public class GraphWidget implements AnnotatedWidget {
+public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
 
   @FXML
   private Pane root;
@@ -68,9 +66,6 @@ public class GraphWidget implements AnnotatedWidget {
   @FXML
   private NumberAxis yAxis;
 
-  private final StringProperty title = new SimpleStringProperty(this, "title", "");
-
-  private final ObservableList<DataSource> sources = FXCollections.observableArrayList();
   private final Map<DataSource<? extends Number>, Series<Number, Number>> numberSeriesMap = new HashMap<>();
   private final Map<DataSource<double[]>, List<Series<Number, Number>>> arraySeriesMap = new HashMap<>();
   private final DoubleProperty visibleTime = new SimpleDoubleProperty(this, "Visible time", 30);
@@ -155,13 +150,6 @@ public class GraphWidget implements AnnotatedWidget {
             source.dataProperty().removeListener(numberArrayChangeListener);
           });
         }
-      }
-      if (getSources().isEmpty()) {
-        setTitle("Graph (no sources)");
-      } else if (getSources().size() == 1) {
-        setTitle(getSources().get(0).getName());
-      } else {
-        setTitle("Graph (" + getSources().size() + " sources)");
       }
     });
     xAxis.setTickLabelFormatter(new StringConverter<Number>() {
@@ -386,26 +374,12 @@ public class GraphWidget implements AnnotatedWidget {
   }
 
   @Override
-  public Property<String> titleProperty() {
-    return title;
-  }
-
-  @Override
   public void addSource(DataSource source) throws IncompatibleSourceException {
     if (sources.contains(source)) {
       // Already have it, don't graph it twice
       return;
     }
-    if (getDataTypes().contains(source.getDataType())) {
-      this.sources.add(source);
-    } else {
-      throw new IncompatibleSourceException(getDataTypes(), source.getDataType());
-    }
-  }
-
-  @Override
-  public ObservableList<DataSource> getSources() {
-    return sources;
+    super.addSource(source);
   }
 
   @Override
