@@ -152,7 +152,7 @@ public class ProcedurallyDefinedTab extends DashboardTab {
           .filter(s -> s.getType() != null)
           .forEach(s -> {
             if (s.getName().equalsIgnoreCase(name)) {
-              parsers.parse(s.getType(), value)
+              parsers.parse(value, s.getType())
                   .ifPresent(v -> ((Setting) s).setValue(v));
             }
           });

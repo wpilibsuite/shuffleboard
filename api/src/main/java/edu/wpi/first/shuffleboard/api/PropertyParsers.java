@@ -56,15 +56,15 @@ public final class PropertyParsers extends Registry<PropertyParser<?>> {
   /**
    * Parses the given input as a value of the given output type.
    *
-   * @param outputType the type of the value to parse as
    * @param input      the value to parse
+   * @param outputType the type of the value to parse as
    * @param <T>        the type of the parsed result
    *
    * @return the parse result
    *
    * @throws IllegalStateException if there are multiple registered parsers for type {@code T}
    */
-  public <T> Optional<T> parse(Class<T> outputType, Object input) {
+  public <T> Optional<T> parse(Object input, Class<T> outputType) {
     Set<T> possibilities = getItems()
         .stream()
         .filter(p -> outputType.isAssignableFrom(p.outputType()))

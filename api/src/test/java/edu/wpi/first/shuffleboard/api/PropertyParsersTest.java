@@ -26,7 +26,7 @@ public class PropertyParsersTest {
   @ParameterizedTest
   @CsvSource({"1,1", "12.34,12.34", "abc,abc"})
   public void testStringParse(Object input, String expectedOutput) {
-    Optional<String> result = parsers.parse(String.class, input);
+    Optional<String> result = parsers.parse(input, String.class);
     assertTrue(result.isPresent(), "No result");
     assertEquals(expectedOutput, result.get(), "Unexpected parse result");
   }
@@ -34,7 +34,7 @@ public class PropertyParsersTest {
   @ParameterizedTest
   @MethodSource("colorArgs")
   public void testColor(Object input, Color expectedOutput) {
-    Optional<Color> result = parsers.parse(Color.class, input);
+    Optional<Color> result = parsers.parse(input, Color.class);
     assertTrue(result.isPresent(), "No result");
     assertEquals(expectedOutput, result.get(), "Unexpected parse result");
   }
