@@ -12,6 +12,7 @@ import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
 import edu.wpi.first.shuffleboard.api.tab.model.TabStructure;
 import edu.wpi.first.shuffleboard.api.util.PreferencesUtils;
+import edu.wpi.first.shuffleboard.api.util.ShutdownHooks;
 import edu.wpi.first.shuffleboard.api.widget.ComponentType;
 import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.api.widget.WidgetType;
@@ -36,7 +37,7 @@ import javafx.beans.value.ChangeListener;
 @Description(
     group = "edu.wpi.first.shuffleboard",
     name = "NetworkTables",
-    version = "2.2.2",
+    version = "2.2.3",
     summary = "Provides sources and widgets for NetworkTables"
 )
 public class NetworkTablesPlugin extends Plugin {
@@ -117,6 +118,13 @@ public class NetworkTablesPlugin extends Plugin {
 
     serverChangeListener.changed(null, null, serverId.get());
     serverId.addListener(serverChangeListener);
+
+    // Manually shut down the client to avoid a shutdown deadlock in ntcore. Don't want zombie processes eating up RAM
+    // Note: this only seems to occur on Windows 7 machines
+    ShutdownHooks.addHook(() -> {
+      inst.stopClient();
+      inst.stopDSClient();
+    });
   }
 
   @Override
