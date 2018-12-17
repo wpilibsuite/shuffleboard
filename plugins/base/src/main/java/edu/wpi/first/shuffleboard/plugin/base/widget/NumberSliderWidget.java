@@ -44,9 +44,9 @@ public class NumberSliderWidget extends SimpleAnnotatedWidget<Number> {
   public List<Group> getSettings() {
     return ImmutableList.of(
         Group.of("Slider Settings",
-            Setting.of("Min", slider.minProperty()),
-            Setting.of("Max", slider.maxProperty()),
-            Setting.of("Block increment", slider.blockIncrementProperty())
+            Setting.of("Min", slider.minProperty(), Number.class),
+            Setting.of("Max", slider.maxProperty(), Number.class),
+            Setting.of("Block increment", slider.blockIncrementProperty(), Number.class)
         )
     );
   }

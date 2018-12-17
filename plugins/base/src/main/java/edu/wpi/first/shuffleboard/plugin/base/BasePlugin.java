@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.plugin.base;
 
+import edu.wpi.first.shuffleboard.api.PropertyParser;
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.json.ElementTypeAdapter;
@@ -70,7 +71,7 @@ import java.util.Set;
 @Description(
     group = "edu.wpi.first.shuffleboard",
     name = "Base",
-    version = "1.1.1",
+    version = "1.1.2",
     summary = "Defines all the WPILib data types and stock widgets"
 )
 @SuppressWarnings("PMD.CouplingBetweenObjects")
@@ -162,6 +163,13 @@ public class BasePlugin extends Plugin {
         .put(BasicSubsystemType.Instance, WidgetType.forAnnotatedWidget(BasicSubsystemWidget.class))
         .put(SubsystemType.Instance, createSubsystemLayoutType())
         .build();
+  }
+
+  @Override
+  public Set<PropertyParser<?>> getPropertyParsers() {
+    return Set.of(
+        PropertyParser.forEnum(ThreeAxisAccelerometerWidget.Range.class)
+    );
   }
 
   private static LayoutClass<SubsystemLayout> createSubsystemLayoutType() {

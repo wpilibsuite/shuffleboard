@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.app.components;
 
+import edu.wpi.first.shuffleboard.api.PropertyParsers;
 import edu.wpi.first.shuffleboard.api.plugin.Plugin;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceEntry;
@@ -42,7 +43,7 @@ public class DashboardTabPane extends TabPane {
     FxUtils.runOnFxThread(() -> {
       Map<TabModel, ProcedurallyDefinedTab> realTabs = pluginTabs.computeIfAbsent(tabs, __ -> new WeakHashMap<>());
       for (TabModel model : tabs.getTabs().values()) {
-        ProcedurallyDefinedTab tab = realTabs.computeIfAbsent(model, ProcedurallyDefinedTab::new);
+        var tab = realTabs.computeIfAbsent(model, m -> new ProcedurallyDefinedTab(m, PropertyParsers.getDefault()));
         if (!getTabs().contains(tab)) {
           getTabs().add(getTabs().size() - 1, tab);
         }

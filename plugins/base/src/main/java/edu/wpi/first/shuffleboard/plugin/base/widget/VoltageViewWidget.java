@@ -23,6 +23,7 @@ import java.util.logging.Logger;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.fxml.FXML;
+import javafx.geometry.Orientation;
 import javafx.scene.layout.Pane;
 
 @Description(name = "Voltage View", dataTypes = {NumberType.class, AnalogInputType.class})
@@ -75,13 +76,13 @@ public class VoltageViewWidget extends SingleSourceWidget implements AnnotatedWi
   public List<Group> getSettings() {
     return ImmutableList.of(
         Group.of("Range",
-            Setting.of("Min", indicator.minProperty()),
-            Setting.of("Max", indicator.maxProperty()),
-            Setting.of("Center", indicator.centerProperty())
+            Setting.of("Min", indicator.minProperty(), Number.class),
+            Setting.of("Max", indicator.maxProperty(), Number.class),
+            Setting.of("Center", indicator.centerProperty(), Number.class)
         ),
         Group.of("Visuals",
-            Setting.of("Orientation", indicator.orientationProperty()),
-            Setting.of("Number of tick marks", numTicks)
+            Setting.of("Orientation", indicator.orientationProperty(), Orientation.class),
+            Setting.of("Number of tick marks", numTicks, Integer.class)
         )
     );
   }

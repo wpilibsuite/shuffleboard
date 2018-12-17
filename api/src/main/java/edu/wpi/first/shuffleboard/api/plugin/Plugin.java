@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.api.plugin;
 
+import edu.wpi.first.shuffleboard.api.PropertyParser;
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.json.ElementTypeAdapter;
 import edu.wpi.first.shuffleboard.api.prefs.Group;
@@ -22,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.Property;
@@ -184,6 +186,13 @@ public class Plugin {
    */
   public List<ComponentType> getComponents() {
     return ImmutableList.of();
+  }
+
+  /**
+   * Gets the custom property parsers used to convert custom widget properties to useful values.
+   */
+  public Set<PropertyParser<?>> getPropertyParsers() {
+    return Set.of();
   }
 
   /**

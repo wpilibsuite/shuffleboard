@@ -120,7 +120,7 @@ public class PowerDistributionPanelWidget extends SimpleAnnotatedWidget<PowerDis
   public List<Group> getSettings() {
     return ImmutableList.of(
         Group.of("Visuals",
-            Setting.of("Show voltage and current values", showIndicatorText)
+            Setting.of("Show voltage and current values", showIndicatorText, Boolean.class)
         )
     );
   }

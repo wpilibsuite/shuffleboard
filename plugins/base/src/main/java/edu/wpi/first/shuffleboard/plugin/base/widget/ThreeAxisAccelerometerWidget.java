@@ -28,7 +28,7 @@ import javafx.scene.layout.Pane;
 @ParametrizedController("ThreeAxisAccelerometerWidget.fxml")
 public class ThreeAxisAccelerometerWidget extends SimpleAnnotatedWidget<ThreeAxisAccelerometerData> {
 
-  private enum Range {
+  public enum Range {
     k2G(2),
     k4G(4),
     k8G(8),
@@ -92,12 +92,12 @@ public class ThreeAxisAccelerometerWidget extends SimpleAnnotatedWidget<ThreeAxi
   public List<Group> getSettings() {
     return ImmutableList.of(
         Group.of("Accelerometer",
-            Setting.of("Range", range)
+            Setting.of("Range", range, Range.class)
         ),
         Group.of("Visuals",
-            Setting.of("Show value", showText),
-            Setting.of("Precision", numDecimals),
-            Setting.of("Show tick marks", x.showTickMarksProperty())
+            Setting.of("Show value", showText, Boolean.class),
+            Setting.of("Precision", numDecimals, Integer.class),
+            Setting.of("Show tick marks", x.showTickMarksProperty(), Boolean.class)
         )
     );
   }

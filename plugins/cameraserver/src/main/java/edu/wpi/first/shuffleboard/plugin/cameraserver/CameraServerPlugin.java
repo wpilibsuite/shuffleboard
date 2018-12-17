@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.plugin.cameraserver;
 
+import edu.wpi.first.shuffleboard.api.PropertyParser;
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.plugin.Description;
 import edu.wpi.first.shuffleboard.api.plugin.Plugin;
@@ -12,6 +13,7 @@ import edu.wpi.first.shuffleboard.plugin.cameraserver.data.type.CameraServerData
 import edu.wpi.first.shuffleboard.plugin.cameraserver.source.CameraServerSourceType;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.source.CameraStreamAdapter;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.widget.CameraServerWidget;
+import edu.wpi.first.shuffleboard.plugin.cameraserver.widget.CameraServerWidget.Rotation;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -22,6 +24,7 @@ import org.opencv.core.Core;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 
 @Description(
@@ -36,6 +39,8 @@ public class CameraServerPlugin extends Plugin {
   private static final Logger log = Logger.getLogger(CameraServerPlugin.class.getName());
   private final CameraStreamAdapter streamRecorder = new CameraStreamAdapter();
 
+  private static final PropertyParser<Rotation> CAMERA_ROTATION = PropertyParser.forEnum(Rotation.class);
+
   @Override
   public void onLoad() {
     log.info("OpenCV version: " + Core.VERSION);
@@ -49,6 +54,11 @@ public class CameraServerPlugin extends Plugin {
     return ImmutableList.of(
         WidgetType.forAnnotatedWidget(CameraServerWidget.class)
     );
+  }
+
+  @Override
+  public Set<PropertyParser<?>> getPropertyParsers() {
+    return Set.of(CAMERA_ROTATION);
   }
 
   @Override

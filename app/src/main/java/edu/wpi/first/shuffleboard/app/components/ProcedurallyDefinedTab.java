@@ -1,6 +1,8 @@
 package edu.wpi.first.shuffleboard.app.components;
 
+import edu.wpi.first.shuffleboard.api.PropertyParsers;
 import edu.wpi.first.shuffleboard.api.prefs.Category;
+import edu.wpi.first.shuffleboard.api.prefs.Setting;
 import edu.wpi.first.shuffleboard.api.tab.model.ComponentModel;
 import edu.wpi.first.shuffleboard.api.tab.model.LayoutModel;
 import edu.wpi.first.shuffleboard.api.tab.model.ParentModel;
@@ -21,8 +23,6 @@ import java.util.WeakHashMap;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import javafx.beans.property.Property;
-
 /**
  * A dashboard tab that generates its own contents based on an external model. {@link #populate()} must be called
  * externally to update the contents of this tab.
@@ -32,6 +32,7 @@ public class ProcedurallyDefinedTab extends DashboardTab {
   private static final Logger log = Logger.getLogger(ProcedurallyDefinedTab.class.getName());
 
   private final TabModel model;
+  private final PropertyParsers parsers;
   private boolean deferPopulation = false; // NOPMD
 
   private final Map<ComponentModel, Component> proceduralComponents = new WeakHashMap<>();
@@ -41,11 +42,13 @@ public class ProcedurallyDefinedTab extends DashboardTab {
   /**
    * Creates a new procedurally defined tab.
    *
-   * @param model the backing tab model
+   * @param model   the backing tab model
+   * @param parsers the parser registry to use when resolving custom widget properties
    */
-  public ProcedurallyDefinedTab(TabModel model) {
+  public ProcedurallyDefinedTab(TabModel model, PropertyParsers parsers) {
     super(model.getTitle());
     this.model = model;
+    this.parsers = parsers;
     getStyleClass().add("procedurally-defined-tab");
   }
 
@@ -146,9 +149,11 @@ public class ProcedurallyDefinedTab extends DashboardTab {
       component.getSettings().stream()
           .map(g -> g.getSettings())
           .flatMap(l -> l.stream())
+          .filter(s -> s.getType() != null)
           .forEach(s -> {
             if (s.getName().equalsIgnoreCase(name)) {
-              ((Property) s.getProperty()).setValue(value);
+              parsers.parse(value, s.getType())
+                  .ifPresent(v -> ((Setting) s).setValue(v));
             }
           });
     });

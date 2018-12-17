@@ -337,9 +337,9 @@ public final class GridLayout extends LayoutBase {
   public List<Group> getSettings() {
     return ImmutableList.of(
         Group.of("Layout",
-            Setting.of("Number of columns", numColumns),
-            Setting.of("Number of rows", numRows),
-            Setting.of("Label position", labelPositionProperty())
+            Setting.of("Number of columns", numColumns, Integer.class),
+            Setting.of("Number of rows", numRows, Integer.class),
+            Setting.of("Label position", labelPositionProperty(), LabelPosition.class)
         )
     );
   }
