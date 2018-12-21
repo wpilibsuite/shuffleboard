@@ -47,7 +47,7 @@ public class CsvConverterTest {
   @Test
   public void testMultipleMarkersInSameWindow() {
     // First two markers are in the same time window
-    // That row should be skipped, but the third marker should still be included
+    // The second marker should be skipped, but the first and third should still be present
     recording.addMarker(new Marker("First", "", MarkerImportance.LOW, 0L));
     recording.addMarker(new Marker("Second", "", MarkerImportance.CRITICAL, 0L));
     recording.addMarker(new Marker("Third", "", MarkerImportance.NORMAL, 255));
@@ -57,7 +57,8 @@ public class CsvConverterTest {
 
     assertAll(
         () -> assertEquals(EMPTY_HEADER, lines.get(0), "First line should be the header"),
-        () -> assertEquals("255,Third,,NORMAL", lines.get(1), "Second line should be the third marker")
+        () -> assertEquals("0,First,,LOW", lines.get(1), "Second line should be the first marker"),
+        () -> assertEquals("255,Third,,NORMAL", lines.get(2), "Third line should be the third marker")
     );
   }
 

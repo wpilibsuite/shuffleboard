@@ -40,7 +40,7 @@ public final class CsvConverter implements Converter {
 
   private static final Logger log = Logger.getLogger(CsvConverter.class.getName());
   private static final String invariantViolatedMessageFormat =
-      "Invariant violated: multiple non-data points in data list (found: %s at index %d of %d), for timestamp %d";
+      "Invariant violated: multiple event markers for same timestamp (found: %s at entry %d of %d), for timestamp %d";
 
   private CsvConverter() {
   }
@@ -117,18 +117,18 @@ public final class CsvConverter implements Converter {
     }
 
     for (int i = dataStart; i < entries.size(); i++) {
-      if (!(entries.get(i) instanceof TimestampedData)) {
-        // Invariant was violated, log it and discard this row
+      if (entries.get(i) instanceof Marker) {
+        // Invariant was violated, log it and ignore the marker
         log.warning(
             String.format(
                 invariantViolatedMessageFormat,
                 entries.get(i),
-                i,
-                entries.size() - 1,
+                i + 1,
+                entries.size(),
                 entry.getKey()
             )
         );
-        return null;
+        continue;
       }
       var point = (TimestampedData) entries.get(i);
       row[header.indexOf(point.getSourceId())] = point.getData();

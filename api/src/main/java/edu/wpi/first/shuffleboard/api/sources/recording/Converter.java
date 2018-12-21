@@ -21,6 +21,23 @@ import java.util.stream.Stream;
 public interface Converter {
 
   /**
+   * Compares recording entries such that markers are ordered before non-marker entries.
+   */
+  Comparator<RecordingEntry> markersFirst = (first, second) -> {
+    boolean firstMarker = first instanceof Marker;
+    boolean secondMarker = second instanceof Marker;
+    if (firstMarker && secondMarker) {
+      return 0;
+    } else if (firstMarker) {
+      return -1;
+    } else if (secondMarker) {
+      return 1;
+    } else {
+      return 0;
+    }
+  };
+
+  /**
    * Gets the name of the format that recordings are exported to.
    */
   String formatName();
@@ -84,8 +101,10 @@ public interface Converter {
         continue;
       }
 
-      int j = i;
       List<RecordingEntry> elements = new ArrayList<>();
+      elements.add(point);
+
+      int j = i + 1;
       // Collate data within a certain delta time to the same collection, since there may be some time jitter
       // for multiple recorded data points that were updated at the same time, but network latencies
       // or CPU usage caused the timestamps to be slightly different
@@ -97,16 +116,9 @@ public interface Converter {
         elements.add(e);
       }
 
-      // Place the marker (if present) at the beginning
-      // Note: assumes only one marker is present per slice, so the time window must
-      // be narrow enough to preserve this behavior
-      for (int k = elements.size() - 1; k >= 0; k--) {
-        if (elements.get(k) instanceof Marker) {
-          var element = elements.remove(k);
-          elements.add(0, element);
-          break;
-        }
-      }
+      // Place markers at the beginning, maintaining ordering by timestamp
+      elements.sort(markersFirst);
+
       map.put(point.getTimestamp(), elements);
       i = j;
     }
