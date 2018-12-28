@@ -614,7 +614,7 @@ public class WidgetPaneController {
    */
   private Category createSettingsCategoriesForComponent(Component component) {
     List<Group> groups = new ArrayList<>(component.getSettings());
-    groups.add(titleGroup(component));
+    groups.add(0, titleGroup(component));
     String categoryName = component.getTitle().isEmpty() ? "Unnamed " + component.getName() : component.getTitle();
     if (component instanceof ComponentContainer) {
       List<Category> subCategories = ((ComponentContainer) component).components()
@@ -634,7 +634,7 @@ public class WidgetPaneController {
    * @return a new settings group
    */
   private Group titleGroup(Component component) {
-    return Group.of("Miscellaneous",
+    return Group.of("Title",
         Setting.of(
             "Title",
             "The title of this " + component.getName().toLowerCase(Locale.US),
