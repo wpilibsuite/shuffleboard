@@ -5,7 +5,7 @@ import java.util.Objects;
 /**
  * Marks an event in a recording.
  */
-public final class Marker {
+public final class Marker implements RecordingEntry {
 
   private final String name;
   private final String description;
@@ -62,6 +62,7 @@ public final class Marker {
   /**
    * Gets the timestamp of the marked event.
    */
+  @Override
   public long getTimestamp() {
     return timestamp;
   }

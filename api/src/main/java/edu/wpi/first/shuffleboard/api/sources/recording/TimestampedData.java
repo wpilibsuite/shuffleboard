@@ -8,7 +8,7 @@ import java.util.Objects;
 /**
  * Represents an immutable view of the value of a data source at a specific instant.
  */
-public final class TimestampedData implements Comparable<TimestampedData> {
+public final class TimestampedData implements RecordingEntry, Comparable<TimestampedData> {
 
   private final String sourceId;
   private final DataType dataType;
@@ -42,6 +42,7 @@ public final class TimestampedData implements Comparable<TimestampedData> {
     return data;
   }
 
+  @Override
   public long getTimestamp() {
     return timestamp;
   }
