@@ -28,7 +28,6 @@ dependencies {
     nativeProject(path = ":plugins:base")
     nativeProject(path = ":plugins:cameraserver")
     nativeProject(path = ":plugins:networktables")
-    nativeProject(path = ":plugins:powerup")
     compile(group = "de.huxhorn.lilith", name = "de.huxhorn.lilith.3rdparty.junique", version = "1.0.4")
     compile(group = "org.apache.commons", name = "commons-csv", version = "1.5")
     testCompile(project("test_plugins"))
