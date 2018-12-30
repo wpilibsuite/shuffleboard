@@ -17,6 +17,8 @@ import java.util.function.Supplier;
  */
 public final class LazyCameraServerData extends CameraServerData {
 
+  private final int fileNum;
+  private final int frameNum;
   private final LazyInit<Mat> image;
 
   /**
@@ -24,12 +26,21 @@ public final class LazyCameraServerData extends CameraServerData {
    * a {@code Supplier<Mat>} instead of a {@code Mat} for lazily loading the image.
    *
    * @param name          no change
+   * @param fileNum       the number of the video file corresponding to this frame
+   * @param frameNum      the frame index in the video file
    * @param imageSupplier a callback for reading the frame from disk
    * @param fps           no change
    * @param bandwidth     no change
    */
-  public LazyCameraServerData(String name, Supplier<Mat> imageSupplier, double fps, double bandwidth) {
+  public LazyCameraServerData(String name,
+                              int fileNum,
+                              int frameNum,
+                              Supplier<Mat> imageSupplier,
+                              double fps,
+                              double bandwidth) {
     super(name, null, fps, bandwidth);
+    this.fileNum = fileNum;
+    this.frameNum = frameNum;
     image = LazyInit.of(imageSupplier::get);
   }
 
@@ -49,4 +60,14 @@ public final class LazyCameraServerData extends CameraServerData {
     image.clear();
   }
 
+  @Override
+  public String toHumanReadableString() {
+    return String.format(
+        "fileIndex=%d, frameIndex=%d, fps=%s, bandwidth=%s",
+        fileNum,
+        frameNum,
+        getFps(),
+        getBandwidth()
+    );
+  }
 }

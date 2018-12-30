@@ -1,10 +1,11 @@
 package edu.wpi.first.shuffleboard.plugin.base.data;
 
-import com.google.common.collect.ImmutableMap;
-
 import edu.wpi.first.shuffleboard.api.data.ComplexData;
 import edu.wpi.first.shuffleboard.api.util.AlphanumComparator;
 
+import com.google.common.collect.ImmutableMap;
+
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Map;
 
@@ -89,4 +90,12 @@ public class PowerDistributionData extends ComplexData<PowerDistributionData> {
     return builder.build();
   }
 
+  @Override
+  public String toHumanReadableString() {
+    return String.format("voltage=%.3f Volts, currents=%s, totalCurrent=%.3f Amps",
+        voltage,
+        Arrays.toString(currents),
+        totalCurrent
+    );
+  }
 }

@@ -53,4 +53,8 @@ public final class SpeedControllerData extends NamedData<Double> {
     return super.hashCode() + 31 * super.hashCode() + Objects.hash(controllable);
   }
 
+  @Override
+  public String toHumanReadableString() {
+    return "speed=" + getValue() + ", controllable=" + controllable;
+  }
 }

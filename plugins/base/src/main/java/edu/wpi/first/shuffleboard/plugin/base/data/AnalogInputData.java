@@ -14,4 +14,8 @@ public class AnalogInputData extends NamedData<Double> {
     this((String) map.getOrDefault("Name", "?"), (double) map.getOrDefault("Value", 0.0));
   }
 
+  @Override
+  public String toHumanReadableString() {
+    return getValue() + " Volts";
+  }
 }

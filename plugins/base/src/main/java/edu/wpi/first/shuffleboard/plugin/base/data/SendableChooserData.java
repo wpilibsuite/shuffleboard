@@ -111,4 +111,14 @@ public final class SendableChooserData extends ComplexData<SendableChooserData> 
     result = 31 * result + activeOption.hashCode();
     return result;
   }
+
+  @Override
+  public String toHumanReadableString() {
+    return String.format(
+        "options=%s, selectedOption=%s, activeOption=%s",
+        Arrays.toString(options),
+        selectedOption,
+        activeOption
+    );
+  }
 }

@@ -3,6 +3,7 @@ package edu.wpi.first.shuffleboard.plugin.base.data.fms;
 import edu.wpi.first.shuffleboard.api.data.ComplexData;
 import edu.wpi.first.shuffleboard.api.util.Maps;
 
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -146,4 +147,17 @@ public final class FmsInfo extends ComplexData<FmsInfo> {
     return fmsControlData;
   }
 
+  @Override
+  public String toHumanReadableString() {
+    return String.format(
+        "Event=%s, match=%d, matchType=%s, alliance=%s, station=%d, gameSpecificMessage=%s, controlData=%s",
+        eventName,
+        matchNumber,
+        matchType.getHumanReadableName(),
+        alliance.name().toLowerCase(Locale.US),
+        stationNumber,
+        gameSpecificMessage,
+        fmsControlData
+    );
+  }
 }

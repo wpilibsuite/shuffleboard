@@ -62,4 +62,8 @@ public final class GyroData extends ComplexData<GyroData> {
     return Objects.hash(value);
   }
 
+  @Override
+  public String toHumanReadableString() {
+    return value + " Degrees";
+  }
 }

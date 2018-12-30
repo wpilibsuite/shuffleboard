@@ -63,4 +63,8 @@ public class CommandData extends ComplexData<CommandData> {
     return isParented;
   }
 
+  @Override
+  public String toHumanReadableString() {
+    return "Running: " + running;
+  }
 }
