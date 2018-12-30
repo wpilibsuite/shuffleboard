@@ -105,4 +105,20 @@ public final class ControlWord {
     return dsAttached;
   }
 
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder("(");
+    sb.append("controlMode=").append(controlState);
+    if (dsAttached) {
+      sb.append(", ").append("DS connected");
+    }
+    if (fmsAttached) {
+      sb.append(", ").append("FMS connected");
+    }
+    if (emergencyStopped) {
+      sb.append(", ").append("E-stopped");
+    }
+    sb.append(')');
+    return sb.toString();
+  }
 }

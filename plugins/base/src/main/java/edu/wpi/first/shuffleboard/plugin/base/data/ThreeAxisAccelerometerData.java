@@ -76,4 +76,9 @@ public final class ThreeAxisAccelerometerData extends ComplexData<ThreeAxisAccel
   public String toString() {
     return String.format("ThreeAxisAccelerometerData(x=%s, y=%s, z=%s)", x, y, z);
   }
+
+  @Override
+  public String toHumanReadableString() {
+    return String.format("x=%.3fg, y=%.3fg, z=%.3fg", x, y, z);
+  }
 }

@@ -81,7 +81,7 @@ public final class CameraStreamAdapter extends TypeAdapter<CameraServerData> {
 
     CameraStreamReader reader = readers.computeIfAbsent(name, __ -> new CameraStreamReader(__, getCurrentFile()));
 
-    return new LazyCameraServerData(name, () -> {
+    return new LazyCameraServerData(name, fileNum, frameNum, () -> {
       try {
         reader.setFileNumber(fileNum);
         return reader.readFrame(frameNum);

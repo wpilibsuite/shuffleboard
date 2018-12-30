@@ -54,4 +54,8 @@ public class EncoderData extends ComplexData<EncoderData> {
     return speed;
   }
 
+  @Override
+  public String toHumanReadableString() {
+    return "Distance=" + distance + ", speed=" + speed;
+  }
 }

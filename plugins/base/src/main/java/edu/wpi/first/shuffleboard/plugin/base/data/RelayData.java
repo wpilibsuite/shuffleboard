@@ -102,6 +102,11 @@ public final class RelayData extends ComplexData<RelayData> {
     return String.format("RelayData(name=%s, value=%s, controllable=%s)", name, value, controllable);
   }
 
+  @Override
+  public String toHumanReadableString() {
+    return value;
+  }
+
   public RelayData withState(State state) {
     return new RelayData(this.name, state, controllable);
   }

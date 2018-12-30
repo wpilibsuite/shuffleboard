@@ -1,9 +1,13 @@
 package edu.wpi.first.shuffleboard.api.data;
 
+import edu.wpi.first.shuffleboard.api.util.AlphanumComparator;
 import edu.wpi.first.shuffleboard.api.util.EqualityUtils;
 import edu.wpi.first.shuffleboard.api.util.Maps;
+import edu.wpi.first.shuffleboard.api.util.StringUtils;
 
+import java.util.Comparator;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * A complex data type backed internally by an observable map. Subtypes should have properties
@@ -47,6 +51,21 @@ public abstract class ComplexData<T extends ComplexData<T>> {
       }
     });
     return builder.build();
+  }
+
+  /**
+   * Generates a human-readable string representing this data. The default implementation simply maps each key-value
+   * pair from {@link #asMap()} to the format {@code "key=value"} with a comma ({@code ','}) delimiting each pair.
+   * Pairs are sorted alphanumerically by key. Subclasses are free to override this method if a different order is
+   * desired.
+   */
+  public String toHumanReadableString() {
+    var map = asMap();
+    return map.entrySet()
+        .stream()
+        .sorted(Comparator.comparing(Map.Entry::getKey, AlphanumComparator.INSTANCE))
+        .map(e -> StringUtils.deepToString(e.getKey()) + "=" + StringUtils.deepToString(e.getValue()))
+        .collect(Collectors.joining(", "));
   }
 
 }

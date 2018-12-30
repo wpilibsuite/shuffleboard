@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.app.sources.recording;
 
+import edu.wpi.first.shuffleboard.api.data.ComplexData;
 import edu.wpi.first.shuffleboard.api.sources.DataSourceUtils;
 import edu.wpi.first.shuffleboard.api.sources.recording.ConversionSettings;
 import edu.wpi.first.shuffleboard.api.sources.recording.Converter;
@@ -8,6 +9,7 @@ import edu.wpi.first.shuffleboard.api.sources.recording.Recording;
 import edu.wpi.first.shuffleboard.api.sources.recording.RecordingEntry;
 import edu.wpi.first.shuffleboard.api.sources.recording.TimestampedData;
 import edu.wpi.first.shuffleboard.api.util.AlphanumComparator;
+import edu.wpi.first.shuffleboard.api.util.StringUtils;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
@@ -133,7 +135,13 @@ public final class CsvConverter implements Converter {
         continue;
       }
       var point = (TimestampedData) entries.get(i);
-      row[header.indexOf(point.getSourceId())] = point.getData();
+      var data = point.getData();
+      int index = header.indexOf(point.getSourceId());
+      if (data instanceof ComplexData /*c*/) { // TODO pattern matching from Project Amber
+        row[index] = ((ComplexData) data).toHumanReadableString();
+      } else {
+        row[index] = StringUtils.deepToString(data);
+      }
     }
 
     return row;

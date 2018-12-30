@@ -136,4 +136,8 @@ public final class PIDControllerData extends ComplexData<PIDControllerData> {
         p, i, d, f, setpoint, enabled);
   }
 
+  @Override
+  public String toHumanReadableString() {
+    return String.format("p=%.3f, i=%.3f, d-%.3f, f=%.3f, setpoint=%.3f, enabled=%s", p, i, d, f, setpoint, enabled);
+  }
 }

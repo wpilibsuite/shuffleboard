@@ -97,4 +97,8 @@ public final class PIDCommandData extends ComplexData<PIDCommandData> {
     return new PIDCommandData(commandData.withRunning(running), pidControllerData);
   }
 
+  @Override
+  public String toHumanReadableString() {
+    return "running=" + isRunning() + ", controller=(" + getPidControllerData().toHumanReadableString() + ")";
+  }
 }
