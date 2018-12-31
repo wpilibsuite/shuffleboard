@@ -9,7 +9,6 @@ import edu.wpi.first.shuffleboard.api.tab.model.TabModel;
 import edu.wpi.first.shuffleboard.api.tab.model.TabStructure;
 import edu.wpi.first.shuffleboard.api.tab.model.WidgetModel;
 import edu.wpi.first.shuffleboard.api.util.GridPoint;
-import edu.wpi.first.shuffleboard.api.util.StringUtils;
 import edu.wpi.first.shuffleboard.api.util.function.MappableSupplier;
 import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.api.widget.TileSize;
