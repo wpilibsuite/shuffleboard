@@ -30,7 +30,7 @@ import java.util.logging.Logger;
 @Description(
     group = "edu.wpi.first.shuffleboard",
     name = "CameraServer",
-    version = "2.0.1",
+    version = "2.0.2",
     summary = "Provides sources and widgets for viewing CameraServer MJPEG streams"
 )
 @Requires(group = "edu.wpi.first.shuffleboard", name = "NetworkTables", minVersion = "2.0.0")
