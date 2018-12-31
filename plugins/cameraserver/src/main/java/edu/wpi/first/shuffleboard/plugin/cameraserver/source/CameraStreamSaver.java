@@ -187,7 +187,10 @@ public final class CameraStreamSaver {
   private FFmpegFrameRecorder createRecorder(int fileIndex) {
     String file = CameraStreamAdapter.videoFilePath(rootRecordingFile, cameraName, fileIndex);
     try {
-      Files.createFile(Paths.get(file));
+      var path = Paths.get(file);
+      if (Files.notExists(path)) {
+        Files.createFile(path);
+      }
     } catch (IOException e) {
       throw new AssertionError("Could not create video file " + file, e);
     }
