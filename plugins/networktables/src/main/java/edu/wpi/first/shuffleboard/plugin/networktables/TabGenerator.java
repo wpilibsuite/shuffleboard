@@ -195,11 +195,21 @@ final class TabGenerator {
       // Not enough data
       return;
     }
-    if (event.name.contains("/.") || event.name.charAt(0) == '.') {
-      // Metadata changed; we don't need to worry about it
+    if (event.name.contains("/.")) {
+      // The entry is metadata, but may be the only entry in a table, so make sure it's updated correctly
+      var tables = hierarchy.stream()
+          .takeWhile(s -> !s.contains("/."))
+          .collect(Collectors.toList());
+      if (tables.size() >= 3) {
+        updateFrom(tables);
+      }
       return;
     }
-    updateStructure(hierarchy);
+    updateFrom(hierarchy);
+  }
+
+  private void updateFrom(List<String> tables) {
+    updateStructure(tables);
     tabs.dirty();
   }
 
@@ -327,12 +337,13 @@ final class TabGenerator {
    * @param path   the path to the widget
    */
   private void updateWidget(ParentModel parent, String path) {
+    var sourceSupplier = sourceForPath(path);
     WidgetModel widget = parent.getOrCreate(
         path,
-        sourceForPath(path),
+        sourceSupplier,
         preferredComponent(
             path,
-            sourceForPath(path)
+            sourceSupplier
                 .map(DataSource::getDataType)
                 .map(componentRegistry::defaultComponentNameFor)
                 .map(Optional::orElseThrow)
