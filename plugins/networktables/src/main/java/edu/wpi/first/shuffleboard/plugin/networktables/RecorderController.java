@@ -34,6 +34,12 @@ public final class RecorderController {
   private int listenerHandle = 0;
 
   /**
+   * The entry update flags from the most recent control update. This prevents us from restarting a controller every
+   * time NetworkTables updates.
+   */
+  private int lastControlEntryFlags = -1;
+
+  /**
    * Creates a new recorder controller using the default entries {@link #DEFAULT_START_STOP_KEY} and
    * {@link #DEFAULT_FILE_NAME_FORMAT_KEY}.
    *
@@ -90,8 +96,13 @@ public final class RecorderController {
    * @param event the network table event
    */
   private void updateControl(EntryNotification event) {
+    if (event.flags == lastControlEntryFlags) {
+      return;
+    }
+    lastControlEntryFlags = event.flags;
     if (event.value.isBoolean() && !DashboardMode.inPlayback()) {
       if (event.value.getBoolean()) {
+        recorder.stop();
         recorder.setFileNameFormat(fileNameFormatEntry.getString(Recorder.DEFAULT_RECORDING_FILE_NAME_FORMAT));
         recorder.start();
       } else {

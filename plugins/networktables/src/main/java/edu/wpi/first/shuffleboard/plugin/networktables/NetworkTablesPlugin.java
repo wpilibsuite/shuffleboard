@@ -37,7 +37,7 @@ import javafx.beans.value.ChangeListener;
 @Description(
     group = "edu.wpi.first.shuffleboard",
     name = "NetworkTables",
-    version = "2.2.4",
+    version = "2.2.5",
     summary = "Provides sources and widgets for NetworkTables"
 )
 public class NetworkTablesPlugin extends Plugin {
@@ -111,9 +111,7 @@ public class NetworkTablesPlugin extends Plugin {
     }, 0xFF);
 
     DashboardMode.currentModeProperty().addListener(dashboardModeChangeListener);
-    if (Recorder.getInstance().isRunning()) {
-      recorderController.start();
-    }
+    recorderController.start();
     tabGenerator.start();
 
     serverChangeListener.changed(null, null, serverId.get());
