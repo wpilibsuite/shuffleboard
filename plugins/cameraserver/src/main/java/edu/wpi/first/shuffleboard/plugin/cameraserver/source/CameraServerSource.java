@@ -115,6 +115,11 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
           case kSourceConnected:
             forceUpdatingUrls = false;
             setConnected(true);
+
+            // Make sure to re-activate the stream on reconnect
+            if (DashboardMode.getCurrentMode() != DashboardMode.PLAYBACK) {
+              setActive(camera != null && camera.getUrls().length > 0);
+            }
             break;
           case kSourceDisconnected:
             setConnected(forceUpdatingUrls);
