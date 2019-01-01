@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.app.plugin;
 
+import edu.wpi.first.shuffleboard.api.PropertyParsers;
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.plugin.Description;
@@ -58,7 +59,9 @@ public class PluginLoaderTest {
     components = new Components();
     themes = new Themes();
     tabInfoRegistry = new TabInfoRegistry();
-    loader = new PluginLoader(dataTypes, sourceTypes, components, themes, tabInfoRegistry, new Converters());
+    var converters = new Converters();
+    var propertyParsers = new PropertyParsers();
+    loader = new PluginLoader(dataTypes, sourceTypes, components, themes, tabInfoRegistry, converters, propertyParsers);
   }
 
   @Test

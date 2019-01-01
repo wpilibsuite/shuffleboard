@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.app.plugin;
 
+import edu.wpi.first.shuffleboard.api.PropertyParsers;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
 import edu.wpi.first.shuffleboard.api.plugin.Description;
@@ -58,7 +59,8 @@ public class PluginLoader {
           Components.getDefault(),
           Themes.getDefault(),
           TabInfoRegistry.getDefault(),
-          Converters.getDefault());
+          Converters.getDefault(),
+          PropertyParsers.getDefault());
 
   private final ObservableSet<Plugin> loadedPlugins = FXCollections.observableSet(new LinkedHashSet<>());
   private final Set<Class<? extends Plugin>> knownPluginClasses = new HashSet<>();
@@ -69,6 +71,7 @@ public class PluginLoader {
   private final Themes themes;
   private final TabInfoRegistry tabInfoRegistry;
   private final Converters converters;
+  private final PropertyParsers propertyParsers;
 
   /**
    * Creates a new plugin loader object. For app use, use {@link #getDefault() the default instance}; this should only
@@ -80,6 +83,7 @@ public class PluginLoader {
    * @param themes          the theme registry to use for registering themes from plugins
    * @param tabInfoRegistry the registry for tab information provided by plugins
    * @param converters      the registry for custom recording file converters
+   * @param propertyParsers the registry for custom property parsers
    *
    * @throws NullPointerException if any of the parameters is {@code null}
    */
@@ -88,13 +92,15 @@ public class PluginLoader {
                       Components components,
                       Themes themes,
                       TabInfoRegistry tabInfoRegistry,
-                      Converters converters) {
+                      Converters converters,
+                      PropertyParsers propertyParsers) {
     this.dataTypes = Objects.requireNonNull(dataTypes, "dataTypes");
     this.sourceTypes = Objects.requireNonNull(sourceTypes, "sourceTypes");
     this.components = Objects.requireNonNull(components, "components");
     this.themes = Objects.requireNonNull(themes, "themes");
     this.tabInfoRegistry = Objects.requireNonNull(tabInfoRegistry, "tabInfoRegistry");
     this.converters = converters;
+    this.propertyParsers = propertyParsers;
   }
 
   /**
@@ -292,6 +298,7 @@ public class PluginLoader {
     plugin.getThemes().forEach(themes::register);
     tabInfoRegistry.registerAll(plugin.getDefaultTabInfo());
     converters.registerAll(plugin.getRecordingConverters());
+    propertyParsers.registerAll(plugin.getPropertyParsers());
 
     plugin.onLoad();
     plugin.setLoaded(true);
@@ -423,6 +430,7 @@ public class PluginLoader {
     themes.unregisterAll(plugin.getThemes());
     tabInfoRegistry.unregisterAll(plugin.getDefaultTabInfo());
     converters.unregisterAll(plugin.getRecordingConverters());
+    propertyParsers.unregisterAll(plugin.getPropertyParsers());
 
     plugin.onUnload();
     plugin.setLoaded(false);
