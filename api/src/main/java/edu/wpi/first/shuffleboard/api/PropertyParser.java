@@ -43,7 +43,7 @@ public interface PropertyParser<T> {
         E[] values = type.getEnumConstants();
         if (input instanceof String) {
           for (E value : values) {
-            if (value.name().equals(input)) {
+            if (value.name().equalsIgnoreCase((String) input)) {
               return value;
             }
           }
