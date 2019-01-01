@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.control.Label?>
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="edu.wpi.first.shuffleboard.plugin.base.widget.UltrasonicWidget"
+            fx:id="root">
+    <left>
+        <Label text="Range: " BorderPane.alignment="CENTER"/>
+    </left>
+    <center>
+        <TextField fx:id="data" editable="false" BorderPane.alignment="CENTER_LEFT"/>
+    </center>
+</BorderPane>
