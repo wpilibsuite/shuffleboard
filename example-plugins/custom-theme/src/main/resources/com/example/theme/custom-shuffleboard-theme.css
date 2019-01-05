@@ -1,0 +1,19 @@
+/*
+ * A variation on the builtin Midnight theme, swapping blues and purples for reds.
+ * This theme is merely to display that the builtin themes can be customized and
+ * how custom themes can be provided by plugins, and is not in any way indicative
+ * of the limits of customizing those themes - for details on the builtin themes,
+ * look at the material.css and base.css files in the API project and the
+ * light.css, dark.css, and midnight.css files in the app project on GitHub, as
+ * well as the JavaFX CSS reference:
+ * https://docs.oracle.com/cd/E17802_01/javafx/javafx/1.3/docs/api/javafx.scene/doc-files/cssref.html
+ */
+@import "/edu/wpi/first/shuffleboard/app/midnight.css";
+
+.root {
+    -swatch-100: #ff0000;
+    -swatch-200: derive(-swatch-100, -5%);
+    -swatch-300: derive(-swatch-100, -12%);
+    -swatch-400: derive(-swatch-100, -16%);
+    -swatch-500: derive(-swatch-100, -25%);
+}
