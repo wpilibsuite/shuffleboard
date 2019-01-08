@@ -162,9 +162,9 @@ public class CameraServerWidget extends SimpleAnnotatedWidget<CameraServerData> 
     if (getSource() instanceof CameraServerSource) {
       CameraServerSource source = (CameraServerSource) getSource();
       int compression = (int) compressionSlider.getValue();
-      int fps = frameRateField.getNumber();
-      int width = this.width.getNumber();
-      int height = this.height.getNumber();
+      int fps = ((Number) frameRateField.getNumber()).intValue();
+      int width = ((Number) this.width.getNumber()).intValue();
+      int height = ((Number) this.height.getNumber()).intValue();
       boolean change = source.getTargetCompression() != compression
           || source.getTargetFps() != fps
           || source.getTargetResolution().isNotEqual(width, height);
