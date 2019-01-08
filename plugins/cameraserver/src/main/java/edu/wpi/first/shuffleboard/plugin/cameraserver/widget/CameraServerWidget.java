@@ -13,11 +13,13 @@ import edu.wpi.first.shuffleboard.plugin.cameraserver.recording.serialization.Im
 import edu.wpi.first.shuffleboard.plugin.cameraserver.source.CameraServerSource;
 
 import com.google.common.collect.ImmutableList;
+import com.jfoenix.controls.JFXSlider;
 
-import java.util.List;
 import org.fxmisc.easybind.EasyBind;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
+
+import java.util.List;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.Property;
@@ -27,7 +29,6 @@ import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
-import javafx.scene.control.Slider;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
@@ -54,7 +55,7 @@ public class CameraServerWidget extends SimpleAnnotatedWidget<CameraServerData> 
   private Pane controls;
   @FXML
   @SavePropertyFrom(propertyName = "value", savedName = "compression")
-  private Slider compressionSlider;
+  private JFXSlider compressionSlider;
   @FXML
   @SavePropertyFrom(propertyName = "number", savedName = "fps")
   private IntegerField frameRateField;

@@ -14,6 +14,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.control.Button?>
+<?import com.jfoenix.controls.JFXSlider?>
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="edu.wpi.first.shuffleboard.plugin.cameraserver.widget.CameraServerWidget"
@@ -36,7 +37,7 @@
         </Pane>
     </StackPane>
     <GridPane fx:id="controls" alignment="CENTER" visible="${controller.showControls}" managed="${controller.showControls}" hgap="16" styleClass="camera-controls">
-        <Slider fx:id="compressionSlider" min="0" max="100" value="-1" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+        <JFXSlider fx:id="compressionSlider" min="0" max="100" value="80" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
         <Label text="Compression" minWidth="-Infinity" labelFor="${compressionSlider}" GridPane.columnIndex="0" GridPane.rowIndex="1" GridPane.halignment="CENTER"/>
         <IntegerField fx:id="frameRateField" number="-1" minWidth="50" maxWidth="50" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
         <Label text="FPS" minWidth="-Infinity" labelFor="${frameRateField}" GridPane.columnIndex="1" GridPane.rowIndex="1" GridPane.halignment="CENTER"/>
