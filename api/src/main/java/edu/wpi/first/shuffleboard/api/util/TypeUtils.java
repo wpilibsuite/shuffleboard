@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.api.util;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -8,6 +9,17 @@ import java.util.stream.Stream;
  * Utilities dealing with the type system.
  */
 public final class TypeUtils {
+
+  private static final Map<Class<?>, Class<?>> boxedToPrimitives = Map.of(
+      Byte.class, byte.class,
+      Character.class, char.class,
+      Short.class, short.class,
+      Integer.class, int.class,
+      Long.class, long.class,
+      Float.class, float.class,
+      Double.class, double.class,
+      Boolean.class, boolean.class
+  );
 
   private TypeUtils() {
   }
@@ -57,6 +69,17 @@ public final class TypeUtils {
    */
   public static <T> Function<Optional<T>, Stream<T>> optionalStream() {
     return value -> value.map(Stream::of).orElseGet(Stream::empty);
+  }
+
+  /**
+   * Gets the primitive type for a boxed class, eg {@code primitiveForBoxedType(Integer.class) -> int.class}.
+   *
+   * @param boxed the boxed type
+   *
+   * @return the primitive type associated with the given boxed type
+   */
+  public static Class<?> primitiveForBoxedType(Class<?> boxed) {
+    return boxedToPrimitives.getOrDefault(boxed, boxed);
   }
 
   /**
