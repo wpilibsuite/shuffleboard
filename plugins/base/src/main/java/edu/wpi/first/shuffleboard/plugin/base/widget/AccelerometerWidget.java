@@ -55,8 +55,8 @@ public class AccelerometerWidget extends SimpleAnnotatedWidget<AccelerometerData
             Setting.of("Show tick marks", indicator.showTickMarksProperty(), Boolean.class)
         ),
         Group.of("Range",
-            Setting.of("Min", indicator.minProperty(), Number.class),
-            Setting.of("Max", indicator.maxProperty(), Number.class)
+            Setting.of("Min", indicator.minProperty(), Double.class),
+            Setting.of("Max", indicator.maxProperty(), Double.class)
         )
     );
   }

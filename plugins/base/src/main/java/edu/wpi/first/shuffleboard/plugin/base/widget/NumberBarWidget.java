@@ -56,9 +56,9 @@ public class NumberBarWidget extends SimpleAnnotatedWidget<Number> {
   public List<Group> getSettings() {
     return ImmutableList.of(
         Group.of("Range",
-            Setting.of("Min", indicator.minProperty(), Number.class),
-            Setting.of("Max", indicator.maxProperty(), Number.class),
-            Setting.of("Center", indicator.centerProperty(), Number.class)
+            Setting.of("Min", indicator.minProperty(), Double.class),
+            Setting.of("Max", indicator.maxProperty(), Double.class),
+            Setting.of("Center", indicator.centerProperty(), Double.class)
         ),
         Group.of("Visuals",
             Setting.of("Num tick marks", numTicks, Integer.class),

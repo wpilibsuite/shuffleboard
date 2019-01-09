@@ -33,8 +33,8 @@ public class SimpleDialWidget extends SimpleAnnotatedWidget<Number> {
   public List<Group> getSettings() {
     return ImmutableList.of(
         Group.of("Range",
-            Setting.of("Min", dial.minValueProperty(), Number.class),
-            Setting.of("Max", dial.maxValueProperty(), Number.class)
+            Setting.of("Min", dial.minValueProperty(), Double.class),
+            Setting.of("Max", dial.maxValueProperty(), Double.class)
         ),
         Group.of("Visuals",
             Setting.of("Show value", dial.valueVisibleProperty(), Boolean.class)

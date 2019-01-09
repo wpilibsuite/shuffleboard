@@ -386,7 +386,7 @@ public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
   public List<Group> getSettings() {
     return ImmutableList.of(
         Group.of("Graph",
-            Setting.of("Visible time", visibleTime, Number.class)
+            Setting.of("Visible time", visibleTime, Double.class)
         ),
         Group.of("Visible data",
             visibleSeries.values()
