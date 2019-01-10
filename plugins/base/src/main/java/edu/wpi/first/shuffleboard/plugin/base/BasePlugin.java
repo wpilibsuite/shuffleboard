@@ -29,6 +29,7 @@ import edu.wpi.first.shuffleboard.plugin.base.data.types.SendableChooserType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.SpeedControllerType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.SubsystemType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.ThreeAxisAccelerometerType;
+import edu.wpi.first.shuffleboard.plugin.base.data.types.UltrasonicType;
 import edu.wpi.first.shuffleboard.plugin.base.layout.GridLayout;
 import edu.wpi.first.shuffleboard.plugin.base.layout.GridLayoutSaver;
 import edu.wpi.first.shuffleboard.plugin.base.layout.ListLayout;
@@ -58,6 +59,7 @@ import edu.wpi.first.shuffleboard.plugin.base.widget.TextViewWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.ThreeAxisAccelerometerWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.ToggleButtonWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.ToggleSwitchWidget;
+import edu.wpi.first.shuffleboard.plugin.base.widget.UltrasonicWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.VoltageViewWidget;
 
 import com.google.common.collect.ImmutableList;
@@ -71,7 +73,7 @@ import java.util.Set;
 @Description(
     group = "edu.wpi.first.shuffleboard",
     name = "Base",
-    version = "1.1.2",
+    version = "1.1.3",
     summary = "Defines all the WPILib data types and stock widgets"
 )
 @SuppressWarnings("PMD.CouplingBetweenObjects")
@@ -98,7 +100,8 @@ public class BasePlugin extends Plugin {
         RelayType.Instance,
         MecanumDriveType.Instance,
         DifferentialDriveType.Instance,
-        FmsInfoType.Instance
+        FmsInfoType.Instance,
+        UltrasonicType.Instance
     );
   }
 
@@ -131,6 +134,7 @@ public class BasePlugin extends Plugin {
         WidgetType.forAnnotatedWidget(DifferentialDriveWidget.class),
         WidgetType.forAnnotatedWidget(MecanumDriveWidget.class),
         WidgetType.forAnnotatedWidget(BasicFmsInfoWidget.class),
+        WidgetType.forAnnotatedWidget(UltrasonicWidget.class),
         new LayoutClass<>("List Layout", ListLayout.class),
         new LayoutClass<>("Grid Layout", GridLayout.class),
         createSubsystemLayoutType()
@@ -160,6 +164,7 @@ public class BasePlugin extends Plugin {
         .put(DifferentialDriveType.Instance, WidgetType.forAnnotatedWidget(DifferentialDriveWidget.class))
         .put(MecanumDriveType.Instance, WidgetType.forAnnotatedWidget(MecanumDriveWidget.class))
         .put(FmsInfoType.Instance, WidgetType.forAnnotatedWidget(BasicFmsInfoWidget.class))
+        .put(UltrasonicType.Instance, WidgetType.forAnnotatedWidget(UltrasonicWidget.class))
         .put(BasicSubsystemType.Instance, WidgetType.forAnnotatedWidget(BasicSubsystemWidget.class))
         .put(SubsystemType.Instance, createSubsystemLayoutType())
         .build();
@@ -168,7 +173,8 @@ public class BasePlugin extends Plugin {
   @Override
   public Set<PropertyParser<?>> getPropertyParsers() {
     return Set.of(
-        PropertyParser.forEnum(ThreeAxisAccelerometerWidget.Range.class)
+        PropertyParser.forEnum(ThreeAxisAccelerometerWidget.Range.class),
+        PropertyParser.forEnum(UltrasonicWidget.Unit.class)
     );
   }
 
