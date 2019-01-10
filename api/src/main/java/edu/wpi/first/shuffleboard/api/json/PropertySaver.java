@@ -5,6 +5,7 @@ import edu.wpi.first.shuffleboard.api.prefs.Setting;
 import edu.wpi.first.shuffleboard.api.properties.SavePropertyFrom;
 import edu.wpi.first.shuffleboard.api.properties.SaveThisProperty;
 import edu.wpi.first.shuffleboard.api.util.ReflectionUtils;
+import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 import edu.wpi.first.shuffleboard.api.widget.Component;
 
 import com.google.gson.JsonDeserializationContext;
@@ -51,7 +52,8 @@ public final class PropertySaver {
       for (Setting<?> setting : group.getSettings()) {
         var property = setting.getProperty();
         if (!savedProperties.contains(property)) {
-          PropertySaver.serializeProperty(context, jsonObject, property, group.getName() + "/" + setting.getName());
+          Class<?> type = setting.getType() == null ? setting.getProperty().getClass() : setting.getType();
+          serializeProperty(context, jsonObject, property, type,group.getName() + "/" + setting.getName());
         }
       }
     }
@@ -72,7 +74,7 @@ public final class PropertySaver {
         .forEach(f -> {
           Property<?> property = ReflectionUtils.getUnchecked(object, f);
           String name = getSavedName(property, f.getAnnotation(SaveThisProperty.class));
-          serializeProperty(context, jsonObject, property, name);
+          serializeProperty(context, jsonObject, property, property.getValue().getClass(), name);
         });
   }
 
@@ -130,9 +132,10 @@ public final class PropertySaver {
         if (savedProperties.contains(property)) {
           continue;
         }
+        var type = setting.getType() == null ? property.getValue().getClass() : setting.getType();
+        type = TypeUtils.primitiveForBoxedType(type);
         Object deserialized = context.deserialize(
-            jsonObject.get(group.getName() + "/" + setting.getName()),
-            property.getValue().getClass());
+            jsonObject.get(group.getName() + "/" + setting.getName()), type);
         if (deserialized != null) {
           setting.setValue(deserialized);
         }
@@ -292,8 +295,9 @@ public final class PropertySaver {
   public static void serializeProperty(JsonSerializationContext context,
                                        JsonObject object,
                                        ObservableValue<?> p,
+                                       Class<?> type,
                                        String name) {
-    object.add(name, context.serialize(p.getValue()));
+    object.add(name, context.serialize(p.getValue(), TypeUtils.primitiveForBoxedType(type)));
   }
 
   /**

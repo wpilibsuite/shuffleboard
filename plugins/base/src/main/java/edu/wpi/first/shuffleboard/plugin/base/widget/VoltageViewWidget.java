@@ -1,6 +1,7 @@
 package edu.wpi.first.shuffleboard.plugin.base.widget;
 
 import edu.wpi.first.shuffleboard.api.components.LinearIndicator;
+import edu.wpi.first.shuffleboard.api.data.types.NumberType;
 import edu.wpi.first.shuffleboard.api.prefs.Group;
 import edu.wpi.first.shuffleboard.api.prefs.Setting;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
@@ -11,7 +12,6 @@ import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 import edu.wpi.first.shuffleboard.api.widget.SingleSourceWidget;
 import edu.wpi.first.shuffleboard.plugin.base.data.AnalogInputData;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.AnalogInputType;
-import edu.wpi.first.shuffleboard.api.data.types.NumberType;
 
 import com.google.common.collect.ImmutableList;
 
@@ -20,8 +20,8 @@ import org.fxmisc.easybind.EasyBind;
 import java.util.List;
 import java.util.logging.Logger;
 
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.fxml.FXML;
 import javafx.geometry.Orientation;
 import javafx.scene.layout.Pane;
@@ -37,7 +37,7 @@ public class VoltageViewWidget extends SingleSourceWidget implements AnnotatedWi
   @FXML
   private LinearIndicator indicator;
 
-  private final DoubleProperty numTicks = new SimpleDoubleProperty(this, "numTickMarks", 5);
+  private final IntegerProperty numTicks = new SimpleIntegerProperty(this, "numTickMarks", 5);
 
   @FXML
   private void initialize() {
@@ -76,9 +76,9 @@ public class VoltageViewWidget extends SingleSourceWidget implements AnnotatedWi
   public List<Group> getSettings() {
     return ImmutableList.of(
         Group.of("Range",
-            Setting.of("Min", indicator.minProperty(), Number.class),
-            Setting.of("Max", indicator.maxProperty(), Number.class),
-            Setting.of("Center", indicator.centerProperty(), Number.class)
+            Setting.of("Min", indicator.minProperty(), Double.class),
+            Setting.of("Max", indicator.maxProperty(), Double.class),
+            Setting.of("Center", indicator.centerProperty(), Double.class)
         ),
         Group.of("Visuals",
             Setting.of("Orientation", indicator.orientationProperty(), Orientation.class),

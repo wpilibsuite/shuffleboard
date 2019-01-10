@@ -122,7 +122,7 @@ public final class DifferentialDriveWidget extends AbstractDriveWidget<Different
     return ImmutableList.of(
         Group.of("Wheels",
             Setting.of("Number of wheels", numWheels, Integer.class),
-            Setting.of("Wheel diameter", wheelHeight, Number.class)
+            Setting.of("Wheel diameter", wheelHeight, Double.class)
         ),
         Group.of("Visuals",
             Setting.of("Show velocity vectors", showVectors, Boolean.class)

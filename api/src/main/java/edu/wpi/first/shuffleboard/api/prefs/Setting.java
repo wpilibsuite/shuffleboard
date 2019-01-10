@@ -101,7 +101,8 @@ public final class Setting<T> {
    */
   public void setValue(T value) {
     if (type != null && !type.isInstance(value)) {
-      throw new IllegalArgumentException(Objects.toString(value));
+      throw new IllegalArgumentException(
+          String.format("Value is not a %s: '%s' (is: %s)", type.getName(), value, value.getClass().getName()));
     }
     property.setValue(value);
   }
