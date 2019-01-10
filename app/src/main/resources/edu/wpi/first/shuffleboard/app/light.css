@@ -40,3 +40,9 @@
 .text-area, .text-field {
     -underline-color: #eee;
 }
+
+.jfx-slider .slider-value {
+    -fx-fill: #222;
+    -fx-stroke: #222;
+    -fx-stroke-width: 1;
+}

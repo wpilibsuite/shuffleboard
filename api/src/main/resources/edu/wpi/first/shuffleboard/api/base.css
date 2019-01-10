@@ -279,6 +279,27 @@
     -fx-background-color: -swatch-300;
 }
 
+.slider {
+    -fx-cursor: default;
+}
+
+.slider .thumb {
+    -fx-cursor: hand;
+}
+
+.slider:pressed .thumb {
+    -fx-cursor: move;
+}
+
+.jfx-slider {
+    -jfx-default-thumb: -swatch-300;
+    -jfx-default-track: -swatch-gray;
+}
+
+.jfx-slider .track {
+    -fx-pref-height: 4px;
+}
+
 /*******************************************************************************
  *                                                                             *
  * Linear indicator                                                            *
