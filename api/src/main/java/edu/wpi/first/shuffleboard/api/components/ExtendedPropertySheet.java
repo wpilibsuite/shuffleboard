@@ -24,6 +24,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Control;
 import javafx.scene.control.Skin;
 import javafx.scene.control.TextField;
+import javafx.util.Callback;
 import javafx.util.StringConverter;
 
 /**
@@ -33,33 +34,38 @@ import javafx.util.StringConverter;
 public class ExtendedPropertySheet extends PropertySheet {
 
   /**
+   * A custom editor factory that uses custom editors for text, numbers, booleans, and {@link Theme Themes}.
+   */
+  public static final Callback<Item, PropertyEditor<?>> CUSTOM_EDITOR_FACTORY = new DefaultPropertyEditorFactory() {
+    @Override
+    public PropertyEditor<?> call(Item item) {
+      if (item.getType() == String.class) {
+        return new TextPropertyEditor(item);
+      }
+      if (item.getType() == Integer.class) {
+        return new IntegerPropertyEditor(item);
+      }
+      if (Number.class.isAssignableFrom(item.getType())) {
+        return new NumberPropertyEditor(item);
+      }
+      if (item.getType() == Boolean.class) {
+        return new ToggleSwitchEditor(item);
+      }
+      if (item.getType() == Theme.class) {
+        return new ThemePropertyEditor(item);
+      }
+      return super.call(item);
+    }
+  };
+
+  /**
    * Creates an empty property sheet.
    */
   public ExtendedPropertySheet() {
     super();
     setModeSwitcherVisible(false);
     setSearchBoxVisible(false);
-    setPropertyEditorFactory(new DefaultPropertyEditorFactory() {
-      @Override
-      public PropertyEditor<?> call(Item item) {
-        if (item.getType() == String.class) {
-          return new TextPropertyEditor(item);
-        }
-        if (item.getType() == Integer.class) {
-          return new IntegerPropertyEditor(item);
-        }
-        if (Number.class.isAssignableFrom(item.getType())) {
-          return new NumberPropertyEditor(item);
-        }
-        if (item.getType() == Boolean.class) {
-          return new ToggleSwitchEditor(item);
-        }
-        if (item.getType() == Theme.class) {
-          return new ThemePropertyEditor(item);
-        }
-        return super.call(item);
-      }
-    });
+    setPropertyEditorFactory(CUSTOM_EDITOR_FACTORY);
   }
 
   /**

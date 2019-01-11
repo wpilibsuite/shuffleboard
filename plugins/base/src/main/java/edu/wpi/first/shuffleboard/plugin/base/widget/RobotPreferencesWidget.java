@@ -50,6 +50,7 @@ public class RobotPreferencesWidget extends SimpleAnnotatedWidget<RobotPreferenc
 
   @FXML
   private void initialize() {
+    propertySheet.setPropertyEditorFactory(ExtendedPropertySheet.CUSTOM_EDITOR_FACTORY);
     dataOrDefault.addListener((__, prevData, curData) -> {
       Map<String, Object> updated = curData.changesFrom(prevData);
       if (prevData != null) {
