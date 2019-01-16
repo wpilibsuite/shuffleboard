@@ -73,7 +73,7 @@ import java.util.Set;
 @Description(
     group = "edu.wpi.first.shuffleboard",
     name = "Base",
-    version = "1.1.3",
+    version = "1.1.4",
     summary = "Defines all the WPILib data types and stock widgets"
 )
 @SuppressWarnings("PMD.CouplingBetweenObjects")

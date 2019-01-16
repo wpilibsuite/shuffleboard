@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import edu.wpi.first.shuffleboard.api.components.ExtendedPropertySheet?>
-<?import javafx.scene.layout.StackPane?>
+<?import org.controlsfx.control.PropertySheet?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.layout.StackPane?>
 <StackPane xmlns="http://javafx.com/javafx"
            xmlns:fx="http://javafx.com/fxml"
            fx:controller="edu.wpi.first.shuffleboard.plugin.base.widget.RobotPreferencesWidget"
@@ -11,5 +11,5 @@
     <padding>
         <Insets topRightBottomLeft="4"/>
     </padding>
-    <ExtendedPropertySheet fx:id="propertySheet" searchBoxVisible="true"/>
+    <PropertySheet fx:id="propertySheet" searchBoxVisible="true" modeSwitcherVisible="false"/>
 </StackPane>
