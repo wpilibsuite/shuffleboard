@@ -11,13 +11,14 @@ subprojects that the main app depends on to provide data types, widgets, and dat
 
 ## Running
 
-Shuffleboard is installed by the WPILib Eclipse Plugins. It can be launched from the WPILib menu in Eclipse.
-It can also be run manually `java -jar C:\Users\<username\>wpilib\tools\Shuffleboard.jar`
+Shuffleboard is installed by the FRC vscode extension. It can be launched from the WPILib menu in vscode (start tool).
+It can also be run manually by running the shuffleboard.vbs in `c:\Users\public\frc<year>\tools` (Windows) or
+shuffleboard.py in ~/frc<year>/tools (Linux or Mac).
 
 ### Requirements
 - [JRE 11](http://jdk.java.net/11/). Java 11 is required.
 No other version of Java is supported. Java 11 is installed on Windows by the
-[FRC vscode extension](https://github.com/wpilibsuite/vscode-wpilib). Users on Mac or Linux will have to install Java 11
+[WPILib installer](https://github.com/wpilibsuite/allwpilib/releases). Users on Mac or Linux will have to install Java 11
 manually.
 
 ## Building
