@@ -144,8 +144,11 @@ public class PluginPaneController {
     }
     files.forEach(f -> {
       try {
-        PluginLoader.getDefault().loadPluginJar(f.toURI());
-        jarUris.add(f.toURI());
+        URI jarUri = f.toURI();
+        PluginLoader.getDefault().loadPluginJar(jarUri);
+        if (!f.getParentFile().toPath().equals(Storage.getPluginPath()) && !jarUris.contains(jarUri)) {
+          jarUris.add(jarUri);
+        }
       } catch (IOException | IllegalArgumentException e) {
         log.log(Level.WARNING, "Could not load jar", e);
         // TODO improve the dialog; use something like what GRIP has
