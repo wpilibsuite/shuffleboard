@@ -12,7 +12,7 @@ subprojects that the main app depends on to provide data types, widgets, and dat
 ## Running
 
 Shuffleboard is installed by the FRC vscode extension: [Installation Instructions](http://wpilib.screenstepslive.com/s/currentCS/m/java/l/1027503-installing-c-and-java-development-tools-for-frc).
-It can be launched from the WPILib menu in vscode (start tool).
+It can be launched from the WPILib menu in Visual Studio Code (start tool).
 It can also be run manually by running the shuffleboard.vbs in `c:\Users\public\frc<year>\tools` (Windows) or
 shuffleboard.py in `~/frc<year>/tools` (Linux or Mac).
 
