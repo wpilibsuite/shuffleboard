@@ -24,6 +24,22 @@ public class PropertyParsersTest {
   }
 
   @ParameterizedTest
+  @CsvSource({"1.0,1.0", "-2,-2", "3.141592653589,3.141592653589"})
+  public void testParseDouble(double input, double expectedOutput) {
+    Optional<Double> result = parsers.parse(input, Double.class);
+    assertTrue(result.isPresent(), "No result");
+    assertEquals(expectedOutput, result.get().doubleValue(), "Unexpected parse result");
+  }
+
+  @ParameterizedTest
+  @CsvSource({"1,1", "0,0", "65536,65536"})
+  public void testParseInteger(int input, int expectedOutput) {
+    Optional<Integer> result = parsers.parse(input, Integer.class);
+    assertTrue(result.isPresent(), "No result");
+    assertEquals(expectedOutput, result.get().intValue(), "Unexpected parse result");
+  }
+
+  @ParameterizedTest
   @CsvSource({"1,1", "12.34,12.34", "abc,abc"})
   public void testStringParse(Object input, String expectedOutput) {
     Optional<String> result = parsers.parse(input, String.class);
