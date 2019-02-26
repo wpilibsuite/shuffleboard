@@ -60,26 +60,27 @@ public class NetworkTablesPlugin extends Plugin {
     }
   };
 
-  private final ChangeListener<String> serverChangeListener = (observable, oldValue, newValue) -> {
-    String[] value = newValue.split(":");
+  private final HostParser hostParser = new HostParser();
 
-    /*
-     * You MUST set the port number before setting the team number.
-     */
-    int port;
-    if (value.length > 1) {
-      port = Integer.parseInt(value[1]);
-    } else {
-      port = NetworkTableInstance.kDefaultPort;
+  private final ChangeListener<String> serverChangeListener = (observable, oldValue, newValue) -> {
+    var hostInfoOpt = hostParser.parse(newValue);
+
+    if (hostInfoOpt.isEmpty()) {
+      // Invalid input - reset to previous value
+      serverId.setValue(oldValue);
+      return;
     }
 
+    var hostInfo = hostInfoOpt.get();
+
     NetworkTableUtils.shutdown(inst);
-    if (value[0].matches("\\d{1,4}")) {
-      inst.setServerTeam(Integer.parseInt(value[0]), port);
-    } else if (value[0].isEmpty()) {
-      inst.setServer("localhost", port);
+
+    if (hostInfo.getTeam().isPresent()) {
+      inst.setServerTeam(hostInfo.getTeam().getAsInt(), hostInfo.getPort());
+    } else if (hostInfo.getHost().isEmpty()) {
+      inst.setServer("localhost", hostInfo.getPort());
     } else {
-      inst.setServer(value[0], port);
+      inst.setServer(hostInfo.getHost(), hostInfo.getPort());
     }
     inst.startClient();
     inst.startDSClient();
