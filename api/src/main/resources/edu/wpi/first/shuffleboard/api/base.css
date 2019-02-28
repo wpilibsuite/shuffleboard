@@ -188,6 +188,20 @@
     -fx-background-color: -swatch-500;
 }
 
+.widget-pane:minimal-tile-titles .tile .tile-title-bar {
+    -fx-padding: -2px;
+    -fx-font-weight: none;
+    -fx-font-size: 10pt;
+}
+
+.widget-pane:no-tile-titles .tile .tile-title-bar,
+.widget-pane:no-tile-titles .tile .tile-title-bar * {
+    -fx-max-height: 0;
+    -fx-pref-height: 0;
+    -fx-min-height: 0;
+    -fx-managed: false;
+}
+
 .tile-title-bar {
     -fx-padding: 4px;
     -fx-background-color: -swatch-200;

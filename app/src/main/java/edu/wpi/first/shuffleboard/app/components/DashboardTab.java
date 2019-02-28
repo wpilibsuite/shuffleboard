@@ -38,6 +38,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.ListChangeListener;
+import javafx.css.PseudoClass;
 import javafx.geometry.Insets;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonBar;
@@ -53,6 +54,36 @@ public class DashboardTab extends Tab implements HandledTab, Populatable {
   private final StringProperty title = new SimpleStringProperty(this, "title", "");
   private final BooleanProperty autoPopulate = new SimpleBooleanProperty(this, "autoPopulate", false);
   private final StringProperty sourcePrefix = new SimpleStringProperty(this, "sourcePrefix", "");
+  private final ObjectProperty<TileType> tileType = new SimpleObjectProperty<>(TileType.DEFAULT);
+
+  private static final PseudoClass MINIMAL_TITLES = PseudoClass.getPseudoClass("minimal-tile-titles");
+  private static final PseudoClass HIDDEN_TITLES = PseudoClass.getPseudoClass("no-tile-titles");
+
+  public enum TileType {
+    /**
+     * The default tile view type - large title ad header bar.
+     */
+    DEFAULT("Default"),
+    /**
+     * Minimal tiles with smaller header bars and titles.
+     */
+    MINIMAL("Minimal"),
+    /**
+     * No header bars at all.
+     */
+    NO_TITLE("Hidden");
+
+    private final String humanReadable;
+
+    TileType(String humanReadable) {
+      this.humanReadable = humanReadable;
+    }
+
+    @Override
+    public String toString() {
+      return humanReadable;
+    }
+  }
 
   /**
    * Debounces populate() calls so we don't freeze the app while a source type is doing its initial discovery of
@@ -117,6 +148,25 @@ public class DashboardTab extends Tab implements HandledTab, Populatable {
     });
     autoPopulate.addListener(__ -> populateDebouncer.run());
     sourcePrefix.addListener(__ -> populateDebouncer.run());
+    tileType.addListener((__, old, type) -> {
+      WidgetPane widgetPane = getWidgetPane();
+      switch (type) {
+        case DEFAULT:
+          widgetPane.pseudoClassStateChanged(MINIMAL_TITLES, false);
+          widgetPane.pseudoClassStateChanged(HIDDEN_TITLES, false);
+          break;
+        case MINIMAL:
+          widgetPane.pseudoClassStateChanged(MINIMAL_TITLES, true);
+          widgetPane.pseudoClassStateChanged(HIDDEN_TITLES, false);
+          break;
+        case NO_TITLE:
+          widgetPane.pseudoClassStateChanged(MINIMAL_TITLES, false);
+          widgetPane.pseudoClassStateChanged(HIDDEN_TITLES, true);
+          break;
+        default:
+          throw new UnsupportedOperationException("Unknown title type " + type);
+      }
+    });
 
     MenuItem prefItem = FxUtils.menuItem("Preferences", __ -> showPrefsDialog());
     prefItem.setStyle("-fx-text-fill: black;");
@@ -210,7 +260,8 @@ public class DashboardTab extends Tab implements HandledTab, Populatable {
             Setting.of("Vertical spacing", "How far apart tiles should be, vertically", widgetPane.vgapProperty())
         ),
         Group.of("Visual",
-            Setting.of("Show grid", "Show the alignment grid", widgetPane.showGridProperty())
+            Setting.of("Show grid", "Show the alignment grid", widgetPane.showGridProperty()),
+            Setting.of("Widget titles", "How to display title bars on widgets", tileType, TileType.class)
         ),
         Group.of("Miscellaneous",
             Setting.of("Title", "The title of this tab", title)
