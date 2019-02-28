@@ -17,7 +17,7 @@ import javafx.scene.layout.Pane;
  * an {@link ParametrizedController @ParametrizedController} annotation so that shuffleboard can know where the FXML
  * file is located.
  */
-public interface Component {
+public interface Component extends SettingsHolder {
 
   /**
    * Gets a JavaFX pane that displays this component.
@@ -48,20 +48,5 @@ public interface Component {
    * class-intrinsic.
    */
   String getName();
-
-  /**
-   * Gets the settings for this component. Settings are defined in groups. There may be arbitrarily many groups or
-   * settings per group.
-   *
-   * <p>General structure:
-   * <pre>{@code
-   * ImmutableList.of(
-   *   Group.of("Group Name",
-   *     Setting.of("Setting name", settingProperty)
-   *   )
-   * );
-   * }</pre>
-   */
-  List<Group> getSettings();
 
 }

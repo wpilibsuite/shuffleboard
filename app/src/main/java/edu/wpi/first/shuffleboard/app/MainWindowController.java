@@ -292,7 +292,7 @@ public class MainWindowController {
   private void showTabPrefs() {
     List<Category> categories = dashboard.getTabs().stream()
         .flatMap(TypeUtils.castStream(DashboardTab.class))
-        .map(DashboardTab::getSettings)
+        .map(DashboardTab::getSettingsCategory)
         .collect(Collectors.toList());
     SettingsDialog dialog = new SettingsDialog(categories);
     dialog.getDialogPane().getStylesheets().setAll(stylesheets.getValue());

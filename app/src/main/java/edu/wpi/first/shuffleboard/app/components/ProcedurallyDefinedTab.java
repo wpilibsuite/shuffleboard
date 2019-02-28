@@ -1,7 +1,7 @@
 package edu.wpi.first.shuffleboard.app.components;
 
 import edu.wpi.first.shuffleboard.api.PropertyParsers;
-import edu.wpi.first.shuffleboard.api.prefs.Category;
+import edu.wpi.first.shuffleboard.api.prefs.Group;
 import edu.wpi.first.shuffleboard.api.prefs.Setting;
 import edu.wpi.first.shuffleboard.api.tab.model.ComponentModel;
 import edu.wpi.first.shuffleboard.api.tab.model.LayoutModel;
@@ -14,10 +14,12 @@ import edu.wpi.first.shuffleboard.api.util.GridPoint;
 import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.ComponentContainer;
 import edu.wpi.first.shuffleboard.api.widget.Components;
+import edu.wpi.first.shuffleboard.api.widget.SettingsHolder;
 import edu.wpi.first.shuffleboard.api.widget.TileSize;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.logging.Logger;
@@ -93,6 +95,7 @@ public class ProcedurallyDefinedTab extends DashboardTab {
       populateDebouncer.run();
       return;
     }
+    applySettings(this, model.getProperties());
     populateLayout(model, getWidgetPane());
   }
 
@@ -144,31 +147,27 @@ public class ProcedurallyDefinedTab extends DashboardTab {
     return Components.getDefault().createComponent(model.getDisplayType()).orElse(null);
   }
 
-  private void applySettings(Component component, Map<String, Object> properties) {
+  private void applySettings(SettingsHolder target, Map<String, Object> properties) {
     properties.forEach((name, value) -> {
-      component.getSettings().stream()
+      String nameNoWhitespace = name.replaceAll("\\s", "");
+      target.getSettings().stream()
           .map(g -> g.getSettings())
           .flatMap(l -> l.stream())
           .filter(s -> s.getType() != null)
-          .forEach(s -> {
-            if (s.getName().equalsIgnoreCase(name)) {
-              parsers.parse(value, s.getType())
-                  .ifPresent(v -> ((Setting) s).setValue(v));
-            }
+          .filter(s -> s.getName().replaceAll("\\s", "").equalsIgnoreCase(nameNoWhitespace))
+          .findFirst()
+          .ifPresent(s -> {
+            parsers.parse(value, s.getType())
+                .ifPresent(v -> ((Setting) s).setValue(v));
           });
     });
   }
 
   @Override
-  public Category getSettings() {
+  public List<Group> getSettings() {
     // Use the normal settings EXCEPT for autopopulation - there's no point to it!
-    Category allSettings = super.getSettings();
-    return Category.of(
-        allSettings.getName(),
-        allSettings.getSubcategories(),
-        allSettings.getGroups().stream()
-            .filter(g -> !g.getName().equals("Autopopulation"))
-            .collect(Collectors.toList())
-    );
+    return super.getSettings().stream()
+        .filter(g -> !g.getName().equals("Autopopulation"))
+        .collect(Collectors.toList());
   }
 }

@@ -25,11 +25,13 @@ public final class PropertyParsers extends Registry<PropertyParser<?>> {
   private static final PropertyParser<Number> NUMBER = new NumberPropertyParser();
   private static final PropertyParser<Boolean> BOOLEAN = new BooleanPropertyParser();
   private static final PropertyParser<Color> COLOR = new ColorPropertyParser();
+  private static final PropertyParser<TileTitleDisplayMode> TILE_DISPLAY_MODE =
+      PropertyParser.forEnum(TileTitleDisplayMode.class);
 
   private static final PropertyParsers defaultInstance = new PropertyParsers();
 
   public PropertyParsers() {
-    registerAll(BOOLEAN, COLOR, NUMBER, STRING, ORIENTATION, LABEL_POSITION);
+    registerAll(BOOLEAN, COLOR, NUMBER, STRING, ORIENTATION, LABEL_POSITION, TILE_DISPLAY_MODE);
   }
 
   public static PropertyParsers getDefault() {
