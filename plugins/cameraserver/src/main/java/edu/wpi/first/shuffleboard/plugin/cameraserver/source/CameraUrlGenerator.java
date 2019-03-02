@@ -9,6 +9,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 
 /**
  * Generates parameterized URLs for an HTTP camera.
@@ -31,7 +33,8 @@ public final class CameraUrlGenerator {
    *
    * @param baseUrls the base stream URLs
    */
-  public String[] generateUrls(String[] baseUrls) { // NOPMD varargs instead of array
+  public String[] generateUrls(String[] baseUrls,
+                               String cameraName) { // NOPMD varargs instead of array
     Map<String, String> commands = new LinkedHashMap<>();
     Resolution resolution = source.getTargetResolution();
     if (resolution != null && resolution.getWidth() > 0 && resolution.getHeight() > 0) {
@@ -45,31 +48,52 @@ public final class CameraUrlGenerator {
     if (frameRate > 0) {
       commands.put("fps", Integer.toString(frameRate));
     }
-    return generateUrls(commands, baseUrls);
+    commands.put("name", cameraName);
+    return generateUrls(commands, baseUrls, cameraName);
   }
 
   @VisibleForTesting
-  static String[] generateUrls(Map<String, String> commands, String[] baseUrls) { // NOPMD varargs instead of array
+  static String[] generateUrls(Map<String, String> commands, String[] baseUrls,
+                               String cameraName) { // NOPMD varargs instead of array
     if (baseUrls == null || baseUrls.length == 0) {
       return new String[0];
     }
     if (commands.isEmpty()) {
       return baseUrls;
     } else {
-      return Arrays.stream(baseUrls)
-          .map(url -> url + toHttpParams(commands))
+      var urls =  Arrays.stream(baseUrls)
+          .map(url -> toHttpParams(url, commands))
           .toArray(String[]::new);
+      for (var url : urls) {
+        System.out.println(url);
+      }
+      return urls;
     }
   }
 
   @VisibleForTesting
-  static String toHttpParams(Map<String, String> commands) {
+  static String toHttpParams(String input, Map<String, String> commands) {
     if (commands.isEmpty()) {
-      return "";
+      return input;
     }
-    return commands.entrySet().stream()
-        .map(e -> e.getKey() + "=" + e.getValue())
+    // Special case to remove name from LabVIEW camera
+    if (commands.containsKey("name") && commands.get("name").contains("IMAQdx")) {
+      input = input.replaceAll("\\?name=cam\\d", "");
+    }
+    var commandStr = commands.entrySet().stream()
+        .map(e -> {
+          try {
+            return URLEncoder.encode(e.getKey(), "utf-8").replaceAll("\\+", "%20") + "=" + URLEncoder.encode(e.getValue(), "utf-8").replaceAll("\\+", "%20") ;
+          } catch (UnsupportedEncodingException ex) {
+            return e.getKey() + "=" + e.getValue();
+          }
+        })
         .collect(Collectors.joining("&"));
+    if (input.contains("?")) {
+      return input + "&" + commandStr;
+    } else {
+      return input + "?" + commandStr;
+    }
   }
 
 }
