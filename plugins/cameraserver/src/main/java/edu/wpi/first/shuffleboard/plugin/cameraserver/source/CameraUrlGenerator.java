@@ -53,7 +53,7 @@ public final class CameraUrlGenerator {
 
   @VisibleForTesting
   static String[] generateUrls(Map<String, String> commands, String[] baseUrls,
-                               String cameraName) { // NOPMD varargs instead of array
+                               String cameraName) {
     if (baseUrls == null || baseUrls.length == 0) {
       return new String[0];
     }
