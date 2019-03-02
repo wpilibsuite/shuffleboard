@@ -80,19 +80,21 @@ public final class CameraUrlGenerator {
       input = input.replaceAll("\\?name=cam\\d", "");
     }
     var commandStr = commands.entrySet().stream()
-        .map(e -> {
-          try {
-            return URLEncoder.encode(e.getKey(), "utf-8").replaceAll("\\+", "%20") + "="
-                + URLEncoder.encode(e.getValue(), "utf-8").replaceAll("\\+", "%20") ;
-          } catch (UnsupportedEncodingException ex) {
-            return e.getKey() + "=" + e.getValue();
-          }
-        })
+        .map(e -> httpUrlEncode(e))
         .collect(Collectors.joining("&"));
     if (input.contains("?")) {
       return input + "&" + commandStr;
     } else {
       return input + "?" + commandStr;
+    }
+  }
+
+  private static String httpUrlEncode(Map.Entry<String, String> rawCommand) {
+    try {
+      return URLEncoder.encode(e.getKey(), "utf-8").replaceAll("\\+", "%20") + "="
+          + URLEncoder.encode(e.getValue(), "utf-8").replaceAll("\\+", "%20") ;
+    } catch (UnsupportedEncodingException ex) {
+      return e.getKey() + "=" + e.getValue();
     }
   }
 
