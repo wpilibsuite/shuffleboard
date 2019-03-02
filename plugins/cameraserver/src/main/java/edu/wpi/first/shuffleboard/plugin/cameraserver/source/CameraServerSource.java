@@ -82,7 +82,7 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
     if (urls.length == 0) {
       setActive(false);
     } else {
-      String[] parameterizedUrls = urlGenerator.generateUrls(urls, getName());
+      String[] parameterizedUrls = urlGenerator.generateUrls(urls);
       if (camera == null) {
         camera = new HttpCamera(getName(), parameterizedUrls);
         videoSink.setSource(camera);
@@ -156,7 +156,7 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
     streamDiscoverer.urlsProperty().addListener(urlChangeListener);
     String[] streamUrls = streamDiscoverer.getUrls();
     if (streamUrls.length > 0) {
-      camera = new HttpCamera(name, urlGenerator.generateUrls(streamUrls, name));
+      camera = new HttpCamera(name, urlGenerator.generateUrls(streamUrls));
       videoSink.setSource(camera);
       videoSink.setEnabled(true);
     }
@@ -281,7 +281,7 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
 
   private void updateUrls() {
     if (camera != null) {
-      setCameraUrls(urlGenerator.generateUrls(streamDiscoverer.getUrls(), getName()));
+      setCameraUrls(urlGenerator.generateUrls(streamDiscoverer.getUrls()));
     }
   }
 
