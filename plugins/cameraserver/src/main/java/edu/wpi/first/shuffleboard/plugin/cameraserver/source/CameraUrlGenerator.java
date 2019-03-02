@@ -47,7 +47,9 @@ public final class CameraUrlGenerator {
     if (frameRate > 0) {
       commands.put("fps", Integer.toString(frameRate));
     }
-    commands.put("name", source.getName());
+    if (source.getName().contains("IMAQdx")) {
+      commands.put("name", source.getName());
+    }
     return generateUrls(commands, baseUrls, source.getName());
   }
 
