@@ -93,10 +93,10 @@ public final class CameraUrlGenerator {
 
   private static String httpUrlEncode(Map.Entry<String, String> rawCommand) {
     try {
-      return URLEncoder.encode(e.getKey(), "utf-8").replaceAll("\\+", "%20") + "="
-          + URLEncoder.encode(e.getValue(), "utf-8").replaceAll("\\+", "%20") ;
+      return URLEncoder.encode(rawCommand.getKey(), "utf-8").replaceAll("\\+", "%20") + "="
+          + URLEncoder.encode(rawCommand.getValue(), "utf-8").replaceAll("\\+", "%20") ;
     } catch (UnsupportedEncodingException ex) {
-      return e.getKey() + "=" + e.getValue();
+      return rawCommand.getKey() + "=" + rawCommand.getValue();
     }
   }
 
