@@ -10,6 +10,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLEncoder;
 
 /**
@@ -47,6 +50,7 @@ public final class CameraUrlGenerator {
     if (frameRate > 0) {
       commands.put("fps", Integer.toString(frameRate));
     }
+    // Add a special case command for NI Cameras
     if (source.getName().contains("IMAQdx")) {
       commands.put("name", source.getName());
     }
@@ -63,31 +67,53 @@ public final class CameraUrlGenerator {
       return baseUrls;
     } else {
       var urls =  Arrays.stream(baseUrls)
-          .map(url -> toHttpParams(url, commands))
+          .map(url -> addHttpParams(url, commands))
+          .filter(url -> url != null)
           .toArray(String[]::new);
-      for (var url : urls) {
-        System.out.println(url);
-      }
       return urls;
     }
   }
 
   @VisibleForTesting
-  static String toHttpParams(String input, Map<String, String> commands) {
+  static String addHttpParams(String input, Map<String, String> commands) {
     if (commands.isEmpty()) {
       return input;
     }
-    // Special case to remove name from LabVIEW camera
-    if (commands.containsKey("name") && commands.get("name").contains("IMAQdx")) {
-      input = input.replaceAll("\\?name=cam\\d", "");
+    // Parse the URI
+    URI uri;
+    try {
+      uri = new URI(input);
+    } catch (URISyntaxException ex) {
+      return input;
     }
-    var commandStr = commands.entrySet().stream()
+
+    String query = uri.getQuery();
+
+    if (query != null) {
+      // Handle the NI special case
+      String niName = commands.getOrDefault("name", null);
+
+      String[] existingCommands = uri.getQuery().split("&");
+      for (String command : existingCommands) {
+        String[] commandSplit = command.split("=");
+        if (commandSplit.length != 2) {
+          continue;
+        }
+        commands.put(commandSplit[0], commandSplit[1]);
+      }
+      if (niName != null) {
+        commands.put("name", niName);
+      }
+    }
+
+    var queryStr = commands.entrySet().stream()
         .map(e -> httpUrlEncode(e))
         .collect(Collectors.joining("&"));
-    if (input.contains("?")) {
-      return input + "&" + commandStr;
-    } else {
-      return input + "?" + commandStr;
+    try {
+      return new URI(uri.getScheme(), uri.getAuthority(), uri.getPath(), queryStr,
+          uri.getFragment()).toString();
+    } catch (URISyntaxException e1) {
+      return input;
     }
   }
 
@@ -99,5 +125,4 @@ public final class CameraUrlGenerator {
       return rawCommand.getKey() + "=" + rawCommand.getValue();
     }
   }
-
 }

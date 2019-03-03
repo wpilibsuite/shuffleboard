@@ -14,32 +14,33 @@ public class CameraUrlGeneratorTest {
   @Test
   public void testGenerateHttpParams() {
     Map<String, String> commands = new HashMap<>();
-    String params = CameraUrlGenerator.toHttpParams(commands);
-    assertTrue(params.isEmpty());
+    String baseUrl = "http://myCode:1111";
+    String params = CameraUrlGenerator.addHttpParams(baseUrl, commands);
+    assertEquals(baseUrl, params);
 
     commands.put("foo", "bar");
-    params = CameraUrlGenerator.toHttpParams(commands);
-    assertEquals("foo=bar", params);
+    params = CameraUrlGenerator.addHttpParams(baseUrl, commands);
+    assertEquals(baseUrl + "?foo=bar", params);
 
     commands.put("baz", "buq");
-    params = CameraUrlGenerator.toHttpParams(commands);
-    assertEquals("foo=bar&baz=buq", params);
+    params = CameraUrlGenerator.addHttpParams(baseUrl, commands);
+    assertEquals(baseUrl + "?foo=bar&baz=buq", params);
   }
 
   @Test
   public void testGenerateUrls() {
     Map<String, String> commands = new HashMap<>();
-    String url1 = "mjpeg:http://roborio-0000-frc.local:1181/stream.mjpg?";
-    String url2 = "mjpeg:http://10.0.0.2:1181/stream.mjpg?";
+    String url1 = "http://roborio-0000-frc.local:1181/stream.mjpg";
+    String url2 = "http://10.0.0.2:1181/stream.mjpg";
     String[] baseUrls = {url1, url2};
 
-    assertArrayEquals(baseUrls, CameraUrlGenerator.generateUrls(commands, baseUrls),
+    assertArrayEquals(baseUrls, CameraUrlGenerator.generateUrls(commands, baseUrls, "abc"),
         "No commands should return the base URLs");
 
     commands.put("foo", "bar");
     assertArrayEquals(
-        new String[]{url1 + "foo=bar", url2 + "foo=bar"},
-        CameraUrlGenerator.generateUrls(commands, baseUrls),
+        new String[]{url1 + "?foo=bar", url2 + "?foo=bar"},
+        CameraUrlGenerator.generateUrls(commands, baseUrls, "abc"),
         "Generated URLs do not match");
   }
 
