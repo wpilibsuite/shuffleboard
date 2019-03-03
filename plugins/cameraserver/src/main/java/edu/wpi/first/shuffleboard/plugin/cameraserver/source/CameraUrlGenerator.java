@@ -93,13 +93,17 @@ public final class CameraUrlGenerator {
       // Handle the NI special case
       String niName = commands.getOrDefault("name", null);
 
-      String[] existingCommands = uri.getQuery().split("&");
+      String[] existingCommands = query.split("&");
       for (String command : existingCommands) {
         String[] commandSplit = command.split("=");
         if (commandSplit.length != 2) {
           continue;
         }
-        commands.put(commandSplit[0], commandSplit[1]);
+        try {
+          commands.put(URLDecoder.decode(commandSplit[0], "utf-8"), URLDecoder.decode(commandSplit[1], "utf-8"));
+        } catch (UnsupportedEncodingException e1) {
+          commands.put(commandSplit[0], commandSplit[1]);
+        }
       }
       if (niName != null) {
         commands.put("name", niName);
@@ -109,12 +113,24 @@ public final class CameraUrlGenerator {
     var queryStr = commands.entrySet().stream()
         .map(e -> httpUrlEncode(e))
         .collect(Collectors.joining("&"));
-    try {
-      return new URI(uri.getScheme(), uri.getAuthority(), uri.getPath(), queryStr,
-          uri.getFragment()).toString();
-    } catch (URISyntaxException e1) {
-      return input;
+      return encodeUri(uri, queryStr);
+
+  }
+
+  private static String encodeUri(URI uri, String queryStr) {
+    StringBuilder builder = new StringBuilder();
+    builder.append(uri.getScheme());
+    builder.append("://");
+    builder.append(uri.getAuthority());
+    builder.append(uri.getPath());
+    builder.append('?');
+    builder.append(queryStr);
+    String fragment = uri.getFragment();
+    if (fragment != null) {
+      builder.append('#');
+      builder.append(fragment);
     }
+    return builder.toString();
   }
 
   private static String httpUrlEncode(Map.Entry<String, String> rawCommand) {
