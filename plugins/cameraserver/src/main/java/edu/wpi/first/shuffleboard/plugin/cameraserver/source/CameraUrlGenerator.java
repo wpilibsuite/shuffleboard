@@ -91,7 +91,7 @@ public final class CameraUrlGenerator {
 
     if (query != null) {
       // Handle the NI special case
-      String niName = commands.getOrDefault("name", null);
+      String niName = commands.get("name");
 
       String[] existingCommands = query.split("&");
       for (String command : existingCommands) {
@@ -130,7 +130,7 @@ public final class CameraUrlGenerator {
   }
 
   private static String httpUrlEncode(Map.Entry<String, String> rawCommand) {
-    return URLEncoder.encode(rawCommand.getKey(), StandardCharsets.UTF_8).replaceAll("\\+", "%20") + "="
-        + URLEncoder.encode(rawCommand.getValue(), StandardCharsets.UTF_8).replaceAll("\\+", "%20") ;
+    return URLEncoder.encode(rawCommand.getKey(), StandardCharsets.UTF_8).replace("+", "%20") + "="
+        + URLEncoder.encode(rawCommand.getValue(), StandardCharsets.UTF_8).replace("+", "%20") ;
   }
 }
