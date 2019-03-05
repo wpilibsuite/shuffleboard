@@ -109,7 +109,7 @@ public final class CameraUrlGenerator {
     var queryStr = commands.entrySet().stream()
         .map(CameraUrlGenerator::httpUrlEncode)
         .collect(Collectors.joining("&"));
-      return encodeUri(uri, queryStr);
+    return encodeUri(uri, queryStr);
 
   }
 
