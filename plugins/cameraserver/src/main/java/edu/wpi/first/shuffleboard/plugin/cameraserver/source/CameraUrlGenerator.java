@@ -99,7 +99,8 @@ public final class CameraUrlGenerator {
         if (commandSplit.length != 2) {
           continue;
         }
-        commands.put(URLDecoder.decode(commandSplit[0], StandardCharsets.UTF_8), URLDecoder.decode(commandSplit[1], StandardCharsets.UTF_8));
+        commands.put(URLDecoder.decode(commandSplit[0], StandardCharsets.UTF_8),
+                     URLDecoder.decode(commandSplit[1], StandardCharsets.UTF_8));
       }
       if (niName != null) {
         commands.put("name", niName);
