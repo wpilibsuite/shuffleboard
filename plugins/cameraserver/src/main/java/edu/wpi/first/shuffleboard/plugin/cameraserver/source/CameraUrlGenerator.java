@@ -9,6 +9,11 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Generates parameterized URLs for an HTTP camera.
@@ -45,11 +50,15 @@ public final class CameraUrlGenerator {
     if (frameRate > 0) {
       commands.put("fps", Integer.toString(frameRate));
     }
+    // Add a special case command for NI Cameras
+    if (source.getName().contains("IMAQdx")) {
+      commands.put("name", source.getName());
+    }
     return generateUrls(commands, baseUrls);
   }
 
   @VisibleForTesting
-  static String[] generateUrls(Map<String, String> commands, String[] baseUrls) { // NOPMD varargs instead of array
+  static String[] generateUrls(Map<String, String> commands, String[] baseUrls) {
     if (baseUrls == null || baseUrls.length == 0) {
       return new String[0];
     }
@@ -57,19 +66,70 @@ public final class CameraUrlGenerator {
       return baseUrls;
     } else {
       return Arrays.stream(baseUrls)
-          .map(url -> url + toHttpParams(commands))
+          .map(url -> addHttpParams(url, commands))
+          .filter(Objects::nonNull)
           .toArray(String[]::new);
     }
   }
 
   @VisibleForTesting
-  static String toHttpParams(Map<String, String> commands) {
+  static String addHttpParams(String input, Map<String, String> commands) {
     if (commands.isEmpty()) {
-      return "";
+      return input;
     }
-    return commands.entrySet().stream()
-        .map(e -> e.getKey() + "=" + e.getValue())
+    // Parse the URI
+    URI uri;
+    try {
+      uri = new URI(input);
+    } catch (URISyntaxException ex) {
+      return input;
+    }
+
+    String query = uri.getQuery();
+
+    if (query != null) {
+      // Handle the NI special case
+      String niName = commands.get("name");
+
+      String[] existingCommands = query.split("&");
+      for (String command : existingCommands) {
+        String[] commandSplit = command.split("=");
+        if (commandSplit.length != 2) {
+          continue;
+        }
+        commands.put(URLDecoder.decode(commandSplit[0], StandardCharsets.UTF_8),
+                     URLDecoder.decode(commandSplit[1], StandardCharsets.UTF_8));
+      }
+      if (niName != null) {
+        commands.put("name", niName);
+      }
+    }
+
+    var queryStr = commands.entrySet().stream()
+        .map(CameraUrlGenerator::httpUrlEncode)
         .collect(Collectors.joining("&"));
+    return encodeUri(uri, queryStr);
+
   }
 
+  private static String encodeUri(URI uri, String queryStr) {
+    StringBuilder builder = new StringBuilder();
+    builder.append(uri.getScheme());
+    builder.append("://");
+    builder.append(uri.getAuthority());
+    builder.append(uri.getPath());
+    builder.append('?');
+    builder.append(queryStr);
+    String fragment = uri.getFragment();
+    if (fragment != null) {
+      builder.append('#');
+      builder.append(fragment);
+    }
+    return builder.toString();
+  }
+
+  private static String httpUrlEncode(Map.Entry<String, String> rawCommand) {
+    return URLEncoder.encode(rawCommand.getKey(), StandardCharsets.UTF_8).replace("+", "%20") + "="
+        + URLEncoder.encode(rawCommand.getValue(), StandardCharsets.UTF_8).replace("+", "%20") ;
+  }
 }
