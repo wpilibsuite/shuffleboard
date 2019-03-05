@@ -15,6 +15,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Generates parameterized URLs for an HTTP camera.
@@ -55,23 +56,21 @@ public final class CameraUrlGenerator {
     if (source.getName().contains("IMAQdx")) {
       commands.put("name", source.getName());
     }
-    return generateUrls(commands, baseUrls, source.getName());
+    return generateUrls(commands, baseUrls);
   }
 
   @VisibleForTesting
-  static String[] generateUrls(Map<String, String> commands, String[] baseUrls,
-                               String cameraName) {
+  static String[] generateUrls(Map<String, String> commands, String[] baseUrls) {
     if (baseUrls == null || baseUrls.length == 0) {
       return new String[0];
     }
     if (commands.isEmpty()) {
       return baseUrls;
     } else {
-      var urls =  Arrays.stream(baseUrls)
+      return Arrays.stream(baseUrls)
           .map(url -> addHttpParams(url, commands))
-          .filter(url -> url != null)
+          .filter(Objects::nonNull)
           .toArray(String[]::new);
-      return urls;
     }
   }
 
@@ -100,11 +99,7 @@ public final class CameraUrlGenerator {
         if (commandSplit.length != 2) {
           continue;
         }
-        try {
-          commands.put(URLDecoder.decode(commandSplit[0], "utf-8"), URLDecoder.decode(commandSplit[1], "utf-8"));
-        } catch (UnsupportedEncodingException e1) {
-          commands.put(commandSplit[0], commandSplit[1]);
-        }
+        commands.put(URLDecoder.decode(commandSplit[0], StandardCharsets.UTF_8), URLDecoder.decode(commandSplit[1], StandardCharsets.UTF_8));
       }
       if (niName != null) {
         commands.put("name", niName);
@@ -112,7 +107,7 @@ public final class CameraUrlGenerator {
     }
 
     var queryStr = commands.entrySet().stream()
-        .map(e -> httpUrlEncode(e))
+        .map(CameraUrlGenerator::httpUrlEncode)
         .collect(Collectors.joining("&"));
       return encodeUri(uri, queryStr);
 
@@ -135,11 +130,7 @@ public final class CameraUrlGenerator {
   }
 
   private static String httpUrlEncode(Map.Entry<String, String> rawCommand) {
-    try {
-      return URLEncoder.encode(rawCommand.getKey(), "utf-8").replaceAll("\\+", "%20") + "="
-          + URLEncoder.encode(rawCommand.getValue(), "utf-8").replaceAll("\\+", "%20") ;
-    } catch (UnsupportedEncodingException ex) {
-      return rawCommand.getKey() + "=" + rawCommand.getValue();
-    }
+    return URLEncoder.encode(rawCommand.getKey(), StandardCharsets.UTF_8).replaceAll("\\+", "%20") + "="
+        + URLEncoder.encode(rawCommand.getValue(), StandardCharsets.UTF_8).replaceAll("\\+", "%20") ;
   }
 }
