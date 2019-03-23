@@ -94,15 +94,38 @@ public final class Setting<T> {
   /**
    * Sets the value of this setting.
    *
+   * <p>If this setting's {@link #getType() type} is a boxed numeric type, then any numeric input is
+   * accepted and cast appropriately.
+   *
    * @param value the new value
    *
    * @throws IllegalArgumentException if the given value is incompatible with the {@link #getType() type} of this
    *                                  setting
    */
   public void setValue(T value) {
+    if (type != null
+        && Number.class.isAssignableFrom(type)
+        && value instanceof Number
+        && !type.isInstance(value)) {
+      // Do some workarounds for numeric input of a different type,
+      // since boxed values cannot be widened like primitives can
+      Number num = (Number) value;
+      if (type == Integer.class) {
+        property.setValue((T) (Integer) num.intValue());
+      } else if (type == Double.class) {
+        property.setValue((T) (Double) num.doubleValue());
+      } else if (type == Long.class) {
+        property.setValue((T) (Long) num.longValue());
+      } else if (type == Byte.class) {
+        property.setValue((T) (Byte) num.byteValue());
+      } else if (type == Short.class) {
+        property.setValue((T) (Short) num.shortValue());
+      }
+      return;
+    }
     if (type != null && !type.isInstance(value)) {
       throw new IllegalArgumentException(
-          String.format("Value is not a %s: '%s' (is: %s)", type.getName(), value, value.getClass().getName()));
+          String.format("Value must be of type %s, but is %s (%s)", type.getName(), value.getClass().getName(), value));
     }
     property.setValue(value);
   }
