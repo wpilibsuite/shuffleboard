@@ -10,6 +10,7 @@ import edu.wpi.first.shuffleboard.api.sources.recording.Recording;
 import edu.wpi.first.shuffleboard.api.sources.recording.RecordingEntry;
 import edu.wpi.first.shuffleboard.api.sources.recording.TimestampedData;
 import edu.wpi.first.shuffleboard.api.util.AlphanumComparator;
+import edu.wpi.first.shuffleboard.api.util.PreferencesUtils;
 import edu.wpi.first.shuffleboard.api.util.StringUtils;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -31,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 
 import javafx.beans.property.BooleanProperty;
@@ -42,7 +44,7 @@ import static java.util.function.Predicate.not;
 
 public final class CsvConverter implements Converter {
 
-  public static final CsvConverter Instance = new CsvConverter();
+  public static final CsvConverter Instance = new CsvConverter(Preferences.userNodeForPackage(CsvConverter.class));
 
   private static final Logger log = Logger.getLogger(CsvConverter.class.getName());
   private static final String invariantViolatedMessageFormat =
@@ -58,7 +60,21 @@ public final class CsvConverter implements Converter {
   // pulling data from two separate update events into a single row
   private final IntegerProperty windowSize = new SimpleIntegerProperty(7);
 
-  private CsvConverter() {
+  /**
+   * Creates a new CSV converter. This constructor is package-private for testing only; use {@link #Instance} to get
+   * a app-wide converter object.
+   *
+   * @param prefs the preferences object with which to save the converter settings
+   */
+  @VisibleForTesting
+  CsvConverter(Preferences prefs) {
+    PreferencesUtils.read(includeMetadata, prefs);
+    PreferencesUtils.read(fillEmpty, prefs);
+    PreferencesUtils.read(windowSize, prefs);
+
+    includeMetadata.addListener(__ -> PreferencesUtils.save(includeMetadata, prefs));
+    fillEmpty.addListener(__ -> PreferencesUtils.save(fillEmpty, prefs));
+    windowSize.addListener(__ -> PreferencesUtils.save(windowSize, prefs));
   }
 
   @Override

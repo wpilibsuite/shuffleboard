@@ -31,6 +31,9 @@ dependencies {
     compile(group = "de.huxhorn.lilith", name = "de.huxhorn.lilith.3rdparty.junique", version = "1.0.4")
     compile(group = "org.apache.commons", name = "commons-csv", version = "1.5")
     testCompile(project("test_plugins"))
+    val apiTestOutput = project(":api").dependencyProject.sourceSets["test"].output
+    testCompile(files(apiTestOutput))
+    testCompile(files(apiTestOutput.resourcesDir))
 }
 
 val theMainClassName = "edu.wpi.first.shuffleboard.app.Main"
