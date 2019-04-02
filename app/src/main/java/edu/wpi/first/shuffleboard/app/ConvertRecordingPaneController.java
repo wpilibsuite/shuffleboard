@@ -1,6 +1,6 @@
 package edu.wpi.first.shuffleboard.app;
 
-import edu.wpi.first.shuffleboard.api.sources.recording.ConversionSettings;
+import edu.wpi.first.shuffleboard.api.components.ExtendedPropertySheet;
 import edu.wpi.first.shuffleboard.api.sources.recording.Converter;
 import edu.wpi.first.shuffleboard.api.sources.recording.Converters;
 import edu.wpi.first.shuffleboard.api.sources.recording.Recording;
@@ -26,6 +26,7 @@ import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import java.util.stream.Collectors;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
@@ -60,6 +61,8 @@ public final class ConvertRecordingPaneController {
   private ComboBox<Converter> formatDropdown;
   @FXML
   private ToggleSwitch includeMetadata;
+  @FXML
+  private ExtendedPropertySheet propertySheet;
   @FXML
   private TextField destinationDirField;
   @FXML
@@ -116,6 +119,23 @@ public final class ConvertRecordingPaneController {
             .orElseThrow(() -> new IllegalArgumentException("No converter for format '" + formatName + "'"));
       }
     });
+
+    formatDropdown.getSelectionModel().selectedItemProperty().addListener((__, old, selected) -> {
+      if (selected.getSettings().isEmpty()) {
+        propertySheet.setVisible(false);
+        propertySheet.setManaged(false);
+      } else {
+        propertySheet.setVisible(true);
+        propertySheet.setManaged(true);
+      }
+      propertySheet.getItems().setAll(
+          selected.getSettings()
+              .stream()
+              .flatMap(g -> g.getSettings().stream().map(s -> new ExtendedPropertySheet.SettingsItem(g, s)))
+              .collect(Collectors.toList())
+      );
+    });
+
     EasyBind.listBind(formatDropdown.getItems(), Converters.getDefault().getItems());
     formatDropdown.getItems().sort(Comparator.comparing(Converter::formatName));
     formatDropdown.getSelectionModel().select(0);
@@ -193,7 +213,6 @@ public final class ConvertRecordingPaneController {
   @FXML
   private void convert() {
     Converter converter = formatDropdown.getSelectionModel().getSelectedItem();
-    ConversionSettings settings = new ConversionSettings(includeMetadata.isSelected());
     conversionExecutor.submit(() -> {
       for (File file : sourceFiles) {
         try {
@@ -201,7 +220,7 @@ public final class ConvertRecordingPaneController {
           String dstFileName = file.getName().replace(".sbr", converter.fileExtension());
           Path dst = Paths.get(outputDir.getValue().getAbsolutePath(), dstFileName);
           log.info("Exporting " + file + " to " + dst);
-          converter.export(recording, dst, settings);
+          converter.export(recording, dst);
         } catch (IOException | RuntimeException e) {
           log.log(Level.WARNING,
               "Could not export recording file " + file + " with converter " + converter.formatName(), e);

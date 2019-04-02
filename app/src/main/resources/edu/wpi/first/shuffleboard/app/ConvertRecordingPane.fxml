@@ -13,6 +13,7 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 <?import org.controlsfx.control.ToggleSwitch?>
+<?import edu.wpi.first.shuffleboard.api.components.ExtendedPropertySheet?>
 <HBox xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="edu.wpi.first.shuffleboard.app.ConvertRecordingPaneController"
       fx:id="root"
@@ -56,7 +57,7 @@
                     <Label text="Convert to"/>
                     <ComboBox fx:id="formatDropdown" prefWidth="150.0" promptText="Choose format"/>
                 </HBox>
-                <ToggleSwitch text="Include metadata" fx:id="includeMetadata" selected="false"/>
+                <ExtendedPropertySheet fx:id="propertySheet" mode="CATEGORY"/>
             </VBox>
         </top>
         <center>
