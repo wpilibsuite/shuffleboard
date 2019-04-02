@@ -235,8 +235,18 @@ public class DashboardTab extends Tab implements HandledTab, Populatable, Settin
         ),
         Group.of("Layout",
             Setting.of("Tile size", "The size of tiles in this tab", flushableTileSize, Double.class),
-            Setting.of("Horizontal spacing", "How far apart tiles should be, horizontally", widgetPane.hgapProperty(), Double.class),
-            Setting.of("Vertical spacing", "How far apart tiles should be, vertically", widgetPane.vgapProperty(), Double.class)
+            Setting.of(
+                "Horizontal spacing",
+                "How far apart tiles should be, horizontally",
+                widgetPane.hgapProperty(),
+                Double.class
+            ),
+            Setting.of(
+                "Vertical spacing",
+                "How far apart tiles should be, vertically",
+                widgetPane.vgapProperty(),
+                Double.class
+            )
         ),
         Group.of("Visual",
             Setting.of("Show grid", "Show the alignment grid", widgetPane.showGridProperty(), Boolean.class),

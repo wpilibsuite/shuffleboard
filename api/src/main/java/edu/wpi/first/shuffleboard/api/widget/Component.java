@@ -1,8 +1,5 @@
 package edu.wpi.first.shuffleboard.api.widget;
 
-import edu.wpi.first.shuffleboard.api.prefs.Group;
-
-import java.util.List;
 import java.util.stream.Stream;
 
 import javafx.beans.property.Property;
