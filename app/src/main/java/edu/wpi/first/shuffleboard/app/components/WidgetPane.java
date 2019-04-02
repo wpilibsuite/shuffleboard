@@ -274,15 +274,15 @@ public class WidgetPane extends TilePane implements ComponentContainer {
     }
     var component = optionalComponent.get();
     GridPoint position = componentModel.getPreferredPosition();
-    if (position != null) {
-      TileSize size = componentModel.getPreferredSize();
-      if (size != null) {
-        addComponent(component, position, size);
-      } else {
-        addComponent(component, position);
-      }
-    } else {
+    if (position == null) {
       addComponent(component);
+    } else {
+      TileSize size = componentModel.getPreferredSize();
+      if (size == null) {
+        addComponent(component, position);
+      } else {
+        addComponent(component, position, size);
+      }
     }
     return component;
   }

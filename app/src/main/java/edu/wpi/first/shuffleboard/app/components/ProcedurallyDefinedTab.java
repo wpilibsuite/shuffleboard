@@ -12,7 +12,6 @@ import edu.wpi.first.shuffleboard.api.util.Debouncer;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.ComponentContainer;
-import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 
 import java.time.Duration;
@@ -114,10 +113,6 @@ public class ProcedurallyDefinedTab extends DashboardTab {
         populateLayout((LayoutModel) componentModel, (ComponentContainer) proceduralComponents.get(componentModel));
       }
     }
-  }
-
-  private Component componentFor(ComponentModel model) {
-    return Components.getDefault().createComponent(model.getDisplayType()).orElse(null);
   }
 
   private void applySettings(Component component, Map<String, Object> properties) {
