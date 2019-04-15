@@ -1,14 +1,12 @@
 package edu.wpi.first.shuffleboard.api.util;
 
+import edu.wpi.first.shuffleboard.api.testutil.MockPreferences;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.prefs.AbstractPreferences;
-import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
 import javafx.beans.property.BooleanProperty;
@@ -233,61 +231,4 @@ public class PreferencesUtilsTest {
     assertEquals(initialValue, property.getValue().doubleValue());
   }
 
-  /**
-   * A mock preferences class that stores values in a {@link Map Map&lt;String, String&gt;}.
-   * This cannot have child preference nodes.
-   */
-  public static class MockPreferences extends AbstractPreferences {
-
-    private final Map<String, String> map = new HashMap<>();
-
-    public MockPreferences() {
-      super(null, "");
-    }
-
-    @Override
-    protected void putSpi(String key, String value) {
-      map.put(key, value);
-    }
-
-    @Override
-    protected String getSpi(String key) {
-      return map.get(key);
-    }
-
-    @Override
-    protected void removeSpi(String key) {
-      map.remove(key);
-    }
-
-    @Override
-    protected void removeNodeSpi() throws BackingStoreException {
-      // no child nodes
-    }
-
-    @Override
-    protected String[] keysSpi() throws BackingStoreException {
-      return map.keySet().toArray(new String[map.keySet().size()]);
-    }
-
-    @Override
-    protected String[] childrenNamesSpi() throws BackingStoreException {
-      return new String[0]; // no children
-    }
-
-    @Override
-    protected AbstractPreferences childSpi(String name) {
-      return null;
-    }
-
-    @Override
-    protected void syncSpi() throws BackingStoreException {
-      // nothing to sync with
-    }
-
-    @Override
-    protected void flushSpi() throws BackingStoreException {
-      // nothing to flush to
-    }
-  }
 }

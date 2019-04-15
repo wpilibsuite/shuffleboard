@@ -5,7 +5,7 @@ import edu.wpi.first.shuffleboard.api.sources.recording.Marker;
 import edu.wpi.first.shuffleboard.api.sources.recording.MarkerImportance;
 import edu.wpi.first.shuffleboard.api.sources.recording.Recording;
 import edu.wpi.first.shuffleboard.api.sources.recording.TimestampedData;
-import edu.wpi.first.shuffleboard.api.util.PreferencesUtilsTest;
+import edu.wpi.first.shuffleboard.api.testutil.MockPreferences;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,7 +27,7 @@ public class CsvConverterTest {
 
   @BeforeEach
   public void setup() {
-    converter = new CsvConverter(new PreferencesUtilsTest.MockPreferences());
+    converter = new CsvConverter(new MockPreferences());
     recording = new Recording();
   }
 
