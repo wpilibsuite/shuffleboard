@@ -10,11 +10,8 @@ import edu.wpi.first.shuffleboard.api.tab.model.TabModel;
 import edu.wpi.first.shuffleboard.api.tab.model.WidgetModel;
 import edu.wpi.first.shuffleboard.api.util.Debouncer;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
-import edu.wpi.first.shuffleboard.api.util.GridPoint;
 import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.ComponentContainer;
-import edu.wpi.first.shuffleboard.api.widget.Components;
-import edu.wpi.first.shuffleboard.api.widget.TileSize;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 
 import java.time.Duration;
@@ -100,7 +97,7 @@ public class ProcedurallyDefinedTab extends DashboardTab {
     for (ComponentModel componentModel : parent.getChildren().values()) {
       Component component = proceduralComponents.get(componentModel);
       if (component == null) {
-        component = componentFor(componentModel);
+        component = container.addComponent(componentModel);
         if (component == null) {
           log.warning("No registered component with name '" + componentModel.getDisplayType() + "'");
           continue;
@@ -109,13 +106,6 @@ public class ProcedurallyDefinedTab extends DashboardTab {
         if (componentModel instanceof WidgetModel) {
           ((Widget) component).addSource(((WidgetModel) componentModel).getDataSource());
         }
-        if (container instanceof WidgetPane) {
-          // Set the size and position in the widget pane
-          // Does not apply to layouts, since they do not necessarily support this behavior
-          addToWidgetPane((WidgetPane) container, componentModel, component);
-        } else {
-          container.addComponent(component);
-        }
         proceduralComponents.put(componentModel, component);
       }
       applySettings(component, componentModel.getProperties());
@@ -123,25 +113,6 @@ public class ProcedurallyDefinedTab extends DashboardTab {
         populateLayout((LayoutModel) componentModel, (ComponentContainer) proceduralComponents.get(componentModel));
       }
     }
-  }
-
-  @SuppressWarnings("PMD.ConfusingTernary")
-  private void addToWidgetPane(WidgetPane widgetPane, ComponentModel componentModel, Component component) {
-    GridPoint position = componentModel.getPreferredPosition();
-    if (position != null) {
-      TileSize size = componentModel.getPreferredSize();
-      if (size != null) {
-        widgetPane.addComponent(component, position, size);
-      } else {
-        widgetPane.addComponent(component, position);
-      }
-    } else {
-      widgetPane.addComponent(component);
-    }
-  }
-
-  private Component componentFor(ComponentModel model) {
-    return Components.getDefault().createComponent(model.getDisplayType()).orElse(null);
   }
 
   private void applySettings(Component component, Map<String, Object> properties) {

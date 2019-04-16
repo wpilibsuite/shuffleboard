@@ -3,12 +3,16 @@ package edu.wpi.first.shuffleboard.plugin.base.layout;
 import edu.wpi.first.shuffleboard.api.components.ActionList;
 import edu.wpi.first.shuffleboard.api.prefs.Group;
 import edu.wpi.first.shuffleboard.api.prefs.Setting;
+import edu.wpi.first.shuffleboard.api.tab.model.ComponentModel;
+import edu.wpi.first.shuffleboard.api.tab.model.WidgetModel;
 import edu.wpi.first.shuffleboard.api.util.GridPoint;
 import edu.wpi.first.shuffleboard.api.util.ListUtils;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 import edu.wpi.first.shuffleboard.api.widget.Component;
+import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.api.widget.LayoutBase;
 import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
+import edu.wpi.first.shuffleboard.api.widget.Sourced;
 
 import com.google.common.collect.ImmutableList;
 
@@ -261,6 +265,21 @@ public final class GridLayout extends LayoutBase {
     ActionList.registerSupplier(pane, () -> actionsForComponent(component));
     panes.put(component, pane);
     return pane;
+  }
+
+  @Override
+  public Component addComponent(ComponentModel model) {
+    var optionalComponent = Components.getDefault().createComponent(model.getDisplayType());
+    if (optionalComponent.isEmpty()) {
+      return null;
+    }
+    var component = optionalComponent.get();
+    if (component instanceof Sourced && model instanceof WidgetModel) {
+      ((Sourced) component).addSource(((WidgetModel) model).getDataSource());
+    }
+    addChild(component, model.getPreferredPosition());
+    // TODO maybe handle sizing?
+    return component;
   }
 
   @Override

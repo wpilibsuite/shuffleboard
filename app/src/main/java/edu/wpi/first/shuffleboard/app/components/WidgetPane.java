@@ -2,12 +2,14 @@ package edu.wpi.first.shuffleboard.app.components;
 
 import edu.wpi.first.shuffleboard.api.css.SimpleColorCssMetaData;
 import edu.wpi.first.shuffleboard.api.css.SimpleCssMetaData;
+import edu.wpi.first.shuffleboard.api.tab.model.ComponentModel;
 import edu.wpi.first.shuffleboard.api.util.GridImage;
 import edu.wpi.first.shuffleboard.api.util.GridPoint;
 import edu.wpi.first.shuffleboard.api.util.RoundingMode;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.ComponentContainer;
+import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.api.widget.TileSize;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 import edu.wpi.first.shuffleboard.app.dnd.DragUtils;
@@ -261,6 +263,28 @@ public class WidgetPane extends TilePane implements ComponentContainer {
         setSize(tile, size);
       }
     }
+  }
+
+  @Override
+  public Component addComponent(ComponentModel componentModel) {
+    var optionalComponent = Components.getDefault().createComponent(componentModel.getDisplayType());
+    if (optionalComponent.isEmpty()) {
+      // Given component type is not available, bail
+      return null;
+    }
+    var component = optionalComponent.get();
+    GridPoint position = componentModel.getPreferredPosition();
+    if (position == null) {
+      addComponent(component);
+    } else {
+      TileSize size = componentModel.getPreferredSize();
+      if (size == null) {
+        addComponent(component, position);
+      } else {
+        addComponent(component, position, size);
+      }
+    }
+    return component;
   }
 
   /**

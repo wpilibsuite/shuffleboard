@@ -1,5 +1,8 @@
 package edu.wpi.first.shuffleboard.api.widget;
 
+import edu.wpi.first.shuffleboard.api.tab.model.ComponentModel;
+import edu.wpi.first.shuffleboard.api.tab.model.WidgetModel;
+
 import java.util.Collection;
 import java.util.stream.Stream;
 
@@ -48,6 +51,21 @@ public interface Layout extends Component, ComponentContainer {
   @Override
   default void addComponent(Component component) {
     addChild(component);
+  }
+
+  @Override
+  default Component addComponent(ComponentModel model) {
+    var optionalComponent = Components.getDefault().createComponent(model.getDisplayType());
+    if (model instanceof WidgetModel) {
+      optionalComponent
+          .ifPresent(c -> {
+            ((Widget) c).addSource(((WidgetModel) model).getDataSource());
+            addComponent(c);
+          });
+    } else {
+      optionalComponent.ifPresent(this::addComponent);
+    }
+    return optionalComponent.orElse(null);
   }
 
   @Override
