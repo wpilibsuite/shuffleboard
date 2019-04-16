@@ -318,7 +318,7 @@ public class ExtendedPropertySheet extends PropertySheet {
   /**
    * An item wrapping a single {@link Setting}.
    */
-  private static class SettingsItem implements Item {
+  public static class SettingsItem implements Item {
     private final Setting<?> setting;
     private final Group group;
 

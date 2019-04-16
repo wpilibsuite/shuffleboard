@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.api.sources.recording;
 
+import edu.wpi.first.shuffleboard.api.prefs.Group;
 import edu.wpi.first.shuffleboard.api.sources.DataSourceUtils;
 
 import java.io.IOException;
@@ -9,6 +10,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -52,18 +54,24 @@ public interface Converter {
    *
    * @param recording   the recording to export
    * @param destination the destination file to export to
-   * @param settings    a container object for additional settings to use in the conversion
    *
    * @throws IOException if the file could not be written
    */
-  void export(Recording recording, Path destination, ConversionSettings settings) throws IOException;
+  void export(Recording recording, Path destination) throws IOException;
+
+  /**
+   * Gets the settings for this converter. Defaults to an empty list; implementations may override this behavior
+   * to provide custom settings.
+   */
+  default List<Group> getSettings() {
+    return List.of();
+  }
 
   /**
    * Flattens recording entries into a single map of timestamp-to-data. Note that each timestamp is expected to have
    * no more than ONE event marker mapped to it.
    *
    * @param recording the recording to flatten
-   * @param settings  the conversion settings to use
    * @param window    the time window within which temporally-close data should be considered to have the same
    *                  timestamp. A value of zero will result in only entries for that timestamp being mapped to it;
    *                  higher values loosens this restriction to accommodate potential variances in timestamps.
@@ -73,7 +81,7 @@ public interface Converter {
    * @throws IllegalArgumentException if {@code window} is negative
    */
   @SuppressWarnings("LocalVariableName")
-  static Map<Long, List<RecordingEntry>> flatten(Recording recording, ConversionSettings settings, long window) {
+  static Map<Long, List<RecordingEntry>> flatten(Recording recording, Predicate<TimestampedData> filter, long window) {
     if (window < 0) {
       throw new IllegalArgumentException("Time window must be non-negative, given " + window);
     }
@@ -91,12 +99,11 @@ public interface Converter {
         .collect(Collectors.toList());
 
     final Map<Long, List<RecordingEntry>> map = new HashMap<>();
-    final boolean skipMetadata = !settings.isConvertMetadata();
 
     for (int i = 0; i < data.size(); ) {
       RecordingEntry point = data.get(i);
-      if (skipMetadata && isMetadata(point)) {
-        // Skip metadata
+      if (point instanceof TimestampedData && !filter.test((TimestampedData) point)) {
+        // Skip
         i++;
         continue;
       }
@@ -110,7 +117,7 @@ public interface Converter {
       // or CPU usage caused the timestamps to be slightly different
       for (; j < data.size() && data.get(j).getTimestamp() <= point.getTimestamp() + window; j++) {
         var e = data.get(j);
-        if (skipMetadata && isMetadata(e)) {
+        if (e instanceof TimestampedData && !filter.test((TimestampedData) e)) {
           continue;
         }
         elements.add(e);
@@ -132,7 +139,7 @@ public interface Converter {
    *
    * @return true if the entry is metadata, false if not
    */
-  private static boolean isMetadata(RecordingEntry entry) {
+  static boolean isMetadata(RecordingEntry entry) {
     if (entry instanceof TimestampedData) {
       var data = (TimestampedData) entry;
       return DataSourceUtils.isMetadata(data.getSourceId());
