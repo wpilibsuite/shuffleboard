@@ -11,13 +11,13 @@ import edu.wpi.first.shuffleboard.api.util.Debouncer;
 import edu.wpi.first.shuffleboard.api.util.EqualityUtils;
 import edu.wpi.first.shuffleboard.api.util.ShutdownHooks;
 import edu.wpi.first.shuffleboard.api.util.ThreadUtils;
+import edu.wpi.first.shuffleboard.plugin.cameraserver.JavaCvSink;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.data.CameraServerData;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.data.LazyCameraServerData;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.data.Resolution;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.data.type.CameraServerDataType;
 
 import edu.wpi.cscore.CameraServerJNI;
-import edu.wpi.cscore.CvSink;
 import edu.wpi.cscore.HttpCamera;
 import edu.wpi.cscore.VideoEvent;
 import edu.wpi.cscore.VideoException;
@@ -48,7 +48,7 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
   private final NetworkTable cameraPublisherTable = NetworkTableInstance.getDefault().getTable("/CameraPublisher");
   private final int eventListenerId;
   private HttpCamera camera;
-  private CvSink videoSink; // NOPMD could be final - it can't due to how lambdas handle capturing final fields
+  private JavaCvSink videoSink; // NOPMD could be final - it can't due to how lambdas handle capturing final fields
   private final Mat image = new Mat();
 
   private final ExecutorService frameGrabberService = Executors.newSingleThreadExecutor(ThreadUtils::makeDaemonThread);
@@ -108,7 +108,7 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
     super(CameraServerDataType.Instance);
     setName(name);
     setData(new CameraServerData(name, null, 0, 0));
-    videoSink = new CvSink(name + "-videosink");
+    videoSink = new JavaCvSink(name + "-videosink");
     eventListenerId = CameraServerJNI.addListener(e -> {
       if (e.name.equals(name)) {
         switch (e.kind) {

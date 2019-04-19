@@ -20,8 +20,6 @@ import com.google.common.collect.ImmutableMap;
 
 import edu.wpi.cscore.CameraServerJNI;
 
-import org.opencv.core.Core;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -30,7 +28,7 @@ import java.util.logging.Logger;
 @Description(
     group = "edu.wpi.first.shuffleboard",
     name = "CameraServer",
-    version = "2.0.3",
+    version = "3.0.0",
     summary = "Provides sources and widgets for viewing CameraServer MJPEG streams"
 )
 @Requires(group = "edu.wpi.first.shuffleboard", name = "NetworkTables", minVersion = "2.0.0")
@@ -43,9 +41,7 @@ public class CameraServerPlugin extends Plugin {
 
   @Override
   public void onLoad() {
-    log.info("OpenCV version: " + Core.VERSION);
     // Make sure the JNI is loaded. If it's not, this plugin can't work!
-    // Calling a function from CameraServerJNI will extract the OpenCV JNI dependencies and load them
     CameraServerJNI.setTelemetryPeriod(1);
   }
 
