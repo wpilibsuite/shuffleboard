@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.api.util;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -7,6 +8,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class StringUtilsTest {
 
@@ -33,6 +35,11 @@ public class StringUtilsTest {
   @MethodSource("containsArgs")
   public void testContainsIgnoreCase(String base, String test, boolean expectedResult) {
     assertEquals(expectedResult, StringUtils.containsIgnoreCase(base, test));
+  }
+
+  @Test
+  public void testEqualsIgnoreCaseAndWhitespace() {
+    assertTrue(StringUtils.equalsIgnoreCaseAndWhitespace("A B C", "abc"));
   }
 
   public static Stream<Arguments> containsArgs() {

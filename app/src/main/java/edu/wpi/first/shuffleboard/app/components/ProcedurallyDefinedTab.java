@@ -2,6 +2,7 @@ package edu.wpi.first.shuffleboard.app.components;
 
 import edu.wpi.first.shuffleboard.api.PropertyParsers;
 import edu.wpi.first.shuffleboard.api.prefs.Category;
+import edu.wpi.first.shuffleboard.api.prefs.Group;
 import edu.wpi.first.shuffleboard.api.prefs.Setting;
 import edu.wpi.first.shuffleboard.api.tab.model.ComponentModel;
 import edu.wpi.first.shuffleboard.api.tab.model.LayoutModel;
@@ -10,11 +11,13 @@ import edu.wpi.first.shuffleboard.api.tab.model.TabModel;
 import edu.wpi.first.shuffleboard.api.tab.model.WidgetModel;
 import edu.wpi.first.shuffleboard.api.util.Debouncer;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
+import edu.wpi.first.shuffleboard.api.util.StringUtils;
 import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.ComponentContainer;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 
 import java.time.Duration;
+import java.util.Collection;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.logging.Logger;
@@ -118,11 +121,11 @@ public class ProcedurallyDefinedTab extends DashboardTab {
   private void applySettings(Component component, Map<String, Object> properties) {
     properties.forEach((name, value) -> {
       component.getSettings().stream()
-          .map(g -> g.getSettings())
-          .flatMap(l -> l.stream())
+          .map(Group::getSettings)
+          .flatMap(Collection::stream)
           .filter(s -> s.getType() != null)
           .forEach(s -> {
-            if (s.getName().equalsIgnoreCase(name)) {
+            if (StringUtils.equalsIgnoreCaseAndWhitespace(name, s.getName())) {
               parsers.parse(value, s.getType())
                   .ifPresent(v -> ((Setting) s).setValue(v));
             }
