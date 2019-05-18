@@ -6,7 +6,7 @@ repositories {
     mavenCentral()
     maven {
         name = "WPILib"
-        setUrl("http://first.wpi.edu/FRC/roborio/maven/release")
+        setUrl("https://first.wpi.edu/FRC/roborio/maven/release")
     }
 }
 
