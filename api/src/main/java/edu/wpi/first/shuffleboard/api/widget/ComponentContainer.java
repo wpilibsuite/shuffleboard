@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.api.widget;
 
+import edu.wpi.first.shuffleboard.api.tab.model.ComponentModel;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 
 import java.util.stream.Stream;
@@ -15,6 +16,16 @@ public interface ComponentContainer {
    * @param component the component to add
    */
   void addComponent(Component component);
+
+  /**
+   * Adds a component to this container from a model object. The model may specify position and size, which
+   * implementations must respect if those properties are supported.
+   *
+   * @param model the model for the component to add
+   *
+   * @return the component object that was added to this container, or null if no component was added
+   */
+  Component addComponent(ComponentModel model);
 
   /**
    * Removes a component from this container.

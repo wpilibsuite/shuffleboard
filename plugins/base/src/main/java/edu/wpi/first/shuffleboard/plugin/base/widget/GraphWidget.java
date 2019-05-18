@@ -18,6 +18,8 @@ import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 
 import com.google.common.collect.ImmutableList;
 
+import org.fxmisc.easybind.EasyBind;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -65,6 +67,10 @@ public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
   private NumberAxis xAxis;
   @FXML
   private NumberAxis yAxis;
+
+  private final BooleanProperty yAxisAutoRanging = new SimpleBooleanProperty(true);
+  private final DoubleProperty yAxisMinBound = new SimpleDoubleProperty(-1);
+  private final DoubleProperty yAxisMaxBound = new SimpleDoubleProperty(1);
 
   private final Map<DataSource<? extends Number>, Series<Number, Number>> numberSeriesMap = new HashMap<>();
   private final Map<DataSource<double[]>, List<Series<Number, Number>>> arraySeriesMap = new HashMap<>();
@@ -124,6 +130,22 @@ public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
 
   @FXML
   private void initialize() {
+    yAxisAutoRanging.addListener((__, was, useAutoRanging) -> {
+      if (useAutoRanging) {
+        yAxis.lowerBoundProperty().unbind();
+        yAxis.upperBoundProperty().unbind();
+        yAxis.tickUnitProperty().unbind();
+        yAxis.setAutoRanging(true);
+      } else {
+        yAxis.setAutoRanging(false);
+        yAxis.lowerBoundProperty().bind(yAxisMinBound);
+        yAxis.upperBoundProperty().bind(yAxisMaxBound);
+
+        // Enforce 11 tick marks like the default autoranging behavior
+        yAxis.tickUnitProperty().bind(
+            EasyBind.combine(yAxisMinBound, yAxisMaxBound, (min, max) -> (max.doubleValue() - min.doubleValue()) / 10));
+      }
+    });
     chart.legendVisibleProperty().bind(
         Bindings.createBooleanBinding(() -> sources.size() > 1, sources));
     sources.addListener((ListChangeListener<DataSource>) c -> {
@@ -387,6 +409,27 @@ public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
     return ImmutableList.of(
         Group.of("Graph",
             Setting.of("Visible time", visibleTime, Double.class)
+        ),
+        // Note: users can set the lower bound to be greater than the upper bound, resulting in an upside-down graph
+        Group.of("Y-axis",
+            Setting.of(
+                "Automatic bounds",
+                "Automatically determine upper and lower bounds based on the visible data",
+                yAxisAutoRanging,
+                Boolean.class
+            ),
+            Setting.of(
+                "Upper bound",
+                "Force a maximum value. Requires 'Automatic bounds' to be disabled",
+                yAxisMaxBound,
+                Double.class
+            ),
+            Setting.of(
+                "Lower bound",
+                "Force a minimum value. Requires 'Automatic bounds' to be disabled",
+                yAxisMinBound,
+                Double.class
+            )
         ),
         Group.of("Visible data",
             visibleSeries.values()

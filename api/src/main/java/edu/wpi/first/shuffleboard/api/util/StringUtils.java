@@ -53,4 +53,18 @@ public final class StringUtils {
     }
   }
 
+  /**
+   * Checks if two strings are equal, ignoring capitalization and spaces. For example,
+   * {@code equalsIgnoreCaseAndWhitespace("A B C", "abc")} will return true since the only differences are in
+   * whitespace and capitalization.
+   *
+   * @param first  the first string
+   * @param second the second string
+   *
+   * @return true if the inputs are textually equal except for whitespace and capitalization
+   */
+  public static boolean equalsIgnoreCaseAndWhitespace(String first, String second) {
+    return first.replace(" ", "").equalsIgnoreCase(second.replace(" ", ""));
+  }
+
 }

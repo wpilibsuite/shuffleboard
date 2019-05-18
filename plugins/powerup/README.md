@@ -5,7 +5,7 @@ longer bundled with the Shuffleboard app (since the 2018 season and offseason ar
 releases will still be made to the WPILib Maven server so it can be used in future offseason events
 or on old robots and driverstations.
 
-Releases can be found [here](http://first.wpi.edu/FRC/roborio/maven/release/edu/wpi/first/shuffleboard/plugin/powerup).
+Releases can be found [here](https://first.wpi.edu/FRC/roborio/maven/release/edu/wpi/first/shuffleboard/plugin/powerup).
 
 To use the releases, download the JAR file for the version you want to use and place it in the `Shuffleboard/plugins`
 directory in your user home
