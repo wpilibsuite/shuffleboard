@@ -71,13 +71,9 @@ allprojects {
             class TrimTrailingSpaces : FormatterStep {
                 override fun getName(): String = "trimTrailingSpaces"
 
-                override fun format(rawUnix: String, file: File): String? {
-                    if (rawUnix == null || file == null) {
-                        return null
-                    }
-                    return rawUnix.split('\n')
-                            .joinToString(separator = "\n", transform = this::formatLine)
-                }
+                override fun format(rawUnix: String, file: File) = rawUnix
+                        .split('\n')
+                        .joinToString(separator = "\n", transform = this::formatLine)
 
                 fun formatLine(line: String): String {
                     if (!line.endsWith(" ")) {
