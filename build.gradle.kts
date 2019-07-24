@@ -71,7 +71,7 @@ allprojects {
             class TrimTrailingSpaces : FormatterStep {
                 override fun getName(): String = "trimTrailingSpaces"
 
-                override fun format(rawUnix: String?, file: File?): String? {
+                override fun format(rawUnix: String, file: File): String? {
                     if (rawUnix == null || file == null) {
                         return null
                     }
