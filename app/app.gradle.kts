@@ -1,5 +1,8 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.gradle.jvm.tasks.Jar
+import org.jfrog.gradle.plugin.artifactory.dsl.PublisherConfig
+import groovy.lang.GroovyObject
+
 
 plugins {
     application
@@ -83,6 +86,16 @@ tasks.create("shadowJarAllPlatforms") {
 
 tasks.withType<ShadowJar>().configureEach {
     exclude("module-info.class")
+}
+
+if (System.getenv()["RUN_AZURE_ARTIFACTORY_RELEASE"] != null) {
+    artifactory {
+        publish(delegateClosureOf<PublisherConfig> {
+            defaults(delegateClosureOf<GroovyObject> {
+                invokeMethod("publications", "app")
+            })
+        })
+    }
 }
 
 publishing {

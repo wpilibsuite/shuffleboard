@@ -1,5 +1,6 @@
-
 import org.gradle.jvm.tasks.Jar
+import org.jfrog.gradle.plugin.artifactory.dsl.PublisherConfig
+import groovy.lang.GroovyObject
 
 subprojects {
     afterEvaluate {
@@ -18,6 +19,15 @@ subprojects {
             description = "Creates a JAR that contains the javadocs."
             from(tasks.named("javadoc"))
             classifier = "javadoc"
+        }
+        if (System.getenv()["RUN_AZURE_ARTIFACTORY_RELEASE"] != null) {
+            artifactory {
+                publish(delegateClosureOf<PublisherConfig> {
+                    defaults(delegateClosureOf<GroovyObject> {
+                        invokeMethod("publications", "plugin.${project.name}")
+                    })
+                })
+            }
         }
         publishing.publications {
             register<MavenPublication>("plugin.${project.name}") {
