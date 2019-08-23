@@ -3,6 +3,7 @@ package edu.wpi.first.shuffleboard.plugin.cameraserver.source;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.data.CameraServerData;
 
 import edu.wpi.cscore.CameraServerJNI;
+import edu.wpi.cscore.CameraServerCvJNI;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -76,7 +77,8 @@ public class CameraStreamAdapterTest {
     File file = File.createTempFile("test-recording", ".sbr");
     adapter.setCurrentFile(file);
 
-    CameraServerJNI.getHostname(); // force load JNI
+    CameraServerJNI.forceLoad();
+    CameraServerCvJNI.forceLoad(); // force load JNI
     final Mat image1 = new Mat(64, 64, CvType.CV_8UC3);
     final Mat image2 = new Mat(64, 64, CvType.CV_8UC3);
     Imgproc.rectangle(image1, new Point(0, 0), new Point(64, 64), new Scalar(0xFF, 0xFF, 0xFF), -1);
