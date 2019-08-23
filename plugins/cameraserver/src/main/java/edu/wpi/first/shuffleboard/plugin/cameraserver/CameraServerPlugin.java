@@ -19,17 +19,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import edu.wpi.cscore.CameraServerJNI;
-import org.bytedeco.javacv.*;
 import org.bytedeco.javacpp.Loader;
-
-import org.bytedeco.javacv.*;
-import org.bytedeco.javacpp.*;
-import org.bytedeco.javacpp.indexer.*;
-import static org.bytedeco.javacpp.opencv_core.*;
-import static org.bytedeco.javacpp.opencv_imgproc.*;
-import static org.bytedeco.javacpp.opencv_calib3d.*;
-import static org.bytedeco.javacpp.opencv_objdetect.*;
-
+import org.bytedeco.javacpp.opencv_java;
 
 import java.util.List;
 import java.util.Map;
