@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Description(
@@ -53,6 +54,7 @@ public class CameraServerPlugin extends Plugin {
       CameraServerJNI.forceLoad();
       CameraServerCvJNI.forceLoad();
     } catch (IOException ex) {
+      log.log(Level.SEVERE, "Failed to load CV Libraries", ex);
       ex.printStackTrace();
     }
   }
