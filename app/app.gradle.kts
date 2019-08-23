@@ -3,7 +3,6 @@ import org.gradle.jvm.tasks.Jar
 import org.jfrog.gradle.plugin.artifactory.dsl.PublisherConfig
 import groovy.lang.GroovyObject
 
-
 plugins {
     application
 }
