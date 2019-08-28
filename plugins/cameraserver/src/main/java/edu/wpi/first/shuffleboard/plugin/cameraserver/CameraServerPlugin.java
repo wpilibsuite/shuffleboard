@@ -55,7 +55,6 @@ public class CameraServerPlugin extends Plugin {
       CameraServerCvJNI.forceLoad();
     } catch (IOException ex) {
       log.log(Level.SEVERE, "Failed to load CV Libraries", ex);
-      ex.printStackTrace();
     }
   }
 
