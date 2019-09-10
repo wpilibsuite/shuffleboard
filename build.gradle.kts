@@ -71,6 +71,7 @@ allprojects {
                     setProperty("maven", true)
                 })
             })
+            clientConfig.info.setBuildName("ShuffleBoard")
         }
 
         tasks.named("publish") {
