@@ -5,131 +5,139 @@
 
 resources:
   containers:
-  - container: wpilib2019
-    image: wpilib/roborio-cross-ubuntu:2019-18.04
+  - container: wpilib2020
+    image: wpilib/roborio-cross-ubuntu:2020-18.04
 
-jobs:
- - job: Linux
-   pool:
-    vmImage: 'Ubuntu 16.04'
+variables:
+- group: Artifactory-Package-Publish
 
-   container: wpilib2019
+stages:
+- stage: Build
+  jobs:
+  - job: Linux
+    pool:
+      vmImage: 'Ubuntu 16.04'
 
-   steps:
+    container: wpilib2020
+
+    steps:
+      - task: Gradle@2
+        inputs:
+          workingDirectory: ''
+          gradleWrapperFile: 'gradlew'
+          gradleOptions: '-Xmx3072m'
+          publishJUnitResults: false
+          testResultsFiles: '**/TEST-*.xml'
+          tasks: 'check'
+          options: '-PbuildServer'
+
+  - job: Windows_64_Bit
+    pool:
+      vmImage: 'vs2017-win2016'
+
+    steps:
+      - task: Gradle@2
+        inputs:
+          workingDirectory: ''
+          gradleWrapperFile: 'gradlew'
+          gradleOptions: '-Xmx3072m'
+          jdkVersionOption: '1.11'
+          publishJUnitResults: false
+          testResultsFiles: '**/TEST-*.xml'
+          tasks: 'check'
+          options: '-PbuildServer'
+
+  - job: Windows_32_Bit
+    pool:
+      vmImage: 'vs2017-win2016'
+
+    steps:
+      - powershell: |
+          mkdir build
+          $ProgressPreference = 'SilentlyContinue'
+          wget "https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.4%2B11/OpenJDK11U-jdk_x86-32_windows_hotspot_11.0.4_11.zip" -O "build\jdk.zip"
+        displayName: 'Download JDK'
+      - task: JavaToolInstaller@0
+        inputs:
+          jdkSourceOption: localDirectory
+          jdkFile: 'build/jdk.zip'
+          jdkDestinationDirectory: 'build/jdkinst'
+          jdkArchitectureOption: x86
+      - task: Gradle@2
+        inputs:
+          options: '-x pmdMain -x pmdTest -PbuildServer'
+          workingDirectory: ''
+          gradleWrapperFile: 'gradlew'
+          gradleOptions: '-Xmx1024m'
+          publishJUnitResults: false
+          testResultsFiles: '**/TEST-*.xml'
+          tasks: 'check'
+
+  - job: Mac
+    pool:
+      vmImage: 'macOS-10.14'
+    steps:
+      - script: |
+          mkdir build
+          export JAVA_HOME=`/usr/libexec/java_home -v 11`
+        displayName: 'Setup JDK'
+      - script: |
+          rm /Users/vsts/.gradle/init.d/log-gradle-version-plugin.gradle
+        displayName: 'Delete Version init script'
+      - task: Gradle@2
+        inputs:
+          workingDirectory: ''
+          gradleWrapperFile: 'gradlew'
+          gradleOptions: '-Xmx3072m'
+          jdkVersionOption: '1.11'
+          publishJUnitResults: false
+          testResultsFiles: '**/TEST-*.xml'
+          tasks: 'check'
+          options: '-PbuildServer'
+
+- stage: Publish
+  jobs:
+  - job: PublishJob
+    pool:
+      vmImage: 'Ubuntu 16.04'
+
+    container: wpilib2020
+
+    steps:
+# PR Builds
     - task: Gradle@2
       inputs:
         workingDirectory: ''
         gradleWrapperFile: 'gradlew'
         gradleOptions: '-Xmx3072m'
-        publishJUnitResults: false
-        testResultsFiles: '**/TEST-*.xml'
-        tasks: 'check'
+        tasks: 'publish'
+        options: '-PbuildServer'
+      condition: and(succeeded(), and(ne(variables['Build.SourceBranch'], 'refs/heads/master'), not(startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))))
 
-    # - task: CopyFiles@2
-    #   inputs:
-    #     contents: 'app/build/**/*.jar'
-    #     targetFolder: $(Build.ArtifactStagingDirectory)
-
-    # - task: PublishBuildArtifacts@1
-    #   inputs:
-    #     artifactName: 'LinuxJar'
-
- - job: Windows_64_Bit
-   pool:
-    vmImage: 'vs2017-win2016'
-
-   steps:
-    - powershell: |
-        mkdir build
-        $ProgressPreference = 'SilentlyContinue'
-        wget "https://download.java.net/java/ga/jdk11/openjdk-11_windows-x64_bin.zip" -O "build\jdk.zip"
-      displayName: 'Download JDK'
-    - task: JavaToolInstaller@0
-      inputs:
-        jdkSourceOption: localDirectory
-        jdkFile: 'build/jdk.zip'
-        jdkDestinationDirectory: 'build/jdkinst'
-        jdkArchitectureOption: x64
+# Master Builds
     - task: Gradle@2
       inputs:
         workingDirectory: ''
         gradleWrapperFile: 'gradlew'
         gradleOptions: '-Xmx3072m'
-        publishJUnitResults: false
-        testResultsFiles: '**/TEST-*.xml'
-        tasks: 'check'
+        tasks: 'publish'
+        options: '-PbuildServer'
+      condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+      env:
+        RUN_AZURE_ARTIFACTORY_RELEASE: 'TRUE'
+        ARTIFACTORY_PUBLISH_USERNAME: $(PublishUserName)
+        ARTIFACTORY_PUBLISH_PASSWORD: $(PublishPassword)
 
-    # - task: CopyFiles@2
-    #   inputs:
-    #     contents: 'app\build\**\*.jar'
-    #     targetFolder: $(Build.ArtifactStagingDirectory)
-
-    # - task: PublishBuildArtifacts@1
-    #   inputs:
-    #     artifactName: 'Win64Jar'
-
- - job: Windows_32_Bit
-   pool:
-    vmImage: 'vs2017-win2016'
-
-   steps:
-    - powershell: |
-        mkdir build
-        $ProgressPreference = 'SilentlyContinue'
-        wget "https://github.com/wpilibsuite/frc-openjdk-windows/releases/download/v11.0.0u28-1/jdk-x86-11.0.0u28-1.zip" -O "build\jdk.zip"
-      displayName: 'Download JDK'
-    - task: JavaToolInstaller@0
-      inputs:
-        jdkSourceOption: localDirectory
-        jdkFile: 'build/jdk.zip'
-        jdkDestinationDirectory: 'build/jdkinst'
-        jdkArchitectureOption: x86
-    - task: Gradle@2
-      inputs:
-        workingDirectory: ''
-        gradleWrapperFile: 'gradlew'
-        gradleOptions: '-Xmx1024m'
-        publishJUnitResults: false
-        testResultsFiles: '**/TEST-*.xml'
-        tasks: 'check'
-
-    # - task: CopyFiles@2
-    #   inputs:
-    #     contents: 'app\build\**\*.jar'
-    #     targetFolder: $(Build.ArtifactStagingDirectory)
-
-    # - task: PublishBuildArtifacts@1
-    #   inputs:
-    #     artifactName: 'Win32Jar'
-
- - job: Mac
-   pool:
-    vmImage: 'xcode9-macos10.13'
-
-   steps:
-    - script: |
-        rm /Users/vsts/.gradle/init.d/log-gradle-version-plugin.gradle
-        mkdir build
-        wget "https://download.java.net/java/ga/jdk11/openjdk-11_osx-x64_bin.tar.gz" -O "build/jdk.tar.gz"
-        sudo tar xvzf build/jdk.tar.gz -C /Library/Java/JavaVirtualMachines/
-        export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-11.jdk/Contents/Home/
-      displayName: 'Setup JDK'
+# Tagged Builds
     - task: Gradle@2
       inputs:
         workingDirectory: ''
         gradleWrapperFile: 'gradlew'
         gradleOptions: '-Xmx3072m'
-        javaHomeOption: 'path'
-        jdkDirectory: '/Library/Java/JavaVirtualMachines/jdk-11.jdk/Contents/Home/'
-        publishJUnitResults: false
-        testResultsFiles: '**/TEST-*.xml'
-        tasks: 'check'
-
-    # - task: CopyFiles@2
-    #   inputs:
-    #     contents: 'app\build\**\*.jar'
-    #     targetFolder: $(Build.ArtifactStagingDirectory)
-
-    # - task: PublishBuildArtifacts@1
-    #   inputs:
-    #     artifactName: 'MacJar'
+        tasks: 'publish '
+        options: '-PreleaseMode -PbuildServer'
+      condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
+      env:
+        RUN_AZURE_ARTIFACTORY_RELEASE: 'TRUE'
+        ARTIFACTORY_PUBLISH_USERNAME: $(PublishUserName)
+        ARTIFACTORY_PUBLISH_PASSWORD: $(PublishPassword)

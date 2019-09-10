@@ -19,12 +19,15 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import edu.wpi.cscore.CameraServerJNI;
+import edu.wpi.cscore.CameraServerCvJNI;
 
 import org.opencv.core.Core;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Description(
@@ -45,8 +48,14 @@ public class CameraServerPlugin extends Plugin {
   public void onLoad() {
     log.info("OpenCV version: " + Core.VERSION);
     // Make sure the JNI is loaded. If it's not, this plugin can't work!
-    // Calling a function from CameraServerJNI will extract the OpenCV JNI dependencies and load them
-    CameraServerJNI.setTelemetryPeriod(1);
+    CameraServerJNI.Helper.setExtractOnStaticLoad(false);
+    CameraServerCvJNI.Helper.setExtractOnStaticLoad(false);
+    try {
+      CameraServerJNI.forceLoad();
+      CameraServerCvJNI.forceLoad();
+    } catch (IOException ex) {
+      log.log(Level.SEVERE, "Failed to load CV Libraries", ex);
+    }
   }
 
   @Override

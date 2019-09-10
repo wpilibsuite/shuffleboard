@@ -1,12 +1,13 @@
 import com.diffplug.spotless.FormatterStep
 import com.github.spotbugs.SpotBugsTask
 import com.github.spotbugs.SpotBugsExtension
-import edu.wpi.first.wpilib.versioning.ReleaseType
 import org.gradle.api.Project
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.jvm.tasks.Jar
 import org.gradle.testing.jacoco.tasks.JacocoReport
 import java.time.Instant
+import org.jfrog.gradle.plugin.artifactory.dsl.PublisherConfig
+import groovy.lang.GroovyObject
 
 buildscript {
     repositories {
@@ -17,30 +18,68 @@ buildscript {
 plugins {
     `maven-publish`
     jacoco
-    id("edu.wpi.first.wpilib.versioning.WPILibVersioningPlugin") version "2.3"
+    id("edu.wpi.first.wpilib.versioning.WPILibVersioningPlugin") version "4.0.1"
+    id("edu.wpi.first.wpilib.repositories.WPILibRepositoriesPlugin") version "2020.1"
+    id("com.jfrog.artifactory") version "4.9.8"
     id("com.github.johnrengelman.shadow") version "4.0.3"
     id("com.diffplug.gradle.spotless") version "3.13.0"
     id("com.github.spotbugs") version "1.6.4"
     id("com.google.osdetector") version "1.4.0"
 }
 
-// Ensure that the WPILibVersioningPlugin is setup by setting the release type, if releaseType wasn't
-// already specified on the command line
-if (!hasProperty("releaseType")) {
-    WPILibVersion {
-        releaseType = ReleaseType.DEV
+if (hasProperty("buildServer")) {
+    wpilibVersioning.setBuildServerMode(true)
+}
+
+if (hasProperty("releaseMode")) {
+    wpilibVersioning.setReleaseMode(true)
+}
+
+allprojects {
+    repositories {
+        mavenCentral()
+    }
+    if (hasProperty("releaseMode")) {
+        rootProject.wpilibRepositories.addAllReleaseRepositories(project)
+    } else {
+        rootProject.wpilibRepositories.addAllDevelopmentRepositories(project)
     }
 }
 
+wpilibVersioning.getVersion().finalizeValue()
 // Only load the project version once, then share it
-val projectVerion = getWPILibVersion()
+val projectVersion = wpilibVersioning.getVersion().get()
 
 allprojects {
     apply {
         plugin("com.diffplug.gradle.spotless")
+        plugin("com.jfrog.artifactory")
     }
 
-    version = projectVerion
+    if (System.getenv()["RUN_AZURE_ARTIFACTORY_RELEASE"] != null) {
+        artifactory {
+            setContextUrl("https://frcmaven.wpi.edu/artifactory") // base artifactory url
+            publish(delegateClosureOf<PublisherConfig> {
+                repository(delegateClosureOf<GroovyObject> {
+                    if (project.hasProperty("releaseMode")) {
+                        setProperty("repoKey", "release")
+                    } else {
+                        setProperty("repoKey", "development")
+                    }
+                    setProperty("username", System.getenv()["ARTIFACTORY_PUBLISH_USERNAME"])
+                    setProperty("password", System.getenv()["ARTIFACTORY_PUBLISH_PASSWORD"])
+                    setProperty("maven", true)
+                })
+            })
+            clientConfig.info.setBuildName("Shuffleboard")
+        }
+
+        tasks.named("publish") {
+            dependsOn(tasks.named("artifactoryPublish"))
+        }
+    }
+
+    version = projectVersion
 
     // Note: plugins should override this
     tasks.withType<Jar>().configureEach {
@@ -231,6 +270,17 @@ project(":api") {
         from(java.docsDir)
         classifier = "javadoc"
     }
+
+    if (System.getenv()["RUN_AZURE_ARTIFACTORY_RELEASE"] != null) {
+        artifactory {
+            publish(delegateClosureOf<PublisherConfig> {
+                defaults(delegateClosureOf<GroovyObject> {
+                    invokeMethod("publications", "api")
+                })
+            })
+        }
+    }
+
     publishing {
         publications {
             create<MavenPublication>("api") {
@@ -244,22 +294,6 @@ project(":api") {
                 artifact(javadocJar)
             }
         }
-    }
-}
-
-/**
- * @return publishVersion property if exists, otherwise
- * [edu.wpi.first.wpilib.versioning.WPILibVersioningPluginExtension.version] value or fallback
- * if that value is the empty string.
- */
-fun getWPILibVersion(fallback: String = "0.0.0"): String {
-    if (project.hasProperty("publishVersion")) {
-        val publishVersion: String by project
-        return publishVersion
-    } else if (WPILibVersion.version != "") {
-        return WPILibVersion.version
-    } else {
-        return fallback
     }
 }
 
