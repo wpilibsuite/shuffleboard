@@ -73,10 +73,6 @@ allprojects {
             })
             clientConfig.info.setBuildName("Shuffleboard")
         }
-
-        tasks.named("publish") {
-            dependsOn(tasks.named("artifactoryPublish"))
-        }
     }
 
     version = projectVersion
