@@ -120,7 +120,7 @@ stages:
         workingDirectory: ''
         gradleWrapperFile: 'gradlew'
         gradleOptions: '-Xmx3072m'
-        tasks: 'publish'
+        tasks: 'publish artifactoryPublish'
         options: '-PbuildServer'
       condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
       env:
@@ -134,7 +134,7 @@ stages:
         workingDirectory: ''
         gradleWrapperFile: 'gradlew'
         gradleOptions: '-Xmx3072m'
-        tasks: 'publish '
+        tasks: 'publish artifactoryPublish'
         options: '-PreleaseMode -PbuildServer'
       condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
       env:
