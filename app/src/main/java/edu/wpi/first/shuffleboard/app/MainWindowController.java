@@ -11,10 +11,7 @@ import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 import edu.wpi.first.shuffleboard.app.components.AdderTab;
 import edu.wpi.first.shuffleboard.app.components.DashboardTab;
 import edu.wpi.first.shuffleboard.app.components.DashboardTabPane;
-import edu.wpi.first.shuffleboard.app.dialogs.AboutDialog;
-import edu.wpi.first.shuffleboard.app.dialogs.ExportRecordingDialog;
-import edu.wpi.first.shuffleboard.app.dialogs.PluginDialog;
-import edu.wpi.first.shuffleboard.app.dialogs.PrefsDialog;
+import edu.wpi.first.shuffleboard.app.dialogs.*;
 import edu.wpi.first.shuffleboard.app.plugin.PluginLoader;
 import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
 import edu.wpi.first.shuffleboard.app.prefs.SettingsDialog;
@@ -63,6 +60,7 @@ public class MainWindowController {
   private final AboutDialog aboutDialog = new AboutDialog();
   private final ExportRecordingDialog exportRecordingDialog = new ExportRecordingDialog();
   private final PrefsDialog prefsDialog = new PrefsDialog();
+  private final DocsDialog docsDialog = new DocsDialog();
 
   private final SaveFileHandler saveFileHandler = new SaveFileHandler();
 
@@ -314,6 +312,11 @@ public class MainWindowController {
   @FXML
   private void showAboutDialog() {
     aboutDialog.show();
+  }
+
+  @FXML
+  private void showDocsDialog() {
+    docsDialog.show();
   }
 
 }
