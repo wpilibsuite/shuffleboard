@@ -23,7 +23,7 @@ import edu.wpi.first.shuffleboard.app.tab.TabInfoRegistry;
 
 import org.fxmisc.easybind.EasyBind;
 
-import java.awt.*;
+import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
