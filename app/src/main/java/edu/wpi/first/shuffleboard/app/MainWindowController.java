@@ -15,7 +15,6 @@ import edu.wpi.first.shuffleboard.app.dialogs.AboutDialog;
 import edu.wpi.first.shuffleboard.app.dialogs.ExportRecordingDialog;
 import edu.wpi.first.shuffleboard.app.dialogs.PluginDialog;
 import edu.wpi.first.shuffleboard.app.dialogs.PrefsDialog;
-import edu.wpi.first.shuffleboard.app.dialogs.DocsDialog;
 import edu.wpi.first.shuffleboard.app.plugin.PluginLoader;
 import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
 import edu.wpi.first.shuffleboard.app.prefs.SettingsDialog;
@@ -24,9 +23,13 @@ import edu.wpi.first.shuffleboard.app.tab.TabInfoRegistry;
 
 import org.fxmisc.easybind.EasyBind;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -64,7 +67,6 @@ public class MainWindowController {
   private final AboutDialog aboutDialog = new AboutDialog();
   private final ExportRecordingDialog exportRecordingDialog = new ExportRecordingDialog();
   private final PrefsDialog prefsDialog = new PrefsDialog();
-  private final DocsDialog docsDialog = new DocsDialog();
 
   private final SaveFileHandler saveFileHandler = new SaveFileHandler();
 
@@ -319,8 +321,14 @@ public class MainWindowController {
   }
 
   @FXML
-  private void showDocsDialog() {
-    docsDialog.show();
+  private void openDocsInBrowser() {
+    if (Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+      try {
+        Desktop.getDesktop().browse(new URI("https://docs.wpilib.org/en/latest/docs/software/wpilib-tools/shuffleboard/index.html"));
+      } catch (IOException | URISyntaxException e) {
+        log.log(Level.WARNING, "Could not open users default browser!", e);
+      }
+    }
   }
 
 }

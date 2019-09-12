@@ -39,7 +39,7 @@
         </Menu>
         <Menu text="Help">
             <MenuItem text="About" onAction="#showAboutDialog" accelerator="F1"/>
-            <MenuItem text="Documentation" onAction="#showDocsDialog" accelerator="F2"/>
+            <MenuItem text="Documentation" onAction="#openDocsInBrowser" accelerator="F2"/>
         </Menu>
     </MenuBar>
     <StackPane fx:id="contentRoot">
