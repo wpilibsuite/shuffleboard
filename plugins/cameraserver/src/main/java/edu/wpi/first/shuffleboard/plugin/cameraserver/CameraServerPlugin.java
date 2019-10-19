@@ -22,9 +22,6 @@ import edu.wpi.cscore.CameraServerJNI;
 import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacpp.opencv_java;
 
-import org.opencv.core.Core;
-
-
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;

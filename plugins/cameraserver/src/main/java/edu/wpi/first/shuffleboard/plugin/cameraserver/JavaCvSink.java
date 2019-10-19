@@ -12,13 +12,13 @@ import edu.wpi.cscore.CameraServerJNI;
 import edu.wpi.cscore.raw.RawFrame;
 
 public class JavaCvSink extends ImageSink {
-  RawFrame frame = new RawFrame();
-  Mat tmpMat;
-  ByteBuffer origByteBuffer;
-  int width;
-  int height;
-  int pixelFormat;
-  int bgrValue = PixelFormat.kBGR.getValue();
+  private RawFrame frame = new RawFrame();
+  private Mat tmpMat;
+  private ByteBuffer origByteBuffer;
+  private int width;
+  private int height;
+  private int pixelFormat;
+  private int bgrValue = PixelFormat.kBGR.getValue();
 
   private int getCVFormat(PixelFormat pixelFormat) {
     int type = 0;
