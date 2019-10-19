@@ -11,6 +11,9 @@ import edu.wpi.cscore.VideoMode.PixelFormat;
 import edu.wpi.cscore.CameraServerJNI;
 import edu.wpi.cscore.raw.RawFrame;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
+@SuppressFBWarnings(value = "EQ_DOESNT_OVERRIDE_EQUALS")
 public class JavaCvSink extends ImageSink {
   private RawFrame frame = new RawFrame();
   private Mat tmpMat;
