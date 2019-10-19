@@ -71,10 +71,7 @@ allprojects {
                     setProperty("maven", true)
                 })
             })
-        }
-
-        tasks.named("publish") {
-            dependsOn(tasks.named("artifactoryPublish"))
+            clientConfig.info.setBuildName("Shuffleboard")
         }
     }
 

@@ -22,9 +22,14 @@ import edu.wpi.cscore.CameraServerJNI;
 import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacpp.opencv_java;
 
+import org.opencv.core.Core;
+
+
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Description(
@@ -44,8 +49,14 @@ public class CameraServerPlugin extends Plugin {
   @Override
   public void onLoad() {
     // Make sure the JNI is loaded. If it's not, this plugin can't work!
-    CameraServerJNI.setTelemetryPeriod(1);
     Loader.load(opencv_java.class);
+
+    CameraServerJNI.Helper.setExtractOnStaticLoad(false);
+    try {
+      CameraServerJNI.forceLoad();
+    } catch (IOException ex) {
+      log.log(Level.SEVERE, "Failed to load CV Libraries", ex);
+    }
   }
 
   @Override
