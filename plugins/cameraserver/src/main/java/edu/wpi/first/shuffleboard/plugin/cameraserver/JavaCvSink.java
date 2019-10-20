@@ -13,15 +13,15 @@ import edu.wpi.cscore.raw.RawFrame;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
-@SuppressFBWarnings(value = "EQ_DOESNT_OVERRIDE_EQUALS")
+@SuppressFBWarnings("EQ_DOESNT_OVERRIDE_EQUALS")
 public class JavaCvSink extends ImageSink {
-  private RawFrame frame = new RawFrame();
+  private final RawFrame frame = new RawFrame();
   private Mat tmpMat;
   private ByteBuffer origByteBuffer;
   private int width;
   private int height;
   private int pixelFormat;
-  private int bgrValue = PixelFormat.kBGR.getValue();
+  private final int bgrValue = PixelFormat.kBGR.getValue();
 
   private int getCVFormat(PixelFormat pixelFormat) {
     int type = 0;
@@ -88,13 +88,13 @@ public class JavaCvSink extends ImageSink {
       return rv;
     }
 
-    if (frame.getDataByteBuffer() != origByteBuffer || width != frame.getWidth() || height != frame.getHeight() 
+    if (frame.getDataByteBuffer() != origByteBuffer || width != frame.getWidth() || height != frame.getHeight()
         || pixelFormat != frame.getPixelFormat()) {
       origByteBuffer = frame.getDataByteBuffer();
       height = frame.getHeight();
       width = frame.getWidth();
       pixelFormat = frame.getPixelFormat();
-      tmpMat = new Mat(frame.getHeight(), frame.getWidth(), getCVFormat(VideoMode.getPixelFormatFromInt(pixelFormat)), 
+      tmpMat = new Mat(frame.getHeight(), frame.getWidth(), getCVFormat(VideoMode.getPixelFormatFromInt(pixelFormat)),
                        origByteBuffer);
     }
     tmpMat.copyTo(image);
@@ -118,13 +118,13 @@ public class JavaCvSink extends ImageSink {
       return rv;
     }
 
-    if (frame.getDataByteBuffer() != origByteBuffer || width != frame.getWidth() || height != frame.getHeight() 
+    if (frame.getDataByteBuffer() != origByteBuffer || width != frame.getWidth() || height != frame.getHeight()
         || pixelFormat != frame.getPixelFormat()) {
       origByteBuffer = frame.getDataByteBuffer();
       height = frame.getHeight();
       width = frame.getWidth();
       pixelFormat = frame.getPixelFormat();
-      tmpMat = new Mat(frame.getHeight(), frame.getWidth(), getCVFormat(VideoMode.getPixelFormatFromInt(pixelFormat)), 
+      tmpMat = new Mat(frame.getHeight(), frame.getWidth(), getCVFormat(VideoMode.getPixelFormatFromInt(pixelFormat)),
                        origByteBuffer);
     }
     tmpMat.copyTo(image);
