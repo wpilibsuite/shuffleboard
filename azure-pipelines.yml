@@ -21,6 +21,10 @@ stages:
     container: wpilib2020
 
     steps:
+      - script: |
+          sudo apt-get update -y
+          sudo apt-get install libgomp1 -y
+        displayName: 'Install Dependencies'
       - task: Gradle@2
         inputs:
           workingDirectory: ''
