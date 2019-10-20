@@ -23,7 +23,7 @@ stages:
     steps:
       - script: |
           sudo apt-get update -y
-          sudo apt-get install libgomp1 -y
+          sudo apt-get install libgtk2.0.0 -y
         displayName: 'Install Dependencies'
       - task: Gradle@2
         inputs:
