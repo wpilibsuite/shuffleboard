@@ -19,9 +19,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import edu.wpi.cscore.CameraServerJNI;
-import edu.wpi.cscore.CameraServerCvJNI;
-
-import org.opencv.core.Core;
+import org.bytedeco.javacpp.Loader;
+import org.bytedeco.javacpp.opencv_java;
 
 import java.io.IOException;
 import java.util.List;
@@ -33,7 +32,7 @@ import java.util.logging.Logger;
 @Description(
     group = "edu.wpi.first.shuffleboard",
     name = "CameraServer",
-    version = "2.0.3",
+    version = "3.0.0",
     summary = "Provides sources and widgets for viewing CameraServer MJPEG streams"
 )
 @Requires(group = "edu.wpi.first.shuffleboard", name = "NetworkTables", minVersion = "2.0.0")
@@ -46,13 +45,13 @@ public class CameraServerPlugin extends Plugin {
 
   @Override
   public void onLoad() {
-    log.info("OpenCV version: " + Core.VERSION);
     // Make sure the JNI is loaded. If it's not, this plugin can't work!
+    Loader.load(opencv_java.class);
+
     CameraServerJNI.Helper.setExtractOnStaticLoad(false);
-    CameraServerCvJNI.Helper.setExtractOnStaticLoad(false);
     try {
       CameraServerJNI.forceLoad();
-      CameraServerCvJNI.forceLoad();
+      CameraServerJNI.setTelemetryPeriod(1.0);
     } catch (IOException ex) {
       log.log(Level.SEVERE, "Failed to load CV Libraries", ex);
     }

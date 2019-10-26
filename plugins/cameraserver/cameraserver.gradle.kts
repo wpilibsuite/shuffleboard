@@ -7,10 +7,9 @@ val javaCppVersion = "1.4.1"
 dependencies {
     // ntcore, cscore dependencies
     nativeProject(":plugins:networktables")
+
     compile(group = "edu.wpi.first.cscore", name = "cscore-java", version = "2020.+")
     native(group = "edu.wpi.first.cscore", name = "cscore-jni", version = "2020.+", classifierFunction = ::wpilibClassifier)
-    compile(group = "edu.wpi.first.thirdparty.frc2020.opencv", name = "opencv-java", version = "3.4.7-1")
-    native(group = "edu.wpi.first.thirdparty.frc2020.opencv", name = "opencv-jni", version = "3.4.7-1", classifierFunction = ::wpilibClassifier)
 
     // FFMPEG binaries
     compile(group = "org.bytedeco", name = "javacv", version = javaCppVersion)
