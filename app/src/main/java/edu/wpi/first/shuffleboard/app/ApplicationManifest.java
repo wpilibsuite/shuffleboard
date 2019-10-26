@@ -1,15 +1,14 @@
 package edu.wpi.first.shuffleboard.app;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.time.Instant;
-import java.util.Collections;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Stream;
 
 /**
  * A helper class for extracting information from the manifest of the application JAR. This class is only useful when
@@ -43,24 +42,19 @@ public final class ApplicationManifest {
   }
 
   private static Optional<Manifest> readManifest() {
-    try {
-      return Collections.list(Shuffleboard.class.getClassLoader().getResources("META-INF/MANIFEST.MF"))
-          .stream()
-          .filter(u -> u.toString().contains(Shuffleboard.getRunningLocation()))
-          .flatMap(u -> unsafeGet(u::openStream))
-          .flatMap(in -> unsafeGet(() -> new Manifest(in)))
-          .findFirst();
+    try (InputStream stream = Shuffleboard.class.getResourceAsStream("/META-INF/MANIFEST.MF")) {
+      return Optional.ofNullable(stream).flatMap(in -> unsafeGet(() -> new Manifest(in)));
     } catch (IOException e) {
       log.log(Level.WARNING, "The manifest file could not be read", e);
       return Optional.empty();
     }
   }
 
-  private static <T> Stream<T> unsafeGet(Callable<T> callable) {
+  private static <T> Optional<T> unsafeGet(Callable<T> callable) {
     try {
-      return Stream.of(callable.call());
+      return Optional.of(callable.call());
     } catch (Exception e) {
-      return Stream.empty();
+      return Optional.empty();
     }
   }
 
