@@ -56,7 +56,7 @@ public final class PrefsDialog {
     Category tabs = Category.of("Tabs",
         tabPane.getTabs().stream()
             .flatMap(TypeUtils.castStream(DashboardTab.class))
-            .map(DashboardTab::getSettings)
+            .map(DashboardTab::getSettingsCategory)
             .collect(Collectors.toList()),
         ImmutableList.of(
             Group.of("Default Settings",

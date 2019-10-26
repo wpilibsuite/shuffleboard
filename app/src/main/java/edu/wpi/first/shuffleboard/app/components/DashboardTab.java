@@ -1,6 +1,7 @@
 package edu.wpi.first.shuffleboard.app.components;
 
 import edu.wpi.first.shuffleboard.api.Populatable;
+import edu.wpi.first.shuffleboard.api.TileTitleDisplayMode;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.prefs.Category;
 import edu.wpi.first.shuffleboard.api.prefs.FlushableProperty;
@@ -17,6 +18,7 @@ import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.ComponentContainer;
 import edu.wpi.first.shuffleboard.api.widget.Components;
+import edu.wpi.first.shuffleboard.api.widget.SettingsHolder;
 import edu.wpi.first.shuffleboard.api.widget.Sourced;
 import edu.wpi.first.shuffleboard.app.Autopopulator;
 import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
@@ -33,11 +35,13 @@ import java.util.stream.Collectors;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.Property;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.ListChangeListener;
+import javafx.css.PseudoClass;
 import javafx.geometry.Insets;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonBar;
@@ -47,12 +51,16 @@ import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.layout.StackPane;
 
-public class DashboardTab extends Tab implements HandledTab, Populatable {
+public class DashboardTab extends Tab implements HandledTab, Populatable, SettingsHolder {
 
   private final ObjectProperty<WidgetPane> widgetPane = new SimpleObjectProperty<>(this, "widgetPane");
   private final StringProperty title = new SimpleStringProperty(this, "title", "");
   private final BooleanProperty autoPopulate = new SimpleBooleanProperty(this, "autoPopulate", false);
   private final StringProperty sourcePrefix = new SimpleStringProperty(this, "sourcePrefix", "");
+  private final Property<TileTitleDisplayMode> tileType = new SimpleObjectProperty<>(TileTitleDisplayMode.DEFAULT);
+
+  private static final PseudoClass MINIMAL_TITLES = PseudoClass.getPseudoClass("minimal-tile-titles");
+  private static final PseudoClass HIDDEN_TITLES = PseudoClass.getPseudoClass("no-tile-titles");
 
   /**
    * Debounces populate() calls so we don't freeze the app while a source type is doing its initial discovery of
@@ -117,6 +125,25 @@ public class DashboardTab extends Tab implements HandledTab, Populatable {
     });
     autoPopulate.addListener(__ -> populateDebouncer.run());
     sourcePrefix.addListener(__ -> populateDebouncer.run());
+    tileType.addListener((__, old, type) -> {
+      WidgetPane widgetPane = getWidgetPane();
+      switch (type) {
+        case DEFAULT:
+          widgetPane.pseudoClassStateChanged(MINIMAL_TITLES, false);
+          widgetPane.pseudoClassStateChanged(HIDDEN_TITLES, false);
+          break;
+        case MINIMAL:
+          widgetPane.pseudoClassStateChanged(MINIMAL_TITLES, true);
+          widgetPane.pseudoClassStateChanged(HIDDEN_TITLES, false);
+          break;
+        case HIDDEN:
+          widgetPane.pseudoClassStateChanged(MINIMAL_TITLES, false);
+          widgetPane.pseudoClassStateChanged(HIDDEN_TITLES, true);
+          break;
+        default:
+          throw new UnsupportedOperationException("Unknown title type " + type);
+      }
+    });
 
     MenuItem prefItem = FxUtils.menuItem("Preferences", __ -> showPrefsDialog());
     prefItem.setStyle("-fx-text-fill: black;");
@@ -176,46 +203,67 @@ public class DashboardTab extends Tab implements HandledTab, Populatable {
    * Shows a dialog for editing the properties of this tab.
    */
   public void showPrefsDialog() {
-    Category category = getSettings();
-    SettingsDialog dialog = new SettingsDialog(category);
+    SettingsDialog dialog = new SettingsDialog(getSettingsCategory());
     dialog.getDialogPane().getStylesheets().setAll(AppPreferences.getInstance().getTheme().getStyleSheets());
     dialog.titleProperty().bind(EasyBind.map(this.title, t -> t + " Preferences"));
     dialog.showAndWait();
   }
 
   /**
-   * Gets the category of settings for this tab. This contains autopopulation settings, layout settings, and the tite.
+   * Gets the settings for this tab. This contains autopopulation and layout settings, as well as the title of the tab.
    */
-  public Category getSettings() {
+  @Override
+  public List<Group> getSettings() {
     // Use a flushable property here to prevent a call to populate() on every keystroke in the editor (!)
     FlushableProperty<String> flushableSourcePrefix = new FlushableProperty<>(sourcePrefix);
     WidgetPane widgetPane = getWidgetPane();
     FlushableProperty<Number> flushableTileSize = new FlushableProperty<>(widgetPane.tileSizeProperty());
-    return Category.of(getTitle(),
+    return List.of(
         Group.of("Autopopulation",
             Setting.of(
                 "Autopopulate",
                 "Sets this tab to automatically populate with widgets",
-                autoPopulate
+                autoPopulate,
+                Boolean.class
             ),
             Setting.of(
                 "Autopopulation Prefix",
                 "The prefix for data sources to autopopulate into the tab",
-                flushableSourcePrefix
+                flushableSourcePrefix,
+                String.class
             )
         ),
         Group.of("Layout",
-            Setting.of("Tile size", "The size of tiles in this tab", flushableTileSize),
-            Setting.of("Horizontal spacing", "How far apart tiles should be, horizontally", widgetPane.hgapProperty()),
-            Setting.of("Vertical spacing", "How far apart tiles should be, vertically", widgetPane.vgapProperty())
+            Setting.of("Tile size", "The size of tiles in this tab", flushableTileSize, Double.class),
+            Setting.of(
+                "Horizontal spacing",
+                "How far apart tiles should be, horizontally",
+                widgetPane.hgapProperty(),
+                Double.class
+            ),
+            Setting.of(
+                "Vertical spacing",
+                "How far apart tiles should be, vertically",
+                widgetPane.vgapProperty(),
+                Double.class
+            )
         ),
         Group.of("Visual",
-            Setting.of("Show grid", "Show the alignment grid", widgetPane.showGridProperty())
+            Setting.of("Show grid", "Show the alignment grid", widgetPane.showGridProperty(), Boolean.class),
+            Setting.of("Widget titles", "How to display title bars on widgets", tileType, TileTitleDisplayMode.class)
         ),
         Group.of("Miscellaneous",
             Setting.of("Title", "The title of this tab", title)
         )
     );
+  }
+
+  /**
+   * Gets a category containing the settings of this tab. The category's name will be the same as the title of this
+   * tab.
+   */
+  public Category getSettingsCategory() {
+    return Category.of(getTitle(), getSettings());
   }
 
   /**
@@ -302,6 +350,18 @@ public class DashboardTab extends Tab implements HandledTab, Populatable {
 
   public void setSourcePrefix(String sourceRegex) {
     this.sourcePrefix.set(sourceRegex);
+  }
+
+  public TileTitleDisplayMode getTileType() {
+    return tileType.getValue();
+  }
+
+  public Property<TileTitleDisplayMode> tileTypeProperty() {
+    return tileType;
+  }
+
+  public void setTileType(TileTitleDisplayMode tileType) {
+    this.tileType.setValue(tileType);
   }
 
   @Override
