@@ -44,7 +44,7 @@ public abstract class AbstractNumberField<N extends Number> extends TextField {
         textProperty(),
         number,
         text -> isCompleteNumber(text) ? getNumberFromText(text) : getNumber(),
-        num -> Objects.equals(num, getNumberFromText(getText())) ? getText() : num.toString());
+        num -> Objects.equals(num, getNumberFromText(getText())) ? getText() : getTextFromNumber(num));
   }
 
   protected AbstractNumberField(N initialValue) {
@@ -71,6 +71,15 @@ public abstract class AbstractNumberField<N extends Number> extends TextField {
    * @param text the text to parse
    */
   protected abstract N getNumberFromText(String text);
+
+  /**
+   * Converts number to its text representation.
+   *
+   * @param num the number to convert
+   */
+  protected String getTextFromNumber(N num) {
+    return num.toString();
+  }
 
   public final N getNumber() {
     return number.getValue();
