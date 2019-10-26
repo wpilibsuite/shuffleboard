@@ -1,5 +1,7 @@
 package edu.wpi.first.shuffleboard.app;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.concurrent.Callable;
@@ -36,8 +38,11 @@ public final class ApplicationManifest {
   }
 
   private static Optional<Manifest> readManifest() {
-    return Optional.ofNullable(Shuffleboard.class.getResourceAsStream("/META-INF/MANIFEST.MF"))
-        .flatMap(in -> unsafeGet(() -> new Manifest(in)));
+    try (InputStream stream = Shuffleboard.class.getResourceAsStream("/META-INF/MANIFEST.MF")) {
+      return Optional.ofNullable(stream).flatMap(in -> unsafeGet(() -> new Manifest(in)));
+    } catch (IOException e) {
+      return Optional.empty();
+    }
   }
 
   private static <T> Optional<T> unsafeGet(Callable<T> callable) {
