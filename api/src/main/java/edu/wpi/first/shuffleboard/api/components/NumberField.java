@@ -32,6 +32,11 @@ public class NumberField extends AbstractNumberField<Double> {
   }
 
   @Override
+  protected String getTextFromNumber(Double num) {
+    return String.format("%f", num);
+  }
+
+  @Override
   protected boolean isCompleteNumber(String text) {
     return completeFloatingPointNumber.matcher(text).matches();
   }
