@@ -5,15 +5,12 @@ import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
-import java.util.logging.Logger;
 
 /**
  * A helper class for extracting information from the manifest of the application JAR. This class is only useful when
  * running shuffleboard from a JAR; running from source (eg with gradle) will not generate a manifest file.
  */
 public final class ApplicationManifest {
-
-  private static final Logger log = Logger.getLogger(ApplicationManifest.class.getName());
 
   private static final Manifest manifest;
 
