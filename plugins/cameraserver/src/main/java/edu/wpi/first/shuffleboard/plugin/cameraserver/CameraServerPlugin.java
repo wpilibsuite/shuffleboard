@@ -51,6 +51,7 @@ public class CameraServerPlugin extends Plugin {
     CameraServerJNI.Helper.setExtractOnStaticLoad(false);
     try {
       CameraServerJNI.forceLoad();
+      CameraServerJNI.setTelemetryPeriod(1.0);
     } catch (IOException ex) {
       log.log(Level.SEVERE, "Failed to load CV Libraries", ex);
     }
