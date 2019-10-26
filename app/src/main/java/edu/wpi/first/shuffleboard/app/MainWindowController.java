@@ -23,9 +23,13 @@ import edu.wpi.first.shuffleboard.app.tab.TabInfoRegistry;
 
 import org.fxmisc.easybind.EasyBind;
 
+import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -314,6 +318,17 @@ public class MainWindowController {
   @FXML
   private void showAboutDialog() {
     aboutDialog.show();
+  }
+
+  @FXML
+  private void openDocsInBrowser() {
+    if (Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+      try {
+        Desktop.getDesktop().browse(new URI("https://docs.wpilib.org/en/latest/docs/software/wpilib-tools/shuffleboard/index.html"));
+      } catch (IOException | URISyntaxException e) {
+        log.log(Level.WARNING, "Could not open users default browser!", e);
+      }
+    }
   }
 
 }
