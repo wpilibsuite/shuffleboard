@@ -15,9 +15,9 @@ import org.fxmisc.easybind.EasyBind;
 import java.util.List;
 
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
@@ -33,7 +33,7 @@ public class NumberBarWidget extends SimpleAnnotatedWidget<Number> {
   @FXML
   private Label text;
 
-  private final DoubleProperty numTicks = new SimpleDoubleProperty(this, "numTickMarks", 5);
+  private final IntegerProperty numTicks = new SimpleIntegerProperty(this, "numTickMarks", 5);
   private final BooleanProperty showText = new SimpleBooleanProperty(this, "showText", true);
 
   @FXML
