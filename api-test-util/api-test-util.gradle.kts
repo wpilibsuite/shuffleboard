@@ -5,5 +5,5 @@ plugins {
 }
 
 dependencies {
-    compile(project(":api"))
+    nativeProject(":api")
 }

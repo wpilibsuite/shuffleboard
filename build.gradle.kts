@@ -151,6 +151,7 @@ allprojects {
         plugin("com.github.spotbugs")
         plugin("jacoco")
         plugin("maven-publish")
+        plugin("com.github.johnrengelman.shadow")
     }
     repositories {
         mavenCentral()

@@ -23,15 +23,15 @@ fun DependencyHandler.add(platform: NativePlatforms, dependencyNotation: Any) = 
 
 /**
  * Creates a [Configuration] for the given platform.  If the given platform is also the current platform (i.e. the
- * operating system running the Gradle build), then the `compileOnly`, `runtimeOnly`, and `testCompile` configurations
+ * operating system running the Gradle build), then the `compileOnly`, `shadow`, and `testCompile` configurations
  * will extend from the native configuration for purposes of being able to run the application and tests.
  */
 internal fun Project.nativeConfig(platform: NativePlatforms): Configuration {
     val configuration = configurations.create(platform.platformName)
     if (platform == currentPlatform) {
         configurations.getByName("compileOnly").extendsFrom(configuration)
-        configurations.getByName("runtimeOnly").extendsFrom(configuration)
-        configurations.getByName("testCompile").extendsFrom(configuration)
+        configurations.getByName("testImplementation").extendsFrom(configuration)
+        configurations.getByName("shadow").extendsFrom(configuration)
     }
     return configuration
 }
@@ -56,29 +56,16 @@ fun DependencyHandler.native(group: String, name: String, version: String, class
     }
 }
 
-/**
- * Adds a dependency on a project that has dependencies on native libraries. The native dependencies for the project
- * will be added to the same native dependency configuration for this project.  The project's `compile` configuration
- * will also be copied to this project's.  Additionally, the project's native dependencies corresponding to the build
- * platform project will be added to this project's `compileOnly`, `runtime`, and `testCompile` configurations to allow
- * the app's `run` task and all projects' test suites to be able to compile and run.
- *
- * @param path the path to the project, e.g. `":plugins:networktables"`
- */
-fun DependencyHandler.nativeProject(path: String) {
+
+fun DependencyHandler.nativeProject(path: String, type: String = "implementation") {
+    add(type, project(path))
     forEachPlatform {
-        nativeProject(path, it)
+        this.nativeProject(type, path, it)
     }
 }
 
-internal fun DependencyHandler.nativeProject(path: String, platform: NativePlatforms) {
+internal fun DependencyHandler.nativeProject(type: String, path: String, platform: NativePlatforms) {
     add(platform, project(path, platform.platformName))
-    add("compile", project(path, "compile"))
-    if (platform == currentPlatform) {
-        add("compileOnly", project(path))
-        add("runtime", project(path))
-        add("testCompile", project(path))
-    }
 }
 
 /**

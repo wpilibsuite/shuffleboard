@@ -30,6 +30,8 @@ dependencies {
     nativeProject(path = ":plugins:base")
     nativeProject(path = ":plugins:cameraserver")
     nativeProject(path = ":plugins:networktables")
+    nativeProject(path = ":plugins:powerup", type = "runtimeOnly")
+
     compile(group = "de.huxhorn.lilith", name = "de.huxhorn.lilith.3rdparty.junique", version = "1.0.4")
     compile(group = "org.apache.commons", name = "commons-csv", version = "1.5")
     testCompile(project("test_plugins"))
@@ -63,17 +65,10 @@ val nativeShadowTasks = NativePlatforms.values().map { platform ->
     tasks.create<ShadowJar>("shadowJar-${platform.platformName}") {
         classifier = platform.platformName
         configurations = listOf(
-                project.configurations.getByName("compile"),
+                project.configurations.getByName("runtimeClasspath"),
                 project.configurations.getByName(platform.platformName)
         )
-        from(
-                project.sourceSets["main"].output,
-                project(":api").sourceSets["main"].output,
-                project(":plugins:base").sourceSets["main"].output,
-                project(":plugins:cameraserver").sourceSets["main"].output,
-                project(":plugins:networktables").sourceSets["main"].output,
-                project(":plugins:powerup").sourceSets["main"].output
-        )
+        with(tasks.jar.get() as CopySpec)
     }
 }
 

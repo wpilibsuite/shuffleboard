@@ -6,7 +6,7 @@ val javaCppVersion = "1.4.1"
 
 dependencies {
     // ntcore, cscore dependencies
-    nativeProject(":plugins:networktables")
+    nativeProject(path = ":plugins:networktables")
 
     compile(group = "edu.wpi.first.cscore", name = "cscore-java", version = "2020.+")
     native(group = "edu.wpi.first.cscore", name = "cscore-jni", version = "2020.+", classifierFunction = ::wpilibClassifier)
