@@ -13,6 +13,8 @@ import com.google.common.collect.ImmutableList;
 
 import java.util.List;
 
+import javafx.beans.property.BooleanPropertyBase;
+import javafx.beans.property.Property;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
@@ -40,7 +42,8 @@ public class GyroWidget extends SimpleAnnotatedWidget<GyroData> {
         Group.of("Visuals",
             Setting.of("Major tick spacing", gauge.majorTickSpaceProperty(), Double.class),
             Setting.of("Starting angle", gauge.startAngleProperty(), Double.class),
-            Setting.of("Show tick mark ring", gauge.tickMarkRingVisibleProperty(), Boolean.class)
+            Setting.of("Show tick mark ring", gauge.tickMarkRingVisibleProperty(), Boolean.class),
+            Setting.of("Counter clockwise", createCounterClockwiseProperty(), Boolean.class)
         )
     );
   }
@@ -48,6 +51,32 @@ public class GyroWidget extends SimpleAnnotatedWidget<GyroData> {
   @Override
   public Pane getView() {
     return root;
+  }
+
+  private Property<Boolean> createCounterClockwiseProperty() {
+    return new BooleanPropertyBase() {
+      @Override
+      public boolean get() {
+        set(gauge.getScaleDirection() == Gauge.ScaleDirection.COUNTER_CLOCKWISE);
+        return super.get();
+      }
+
+      @Override
+      public void set(boolean newValue) {
+        super.set(newValue);
+        gauge.setScaleDirection(newValue ? Gauge.ScaleDirection.COUNTER_CLOCKWISE : Gauge.ScaleDirection.CLOCKWISE);
+      }
+
+      @Override
+      public Object getBean() {
+        return gauge;
+      }
+
+      @Override
+      public String getName() {
+        return "counterClockwise";
+      }
+    };
   }
 
 }
