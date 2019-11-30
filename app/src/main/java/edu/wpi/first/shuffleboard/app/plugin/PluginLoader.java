@@ -65,6 +65,7 @@ public class PluginLoader {
   private final ObservableSet<Plugin> loadedPlugins = FXCollections.observableSet(new LinkedHashSet<>());
   private final Set<Class<? extends Plugin>> knownPluginClasses = new HashSet<>();
   private final ObservableList<Plugin> knownPlugins = FXCollections.observableArrayList();
+  private final ObservableList<ClassLoader> classLoaders = FXCollections.observableArrayList();
   private final DataTypes dataTypes;
   private final SourceTypes sourceTypes;
   private final Components components;
@@ -180,8 +181,12 @@ public class PluginLoader {
       pluginClasses.stream()
           .sorted(Comparator.<Class<? extends Plugin>>comparingInt(p -> PluginLoaderHelper.getRequirements(p).size())
               .thenComparing(this::comparePluginsByDependencyGraph)
-              .thenComparing(Comparator.comparing(Class::getName)))
+              .thenComparing(Class::getName))
           .forEach(this::loadPluginClass);
+
+      if (!pluginClasses.isEmpty()) {
+        classLoaders.add(classLoader);
+      }
     }
   }
 
@@ -447,5 +452,9 @@ public class PluginLoader {
 
   public ObservableSet<Plugin> getLoadedPlugins() {
     return FXCollections.unmodifiableObservableSet(loadedPlugins);
+  }
+
+  public ObservableList<ClassLoader> getClassLoaders() {
+    return classLoaders;
   }
 }

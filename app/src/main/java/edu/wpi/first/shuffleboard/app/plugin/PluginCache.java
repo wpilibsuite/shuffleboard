@@ -82,7 +82,7 @@ public class PluginCache {
       return;
     }
     try {
-      String json = new String(Files.readAllBytes(cacheFile), StandardCharsets.UTF_8);
+      String json = Files.readString(cacheFile);
       List<URI> paths = new Gson().fromJson(json, new TypeToken<List<URI>>() {}.getType());
       if (paths != null) {
 
