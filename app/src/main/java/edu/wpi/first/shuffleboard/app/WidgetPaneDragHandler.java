@@ -26,8 +26,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.WeakHashMap;
 
-import static edu.wpi.first.shuffleboard.app.DeserializationHelper.sourceFromDrag;
-
 /**
  * Helper class for handling drag events on a widget pane.
  */
@@ -140,7 +138,7 @@ final class WidgetPaneDragHandler implements EventHandler<DragEvent> {
       pane.setHighlight(false);
       return false;
     }
-    SourceEntry entry = sourceFromDrag(dragboard.getContent(DataFormats.source));
+    SourceEntry entry = DeserializationHelper.sourceFromDrag(dragboard.getContent(DataFormats.source));
     DataSource source = entry.get();
     Optional<String> componentName = Components.getDefault().pickComponentNameFor(source.getDataType());
     Optional<DataSource<?>> dummySource = DummySource.forTypes(source.getDataType());
@@ -255,7 +253,7 @@ final class WidgetPaneDragHandler implements EventHandler<DragEvent> {
 
     // Dropping a source from the sources tree
     if (dragboard.hasContent(DataFormats.source)) {
-      SourceEntry entry = sourceFromDrag(dragboard.getContent(DataFormats.source));
+      SourceEntry entry = DeserializationHelper.sourceFromDrag(dragboard.getContent(DataFormats.source));
       dropSource(entry.get(), point);
     }
 
