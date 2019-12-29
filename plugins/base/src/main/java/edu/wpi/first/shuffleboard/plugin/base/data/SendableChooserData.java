@@ -30,7 +30,7 @@ public final class SendableChooserData extends ComplexData<SendableChooserData> 
   public SendableChooserData(Map<String, Object> map) {
     this((String[]) map.getOrDefault(OPTIONS_KEY, new String[0]),
         (String) map.getOrDefault(DEFAULT_OPTION_KEY, ""),
-        (String) map.getOrDefault(SELECTED_OPTION_KEY, ""),
+        (String) map.getOrDefault(SELECTED_OPTION_KEY, map.getOrDefault(DEFAULT_OPTION_KEY, "")),
         (String) map.getOrDefault(ACTIVE_OPTION_KEY, ""));
   }
 
