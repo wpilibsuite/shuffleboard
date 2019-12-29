@@ -14,11 +14,6 @@ import edu.wpi.first.shuffleboard.api.widget.TileSize;
 import edu.wpi.first.shuffleboard.app.components.Tile;
 import edu.wpi.first.shuffleboard.app.components.TileLayout;
 import edu.wpi.first.shuffleboard.app.components.WidgetPane;
-
-import java.util.Map;
-import java.util.Optional;
-import java.util.WeakHashMap;
-
 import javafx.css.PseudoClass;
 import javafx.event.EventHandler;
 import javafx.event.EventType;
@@ -26,6 +21,10 @@ import javafx.scene.Node;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
+
+import java.util.Map;
+import java.util.Optional;
+import java.util.WeakHashMap;
 
 /**
  * Helper class for handling drag events on a widget pane.
@@ -139,7 +138,7 @@ final class WidgetPaneDragHandler implements EventHandler<DragEvent> {
       pane.setHighlight(false);
       return false;
     }
-    SourceEntry entry = (SourceEntry) dragboard.getContent(DataFormats.source);
+    SourceEntry entry = DeserializationHelper.sourceFromDrag(dragboard.getContent(DataFormats.source));
     DataSource source = entry.get();
     Optional<String> componentName = Components.getDefault().pickComponentNameFor(source.getDataType());
     Optional<DataSource<?>> dummySource = DummySource.forTypes(source.getDataType());
@@ -254,7 +253,7 @@ final class WidgetPaneDragHandler implements EventHandler<DragEvent> {
 
     // Dropping a source from the sources tree
     if (dragboard.hasContent(DataFormats.source)) {
-      SourceEntry entry = (SourceEntry) dragboard.getContent(DataFormats.source);
+      SourceEntry entry = DeserializationHelper.sourceFromDrag(dragboard.getContent(DataFormats.source));
       dropSource(entry.get(), point);
     }
 

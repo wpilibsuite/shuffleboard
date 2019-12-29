@@ -40,7 +40,7 @@ final class TileDropHandler implements EventHandler<DragEvent> {
 
     // Dragging a source onto a tile
     if (dragboard.hasContent(DataFormats.source) && tile.getContent() instanceof Sourced) {
-      SourceEntry entry = (SourceEntry) dragboard.getContent(DataFormats.source);
+      SourceEntry entry = DeserializationHelper.sourceFromDrag(dragboard.getContent(DataFormats.source));
       dropSourceOnTile(entry);
       event.consume();
 
@@ -83,7 +83,8 @@ final class TileDropHandler implements EventHandler<DragEvent> {
 
     // Dragging a source from the sources tree
     if (dragboard.hasContent(DataFormats.source) && tile instanceof LayoutTile) {
-      SourceEntry entry = (SourceEntry) dragboard.getContent(DataFormats.source);
+      SourceEntry entry = DeserializationHelper.sourceFromDrag(dragboard.getContent(DataFormats.source));
+
 
       dropSourceOntoLayout((Layout) tile.getContent(), entry, eventPos);
       event.consume();
