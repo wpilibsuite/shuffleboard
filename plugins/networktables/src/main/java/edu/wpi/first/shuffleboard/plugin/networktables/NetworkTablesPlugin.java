@@ -82,6 +82,7 @@ public class NetworkTablesPlugin extends Plugin {
     } else {
       inst.setServer(hostInfo.getHost(), hostInfo.getPort());
     }
+    inst.setNetworkIdentity("shuffleboard");
     inst.startClient();
     inst.startDSClient();
   };
