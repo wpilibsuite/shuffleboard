@@ -40,12 +40,22 @@ stages:
       vmImage: 'vs2017-win2016'
 
     steps:
+      - powershell: |
+          mkdir build
+          $ProgressPreference = 'SilentlyContinue'
+          wget "https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.6%2B10/OpenJDK11U-jdk_x64_windows_hotspot_11.0.6_10.zip" -O "build\jdk.zip"
+        displayName: 'Download JDK'
+      - task: JavaToolInstaller@0
+        inputs:
+          jdkSourceOption: localDirectory
+          jdkFile: 'build/jdk.zip'
+          jdkDestinationDirectory: 'build/jdkinst'
+          jdkArchitectureOption: x64
       - task: Gradle@2
         inputs:
           workingDirectory: ''
           gradleWrapperFile: 'gradlew'
           gradleOptions: '-Xmx3072m'
-          jdkVersionOption: '1.11'
           publishJUnitResults: false
           testResultsFiles: '**/TEST-*.xml'
           tasks: 'check'
@@ -59,7 +69,7 @@ stages:
       - powershell: |
           mkdir build
           $ProgressPreference = 'SilentlyContinue'
-          wget "https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.4%2B11/OpenJDK11U-jdk_x86-32_windows_hotspot_11.0.4_11.zip" -O "build\jdk.zip"
+          wget "https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.6%2B10/OpenJDK11U-jdk_x86-32_windows_hotspot_11.0.6_10.zip" -O "build\jdk.zip"
         displayName: 'Download JDK'
       - task: JavaToolInstaller@0
         inputs:
