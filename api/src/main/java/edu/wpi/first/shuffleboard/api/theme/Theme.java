@@ -42,7 +42,7 @@ public class Theme {
     this.name = name;
     ImmutableList.Builder<String> builder = ImmutableList.builder();
     Stream.of(styleSheets)
-        .map(localClass.getClassLoader()::getResource)
+        .map(localClass::getResource)
         .map(URL::toExternalForm)
         .forEach(builder::add);
     this.styleSheets = builder.build();
