@@ -3,6 +3,9 @@
 <?import javafx.scene.control.Slider?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.StackPane?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.Label?>
 <BorderPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="edu.wpi.first.shuffleboard.plugin.base.widget.NumberSliderWidget"
@@ -11,7 +14,13 @@
             prefHeight="128" prefWidth="256">
     <center>
         <StackPane>
-            <Slider fx:id="slider" showTickLabels="true" min="-1" max="1" blockIncrement="0.0625"/>
+            <padding>
+                <Insets topRightBottomLeft="8"/>
+            </padding>
+            <VBox alignment="CENTER" spacing="4">
+                <Slider fx:id="slider" showTickLabels="true" min="-1" max="1" blockIncrement="0.0625"/>
+                <Label fx:id="text" visible="${controller.showText}"/>
+            </VBox>
         </StackPane>
     </center>
 </BorderPane>
