@@ -125,7 +125,20 @@ public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
     ThreadUtils.newDaemonScheduledExecutorService()
         .scheduleAtFixedRate(() -> {
           synchronized (graphWidgets) {
-            graphWidgets.forEach(GraphWidget::update);
+            graphWidgets.forEach(graphWidget -> {
+              // Data is only pushed to the graph via listeners, so this prevents the graph
+              // from staying still during a period of no updates.
+              for (var source: graphWidget.numberSeriesMap.keySet()) {
+                graphWidget.numberChangeLister.changed(source.dataProperty(), null, source.getData());
+              }
+
+              for (var source: graphWidget.arraySeriesMap.keySet()) {
+                graphWidget.numberArrayChangeListener.changed(source.dataProperty(), null, source.getData());
+              }
+
+              // This method actually updates the graph (as seen by the user).
+              graphWidget.update();
+            });
           }
         }, 500, UPDATE_PERIOD, TimeUnit.MILLISECONDS);
   }
