@@ -27,8 +27,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.HashSet;
 import java.util.Optional;
 import java.util.OptionalLong;
 import java.util.WeakHashMap;
@@ -93,8 +91,6 @@ public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
     updateFromArraySource(source);
   };
 
-  private final Set<Series<Number, Number>> allSeries = new HashSet<>();
-
   private final Function<Series<Number, Number>, BooleanProperty> createVisibleProperty = s -> {
     SimpleBooleanProperty visible = new SimpleBooleanProperty(this, s.getName(), true);
     visible.addListener((__, was, is) -> {
@@ -125,20 +121,8 @@ public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
     ThreadUtils.newDaemonScheduledExecutorService()
         .scheduleAtFixedRate(() -> {
           synchronized (graphWidgets) {
-            graphWidgets.forEach(graphWidget -> {
-              // Data is only pushed to the graph via listeners, so this prevents the graph
-              // from staying still during a period of no updates.
-              for (var source: graphWidget.numberSeriesMap.keySet()) {
-                graphWidget.numberChangeLister.changed(source.dataProperty(), null, source.getData());
-              }
-
-              for (var source: graphWidget.arraySeriesMap.keySet()) {
-                graphWidget.numberArrayChangeListener.changed(source.dataProperty(), null, source.getData());
-              }
-
-              // This method actually updates the graph (as seen by the user).
-              graphWidget.update();
-            });
+            // This method actually updates the graph (as seen by the user).
+            graphWidgets.forEach(GraphWidget::update);
           }
         }, 500, UPDATE_PERIOD, TimeUnit.MILLISECONDS);
   }
@@ -271,7 +255,6 @@ public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
     final Data<Number, Number> point = new Data<>(elapsed, newData);
     final ObservableList<Data<Number, Number>> dataList = series.getData();
     Data<Number, Number> squarifier = null;
-    allSeries.add(series);
     synchronized (queueLock) {
       List<Data<Number, Number>> queue = queuedData.computeIfAbsent(series, __ -> new ArrayList<>());
       if (queue.isEmpty()) {
@@ -309,7 +292,6 @@ public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
       Series<Number, Number> series = new Series<>();
       series.setName(source.getName());
       numberSeriesMap.put(source, series);
-      allSeries.add(series);
       visibleSeries.computeIfAbsent(series, createVisibleProperty);
       series.nodeProperty().addListener((__, old, node) -> {
         if (node instanceof Parent) {
@@ -332,7 +314,6 @@ public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
     if (data.length < series.size()) {
       while (series.size() != data.length) {
         Series<Number, Number> removed = series.remove(series.size() - 1);
-        allSeries.remove(removed);
         visibleSeries.remove(removed);
       }
     } else if (data.length > series.size()) {
@@ -340,7 +321,6 @@ public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
         Series<Number, Number> newSeries = new Series<>();
         newSeries.setName(source.getName() + "[" + i + "]"); // eg "array[0]", "array[1]", etc
         series.add(newSeries);
-        allSeries.add(newSeries);
         visibleSeries.computeIfAbsent(newSeries, createVisibleProperty);
       }
     }
@@ -354,6 +334,16 @@ public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
 
   private void update() {
     FxUtils.runOnFxThread(() -> {
+      // Data is only pushed to the graph via listeners, so this prevents the graph
+      // from staying still during a period of no updates.
+      for (var source: numberSeriesMap.keySet()) {
+        numberChangeLister.changed(source.dataProperty(), null, source.getData());
+      }
+
+      for (var source: arraySeriesMap.keySet()) {
+        numberArrayChangeListener.changed(source.dataProperty(), null, source.getData());
+      }
+
       if (chart.getData().isEmpty()) {
         return;
       }
@@ -446,7 +436,7 @@ public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
    */
   private void removeInvisibleData() {
     final double lower = xAxis.getLowerBound();
-    allSeries.forEach(series -> {
+    chart.getData().forEach(series -> {
       int firstBeforeOutOfRange = -1;
       for (int i = 0; i < series.getData().size(); i++) {
         Data<Number, Number> data = series.getData().get(i);
