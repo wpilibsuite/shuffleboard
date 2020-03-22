@@ -27,6 +27,8 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.OptionalLong;
 import java.util.WeakHashMap;
@@ -91,7 +93,7 @@ public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
     updateFromArraySource(source);
   };
 
-  private final Map<Series<Number, Number>, SimpleData> realData = new HashMap<>();
+  private final Set<Series<Number, Number>> allSeries = new HashSet<>();
 
   private final Function<Series<Number, Number>, BooleanProperty> createVisibleProperty = s -> {
     SimpleBooleanProperty visible = new SimpleBooleanProperty(this, s.getName(), true);
@@ -193,42 +195,12 @@ public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
 
     xAxis.lowerBoundProperty().bind(xAxis.upperBoundProperty().subtract(visibleTime.multiply(1e3)));
 
-    // Make sure data gets re-added to the chart
-    visibleTime.addListener((__, prev, cur) -> {
-      if (cur.doubleValue() > prev.doubleValue()) {
-        // insert data at the beginning of each series
-        realData.forEach((series, dataList) -> {
-          List<Data<Number, Number>> toAdd = new ArrayList<>();
-          for (int i = 0; i < dataList.getXValues().size(); i++) {
-            double x = dataList.getXValues().get(i);
-            if (x >= xAxis.getLowerBound()) {
-              if (x < series.getData().get(0).getXValue().doubleValue()) {
-                Data<Number, Number> data = dataList.asData(i);
-                if (!toAdd.isEmpty()) {
-                  Data<Number, Number> squarifier = new Data<>(
-                      data.getXValue().doubleValue() - 1,
-                      toAdd.get(toAdd.size() - 1).getYValue().doubleValue()
-                  );
-                  toAdd.add(squarifier);
-                }
-                toAdd.add(data);
-              } else {
-                break;
-              }
-            }
-          }
-          series.getData().addAll(0, toAdd);
-        });
-      }
-    });
-
     ActionList.registerSupplier(root, () -> {
       return ActionList.withName(getTitle())
           .addAction("Clear", () -> {
             synchronized (queueLock) {
               chart.getData().forEach(s -> s.getData().clear());
               queuedData.forEach((s, q) -> q.clear());
-              realData.forEach((s, d) -> d.clear());
             }
           });
     });
@@ -238,7 +210,6 @@ public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
     synchronized (graphWidgets) {
       graphWidgets.add(this);
     }
-
   }
 
   @SuppressWarnings("unchecked")
@@ -287,7 +258,7 @@ public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
     final Data<Number, Number> point = new Data<>(elapsed, newData);
     final ObservableList<Data<Number, Number>> dataList = series.getData();
     Data<Number, Number> squarifier = null;
-    realData.computeIfAbsent(series, __ -> new SimpleData()).add(point);
+    allSeries.add(series);
     synchronized (queueLock) {
       List<Data<Number, Number>> queue = queuedData.computeIfAbsent(series, __ -> new ArrayList<>());
       if (queue.isEmpty()) {
@@ -325,7 +296,7 @@ public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
       Series<Number, Number> series = new Series<>();
       series.setName(source.getName());
       numberSeriesMap.put(source, series);
-      realData.put(series, new SimpleData());
+      allSeries.add(series);
       visibleSeries.computeIfAbsent(series, createVisibleProperty);
       series.nodeProperty().addListener((__, old, node) -> {
         if (node instanceof Parent) {
@@ -348,7 +319,7 @@ public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
     if (data.length < series.size()) {
       while (series.size() != data.length) {
         Series<Number, Number> removed = series.remove(series.size() - 1);
-        realData.remove(removed);
+        allSeries.remove(removed);
         visibleSeries.remove(removed);
       }
     } else if (data.length > series.size()) {
@@ -356,7 +327,7 @@ public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
         Series<Number, Number> newSeries = new Series<>();
         newSeries.setName(source.getName() + "[" + i + "]"); // eg "array[0]", "array[1]", etc
         series.add(newSeries);
-        realData.put(newSeries, new SimpleData());
+        allSeries.add(newSeries);
         visibleSeries.computeIfAbsent(newSeries, createVisibleProperty);
       }
     }
@@ -462,7 +433,7 @@ public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
    */
   private void removeInvisibleData() {
     final double lower = xAxis.getLowerBound();
-    realData.forEach((series, dataList) -> {
+    allSeries.forEach(series -> {
       int firstBeforeOutOfRange = -1;
       for (int i = 0; i < series.getData().size(); i++) {
         Data<Number, Number> data = series.getData().get(i);
@@ -476,39 +447,4 @@ public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
       }
     });
   }
-
-  /**
-   * Stores data in two parallel arrays.
-   */
-  private static final class SimpleData {
-    private final PrimitiveDoubleArrayList xValues = new PrimitiveDoubleArrayList();
-    private final PrimitiveDoubleArrayList yValues = new PrimitiveDoubleArrayList();
-
-    public void add(double x, double y) {
-      xValues.add(x);
-      yValues.add(y);
-    }
-
-    public void add(Data<? extends Number, ? extends Number> point) {
-      add(point.getXValue().doubleValue(), point.getYValue().doubleValue());
-    }
-
-    public PrimitiveDoubleArrayList getXValues() {
-      return xValues;
-    }
-
-    public PrimitiveDoubleArrayList getYValues() {
-      return yValues;
-    }
-
-    public Data<Number, Number> asData(int index) {
-      return new Data<>(xValues.get(index), yValues.get(index));
-    }
-
-    public void clear() {
-      xValues.clear();
-      yValues.clear();
-    }
-  }
-
 }
