@@ -111,7 +111,7 @@ public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
   /**
    * How often graphs should be redrawn, in milliseconds.
    */
-  private static final long UPDATE_PERIOD = 250;
+  private static final long UPDATE_PERIOD = 200;
 
   static {
     ThreadUtils.newDaemonScheduledExecutorService()
