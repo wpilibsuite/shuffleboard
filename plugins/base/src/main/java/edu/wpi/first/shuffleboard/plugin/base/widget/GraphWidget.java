@@ -191,8 +191,6 @@ public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
       }
     });
 
-    xAxis.minProperty().bind(xAxis.maxProperty().subtract(visibleTime.multiply(1e3)));
-
     ActionList.registerSupplier(root, () -> ActionList.withName(getTitle())
         .addAction("Clear",
             () -> chart.getDatasets().forEach(s -> {
@@ -313,10 +311,12 @@ public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
       }
 
       // This code actually rerenders the graph.
+
+      OptionalDouble globalMax = OptionalDouble.empty();
       for (DataSet s : chart.getDatasets()) {
         var doubleDataSet = (DoubleDataSet) s;
 
-        OptionalDouble max = doubleDataSet.lock().readLockGuard(() -> {
+        OptionalDouble dataSetMax = doubleDataSet.lock().readLockGuard(() -> {
 
           if (doubleDataSet.getDataCount(DataSet.DIM_X) == 0) {
             return OptionalDouble.empty();
@@ -326,14 +326,30 @@ public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
           return OptionalDouble.of(xValues[doubleDataSet.getDataCount(DataSet.DIM_X) - 1]);
         });
 
-        if (max.isPresent() && autoScrollToggle.isSelected()) {
-          xAxis.maxProperty().set(max.getAsDouble());
+        if (dataSetMax.isPresent()) {
+          if (globalMax.isPresent() && dataSetMax.getAsDouble() > globalMax.getAsDouble()) {
+            globalMax = dataSetMax;
+          } else if (globalMax.isEmpty()) {
+            globalMax = dataSetMax;
+          }
+        }
+
+        if (dataSetMax.isPresent() && autoScrollToggle.isSelected()) {
+          xAxis.maxProperty().set(dataSetMax.getAsDouble());
           xAxis.minProperty().bind(xAxis.maxProperty().subtract(visibleTime.multiply(1e3)));
           doubleDataSet.fireInvalidated(null);
         } else {
           xAxis.maxProperty().unbind();
           xAxis.minProperty().unbind();
-        } 
+        }
+      }
+
+      if (autoScrollToggle.isSelected() && globalMax.isPresent()) {
+        xAxis.maxProperty().set(globalMax.getAsDouble());
+        xAxis.minProperty().bind(xAxis.maxProperty().subtract(visibleTime.multiply(1e3)));
+      } else {
+        xAxis.maxProperty().unbind();
+        xAxis.minProperty().unbind();
       }
     });
   }
