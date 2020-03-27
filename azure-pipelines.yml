@@ -155,7 +155,9 @@ stages:
 
     - task: PublishPipelineArtifact@0
       inputs:
+        artifactName: 'API'
         targetPath: 'api/build/libs'
     - task: PublishPipelineArtifact@0
       inputs:
+        artifactName: 'APP'
         targetPath: 'app/build/libs'
