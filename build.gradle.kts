@@ -247,6 +247,7 @@ allprojects {
 
     tasks.withType<Javadoc> {
         isFailOnError = false
+        options.encoding = "UTF-8"
     }
 }
 
