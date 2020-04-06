@@ -1,12 +1,5 @@
 package edu.wpi.first.shuffleboard.plugin.base.widget;
 
-import com.google.common.collect.ImmutableList;
-import de.gsi.chart.XYChart;
-import de.gsi.chart.axes.spi.DefaultNumericAxis;
-import de.gsi.chart.plugins.Zoomer;
-import de.gsi.chart.plugins.Panner;
-import de.gsi.dataset.DataSet;
-import de.gsi.dataset.spi.DoubleDataSet;
 import edu.wpi.first.shuffleboard.api.components.ActionList;
 import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
 import edu.wpi.first.shuffleboard.api.data.types.NumberArrayType;
@@ -22,20 +15,15 @@ import edu.wpi.first.shuffleboard.api.widget.AbstractWidget;
 import edu.wpi.first.shuffleboard.api.widget.AnnotatedWidget;
 import edu.wpi.first.shuffleboard.api.widget.Description;
 import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
-import javafx.beans.binding.Bindings;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.Property;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.collections.ListChangeListener;
-import javafx.fxml.FXML;
-import javafx.scene.layout.Pane;
-import javafx.util.StringConverter;
-import javafx.scene.control.ToggleButton;
-import org.fxmisc.easybind.EasyBind;
+
+import com.google.common.collect.ImmutableList;
+
+import de.gsi.chart.XYChart;
+import de.gsi.chart.axes.spi.DefaultNumericAxis;
+import de.gsi.chart.plugins.Zoomer;
+import de.gsi.chart.plugins.Panner;
+import de.gsi.dataset.DataSet;
+import de.gsi.dataset.spi.DoubleDataSet;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -51,6 +39,21 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.Property;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.ListChangeListener;
+import javafx.fxml.FXML;
+import javafx.scene.layout.Pane;
+import javafx.util.StringConverter;
+import org.fxmisc.easybind.EasyBind;
+
+
 @Description(name = "Graph", dataTypes = {Number.class, double[].class})
 @ParametrizedController("GraphWidget.fxml")
 @SuppressWarnings({"PMD.GodClass", "PMD.TooManyFields", "PMD.ExcessiveMethodLength"})
@@ -64,9 +67,8 @@ public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
   private DefaultNumericAxis xAxis;
   @FXML
   private DefaultNumericAxis yAxis;
-  @FXML
-  private ToggleButton autoScrollToggle;
 
+  private final BooleanProperty xAxisAutoScrolling = new SimpleBooleanProperty(true);
   private final BooleanProperty yAxisAutoRanging = new SimpleBooleanProperty(true);
   private final DoubleProperty yAxisMinBound = new SimpleDoubleProperty(-1);
   private final DoubleProperty yAxisMaxBound = new SimpleDoubleProperty(1);
@@ -109,9 +111,9 @@ public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
       Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
 
   /**
-   * How often graphs should be redrawn, in milliseconds.
+   * How often graphs should be redrawn, in milliseconds. 10Hz is chosen to match NT rate.
    */
-  private static final long UPDATE_PERIOD = 200;
+  private static final long UPDATE_PERIOD = 100;
 
   static {
     ThreadUtils.newDaemonScheduledExecutorService()
@@ -128,7 +130,6 @@ public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
     chart.getPlugins().add(new Panner());
     chart.getPlugins().add(new Zoomer());
 
-    autoScrollToggle.setSelected(true);
     yAxisAutoRanging.addListener((__, was, useAutoRanging) -> {
       if (useAutoRanging) {
         yAxis.minProperty().unbind();
@@ -146,6 +147,7 @@ public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
             EasyBind.combine(yAxisMinBound, yAxisMaxBound, (min, max) -> (max.doubleValue() - min.doubleValue()) / 10));
       }
     });
+
     chart.legendVisibleProperty().bind(
         Bindings.createBooleanBinding(() -> sources.size() > 1, sources));
     sources.addListener((ListChangeListener<DataSource>) c -> {
@@ -174,6 +176,7 @@ public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
         }
       }
     });
+
     xAxis.setTickLabelFormatter(new StringConverter<>() {
       @Override
       public String toString(Number num) {
@@ -191,21 +194,30 @@ public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
       }
     });
 
-    ActionList.registerSupplier(root, () -> ActionList.withName(getTitle())
-        .addAction("Clear",
-            () -> chart.getDatasets().forEach(s -> {
-              var doubleDataSet = (DoubleDataSet) s;
-              doubleDataSet.lock().writeLockGuard(
-                  doubleDataSet::clearData
-              );
-            })
-        ));
+    ActionList.registerSupplier(root, () ->
+        ActionList.withName(getTitle())
+        .addAction("Clear", this::clear));
+
+    ActionList.registerSupplier(root, () ->
+        ActionList.withName(getTitle())
+            .addAction("Toggle X-Axis Autoscroll",
+                () -> this.xAxisAutoScrolling.set(!this.xAxisAutoScrolling.get())));
+
 
     // Add this widget to the list only after everything is initialized to prevent occasional null pointers when
     // the update thread runs after construction but before FXML injection or initialization
     synchronized (graphWidgets) {
       graphWidgets.add(this);
     }
+  }
+
+  private void clear() {
+    chart.getDatasets().forEach(s -> {
+      var doubleDataSet = (DoubleDataSet) s;
+      doubleDataSet.lock().writeLockGuard(
+          doubleDataSet::clearData
+      );
+    });
   }
 
   @SuppressWarnings("unchecked")
@@ -311,47 +323,43 @@ public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
       }
 
       // This code actually rerenders the graph.
-
-      OptionalDouble globalMax = OptionalDouble.empty();
-      for (DataSet s : chart.getDatasets()) {
-        var doubleDataSet = (DoubleDataSet) s;
-
-        OptionalDouble dataSetMax = doubleDataSet.lock().readLockGuard(() -> {
-
-          if (doubleDataSet.getDataCount(DataSet.DIM_X) == 0) {
-            return OptionalDouble.empty();
-          }
-
-          double[] xValues = doubleDataSet.getValues(DataSet.DIM_X);
-          return OptionalDouble.of(xValues[doubleDataSet.getDataCount(DataSet.DIM_X) - 1]);
-        });
-
-        if (dataSetMax.isPresent()) {
-          if (globalMax.isPresent() && dataSetMax.getAsDouble() > globalMax.getAsDouble()) {
-            globalMax = dataSetMax;
-          } else if (globalMax.isEmpty()) {
-            globalMax = dataSetMax;
-          }
-        }
-
-        if (dataSetMax.isPresent() && autoScrollToggle.isSelected()) {
-          xAxis.maxProperty().set(dataSetMax.getAsDouble());
-          xAxis.minProperty().bind(xAxis.maxProperty().subtract(visibleTime.multiply(1e3)));
-          doubleDataSet.fireInvalidated(null);
-        } else {
-          xAxis.maxProperty().unbind();
-          xAxis.minProperty().unbind();
-        }
-      }
-
-      if (autoScrollToggle.isSelected() && globalMax.isPresent()) {
-        xAxis.maxProperty().set(globalMax.getAsDouble());
-        xAxis.minProperty().bind(xAxis.maxProperty().subtract(visibleTime.multiply(1e3)));
-      } else {
-        xAxis.maxProperty().unbind();
-        xAxis.minProperty().unbind();
-      }
+      rerenderGraph();
     });
+  }
+
+  private void rerenderGraph() {
+    OptionalDouble globalMax = OptionalDouble.empty();
+    for (DataSet s : chart.getDatasets()) {
+      var doubleDataSet = (DoubleDataSet) s;
+
+      OptionalDouble dataSetMax = doubleDataSet.lock().readLockGuard(() -> {
+
+        if (doubleDataSet.getDataCount(DataSet.DIM_X) == 0) {
+          return OptionalDouble.empty();
+        }
+
+        double[] xValues = doubleDataSet.getValues(DataSet.DIM_X);
+        return OptionalDouble.of(xValues[doubleDataSet.getDataCount(DataSet.DIM_X) - 1]);
+      });
+
+      if (dataSetMax.isPresent()) {
+        if (globalMax.isPresent() && dataSetMax.getAsDouble() > globalMax.getAsDouble()) {
+          globalMax = dataSetMax;
+        } else if (globalMax.isEmpty()) {
+          globalMax = dataSetMax;
+        }
+      }
+
+      doubleDataSet.fireInvalidated(null);
+    }
+
+    if (xAxisAutoScrolling.get() && globalMax.isPresent()) {
+      xAxis.maxProperty().set(globalMax.getAsDouble());
+      xAxis.minProperty().bind(xAxis.maxProperty().subtract(visibleTime.multiply(1e3)));
+    } else {
+      xAxis.maxProperty().unbind();
+      xAxis.minProperty().unbind();
+    }
   }
 
   @Override
@@ -403,21 +411,5 @@ public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
                 .collect(Collectors.toList())
         )
     );
-  }
-
-  public double getVisibleTime() {
-    return visibleTime.get();
-  }
-
-  public long getVisibleTimeMs() {
-    return (long) (getVisibleTime() * 1000);
-  }
-
-  public DoubleProperty visibleTimeProperty() {
-    return visibleTime;
-  }
-
-  public void setVisibleTime(double visibleTime) {
-    this.visibleTime.set(visibleTime);
   }
 }

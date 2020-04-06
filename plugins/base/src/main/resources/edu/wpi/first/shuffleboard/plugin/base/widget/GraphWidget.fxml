@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.layout.StackPane?>
-<?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.layout.VBox?>
 <?import de.gsi.chart.XYChart?>
 <?import de.gsi.chart.axes.spi.DefaultNumericAxis?>
@@ -10,17 +9,10 @@
            fx:controller="edu.wpi.first.shuffleboard.plugin.base.widget.GraphWidget"
            minWidth="200" minHeight="256"
            fx:id="root">
-
-    <VBox>
-        
-        <ToggleButton fx:id="autoScrollToggle" text="AutoScroll" />
-
-        <XYChart fx:id="chart" animated="false" >
-            <axes>
-                <DefaultNumericAxis fx:id="xAxis" side="BOTTOM" name="Time" autoRanging="false"/>
-                <DefaultNumericAxis fx:id="yAxis" side="LEFT" name="Value" />
-            </axes>
-        </XYChart>
-    
-    </VBox>
+    <XYChart fx:id="chart" animated="false" VBox.vgrow="ALWAYS">
+        <axes>
+            <DefaultNumericAxis fx:id="xAxis" side="BOTTOM" name="Time" autoRanging="false" unit="seconds"/>
+            <DefaultNumericAxis fx:id="yAxis" side="LEFT" name="Value"/>
+        </axes>
+    </XYChart>
 </StackPane>
