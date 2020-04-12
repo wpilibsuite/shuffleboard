@@ -45,6 +45,8 @@ import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
@@ -72,6 +74,7 @@ public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
   private final BooleanProperty yAxisAutoRanging = new SimpleBooleanProperty(true);
   private final DoubleProperty yAxisMinBound = new SimpleDoubleProperty(-1);
   private final DoubleProperty yAxisMaxBound = new SimpleDoubleProperty(1);
+  private final StringProperty yAxisUnit = new SimpleStringProperty("ul");
   private final DoubleProperty visibleTime = new SimpleDoubleProperty(30);
 
   private final Map<DataSource<? extends Number>, DoubleDataSet> numberSeriesMap = new HashMap<>();
@@ -127,6 +130,8 @@ public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
 
   @FXML
   private void initialize() {
+    yAxis.unitProperty().bind(yAxisUnit);
+
     chart.getPlugins().add(new Panner());
     chart.getPlugins().add(new Zoomer());
 
@@ -322,7 +327,6 @@ public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
         numberArrayChangeListener.changed(source.dataProperty(), null, source.getData());
       }
 
-      // This code actually rerenders the graph.
       rerenderGraph();
     });
   }
@@ -380,7 +384,8 @@ public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
   public List<Group> getSettings() {
     return ImmutableList.of(
         Group.of("Graph",
-            Setting.of("Visible time", visibleTime, Double.class)
+            Setting.of("Visible time", visibleTime, Double.class),
+            Setting.of("X-axis auto scrolling", "Automatically scroll the x-axis", xAxisAutoScrolling, Boolean.class)
         ),
         // Note: users can set the lower bound to be greater than the upper bound, resulting in an upside-down graph
         Group.of("Y-axis",
@@ -401,6 +406,12 @@ public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
                 "Force a minimum value. Requires 'Automatic bounds' to be disabled",
                 yAxisMinBound,
                 Double.class
+            ),
+            Setting.of(
+                "Unit",
+                "The unit displayed on the y-axis",
+                yAxisUnit,
+                String.class
             )
         ),
         Group.of("Visible data",
