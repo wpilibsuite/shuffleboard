@@ -357,5 +357,9 @@
  *                                                                             *
  ******************************************************************************/
 .axis-label {
-    -fx-fill: white
+    -fx-fill: white;
+}
+
+.axis {
+    -fx-tick-label-fill: white;
 }
