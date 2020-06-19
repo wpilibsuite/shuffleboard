@@ -33,10 +33,6 @@ public class PIDControllerWidget extends SimpleAnnotatedWidget<PIDControllerData
   private NumberField fField;
   @FXML
   private NumberField setpointField;
-  @FXML
-  private ToggleSwitch enableToggle;
-
-  private boolean togglingFromDataChange = true;
 
   @FXML
   private void initialize() {
@@ -47,9 +43,6 @@ public class PIDControllerWidget extends SimpleAnnotatedWidget<PIDControllerData
       dField.setNumber(newData.getD());
       fField.setNumber(newData.getF());
       setpointField.setNumber(newData.getSetpoint());
-      togglingFromDataChange = true;
-      enableToggle.setSelected(newData.isEnabled());
-      togglingFromDataChange = false;
     });
 
     actOnFocusLost(pField);
@@ -57,13 +50,6 @@ public class PIDControllerWidget extends SimpleAnnotatedWidget<PIDControllerData
     actOnFocusLost(dField);
     actOnFocusLost(fField);
     actOnFocusLost(setpointField);
-
-    enableToggle.selectedProperty().addListener((__, prev, cur) -> {
-      if (!togglingFromDataChange) {
-        PIDControllerData data = getData();
-        setData(data.withEnabled(!data.isEnabled()));
-      }
-    });
   }
 
   private void actOnFocusLost(TextField field) {

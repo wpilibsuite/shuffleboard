@@ -14,7 +14,6 @@ public final class PIDControllerData extends ComplexData<PIDControllerData> {
   private final double d;
   private final double f;
   private final double setpoint;
-  private final boolean enabled;
 
   /**
    * Creates a new PIDController data object.
@@ -24,15 +23,13 @@ public final class PIDControllerData extends ComplexData<PIDControllerData> {
    * @param d        the derivative constant
    * @param f        the feedforward constant
    * @param setpoint the controller setpoint
-   * @param enabled  whether or not the controller is enabled
    */
-  public PIDControllerData(double p, double i, double d, double f, double setpoint, boolean enabled) {
+  public PIDControllerData(double p, double i, double d, double f, double setpoint) {
     this.p = p;
     this.i = i;
     this.d = d;
     this.f = f;
     this.setpoint = setpoint;
-    this.enabled = enabled;
   }
 
   /**
@@ -44,8 +41,7 @@ public final class PIDControllerData extends ComplexData<PIDControllerData> {
         (double) map.getOrDefault("i", 0.0),
         (double) map.getOrDefault("d", 0.0),
         (double) map.getOrDefault("f", 0.0),
-        (double) map.getOrDefault("setpoint", 0.0),
-        (boolean) map.getOrDefault("enabled", false));
+        (double) map.getOrDefault("setpoint", 0.0));
   }
 
   public double getP() {
@@ -68,32 +64,25 @@ public final class PIDControllerData extends ComplexData<PIDControllerData> {
     return setpoint;
   }
 
-  public boolean isEnabled() {
-    return enabled;
-  }
 
   public PIDControllerData withP(double p) {
-    return new PIDControllerData(p, i, d, f, setpoint, enabled);
+    return new PIDControllerData(p, i, d, f, setpoint);
   }
 
   public PIDControllerData withI(double i) {
-    return new PIDControllerData(p, i, d, f, setpoint, enabled);
+    return new PIDControllerData(p, i, d, f, setpoint);
   }
 
   public PIDControllerData withD(double d) {
-    return new PIDControllerData(p, i, d, f, setpoint, enabled);
+    return new PIDControllerData(p, i, d, f, setpoint);
   }
 
   public PIDControllerData withF(double f) {
-    return new PIDControllerData(p, i, d, f, setpoint, enabled);
+    return new PIDControllerData(p, i, d, f, setpoint);
   }
 
   public PIDControllerData withSetpoint(double setpoint) {
-    return new PIDControllerData(p, i, d, f, setpoint, enabled);
-  }
-
-  public PIDControllerData withEnabled(boolean enabled) {
-    return new PIDControllerData(p, i, d, f, setpoint, enabled);
+    return new PIDControllerData(p, i, d, f, setpoint);
   }
 
   @Override
@@ -104,7 +93,6 @@ public final class PIDControllerData extends ComplexData<PIDControllerData> {
         .put("d", d)
         .put("f", f)
         .put("setpoint", setpoint)
-        .put("enabled", enabled)
         .build();
   }
 
@@ -121,23 +109,22 @@ public final class PIDControllerData extends ComplexData<PIDControllerData> {
         && this.i == that.i
         && this.d == that.d
         && this.f == that.f
-        && this.setpoint == that.setpoint
-        && this.enabled == that.enabled;
+        && this.setpoint == that.setpoint;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(p, i, d, f, setpoint, enabled);
+    return Objects.hash(p, i, d, f, setpoint);
   }
 
   @Override
   public String toString() {
-    return String.format("PIDControllerData(p=%s, i=%s, d=%s, f=%s, setpoint=%s, enabled=%s)",
-        p, i, d, f, setpoint, enabled);
+    return String.format("PIDControllerData(p=%s, i=%s, d=%s, f=%s, setpoint=%s)",
+        p, i, d, f, setpoint);
   }
 
   @Override
   public String toHumanReadableString() {
-    return String.format("p=%.3f, i=%.3f, d-%.3f, f=%.3f, setpoint=%.3f, enabled=%s", p, i, d, f, setpoint, enabled);
+    return String.format("p=%.3f, i=%.3f, d-%.3f, f=%.3f, setpoint=%.3f", p, i, d, f, setpoint);
   }
 }
