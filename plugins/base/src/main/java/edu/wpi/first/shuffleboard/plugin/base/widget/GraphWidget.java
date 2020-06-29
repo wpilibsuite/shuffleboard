@@ -9,7 +9,6 @@ import edu.wpi.first.shuffleboard.api.prefs.Setting;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.util.AlphanumComparator;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
-import edu.wpi.first.shuffleboard.api.util.ThreadUtils;
 import edu.wpi.first.shuffleboard.api.util.Time;
 import edu.wpi.first.shuffleboard.api.widget.AbstractWidget;
 import edu.wpi.first.shuffleboard.api.widget.AnnotatedWidget;
@@ -20,22 +19,10 @@ import com.google.common.collect.ImmutableList;
 
 import de.gsi.chart.XYChart;
 import de.gsi.chart.axes.spi.DefaultNumericAxis;
-import de.gsi.chart.plugins.Zoomer;
-import de.gsi.chart.plugins.Panner;
 import de.gsi.dataset.DataSet;
 import de.gsi.dataset.spi.DoubleDataSet;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.OptionalDouble;
-import java.util.WeakHashMap;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -53,7 +40,6 @@ import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
 import javafx.scene.layout.Pane;
 import javafx.util.StringConverter;
-import org.fxmisc.easybind.EasyBind;
 
 
 @Description(name = "Graph", dataTypes = {Number.class, double[].class})
@@ -80,9 +66,9 @@ public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
   private final Map<DataSource<? extends Number>, DoubleDataSet> numberSeriesMap = new HashMap<>();
   private final Map<DataSource<double[]>, List<DoubleDataSet>> arraySeriesMap = new HashMap<>();
 
-  private final Map<DoubleDataSet, BooleanProperty> visibleSeries = new HashMap<>();
+  private final Map<DoubleDataSet, BooleanProperty> visibleSeries = new IdentityHashMap<>();
 
-  private final ChangeListener<Number> numberChangeLister = (property, oldNumber, newNumber) -> {
+  private final ChangeListener<Number> numberChangeListener = (property, oldNumber, newNumber) -> {
     final DataSource<Number> source = sourceFor(property);
     updateFromNumberSource(source);
   };
@@ -109,47 +95,33 @@ public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
   /**
    * Keep track of all graph widgets so they update at the same time.
    * It's jarring to see a bunch of graphs all updating at different times
+   *
    */
   private static final Collection<GraphWidget> graphWidgets =
       Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
 
-  /**
-   * How often graphs should be redrawn, in milliseconds. 10Hz is chosen to match NT rate.
-   */
-  private static final long UPDATE_PERIOD = 100;
-
-  static {
-    ThreadUtils.newDaemonScheduledExecutorService()
-        .scheduleAtFixedRate(() -> {
-          synchronized (graphWidgets) {
-            // This method actually updates the graph (as seen by the user).
-            graphWidgets.forEach(GraphWidget::update);
-          }
-        }, 500, UPDATE_PERIOD, TimeUnit.MILLISECONDS);
+  // This is public because we need it in BasePlugin.
+  public static void updateAll() {
+    synchronized (graphWidgets) {
+      graphWidgets.forEach(GraphWidget::update);
+    }
   }
+
 
   @FXML
   private void initialize() {
     yAxis.unitProperty().bind(yAxisUnit);
 
-    chart.getPlugins().add(new Panner());
-    chart.getPlugins().add(new Zoomer());
-
     yAxisAutoRanging.addListener((__, was, useAutoRanging) -> {
       if (useAutoRanging) {
         yAxis.minProperty().unbind();
         yAxis.maxProperty().unbind();
-        yAxis.tickUnitProperty().unbind();
 
         yAxis.setAutoRanging(true);
       } else {
         yAxis.setAutoRanging(false);
         yAxis.minProperty().bind(yAxisMinBound);
         yAxis.maxProperty().bind(yAxisMaxBound);
-
-        // Enforce 11 tick marks like the default autoranging behavior
-        yAxis.tickUnitProperty().bind(
-            EasyBind.combine(yAxisMinBound, yAxisMaxBound, (min, max) -> (max.doubleValue() - min.doubleValue()) / 10));
       }
     });
 
@@ -160,9 +132,9 @@ public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
         if (c.wasAdded()) {
           c.getAddedSubList().forEach(source -> {
             if (source.getDataType() == NumberType.Instance) {
-              source.dataProperty().addListener(numberChangeLister);
+              source.dataProperty().addListener(numberChangeListener);
               if (source.isConnected()) {
-                numberChangeLister.changed(source.dataProperty(), null, (Number) source.getData());
+                numberChangeListener.changed(source.dataProperty(), null, (Number) source.getData());
               }
             } else if (source.getDataType() == NumberArrayType.Instance) {
               source.dataProperty().addListener(numberArrayChangeListener);
@@ -175,7 +147,7 @@ public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
           });
         } else if (c.wasRemoved()) {
           c.getRemoved().forEach(source -> {
-            source.dataProperty().removeListener(numberChangeLister);
+            source.dataProperty().removeListener(numberChangeListener);
             source.dataProperty().removeListener(numberArrayChangeListener);
           });
         }
@@ -267,6 +239,7 @@ public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
   private void updateSeries(DoubleDataSet data, long now, double nextValue) {
     final long elapsed = now - Time.getStartTime();
 
+
     data.lock().writeLockGuard(() -> {
       // So getValues() does not return an array of all the elements, but instead returns the
       // backing array of the ArrayList?? This means it can be followed by trailing zeros,
@@ -282,9 +255,15 @@ public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
       data.add(elapsed, nextValue);
     });
 
-    if (!chart.getDatasets().contains(data)
-        && Optional.ofNullable(visibleSeries.get(data)).map(Property::getValue).orElse(true)) {
+    boolean dataVisible = Optional.ofNullable(visibleSeries.get(data)).map(Property::getValue).orElseThrow();
+
+    // if listeners do not work (initial value mainly)
+    if (!chart.getDatasets().contains(data) && dataVisible) {
       chart.getDatasets().add(data);
+    }
+
+    if (chart.getDatasets().contains(data) && !dataVisible) {
+      chart.getDatasets().remove(data);
     }
   }
 
@@ -320,7 +299,7 @@ public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
       // Data is only pushed to the graph via listeners, so this prevents the graph
       // from staying still during a period of no updates.
       for (var source : numberSeriesMap.keySet()) {
-        numberChangeLister.changed(source.dataProperty(), null, source.getData());
+        numberChangeListener.changed(source.dataProperty(), null, source.getData());
       }
 
       for (var source : arraySeriesMap.keySet()) {
