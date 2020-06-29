@@ -2,6 +2,10 @@ package edu.wpi.first.shuffleboard.app;
 
 import com.sun.javafx.application.LauncherImpl;
 
+import edu.wpi.first.wpiutil.CombinedRuntimeLoader;
+import edu.wpi.first.wpiutil.WPIUtilJNI;
+
+import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -16,7 +20,10 @@ public final class Main {
   private static final Logger logger = Logger.getLogger(Main.class.getName());
 
   @SuppressWarnings("JavadocMethod")
-  public static void main(String[] args) {
+  public static void main(String[] args) throws IOException {
+    WPIUtilJNI.Helper.setExtractOnStaticLoad(false);
+    CombinedRuntimeLoader.loadLibraries(Main.class, "wpiutiljni");
+
     // JavaFX 11+ uses GTK3 by default, and has problems on some display servers
     // This flag forces JavaFX to use GTK2
     System.setProperty("jdk.gtk.version", "2");

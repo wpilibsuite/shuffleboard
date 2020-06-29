@@ -1,0 +1,9 @@
+plugins {
+    id 'java'
+}
+
+description = "Shared test utilities for the API and app projects."
+
+dependencies {
+    implementation project(":api")
+}

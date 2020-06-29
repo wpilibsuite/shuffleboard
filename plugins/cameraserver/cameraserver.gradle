@@ -1,0 +1,29 @@
+plugins {
+    id 'java-library'
+}
+
+description = """
+The bundled CameraServer plugin. This plugin provides data sources and widgets for viewing MJPEG streams from the WPILib CameraServer.
+""".trim()
+
+def javaCppVersion = "1.4.1"
+
+wpilibTools.addNativeResourcesToSourceSet(sourceSets.main)
+
+wpilibTools.deps.wpilibVersion = "2020.+"
+
+wpilibTools.hashResourcesTask.configure {
+    it.hashFile = getProject().getLayout().getBuildDirectory().file("ResourceInformation-CameraServer.json")
+}
+
+wpilibTools.deps.wpilib(dependencies, "cscore")
+
+dependencies {
+    api project(":plugins:networktables")
+    api wpilibTools.deps.wpilibJava("cscore")
+
+    implementation group: "org.bytedeco", name: "javacv", version: javaCppVersion
+
+    runtimeOnly group: "org.bytedeco.javacpp-presets", name: "ffmpeg", version: "3.4.2-$javaCppVersion", classifier: wpilibTools.platformMapper.javaCppClassifier
+    runtimeOnly group: "org.bytedeco.javacpp-presets", name: "opencv", version: "3.4.1-$javaCppVersion", classifier: wpilibTools.platformMapper.javaCppClassifier
+}

@@ -14,6 +14,7 @@ import edu.wpi.first.shuffleboard.plugin.cameraserver.source.CameraServerSourceT
 import edu.wpi.first.shuffleboard.plugin.cameraserver.source.CameraStreamAdapter;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.widget.CameraServerWidget;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.widget.CameraServerWidget.Rotation;
+import edu.wpi.first.wpiutil.CombinedRuntimeLoader;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -50,7 +51,8 @@ public class CameraServerPlugin extends Plugin {
 
     CameraServerJNI.Helper.setExtractOnStaticLoad(false);
     try {
-      CameraServerJNI.forceLoad();
+      var files = CombinedRuntimeLoader.extractLibraries(CameraServerPlugin.class, "/ResourceInformation-CameraServer.json");
+      CombinedRuntimeLoader.loadLibrary("cscorejni", files);
       CameraServerJNI.setTelemetryPeriod(1.0);
     } catch (IOException ex) {
       log.log(Level.SEVERE, "Failed to load CV Libraries", ex);

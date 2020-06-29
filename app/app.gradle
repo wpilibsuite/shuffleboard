@@ -1,0 +1,55 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import org.gradle.jvm.tasks.Jar
+import org.jfrog.gradle.plugin.artifactory.dsl.PublisherConfig
+import groovy.lang.GroovyObject
+
+plugins {
+    id 'application'
+    id 'maven-publish'
+}
+
+apply plugin: 'com.github.johnrengelman.shadow'
+
+description = 'All of the application specific code that makes shuffleboard run.'
+
+
+wpilibTools.deps.javafx(dependencies, "base")
+wpilibTools.deps.javafx(dependencies, "controls")
+wpilibTools.deps.javafx(dependencies, "fxml")
+wpilibTools.deps.javafx(dependencies, "graphics")
+
+wpilibTools.deps.javafx(dependencies, "media")
+wpilibTools.deps.javafx(dependencies, "swing")
+wpilibTools.deps.javafx(dependencies, "web")
+
+wpilibTools.addNativeResourcesToSourceSet(sourceSets.main)
+
+wpilibTools.deps.wpilib(dependencies, "wpiutil")
+
+dependencies {
+    implementation project(':api')
+    implementation project(':plugins:base')
+    implementation project(':plugins:cameraserver')
+    implementation project(':plugins:networktables')
+
+    implementation group: "de.huxhorn.lilith", name: "de.huxhorn.lilith.3rdparty.junique", version: "1.0.4"
+    implementation group: "org.apache.commons", name: "commons-csv", version: "1.5"
+    testImplementation project("test_plugins")
+    testImplementation project(":api-test-util")
+}
+
+def theMainClassName = "edu.wpi.first.shuffleboard.app.Main"
+
+application {
+    mainClassName = theMainClassName
+    applicationDefaultJvmArgs = [
+            "-Xverify:none",
+            "-Dprism.order=d3d,es2,sw"
+    ]
+}
+
+tasks.withType(Jar) {
+    manifest {
+        attributes["Main-Class"] = theMainClassName
+    }
+}

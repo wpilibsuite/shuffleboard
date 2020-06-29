@@ -1,0 +1,23 @@
+plugins {
+    id 'java-library'
+}
+
+description = """
+The bundled NetworkTable plugin. This plugin provides sources for network tables (both single entries and arbitrary
+subtables) and a widget for displaying MapData as a tree table.
+""".trim()
+
+wpilibTools.addNativeResourcesToSourceSet(sourceSets.main)
+
+wpilibTools.deps.wpilibVersion = "2020.+"
+
+wpilibTools.deps.wpilib(dependencies, "ntcore")
+
+wpilibTools.hashResourcesTask.configure {
+    it.hashFile = getProject().getLayout().getBuildDirectory().file("ResourceInformation-NetworkTables.json")
+}
+
+dependencies {
+    api wpilibTools.deps.wpilibJava("ntcore")
+    api wpilibTools.deps.wpilibJava("wpiutil")
+}
