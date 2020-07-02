@@ -81,9 +81,6 @@ public class CameraStreamAdapterTest {
 
     Loader.load(opencv_java.class);
 
-    CameraServerJNI.Helper.setExtractOnStaticLoad(false);
-
-    CameraServerJNI.forceLoad();
     final Mat image1 = new Mat(64, 64, CvType.CV_8UC3);
     final Mat image2 = new Mat(64, 64, CvType.CV_8UC3);
     Imgproc.rectangle(image1, new Point(0, 0), new Point(64, 64), new Scalar(0xFF, 0xFF, 0xFF), -1);

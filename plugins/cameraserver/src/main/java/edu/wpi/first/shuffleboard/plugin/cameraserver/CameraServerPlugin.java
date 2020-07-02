@@ -52,7 +52,7 @@ public class CameraServerPlugin extends Plugin {
     CameraServerJNI.Helper.setExtractOnStaticLoad(false);
     try {
       var files = CombinedRuntimeLoader.extractLibraries(CameraServerPlugin.class, "/ResourceInformation-CameraServer.json");
-      CombinedRuntimeLoader.loadLibrary("cscorejni", files);
+      CombinedRuntimeLoader.loadLibrary("cscore-jnicvstatic", files);
       CameraServerJNI.setTelemetryPeriod(1.0);
     } catch (IOException ex) {
       log.log(Level.SEVERE, "Failed to load CV Libraries", ex);

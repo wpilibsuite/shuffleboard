@@ -17,7 +17,31 @@ wpilibTools.hashResourcesTask.configure {
     it.hashFile = getProject().getLayout().getBuildDirectory().file("ResourceInformation-NetworkTables.json")
 }
 
+wpilibTools.extractConfigurationTask.configure {
+    it.skipWindowsHelperLibrary = true
+}
+
 dependencies {
     api wpilibTools.deps.wpilibJava("ntcore")
     api wpilibTools.deps.wpilibJava("wpiutil")
 }
+
+def testConfigurationName = 'nativeTestConfig'
+
+configurations {
+    nativeTestConfig
+}
+
+def testTaskSet = wpilibTools.createNewNativeExtractionConfiguration {
+    taskPostfix = 'test'
+    configurationName = testConfigurationName
+    rootTaskFolder = "$buildDir/nativeTest"
+    resourceFileName = 'ResourceInformation.json'
+}
+
+wpilibTools.deps.wpilibConfig(dependencies, testConfigurationName, 'wpiutil')
+
+configurations.getByName(testConfigurationName).extendsFrom(configurations.getByName(wpilibTools.platformMapper.currentPlatform.platformName + '-wpilib'))
+
+sourceSets.test.output.dir testTaskSet.assemble, builtBy: testTaskSet.assemble
+

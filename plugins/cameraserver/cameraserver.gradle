@@ -16,7 +16,11 @@ wpilibTools.hashResourcesTask.configure {
     it.hashFile = getProject().getLayout().getBuildDirectory().file("ResourceInformation-CameraServer.json")
 }
 
-wpilibTools.deps.wpilib(dependencies, "cscore")
+wpilibTools.extractConfigurationTask.configure {
+    it.skipWindowsHelperLibrary = true
+}
+
+wpilibTools.deps.cscore(dependencies)
 
 dependencies {
     api project(":plugins:networktables")
@@ -27,3 +31,23 @@ dependencies {
     runtimeOnly group: "org.bytedeco.javacpp-presets", name: "ffmpeg", version: "3.4.2-$javaCppVersion", classifier: wpilibTools.platformMapper.javaCppClassifier
     runtimeOnly group: "org.bytedeco.javacpp-presets", name: "opencv", version: "3.4.1-$javaCppVersion", classifier: wpilibTools.platformMapper.javaCppClassifier
 }
+
+def testConfigurationName = 'nativeTestConfig'
+
+configurations {
+    nativeTestConfig
+}
+
+def testTaskSet = wpilibTools.createNewNativeExtractionConfiguration {
+    taskPostfix = 'test'
+    configurationName = testConfigurationName
+    rootTaskFolder = "$buildDir/nativeTest"
+    resourceFileName = 'ResourceInformation.json'
+}
+
+configurations.getByName(testConfigurationName).extendsFrom(configurations.getByName(wpilibTools.platformMapper.currentPlatform.platformName + '-wpilib'))
+
+wpilibTools.deps.wpilibConfig(dependencies, testConfigurationName, 'wpiutil')
+wpilibTools.deps.wpilibConfig(dependencies, testConfigurationName, 'ntcore')
+
+sourceSets.test.output.dir testTaskSet.assemble, builtBy: testTaskSet.assemble

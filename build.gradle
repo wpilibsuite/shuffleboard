@@ -3,7 +3,7 @@ plugins {
     id "com.jfrog.artifactory" version "4.9.8"
     id 'edu.wpi.first.wpilib.versioning.WPILibVersioningPlugin' version '4.0.1'
     id 'edu.wpi.first.wpilib.repositories.WPILibRepositoriesPlugin' version '2020.2'
-    id 'edu.wpi.first.WpilibTools' version '0.2.3'
+    id 'edu.wpi.first.WpilibTools' version '0.4.0'
 }
 
 if (project.hasProperty('buildServer')) {
@@ -79,6 +79,7 @@ allprojects {
         useJUnitPlatform {
             excludeTags("UI")
         }
+        systemProperty("junit.jupiter.extensions.autodetection.enabled", true)
     }
 
     tasks.withType(Javadoc) {
