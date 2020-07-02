@@ -10,19 +10,24 @@ The bundled CameraServer plugin. This plugin provides data sources and widgets f
 
 def javaCppVersion = "1.4.1"
 
-wpilibTools.addNativeResourcesToSourceSet(sourceSets.main)
+
+def nativeConfigName = 'wpilibNatives'
+def nativeConfig = configurations.create(nativeConfigName)
+
+def nativeTasks = wpilibTools.createExtractionTasks {
+    configurationName = nativeConfigName
+    resourceFileName = "ResourceInformation-CameraServer.json"
+}
+
+nativeTasks.addToSourceSetResources(sourceSets.main)
 
 wpilibTools.deps.wpilibVersion = "2020.+"
 
-wpilibTools.hashResourcesTask.configure {
-    it.hashFile = getProject().getLayout().getBuildDirectory().file("ResourceInformation-CameraServer.json")
-}
+nativeConfig.dependencies.add wpilibTools.deps.cscore()
 
-wpilibTools.extractConfigurationTask.configure {
+nativeTasks.extractConfiguration.configure {
     it.skipWindowsHelperLibrary = true
 }
-
-wpilibTools.deps.cscore(dependencies)
 
 dependencies {
     api project(":plugins:networktables")
@@ -34,22 +39,19 @@ dependencies {
     runtimeOnly group: "org.bytedeco.javacpp-presets", name: "opencv", version: "3.4.1-$javaCppVersion", classifier: wpilibTools.platformMapper.javaCppClassifier
 }
 
-def testConfigurationName = 'nativeTestConfig'
+def testNativeConfigName = 'wpilibTestNatives'
+def testNativeConfig = configurations.create(testNativeConfigName)
 
-configurations {
-    nativeTestConfig
+def folder = project.layout.buildDirectory.dir('NativeTest')
+
+def testNativeTasks = wpilibTools.createExtractionTasks {
+    taskPostfix = "Test"
+    configurationName = testNativeConfigName
+    rootTaskFolder.set(folder)
 }
 
-def testTaskSet = wpilibTools.createNewNativeExtractionConfiguration {
-    taskPostfix = 'test'
-    configurationName = testConfigurationName
-    rootTaskFolder = "$buildDir/nativeTest"
-    resourceFileName = 'ResourceInformation.json'
-}
+testNativeTasks.addToSourceSetResources(sourceSets.test)
 
-configurations.getByName(testConfigurationName).extendsFrom(configurations.getByName(wpilibTools.platformMapper.currentPlatform.platformName + '-wpilib'))
-
-wpilibTools.deps.wpilibConfig(dependencies, testConfigurationName, 'wpiutil')
-wpilibTools.deps.wpilibConfig(dependencies, testConfigurationName, 'ntcore')
-
-sourceSets.test.output.dir testTaskSet.assemble, builtBy: testTaskSet.assemble
+testNativeConfig.dependencies.add wpilibTools.deps.cscore()
+testNativeConfig.dependencies.add wpilibTools.deps.wpilib("ntcore")
+testNativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")

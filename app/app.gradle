@@ -13,21 +13,24 @@ apply plugin: 'com.github.johnrengelman.shadow'
 
 description = 'All of the application specific code that makes shuffleboard run.'
 
+def nativeConfigName = 'wpilibNatives'
+def nativeConfig = configurations.create(nativeConfigName)
 
-wpilibTools.deps.javafx(dependencies, "base")
-wpilibTools.deps.javafx(dependencies, "controls")
-wpilibTools.deps.javafx(dependencies, "fxml")
-wpilibTools.deps.javafx(dependencies, "graphics")
+def nativeTasks = wpilibTools.createExtractionTasks {
+    configurationName = nativeConfigName
+}
 
-wpilibTools.deps.javafx(dependencies, "media")
-wpilibTools.deps.javafx(dependencies, "swing")
-wpilibTools.deps.javafx(dependencies, "web")
+nativeTasks.addToSourceSetResources(sourceSets.main)
 
-wpilibTools.addNativeResourcesToSourceSet(sourceSets.main)
+wpilibTools.deps.wpilibVersion = "2020.+"
 
-wpilibTools.deps.wpilib(dependencies, "wpiutil")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
 
 dependencies {
+    javaFxDeps wpilibTools.deps.javafx("media")
+    javaFxDeps wpilibTools.deps.javafx("swing")
+    javaFxDeps wpilibTools.deps.javafx("web")
+
     implementation project(':api')
     implementation project(':plugins:base')
     implementation project(':plugins:cameraserver')
@@ -61,7 +64,7 @@ tasks.withType(Test) {
 
 tasks.withType(ShadowJar).configureEach {
     archiveBaseName = "Shuffleboard"
-    version = null
+    archiveVersion = ""
     exclude("module-info.class")
     archiveClassifier.set(wpilibTools.platformMapper.currentPlatform.platformName)
 }

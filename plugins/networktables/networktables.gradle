@@ -9,17 +9,21 @@ The bundled NetworkTable plugin. This plugin provides sources for network tables
 subtables) and a widget for displaying MapData as a tree table.
 """.trim()
 
-wpilibTools.addNativeResourcesToSourceSet(sourceSets.main)
+def nativeConfigName = 'wpilibNatives'
+def nativeConfig = configurations.create(nativeConfigName)
+
+def nativeTasks = wpilibTools.createExtractionTasks {
+    configurationName = nativeConfigName
+    resourceFileName = "ResourceInformation-NetworkTables.json"
+}
+
+nativeTasks.addToSourceSetResources(sourceSets.main)
 
 wpilibTools.deps.wpilibVersion = "2020.+"
 
-wpilibTools.deps.wpilib(dependencies, "ntcore")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib('ntcore')
 
-wpilibTools.hashResourcesTask.configure {
-    it.hashFile = getProject().getLayout().getBuildDirectory().file("ResourceInformation-NetworkTables.json")
-}
-
-wpilibTools.extractConfigurationTask.configure {
+nativeTasks.extractConfiguration.configure {
     it.skipWindowsHelperLibrary = true
 }
 
@@ -28,22 +32,18 @@ dependencies {
     api wpilibTools.deps.wpilibJava("wpiutil")
 }
 
-def testConfigurationName = 'nativeTestConfig'
+def testNativeConfigName = 'wpilibTestNatives'
+def testNativeConfig = configurations.create(testNativeConfigName)
 
-configurations {
-    nativeTestConfig
+def folder = project.layout.buildDirectory.dir('NativeTest')
+
+def testNativeTasks = wpilibTools.createExtractionTasks {
+    taskPostfix = "Test"
+    configurationName = testNativeConfigName
+    rootTaskFolder.set(folder)
 }
 
-def testTaskSet = wpilibTools.createNewNativeExtractionConfiguration {
-    taskPostfix = 'test'
-    configurationName = testConfigurationName
-    rootTaskFolder = "$buildDir/nativeTest"
-    resourceFileName = 'ResourceInformation.json'
-}
+testNativeTasks.addToSourceSetResources(sourceSets.test)
 
-wpilibTools.deps.wpilibConfig(dependencies, testConfigurationName, 'wpiutil')
-
-configurations.getByName(testConfigurationName).extendsFrom(configurations.getByName(wpilibTools.platformMapper.currentPlatform.platformName + '-wpilib'))
-
-sourceSets.test.output.dir testTaskSet.assemble, builtBy: testTaskSet.assemble
-
+testNativeConfig.dependencies.add wpilibTools.deps.wpilib("ntcore")
+testNativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
