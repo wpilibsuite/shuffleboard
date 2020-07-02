@@ -1,4 +1,5 @@
 plugins {
+    id 'base'
     id 'com.github.johnrengelman.shadow' version '5.1.0' apply false
     id "com.jfrog.artifactory" version "4.9.8"
     id 'edu.wpi.first.wpilib.versioning.WPILibVersioningPlugin' version '4.0.1'
@@ -30,11 +31,34 @@ version = wpilibVersioning.version.get()
 
 def projectVersion = version
 
+def outputsFolder = file("$buildDir/allOutputs")
+
+task copyAllOutputs(type: Copy) {
+    destinationDir outputsFolder
+}
+
+build.dependsOn copyAllOutputs
+
+ext.addTaskToCopyAllOutputs = { task ->
+    copyAllOutputs.dependsOn task
+    copyAllOutputs.inputs.file task.archivePath
+    copyAllOutputs.from task.archivePath
+}
+
+
+
 allprojects {
     apply plugin: 'java'
+    apply plugin: 'maven-publish'
     apply plugin: 'edu.wpi.first.WpilibTools'
 
+    def publishingFromAllOutputs = false
+    if (project.hasProperty('prCombinePublish')) {
+        publishingFromAllOutputs = true
+    }
+
     if (System.getenv()["RUN_AZURE_ARTIFACTORY_RELEASE"] != null) {
+        publishingFromAllOutputs = true
         artifactory {
             setContextUrl("https://frcmaven.wpi.edu/artifactory") // base artifactory url
             publish {
@@ -50,6 +74,32 @@ allprojects {
                 }
             }
             clientConfig.info.setBuildName("Shuffleboard")
+        }
+        publish.dependsOn artifactoryPublish
+    }
+
+    if (project.name == 'app') {
+        afterEvaluate {
+            publishing {
+                publications {
+                    maven(MavenPublication) {
+                    if (publishingFromAllOutputs) {
+                        outputsFolder.eachFile {
+                            def dashSplit = it.name.split('-')
+                            def clfr = dashSplit[dashSplit.length - 1].split('\\.')[0]
+                            artifact(it) {
+                                classifier = clfr
+                            }
+                        }
+                    } else {
+                        artifact(project.shadowJar)
+                    }
+                    groupId 'edu.wpi.first.tools'
+                    artifactId project.name
+                    version project.version
+                    }
+                }
+            }
         }
     }
 

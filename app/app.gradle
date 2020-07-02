@@ -60,30 +60,12 @@ tasks.withType(Test) {
 }
 
 tasks.withType(ShadowJar).configureEach {
+    archiveBaseName = "Shuffleboard"
+    version = null
     exclude("module-info.class")
     archiveClassifier.set(wpilibTools.platformMapper.currentPlatform.platformName)
 }
 
-if (System.getenv()["RUN_AZURE_ARTIFACTORY_RELEASE"] != null) {
-    artifactory {
-        publish {
-            defaults {
-                invokeMethod("publications", "app")
-            }
-        }
-    }
-}
-
-publishing {
-    publications {
-        app(MavenPublication) {
-            groupId = "edu.wpi.first.shuffleboard"
-            artifactId = "shuffleboard"
-            version = project.version as String
-
-            artifact(shadowJar)
-        }
-    }
-}
+addTaskToCopyAllOutputs(shadowJar)
 
 sourceSets["test"].resources.srcDirs.add(new File(project("test_plugins").buildDir, "libs"))

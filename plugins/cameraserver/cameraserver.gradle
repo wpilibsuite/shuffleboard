@@ -2,6 +2,8 @@ plugins {
     id 'java-library'
 }
 
+ext.platformSpecSkipPublishing = true
+
 description = """
 The bundled CameraServer plugin. This plugin provides data sources and widgets for viewing MJPEG streams from the WPILib CameraServer.
 """.trim()

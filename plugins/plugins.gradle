@@ -1,40 +1,44 @@
 subprojects {
-    apply plugin: "java-library"
-    apply plugin: 'maven-publish'
-    dependencies {
-        compileOnly group: "com.google.code.findbugs", name: "annotations", version: "+"
-        implementation project(":api")
-    }
+    afterEvaluate {
+        apply plugin: "java-library"
+        apply plugin: 'maven-publish'
+        dependencies {
+            compileOnly group: "com.google.code.findbugs", name: "annotations", version: "+"
+            implementation project(":api")
+        }
 
-    def sourceJar = tasks.register("sourceJar", Jar) {
-        description = "Creates a JAR that contains the source code."
-        from(project.sourceSets["main"].allSource)
-        classifier = "sources"
-    }
-    def javadocJar = tasks.register("javadocJar", Jar) {
-        dependsOn("javadoc")
-        description = "Creates a JAR that contains the javadocs."
-        from(tasks.named("javadoc"))
-        classifier = "javadoc"
-    }
-    if (System.getenv()["RUN_AZURE_ARTIFACTORY_RELEASE"] != null) {
-        artifactory {
-            publish {
-                defaults {
-                    invokeMethod("publications", "plugin.${project.name}")
+        if (project.hasProperty('platformSpecSkipPublishing')) return
+
+        def sourceJar = tasks.register("sourceJar", Jar) {
+            description = "Creates a JAR that contains the source code."
+            from(project.sourceSets["main"].allSource)
+            classifier = "sources"
+        }
+        def javadocJar = tasks.register("javadocJar", Jar) {
+            dependsOn("javadoc")
+            description = "Creates a JAR that contains the javadocs."
+            from(tasks.named("javadoc"))
+            classifier = "javadoc"
+        }
+        if (System.getenv()["RUN_AZURE_ARTIFACTORY_RELEASE"] != null) {
+            artifactory {
+                publish {
+                    defaults {
+                        invokeMethod("publications", "plugin.${project.name}")
+                    }
                 }
             }
         }
-    }
 
-    publishing.publications {
-        "plugin.${project.name}"(MavenPublication) {
-            groupId = "edu.wpi.first.shuffleboard.plugin"
-            artifactId = project.name
-            version = project.version as String
-            from(components["java"])
-            artifact(javadocJar.get())
-            artifact(sourceJar.get())
+        publishing.publications {
+            "plugin.${project.name}"(MavenPublication) {
+                groupId = "edu.wpi.first.shuffleboard.plugin"
+                artifactId = project.name
+                version = project.version as String
+                from(components["java"])
+                artifact(javadocJar.get())
+                artifact(sourceJar.get())
+            }
         }
     }
 }
