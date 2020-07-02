@@ -28,10 +28,40 @@ allprojects {
 wpilibVersioning.version.finalizeValue()
 version = wpilibVersioning.version.get()
 
+def projectVersion = version
 
 allprojects {
     apply plugin: 'java'
     apply plugin: 'edu.wpi.first.WpilibTools'
+
+    if (System.getenv()["RUN_AZURE_ARTIFACTORY_RELEASE"] != null) {
+        artifactory {
+            setContextUrl("https://frcmaven.wpi.edu/artifactory") // base artifactory url
+            publish {
+                repository {
+                    if (project.hasProperty("releaseMode")) {
+                        setProperty("repoKey", "release")
+                    } else {
+                        setProperty("repoKey", "development")
+                    }
+                    setProperty("username", System.getenv()["ARTIFACTORY_PUBLISH_USERNAME"])
+                    setProperty("password", System.getenv()["ARTIFACTORY_PUBLISH_PASSWORD"])
+                    setProperty("maven", true)
+                }
+            }
+            clientConfig.info.setBuildName("Shuffleboard")
+        }
+    }
+
+    version = projectVersion
+
+    // Note: plugins should override this
+    tasks.withType(Jar).configureEach {
+        manifest {
+            attributes["Implementation-Version"] = project.version as String
+            attributes["Built-Date"] = Instant.now().toString()
+        }
+    }
 
     wpilibTools.createNativeConfigurations()
 
@@ -84,6 +114,50 @@ allprojects {
 
     tasks.withType(Javadoc) {
         failOnError = false
+    }
+
+    tasks.withType(GenerateModuleMetadata) {
+        enabled = false
+    }
+}
+
+project(":api") {
+    apply plugin: 'maven-publish'
+    def sourceJar = tasks.register("sourceJar", Jar) {
+        description = "Creates a JAR that contains the source code."
+        from(sourceSets["main"].allSource)
+        classifier = "sources"
+    }
+    def javadocJar = tasks.register("javadocJar", Jar) {
+        dependsOn("javadoc")
+        description = "Creates a JAR that contains the javadocs."
+        from(docsDir)
+        classifier = "javadoc"
+    }
+
+    if (System.getenv()["RUN_AZURE_ARTIFACTORY_RELEASE"] != null) {
+        artifactory {
+            publish {
+                defaults {
+                    invokeMethod("publications", "api")
+                }
+            }
+        }
+    }
+
+    publishing {
+        publications {
+            api(MavenPublication) {
+                groupId = "edu.wpi.first.shuffleboard"
+                artifactId = "api"
+                version = project.version.toString()
+                afterEvaluate {
+                    from(components["java"])
+                }
+                artifact(sourceJar.get())
+                artifact(javadocJar.get())
+            }
+        }
     }
 }
 
