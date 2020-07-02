@@ -4,6 +4,7 @@ import org.jfrog.gradle.plugin.artifactory.dsl.PublisherConfig
 import groovy.lang.GroovyObject
 
 plugins {
+    id 'java-library'
     id 'application'
     id 'maven-publish'
 }
@@ -32,7 +33,7 @@ dependencies {
     implementation project(':plugins:cameraserver')
     implementation project(':plugins:networktables')
 
-    implementation group: "de.huxhorn.lilith", name: "de.huxhorn.lilith.3rdparty.junique", version: "1.0.4"
+    api group: "de.huxhorn.lilith", name: "de.huxhorn.lilith.3rdparty.junique", version: "1.0.4"
     implementation group: "org.apache.commons", name: "commons-csv", version: "1.5"
     testImplementation project("test_plugins")
     testImplementation project(":api-test-util")
