@@ -26,6 +26,8 @@ wpilibTools.deps.wpilibVersion = "2020.+"
 
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
 
+configurations.implementation.extendsFrom(configurations.javaFxDeps)
+
 dependencies {
     javaFxDeps wpilibTools.deps.javafx("media")
     javaFxDeps wpilibTools.deps.javafx("swing")
