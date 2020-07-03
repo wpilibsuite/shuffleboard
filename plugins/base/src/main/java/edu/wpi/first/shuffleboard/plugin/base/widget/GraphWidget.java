@@ -9,6 +9,7 @@ import edu.wpi.first.shuffleboard.api.prefs.Setting;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.util.AlphanumComparator;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
+import edu.wpi.first.shuffleboard.api.util.ThreadUtils;
 import edu.wpi.first.shuffleboard.api.util.Time;
 import edu.wpi.first.shuffleboard.api.widget.AbstractWidget;
 import edu.wpi.first.shuffleboard.api.widget.AnnotatedWidget;
@@ -22,16 +23,31 @@ import de.gsi.chart.axes.spi.DefaultNumericAxis;
 import de.gsi.dataset.DataSet;
 import de.gsi.dataset.spi.DoubleDataSet;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.OptionalDouble;
+import java.util.WeakHashMap;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
@@ -46,7 +62,6 @@ import javafx.util.StringConverter;
 @ParametrizedController("GraphWidget.fxml")
 @SuppressWarnings({"PMD.GodClass", "PMD.TooManyFields", "PMD.ExcessiveMethodLength"})
 public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
-
   @FXML
   private Pane root;
   @FXML
@@ -100,16 +115,57 @@ public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
   private static final Collection<GraphWidget> graphWidgets =
       Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
 
-  // This is public because we need it in BasePlugin.
-  public static void updateAll() {
-    synchronized (graphWidgets) {
+  public static class Updater implements AutoCloseable {
+
+    private final IntegerProperty graphUpdateRate = new SimpleIntegerProperty(this, "graphUpdateRate", 10);
+    private final ScheduledExecutorService executorService = ThreadUtils.newDaemonScheduledExecutorService();
+    private volatile ScheduledFuture<?> currentFuture;
+
+    private final ChangeListener<Number> updateCreator = (observable, oldValue, newValue) -> {
+      if (currentFuture != null) {
+        currentFuture.cancel(false);
+      }
+
+      long amount = 1000L / newValue.intValue();
+      if (amount == 0) {
+        amount = 1;
+      }
+
+      currentFuture = executorService
+              .scheduleAtFixedRate(this::updateAll, 500, amount, TimeUnit.MILLISECONDS);
+    };
+
+    public Updater() {
+      graphUpdateRate.addListener(updateCreator);
+      updateCreator.changed(null, null, graphUpdateRate.get());
+    }
+
+    private void updateAll() {
       graphWidgets.forEach(GraphWidget::update);
+    }
+
+    public int getGraphUpdateRate() {
+      return graphUpdateRate.get();
+    }
+
+    public IntegerProperty graphUpdateRateProperty() {
+      return graphUpdateRate;
+    }
+
+    public void setGraphUpdateRate(int graphUpdateRate) {
+      this.graphUpdateRate.set(graphUpdateRate);
+    }
+
+    @Override
+    public void close() {
+      graphUpdateRate.removeListener(updateCreator);
+      executorService.shutdown();
     }
   }
 
-
   @FXML
   private void initialize() {
+    chart.setAutoNotification(false);
     yAxis.unitProperty().bind(yAxisUnit);
 
     yAxisAutoRanging.addListener((__, was, useAutoRanging) -> {

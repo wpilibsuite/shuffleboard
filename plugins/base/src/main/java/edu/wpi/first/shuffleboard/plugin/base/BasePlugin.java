@@ -1,17 +1,18 @@
 package edu.wpi.first.shuffleboard.plugin.base;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import edu.wpi.first.shuffleboard.api.PropertyParser;
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.json.ElementTypeAdapter;
 import edu.wpi.first.shuffleboard.api.plugin.Description;
 import edu.wpi.first.shuffleboard.api.plugin.Plugin;
-import edu.wpi.first.shuffleboard.api.prefs.FlushableProperty;
 import edu.wpi.first.shuffleboard.api.prefs.Group;
 import edu.wpi.first.shuffleboard.api.prefs.Setting;
 import edu.wpi.first.shuffleboard.api.tab.TabInfo;
 import edu.wpi.first.shuffleboard.api.util.PreferencesUtils;
-import edu.wpi.first.shuffleboard.api.util.ThreadUtils;
 import edu.wpi.first.shuffleboard.api.widget.ComponentType;
 import edu.wpi.first.shuffleboard.api.widget.LayoutClass;
 import edu.wpi.first.shuffleboard.api.widget.WidgetType;
@@ -66,19 +67,11 @@ import edu.wpi.first.shuffleboard.plugin.base.widget.ToggleButtonWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.ToggleSwitchWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.UltrasonicWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.VoltageViewWidget;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import javafx.beans.InvalidationListener;
-import javafx.beans.property.*;
-import javafx.beans.value.ChangeListener;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 import java.util.prefs.Preferences;
 
 @Description(
@@ -90,37 +83,25 @@ import java.util.prefs.Preferences;
 @SuppressWarnings("PMD.CouplingBetweenObjects")
 public class BasePlugin extends Plugin {
   private final Preferences preferences = Preferences.userNodeForPackage(getClass());
-
-  private final IntegerProperty graphUpdateRate = new SimpleIntegerProperty(this, "graphUpdateRate", 10);
-  private final InvalidationListener graphSaver = __ -> PreferencesUtils.save(graphUpdateRate, preferences);
-
-  // only written to one thread at a time
-  private volatile ScheduledFuture<?> currentFuture;
-
-  private final ChangeListener<Number> updateCreator = (observable, oldValue, newValue) -> {
-    if(currentFuture != null) {
-      currentFuture.cancel(false);
-    }
-    currentFuture = ThreadUtils.newDaemonScheduledExecutorService()
-            .scheduleAtFixedRate(GraphWidget::updateAll, 500, 1000 / newValue.intValue(), TimeUnit.MILLISECONDS);
-  };
+  private GraphWidget.Updater updater;
+  private InvalidationListener graphSaver;
 
   @Override
   public void onLoad() {
-    PreferencesUtils.read(graphUpdateRate, preferences);
-    graphUpdateRate.addListener(graphSaver);
-    graphUpdateRate.addListener(updateCreator);
-    updateCreator.changed(null, null, graphUpdateRate.get());
+    this.updater = new GraphWidget.Updater();
+
+    this.graphSaver = n -> PreferencesUtils.save(updater.graphUpdateRateProperty(), preferences);
+    PreferencesUtils.read(updater.graphUpdateRateProperty(), preferences);
+    updater.graphUpdateRateProperty().addListener(graphSaver);
   }
 
   @Override
   public void onUnload() {
-    graphUpdateRate.removeListener(graphSaver);
-    graphUpdateRate.removeListener(updateCreator);
-    currentFuture.cancel(true);
+    updater.graphUpdateRateProperty().removeListener(graphSaver);
+    updater.close();
   }
 
-    @Override
+  @Override
   public List<DataType> getDataTypes() {
     return ImmutableList.of(
         AnalogInputType.Instance,
@@ -248,8 +229,9 @@ public class BasePlugin extends Plugin {
     return ImmutableList.of(
             Group.of("Graph settings",
                     Setting.of("Graph Update Rate",
-                            "How many hz (times a second) graph widgets update at. 25hz is considered the maximum tested",
-                            graphUpdateRate
+                            "How many times a second graph widgets update at. "
+                                    + "Faster update rates may cause performance issues",
+                            updater.graphUpdateRateProperty()
                     )
             )
     );
