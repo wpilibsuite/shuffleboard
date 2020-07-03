@@ -45,11 +45,10 @@ ext.addTaskToCopyAllOutputs = { task ->
     copyAllOutputs.from task.archivePath
 }
 
-
-
 allprojects {
     apply plugin: 'java'
     apply plugin: 'maven-publish'
+    apply plugin: 'com.diffplug.gradle.spotless'
     apply plugin: 'edu.wpi.first.WpilibTools'
 
     def publishingFromAllOutputs = false
@@ -94,8 +93,8 @@ allprojects {
                     } else {
                         artifact(project.shadowJar)
                     }
-                    groupId 'edu.wpi.first.tools'
-                    artifactId project.name
+                    groupId 'edu.wpi.first.shuffleboard'
+                    artifactId = 'shuffleboard'
                     version project.version
                     }
                 }
