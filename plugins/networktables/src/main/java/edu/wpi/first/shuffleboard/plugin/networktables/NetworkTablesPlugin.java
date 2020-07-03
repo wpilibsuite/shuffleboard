@@ -63,11 +63,14 @@ public class NetworkTablesPlugin extends Plugin {
 
   private final ChangeListener<String> serverChangeListener;
 
+  /**
+   * Constructs the NetworkTables plugin.
+   */
   public NetworkTablesPlugin() {
     NetworkTablesJNI.Helper.setExtractOnStaticLoad(false);
     try {
-      var files = CombinedRuntimeLoader.extractLibraries(NetworkTablesPlugin.class, "/ResourceInformation-NetworkTables.json");
-      System.out.println(files.size());
+      var files = CombinedRuntimeLoader.extractLibraries(NetworkTablesPlugin.class,
+          "/ResourceInformation-NetworkTables.json");
       CombinedRuntimeLoader.loadLibrary("ntcorejni", files);
     } catch (IOException ex) {
       log.log(Level.SEVERE, "Failed to load NT Core Libraries", ex);
@@ -115,9 +118,6 @@ public class NetworkTablesPlugin extends Plugin {
 
   @Override
   public void onLoad() {
-    System.out.println("Go into onload!");
-
-
     PreferencesUtils.read(serverId, preferences);
     serverId.addListener(serverSaver);
 

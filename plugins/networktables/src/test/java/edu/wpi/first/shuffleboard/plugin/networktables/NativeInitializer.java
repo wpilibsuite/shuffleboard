@@ -9,12 +9,12 @@ import edu.wpi.first.wpiutil.WPIUtilJNI;
 
 public class NativeInitializer implements BeforeAllCallback {
 
-    @Override
-    public void beforeAll(ExtensionContext context) throws Exception {
-        WPIUtilJNI.Helper.setExtractOnStaticLoad(false);
-        NetworkTablesJNI.Helper.setExtractOnStaticLoad(false);
+  @Override
+  public void beforeAll(ExtensionContext context) throws Exception {
+    WPIUtilJNI.Helper.setExtractOnStaticLoad(false);
+    NetworkTablesJNI.Helper.setExtractOnStaticLoad(false);
 
-        CombinedRuntimeLoader.loadLibraries(NativeInitializer.class, "ntcorejni");
-    }
+    CombinedRuntimeLoader.loadLibraries(NativeInitializer.class, "ntcorejni");
+  }
 
 }

@@ -1,9 +1,13 @@
+import com.github.spotbugs.snom.SpotBugsTask
+
 plugins {
     id 'base'
-    id 'com.github.johnrengelman.shadow' version '5.1.0' apply false
-    id "com.jfrog.artifactory" version "4.9.8"
+    id 'com.github.johnrengelman.shadow' version '6.0.0' apply false
+    id "com.jfrog.artifactory" version "4.16.0"
     id 'edu.wpi.first.wpilib.versioning.WPILibVersioningPlugin' version '4.0.1'
     id 'edu.wpi.first.wpilib.repositories.WPILibRepositoriesPlugin' version '2020.2'
+    id 'com.diffplug.gradle.spotless' version '4.5.0'
+    id 'com.github.spotbugs' version '4.4.4'
     id 'edu.wpi.first.WpilibTools' version '0.5.2'
 }
 
@@ -112,6 +116,26 @@ allprojects {
         }
     }
 
+    spotless {
+        groovyGradle {
+            trimTrailingWhitespace()
+            indentWithSpaces()
+            endWithNewline()
+        }
+        format("extraneous") {
+            target("*.sh", "*.yml")
+            trimTrailingWhitespace()
+            indentWithSpaces()
+            endWithNewline()
+        }
+        format("markdown") {
+            target("*.md")
+            trimTrailingWhitespace()
+            indentWithSpaces()
+            endWithNewline()
+        }
+    }
+
     configurations {
         javaFxDeps
     }
@@ -172,6 +196,66 @@ allprojects {
 
     tasks.withType(GenerateModuleMetadata) {
         enabled = false
+    }
+}
+
+allprojects {
+    apply plugin: 'checkstyle'
+    apply plugin: 'pmd'
+    apply plugin: 'com.github.spotbugs'
+    apply plugin: 'jacoco'
+
+    checkstyle {
+        toolVersion = "8.12"
+    }
+
+    pmd {
+        toolVersion = "6.7.0"
+        consoleOutput = true
+        sourceSets = [project.sourceSets["main"]]
+        reportsDir = file("${project.buildDir}/reports/pmd")
+        ruleSetFiles = files(file("$rootDir/pmd-ruleset.xml"))
+        ruleSets = []
+    }
+
+    spotbugs {
+        toolVersion = "3.1.7"
+        //it.sourceSets = [project.sourceSets["main"], project.sourceSets["test"]]
+        excludeFilter = file("$rootDir/findBugsSuppressions.xml")
+        effort = "max"
+    }
+
+    tasks.withType(SpotBugsTask) {
+        def sbTask = it
+        reports {
+            create("text") {
+                enabled = true
+            }
+            xml.enabled = false
+        }
+        finalizedBy(task("${name}Report") {
+            mustRunAfter(sbTask)
+            doLast {
+                def dest = sbTask.reports.first().destination;
+                if (dest.exists()) {
+                    def text = dest.text
+                    if (text != null && !text.isBlank()) {
+                        logger.warn(text)
+                    }
+                }
+            }
+        })
+    }
+
+    jacoco {
+        toolVersion = "0.8.2"
+    }
+
+    tasks.withType(JacocoReport) {
+        reports {
+            xml.enabled = true
+            html.enabled = true
+        }
     }
 }
 
