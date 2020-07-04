@@ -18,18 +18,24 @@ import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 
 import com.google.common.collect.ImmutableList;
 
-import org.fxmisc.easybind.EasyBind;
+import de.gsi.chart.XYChart;
+import de.gsi.chart.axes.spi.DefaultNumericAxis;
+import de.gsi.dataset.DataSet;
+import de.gsi.dataset.spi.DoubleDataSet;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.OptionalLong;
+import java.util.OptionalDouble;
 import java.util.WeakHashMap;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -37,51 +43,47 @@ import java.util.stream.Collectors;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.CacheHint;
-import javafx.scene.Parent;
-import javafx.scene.chart.NumberAxis;
-import javafx.scene.chart.XYChart;
-import javafx.scene.chart.XYChart.Data;
-import javafx.scene.chart.XYChart.Series;
 import javafx.scene.layout.Pane;
 import javafx.util.StringConverter;
+
 
 @Description(name = "Graph", dataTypes = {Number.class, double[].class})
 @ParametrizedController("GraphWidget.fxml")
 @SuppressWarnings({"PMD.GodClass", "PMD.TooManyFields", "PMD.ExcessiveMethodLength"})
 public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
-
   @FXML
   private Pane root;
   @FXML
-  private XYChart<Number, Number> chart;
+  private XYChart chart;
   @FXML
-  private NumberAxis xAxis;
+  private DefaultNumericAxis xAxis;
   @FXML
-  private NumberAxis yAxis;
+  private DefaultNumericAxis yAxis;
 
+  private final BooleanProperty xAxisAutoScrolling = new SimpleBooleanProperty(true);
   private final BooleanProperty yAxisAutoRanging = new SimpleBooleanProperty(true);
   private final DoubleProperty yAxisMinBound = new SimpleDoubleProperty(-1);
   private final DoubleProperty yAxisMaxBound = new SimpleDoubleProperty(1);
+  private final StringProperty yAxisUnit = new SimpleStringProperty("ul");
+  private final DoubleProperty visibleTime = new SimpleDoubleProperty(30);
 
-  private final Map<DataSource<? extends Number>, Series<Number, Number>> numberSeriesMap = new HashMap<>();
-  private final Map<DataSource<double[]>, List<Series<Number, Number>>> arraySeriesMap = new HashMap<>();
-  private final DoubleProperty visibleTime = new SimpleDoubleProperty(this, "Visible time", 30);
+  private final Map<DataSource<? extends Number>, DoubleDataSet> numberSeriesMap = new HashMap<>();
+  private final Map<DataSource<double[]>, List<DoubleDataSet>> arraySeriesMap = new HashMap<>();
 
-  private final Map<Series<Number, Number>, BooleanProperty> visibleSeries = new HashMap<>();
+  private final Map<DoubleDataSet, BooleanProperty> visibleSeries = new IdentityHashMap<>();
 
-  private final Object queueLock = new Object();
-  private final Map<Series<Number, Number>, List<Data<Number, Number>>> queuedData = new HashMap<>();
-
-  private final ChangeListener<Number> numberChangeLister = (property, oldNumber, newNumber) -> {
+  private final ChangeListener<Number> numberChangeListener = (property, oldNumber, newNumber) -> {
     final DataSource<Number> source = sourceFor(property);
     updateFromNumberSource(source);
   };
@@ -91,17 +93,15 @@ public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
     updateFromArraySource(source);
   };
 
-  private final Map<Series<Number, Number>, SimpleData> realData = new HashMap<>();
-
-  private final Function<Series<Number, Number>, BooleanProperty> createVisibleProperty = s -> {
+  private final Function<DoubleDataSet, BooleanProperty> createVisibleProperty = s -> {
     SimpleBooleanProperty visible = new SimpleBooleanProperty(this, s.getName(), true);
     visible.addListener((__, was, is) -> {
       if (is) {
-        if (!chart.getData().contains(s)) {
-          chart.getData().add(s);
+        if (!chart.getDatasets().contains(s)) {
+          chart.getDatasets().add(s);
         }
       } else {
-        chart.getData().remove(s);
+        chart.getDatasets().remove(s);
       }
     });
     return visible;
@@ -110,42 +110,77 @@ public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
   /**
    * Keep track of all graph widgets so they update at the same time.
    * It's jarring to see a bunch of graphs all updating at different times
+   *
    */
   private static final Collection<GraphWidget> graphWidgets =
       Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
 
-  /**
-   * How often graphs should be redrawn, in milliseconds.
-   */
-  private static final long UPDATE_PERIOD = 250;
+  public static class Updater implements AutoCloseable {
 
-  static {
-    ThreadUtils.newDaemonScheduledExecutorService()
-        .scheduleAtFixedRate(() -> {
-          synchronized (graphWidgets) {
-            graphWidgets.forEach(GraphWidget::update);
-          }
-        }, 500, UPDATE_PERIOD, TimeUnit.MILLISECONDS);
+    private final IntegerProperty graphUpdateRate = new SimpleIntegerProperty(this, "graphUpdateRate", 10);
+    private final ScheduledExecutorService executorService = ThreadUtils.newDaemonScheduledExecutorService();
+    private volatile ScheduledFuture<?> currentFuture;
+
+    private final ChangeListener<Number> updateCreator = (observable, oldValue, newValue) -> {
+      if (currentFuture != null) {
+        currentFuture.cancel(false);
+      }
+
+      long amount = 1000L / newValue.intValue();
+      if (amount == 0) {
+        amount = 1;
+      }
+
+      currentFuture = executorService
+              .scheduleAtFixedRate(this::updateAll, 500, amount, TimeUnit.MILLISECONDS);
+    };
+
+    public Updater() {
+      graphUpdateRate.addListener(updateCreator);
+      updateCreator.changed(null, null, graphUpdateRate.get());
+    }
+
+    private void updateAll() {
+      graphWidgets.forEach(GraphWidget::update);
+    }
+
+    public int getGraphUpdateRate() {
+      return graphUpdateRate.get();
+    }
+
+    public IntegerProperty graphUpdateRateProperty() {
+      return graphUpdateRate;
+    }
+
+    public void setGraphUpdateRate(int graphUpdateRate) {
+      this.graphUpdateRate.set(graphUpdateRate);
+    }
+
+    @Override
+    public void close() {
+      graphUpdateRate.removeListener(updateCreator);
+      executorService.shutdown();
+    }
   }
 
   @FXML
   private void initialize() {
+    chart.setAutoNotification(false);
+    yAxis.unitProperty().bind(yAxisUnit);
+
     yAxisAutoRanging.addListener((__, was, useAutoRanging) -> {
       if (useAutoRanging) {
-        yAxis.lowerBoundProperty().unbind();
-        yAxis.upperBoundProperty().unbind();
-        yAxis.tickUnitProperty().unbind();
+        yAxis.minProperty().unbind();
+        yAxis.maxProperty().unbind();
+
         yAxis.setAutoRanging(true);
       } else {
         yAxis.setAutoRanging(false);
-        yAxis.lowerBoundProperty().bind(yAxisMinBound);
-        yAxis.upperBoundProperty().bind(yAxisMaxBound);
-
-        // Enforce 11 tick marks like the default autoranging behavior
-        yAxis.tickUnitProperty().bind(
-            EasyBind.combine(yAxisMinBound, yAxisMaxBound, (min, max) -> (max.doubleValue() - min.doubleValue()) / 10));
+        yAxis.minProperty().bind(yAxisMinBound);
+        yAxis.maxProperty().bind(yAxisMaxBound);
       }
     });
+
     chart.legendVisibleProperty().bind(
         Bindings.createBooleanBinding(() -> sources.size() > 1, sources));
     sources.addListener((ListChangeListener<DataSource>) c -> {
@@ -153,9 +188,9 @@ public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
         if (c.wasAdded()) {
           c.getAddedSubList().forEach(source -> {
             if (source.getDataType() == NumberType.Instance) {
-              source.dataProperty().addListener(numberChangeLister);
+              source.dataProperty().addListener(numberChangeListener);
               if (source.isConnected()) {
-                numberChangeLister.changed(source.dataProperty(), null, (Number) source.getData());
+                numberChangeListener.changed(source.dataProperty(), null, (Number) source.getData());
               }
             } else if (source.getDataType() == NumberArrayType.Instance) {
               source.dataProperty().addListener(numberArrayChangeListener);
@@ -168,13 +203,14 @@ public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
           });
         } else if (c.wasRemoved()) {
           c.getRemoved().forEach(source -> {
-            source.dataProperty().removeListener(numberChangeLister);
+            source.dataProperty().removeListener(numberChangeListener);
             source.dataProperty().removeListener(numberArrayChangeListener);
           });
         }
       }
     });
-    xAxis.setTickLabelFormatter(new StringConverter<Number>() {
+
+    xAxis.setTickLabelFormatter(new StringConverter<>() {
       @Override
       public String toString(Number num) {
         final int seconds = num.intValue() / 1000;
@@ -191,54 +227,30 @@ public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
       }
     });
 
-    xAxis.lowerBoundProperty().bind(xAxis.upperBoundProperty().subtract(visibleTime.multiply(1e3)));
+    ActionList.registerSupplier(root, () ->
+        ActionList.withName(getTitle())
+        .addAction("Clear", this::clear));
 
-    // Make sure data gets re-added to the chart
-    visibleTime.addListener((__, prev, cur) -> {
-      if (cur.doubleValue() > prev.doubleValue()) {
-        // insert data at the beginning of each series
-        realData.forEach((series, dataList) -> {
-          List<Data<Number, Number>> toAdd = new ArrayList<>();
-          for (int i = 0; i < dataList.getXValues().size(); i++) {
-            double x = dataList.getXValues().get(i);
-            if (x >= xAxis.getLowerBound()) {
-              if (x < series.getData().get(0).getXValue().doubleValue()) {
-                Data<Number, Number> data = dataList.asData(i);
-                if (!toAdd.isEmpty()) {
-                  Data<Number, Number> squarifier = new Data<>(
-                      data.getXValue().doubleValue() - 1,
-                      toAdd.get(toAdd.size() - 1).getYValue().doubleValue()
-                  );
-                  toAdd.add(squarifier);
-                }
-                toAdd.add(data);
-              } else {
-                break;
-              }
-            }
-          }
-          series.getData().addAll(0, toAdd);
-        });
-      }
-    });
+    ActionList.registerSupplier(root, () ->
+        ActionList.withName(getTitle())
+            .addAction("Toggle X-Axis Autoscroll",
+                () -> this.xAxisAutoScrolling.set(!this.xAxisAutoScrolling.get())));
 
-    ActionList.registerSupplier(root, () -> {
-      return ActionList.withName(getTitle())
-          .addAction("Clear", () -> {
-            synchronized (queueLock) {
-              chart.getData().forEach(s -> s.getData().clear());
-              queuedData.forEach((s, q) -> q.clear());
-              realData.forEach((s, d) -> d.clear());
-            }
-          });
-    });
 
     // Add this widget to the list only after everything is initialized to prevent occasional null pointers when
     // the update thread runs after construction but before FXML injection or initialization
     synchronized (graphWidgets) {
       graphWidgets.add(this);
     }
+  }
 
+  private void clear() {
+    chart.getDatasets().forEach(s -> {
+      var doubleDataSet = (DoubleDataSet) s;
+      doubleDataSet.lock().writeLockGuard(
+          doubleDataSet::clearData
+      );
+    });
   }
 
   @SuppressWarnings("unchecked")
@@ -259,19 +271,17 @@ public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
 
   private void updateFromNumberSource(DataSource<? extends Number> source) {
     final long now = Time.now();
-    final Series<Number, Number> series = getNumberSeries(source);
+    final DoubleDataSet series = getNumberSeries(source);
 
     // The update HAS TO run on the FX thread, otherwise we run the risk of ConcurrentModificationExceptions
     // when the chart goes to lay out the data
-    FxUtils.runOnFxThread(() -> {
-      updateSeries(series, now, source.getData().doubleValue());
-    });
+    FxUtils.runOnFxThread(() -> updateSeries(series, now, source.getData().doubleValue()));
   }
 
   private void updateFromArraySource(DataSource<double[]> source) {
     final long now = System.currentTimeMillis();
     final double[] data = source.getData();
-    final List<Series<Number, Number>> series = getArraySeries(source);
+    final List<DoubleDataSet> series = getArraySeries(source);
 
     // The update HAS TO run on the FX thread, otherwise we run the risk of ConcurrentModificationExceptions
     // when the chart goes to lay out the data
@@ -282,112 +292,113 @@ public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
     });
   }
 
-  private void updateSeries(Series<Number, Number> series, long now, double newData) {
+  private void updateSeries(DoubleDataSet data, long now, double nextValue) {
     final long elapsed = now - Time.getStartTime();
-    final Data<Number, Number> point = new Data<>(elapsed, newData);
-    final ObservableList<Data<Number, Number>> dataList = series.getData();
-    Data<Number, Number> squarifier = null;
-    realData.computeIfAbsent(series, __ -> new SimpleData()).add(point);
-    synchronized (queueLock) {
-      List<Data<Number, Number>> queue = queuedData.computeIfAbsent(series, __ -> new ArrayList<>());
-      if (queue.isEmpty()) {
-        if (!dataList.isEmpty()) {
-          squarifier = createSquarifier(newData, elapsed, dataList);
-        }
-      } else {
-        squarifier = createSquarifier(newData, elapsed, queue);
+
+
+    data.lock().writeLockGuard(() -> {
+      // So getValues() does not return an array of all the elements, but instead returns the
+      // backing array of the ArrayList?? This means it can be followed by trailing zeros,
+      // hence the call to getDataCount().
+
+      // This code here makes the graph  square wave and prevents discrete points
+      // from appearing continuous.
+      double[] yValues = data.getValues(DataSet.DIM_Y);
+      if (data.getDataCount(DataSet.DIM_Y) > 1 && yValues[yValues.length - 1] != nextValue) {
+        data.add(elapsed - 1, yValues[data.getDataCount(DataSet.DIM_Y) - 1]);
       }
-      if (squarifier != null) {
-        queue.add(squarifier);
-      }
-      queue.add(point);
+
+      data.add(elapsed, nextValue);
+    });
+
+    boolean dataVisible = Optional.ofNullable(visibleSeries.get(data)).map(Property::getValue).orElseThrow();
+
+    // if listeners do not work (initial value mainly)
+    if (!chart.getDatasets().contains(data) && dataVisible) {
+      chart.getDatasets().add(data);
     }
-    if (!chart.getData().contains(series)
-        && Optional.ofNullable(visibleSeries.get(series)).map(Property::getValue).orElse(true)) {
-      chart.getData().add(series);
+
+    if (chart.getDatasets().contains(data) && !dataVisible) {
+      chart.getDatasets().remove(data);
     }
   }
 
-  private Data<Number, Number> createSquarifier(double newData, long elapsed, List<Data<Number, Number>> queue) {
-    // Make the graph a square wave
-    // This prevents the graph from appearing to be continuous when the data is discreet
-    // Note this only affects the chart; the actual data is not changed
-    Data<Number, Number> squarifier = null;
-    double prev = queue.get(queue.size() - 1).getYValue().doubleValue();
-    if (prev != newData) {
-      squarifier = new Data<>(elapsed - 1, prev);
-    }
-    return squarifier;
-  }
-
-  private Series<Number, Number> getNumberSeries(DataSource<? extends Number> source) {
+  private DoubleDataSet getNumberSeries(DataSource<? extends Number> source) {
     if (!numberSeriesMap.containsKey(source)) {
-      Series<Number, Number> series = new Series<>();
-      series.setName(source.getName());
+      DoubleDataSet series = new DoubleDataSet(source.getName());
       numberSeriesMap.put(source, series);
-      realData.put(series, new SimpleData());
       visibleSeries.computeIfAbsent(series, createVisibleProperty);
-      series.nodeProperty().addListener((__, old, node) -> {
-        if (node instanceof Parent) {
-          Parent parent = (Parent) node;
-          parent.getChildrenUnmodifiable().forEach(child -> {
-            child.setCache(true);
-            child.setCacheHint(CacheHint.SPEED);
-          });
-          parent.setCache(true);
-          parent.setCacheHint(CacheHint.SPEED);
-        }
-      });
     }
     return numberSeriesMap.get(source);
   }
 
-  private List<Series<Number, Number>> getArraySeries(DataSource<double[]> source) {
-    List<Series<Number, Number>> series = arraySeriesMap.computeIfAbsent(source, __ -> new ArrayList<>());
+  private List<DoubleDataSet> getArraySeries(DataSource<double[]> source) {
+    List<DoubleDataSet> series = arraySeriesMap.computeIfAbsent(source, __ -> new ArrayList<>());
     final double[] data = source.getData();
     if (data.length < series.size()) {
       while (series.size() != data.length) {
-        Series<Number, Number> removed = series.remove(series.size() - 1);
-        realData.remove(removed);
+        DoubleDataSet removed = series.remove(series.size() - 1);
         visibleSeries.remove(removed);
       }
     } else if (data.length > series.size()) {
       for (int i = series.size(); i < data.length; i++) {
-        Series<Number, Number> newSeries = new Series<>();
-        newSeries.setName(source.getName() + "[" + i + "]"); // eg "array[0]", "array[1]", etc
+        DoubleDataSet newSeries = new DoubleDataSet(source.getName() + "[" + i + "]");
         series.add(newSeries);
-        realData.put(newSeries, new SimpleData());
         visibleSeries.computeIfAbsent(newSeries, createVisibleProperty);
       }
     }
     return series;
   }
 
-  private void updateBounds(long elapsed) {
-    xAxis.setUpperBound(elapsed);
-    removeInvisibleData();
-  }
-
   private void update() {
     FxUtils.runOnFxThread(() -> {
-      if (chart.getData().isEmpty()) {
-        return;
+      // Data is only pushed to the graph via listeners, so this prevents the graph
+      // from staying still during a period of no updates.
+      for (var source : numberSeriesMap.keySet()) {
+        numberChangeListener.changed(source.dataProperty(), null, source.getData());
       }
-      synchronized (queueLock) {
-        queuedData.forEach((series, queuedData) -> series.getData().addAll(queuedData));
-        queuedData.forEach((series, queuedData) -> queuedData.clear());
-        OptionalLong maxX = chart.getData().stream()
-            .map(Series::getData)
-            .filter(d -> !d.isEmpty())
-            .map(d -> d.get(d.size() - 1))
-            .map(Data::getXValue)
-            .mapToLong(Number::longValue)
-            .max();
-        if (maxX.isPresent()) {
-          updateBounds(maxX.getAsLong());
+
+      for (var source : arraySeriesMap.keySet()) {
+        numberArrayChangeListener.changed(source.dataProperty(), null, source.getData());
+      }
+
+      rerenderGraph();
+    });
+  }
+
+  private void rerenderGraph() {
+    OptionalDouble globalMax = OptionalDouble.empty();
+    for (DataSet s : chart.getDatasets()) {
+      var doubleDataSet = (DoubleDataSet) s;
+
+      OptionalDouble dataSetMax = doubleDataSet.lock().readLockGuard(() -> {
+
+        if (doubleDataSet.getDataCount(DataSet.DIM_X) == 0) {
+          return OptionalDouble.empty();
+        }
+
+        double[] xValues = doubleDataSet.getValues(DataSet.DIM_X);
+        return OptionalDouble.of(xValues[doubleDataSet.getDataCount(DataSet.DIM_X) - 1]);
+      });
+
+      if (dataSetMax.isPresent()) {
+        if (globalMax.isPresent() && dataSetMax.getAsDouble() > globalMax.getAsDouble()) {
+          globalMax = dataSetMax;
+        } else if (globalMax.isEmpty()) {
+          globalMax = dataSetMax;
         }
       }
-    });
+
+      doubleDataSet.fireInvalidated(null);
+    }
+
+    if (xAxisAutoScrolling.get() && globalMax.isPresent()) {
+      xAxis.maxProperty().set(globalMax.getAsDouble());
+      xAxis.minProperty().bind(xAxis.maxProperty().subtract(visibleTime.multiply(1e3)));
+    } else {
+      xAxis.maxProperty().unbind();
+      xAxis.minProperty().unbind();
+    }
   }
 
   @Override
@@ -408,7 +419,8 @@ public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
   public List<Group> getSettings() {
     return ImmutableList.of(
         Group.of("Graph",
-            Setting.of("Visible time", visibleTime, Double.class)
+            Setting.of("Visible time", visibleTime, Double.class),
+            Setting.of("X-axis auto scrolling", "Automatically scroll the x-axis", xAxisAutoScrolling, Boolean.class)
         ),
         // Note: users can set the lower bound to be greater than the upper bound, resulting in an upside-down graph
         Group.of("Y-axis",
@@ -429,6 +441,12 @@ public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
                 "Force a minimum value. Requires 'Automatic bounds' to be disabled",
                 yAxisMinBound,
                 Double.class
+            ),
+            Setting.of(
+                "Unit",
+                "The unit displayed on the y-axis",
+                yAxisUnit,
+                String.class
             )
         ),
         Group.of("Visible data",
@@ -440,75 +458,4 @@ public class GraphWidget extends AbstractWidget implements AnnotatedWidget {
         )
     );
   }
-
-  public double getVisibleTime() {
-    return visibleTime.get();
-  }
-
-  public long getVisibleTimeMs() {
-    return (long) (getVisibleTime() * 1000);
-  }
-
-  public DoubleProperty visibleTimeProperty() {
-    return visibleTime;
-  }
-
-  public void setVisibleTime(double visibleTime) {
-    this.visibleTime.set(visibleTime);
-  }
-
-  /**
-   * Removes data from the data series that is outside the visible chart area to improve performance.
-   */
-  private void removeInvisibleData() {
-    final double lower = xAxis.getLowerBound();
-    realData.forEach((series, dataList) -> {
-      int firstBeforeOutOfRange = -1;
-      for (int i = 0; i < series.getData().size(); i++) {
-        Data<Number, Number> data = series.getData().get(i);
-        if (data.getXValue().doubleValue() >= lower) {
-          firstBeforeOutOfRange = i;
-          break;
-        }
-      }
-      if (firstBeforeOutOfRange > 0) {
-        series.getData().remove(0, firstBeforeOutOfRange);
-      }
-    });
-  }
-
-  /**
-   * Stores data in two parallel arrays.
-   */
-  private static final class SimpleData {
-    private final PrimitiveDoubleArrayList xValues = new PrimitiveDoubleArrayList();
-    private final PrimitiveDoubleArrayList yValues = new PrimitiveDoubleArrayList();
-
-    public void add(double x, double y) {
-      xValues.add(x);
-      yValues.add(y);
-    }
-
-    public void add(Data<? extends Number, ? extends Number> point) {
-      add(point.getXValue().doubleValue(), point.getYValue().doubleValue());
-    }
-
-    public PrimitiveDoubleArrayList getXValues() {
-      return xValues;
-    }
-
-    public PrimitiveDoubleArrayList getYValues() {
-      return yValues;
-    }
-
-    public Data<Number, Number> asData(int index) {
-      return new Data<>(xValues.get(index), yValues.get(index));
-    }
-
-    public void clear() {
-      xValues.clear();
-      yValues.clear();
-    }
-  }
-
 }
