@@ -1,12 +1,18 @@
 package edu.wpi.first.shuffleboard.plugin.base;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import edu.wpi.first.shuffleboard.api.PropertyParser;
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.json.ElementTypeAdapter;
 import edu.wpi.first.shuffleboard.api.plugin.Description;
 import edu.wpi.first.shuffleboard.api.plugin.Plugin;
+import edu.wpi.first.shuffleboard.api.prefs.Group;
+import edu.wpi.first.shuffleboard.api.prefs.Setting;
 import edu.wpi.first.shuffleboard.api.tab.TabInfo;
+import edu.wpi.first.shuffleboard.api.util.PreferencesUtils;
 import edu.wpi.first.shuffleboard.api.widget.ComponentType;
 import edu.wpi.first.shuffleboard.api.widget.LayoutClass;
 import edu.wpi.first.shuffleboard.api.widget.WidgetType;
@@ -61,23 +67,39 @@ import edu.wpi.first.shuffleboard.plugin.base.widget.ToggleButtonWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.ToggleSwitchWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.UltrasonicWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.VoltageViewWidget;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
+import javafx.beans.InvalidationListener;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.prefs.Preferences;
 
 @Description(
     group = "edu.wpi.first.shuffleboard",
     name = "Base",
-    version = "1.2.0",
+    version = "1.3.0",
     summary = "Defines all the WPILib data types and stock widgets"
 )
 @SuppressWarnings("PMD.CouplingBetweenObjects")
 public class BasePlugin extends Plugin {
+  private final Preferences preferences = Preferences.userNodeForPackage(getClass());
+  private GraphWidget.Updater updater;
+  private InvalidationListener graphSaver;
+
+  @Override
+  public void onLoad() {
+    this.updater = new GraphWidget.Updater();
+
+    this.graphSaver = n -> PreferencesUtils.save(updater.graphUpdateRateProperty(), preferences);
+    PreferencesUtils.read(updater.graphUpdateRateProperty(), preferences);
+    updater.graphUpdateRateProperty().addListener(graphSaver);
+  }
+
+  @Override
+  public void onUnload() {
+    updater.graphUpdateRateProperty().removeListener(graphSaver);
+    updater.close();
+  }
 
   @Override
   public List<DataType> getDataTypes() {
@@ -202,4 +224,16 @@ public class BasePlugin extends Plugin {
     );
   }
 
+  @Override
+  public List<Group> getSettings() {
+    return ImmutableList.of(
+            Group.of("Graph settings",
+                    Setting.of("Graph Update Rate",
+                            "How many times a second graph widgets update at. "
+                                    + "Faster update rates may cause performance issues",
+                            updater.graphUpdateRateProperty()
+                    )
+            )
+    );
+  }
 }

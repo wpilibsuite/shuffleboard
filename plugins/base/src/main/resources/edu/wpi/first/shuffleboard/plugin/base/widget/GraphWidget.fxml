@@ -1,20 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.chart.AreaChart?>
-<?import javafx.scene.chart.NumberAxis?>
 <?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import de.gsi.chart.XYChart?>
+<?import de.gsi.chart.axes.spi.DefaultNumericAxis?>
 <StackPane xmlns="http://javafx.com/javafx"
            xmlns:fx="http://javafx.com/fxml"
            fx:controller="edu.wpi.first.shuffleboard.plugin.base.widget.GraphWidget"
-           prefWidth="256" prefHeight="256"
-           minWidth="200" minHeight="172"
+           minWidth="288" minHeight="288"
            fx:id="root">
-    <AreaChart fx:id="chart" animated="false" createSymbols="false">
-        <xAxis>
-            <NumberAxis fx:id="xAxis" label="Time" upperBound="0" autoRanging="false" tickUnit="15E3" animated="false"/>
-        </xAxis>
-        <yAxis>
-            <NumberAxis fx:id="yAxis" label="Value" animated="false"/>
-        </yAxis>
-    </AreaChart>
+    <XYChart fx:id="chart" animated="false" VBox.vgrow="ALWAYS">
+        <axes>
+            <DefaultNumericAxis fx:id="xAxis" side="BOTTOM" name="Time" autoRanging="false" unit="seconds"/>
+            <DefaultNumericAxis fx:id="yAxis" side="LEFT" name="Value"/>
+        </axes>
+    </XYChart>
 </StackPane>
