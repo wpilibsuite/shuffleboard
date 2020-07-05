@@ -152,3 +152,12 @@ stages:
         RUN_AZURE_ARTIFACTORY_RELEASE: 'TRUE'
         ARTIFACTORY_PUBLISH_USERNAME: $(PublishUserName)
         ARTIFACTORY_PUBLISH_PASSWORD: $(PublishPassword)
+
+    - task: PublishPipelineArtifact@0
+      inputs:
+        artifactName: 'API'
+        targetPath: 'api/build/libs'
+    - task: PublishPipelineArtifact@0
+      inputs:
+        artifactName: 'APP'
+        targetPath: 'app/build/libs'
