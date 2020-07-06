@@ -69,7 +69,7 @@ public final class FmsInfo extends ComplexData<FmsInfo> {
         Maps.<String, Number>get(map, MATCH_NUMBER).intValue(),
         Maps.<String, Number>get(map, REPLAY_NUMBER).intValue(),
         MatchType.fromOrdinal(Maps.<String, Number>get(map, MATCH_TYPE).intValue()),
-        Maps.get(map, IS_RED_ALLIANCE) ? Alliance.RED : Alliance.BLUE,
+        Maps.<String, Boolean>get(map, IS_RED_ALLIANCE) ? Alliance.RED : Alliance.BLUE,
         Maps.<String, Number>get(map, STATION_NUMBER).intValue(),
         ControlWord.fromBits(Maps.<String, Number>get(map, FMS_CONTROL_DATA).intValue())
     );
