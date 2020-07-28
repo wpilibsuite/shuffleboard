@@ -1,7 +1,7 @@
 description = """
 Plugin for displaying the 2018 FMS data for POWER UP.
-""".trimIndent().trim()
+""".trim()
 
 dependencies {
-    compile(project(":plugins:base"))
+    implementation project(":plugins:base")
 }

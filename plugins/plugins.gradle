@@ -1,20 +1,20 @@
-import org.gradle.jvm.tasks.Jar
-import org.jfrog.gradle.plugin.artifactory.dsl.PublisherConfig
-import groovy.lang.GroovyObject
-
 subprojects {
     afterEvaluate {
-        apply(plugin = "java-library")
+        apply plugin: "java-library"
+        apply plugin: 'maven-publish'
         dependencies {
-            compileOnly(group = "com.google.code.findbugs", name = "annotations", version = "+")
-            compile(project(":api"))
+            compileOnly group: "com.google.code.findbugs", name: "annotations", version: "+"
+            implementation project(":api")
         }
-        val sourceJar = task<Jar>("sourceJar") {
+
+        if (project.hasProperty('platformSpecSkipPublishing')) return
+
+        def sourceJar = tasks.register("sourceJar", Jar) {
             description = "Creates a JAR that contains the source code."
             from(project.sourceSets["main"].allSource)
             classifier = "sources"
         }
-        val javadocJar = task<Jar>("javadocJar") {
+        def javadocJar = tasks.register("javadocJar", Jar) {
             dependsOn("javadoc")
             description = "Creates a JAR that contains the javadocs."
             from(tasks.named("javadoc"))
@@ -22,21 +22,22 @@ subprojects {
         }
         if (System.getenv()["RUN_AZURE_ARTIFACTORY_RELEASE"] != null) {
             artifactory {
-                publish(delegateClosureOf<PublisherConfig> {
-                    defaults(delegateClosureOf<GroovyObject> {
+                publish {
+                    defaults {
                         invokeMethod("publications", "plugin.${project.name}")
-                    })
-                })
+                    }
+                }
             }
         }
+
         publishing.publications {
-            register<MavenPublication>("plugin.${project.name}") {
+            "plugin.${project.name}"(MavenPublication) {
                 groupId = "edu.wpi.first.shuffleboard.plugin"
                 artifactId = project.name
                 version = project.version as String
                 from(components["java"])
-                artifact(javadocJar)
-                artifact(sourceJar)
+                artifact(javadocJar.get())
+                artifact(sourceJar.get())
             }
         }
     }

@@ -1,0 +1,304 @@
+import com.github.spotbugs.snom.SpotBugsTask
+
+plugins {
+    id 'base'
+    id 'com.github.johnrengelman.shadow' version '6.0.0' apply false
+    id "com.jfrog.artifactory" version "4.16.0"
+    id 'edu.wpi.first.wpilib.versioning.WPILibVersioningPlugin' version '4.0.1'
+    id 'edu.wpi.first.wpilib.repositories.WPILibRepositoriesPlugin' version '2020.2'
+    id 'com.diffplug.gradle.spotless' version '3.28.0'
+    id 'com.github.spotbugs' version '4.4.4'
+    id 'edu.wpi.first.WpilibTools' version '0.6.1'
+}
+
+if (project.hasProperty('buildServer')) {
+    wpilibVersioning.buildServerMode = true
+}
+
+if (project.hasProperty('releaseMode')) {
+    wpilibVersioning.releaseMode = true
+}
+
+allprojects {
+    repositories {
+        mavenCentral()
+    }
+    if (project.hasProperty('releaseMode')) {
+        wpilibRepositories.addAllReleaseRepositories(it)
+    } else {
+        wpilibRepositories.addAllDevelopmentRepositories(it)
+    }
+}
+
+wpilibVersioning.version.finalizeValue()
+version = wpilibVersioning.version.get()
+
+def projectVersion = version
+
+def outputsFolder = file("$buildDir/allOutputs")
+
+task copyAllOutputs(type: Copy) {
+    destinationDir outputsFolder
+}
+
+build.dependsOn copyAllOutputs
+
+ext.addTaskToCopyAllOutputs = { task ->
+    copyAllOutputs.dependsOn task
+    copyAllOutputs.inputs.file task.archivePath
+    copyAllOutputs.from task.archivePath
+}
+
+allprojects {
+    apply plugin: 'java'
+    apply plugin: 'maven-publish'
+    apply plugin: 'com.diffplug.gradle.spotless'
+    apply plugin: 'edu.wpi.first.WpilibTools'
+
+    def publishingFromAllOutputs = false
+    if (project.hasProperty('prCombinePublish')) {
+        publishingFromAllOutputs = true
+    }
+
+    if (System.getenv()["RUN_AZURE_ARTIFACTORY_RELEASE"] != null) {
+        publishingFromAllOutputs = true
+        artifactory {
+            setContextUrl("https://frcmaven.wpi.edu/artifactory") // base artifactory url
+            publish {
+                repository {
+                    if (project.hasProperty("releaseMode")) {
+                        setProperty("repoKey", "release")
+                    } else {
+                        setProperty("repoKey", "development")
+                    }
+                    setProperty("username", System.getenv()["ARTIFACTORY_PUBLISH_USERNAME"])
+                    setProperty("password", System.getenv()["ARTIFACTORY_PUBLISH_PASSWORD"])
+                    setProperty("maven", true)
+                }
+            }
+            clientConfig.info.setBuildName("Shuffleboard")
+        }
+        publish.dependsOn artifactoryPublish
+    }
+
+    if (project.name == 'app') {
+        afterEvaluate {
+            publishing {
+                publications {
+                    maven(MavenPublication) {
+                    if (publishingFromAllOutputs) {
+                        outputsFolder.eachFile {
+                            def dashSplit = it.name.split('-')
+                            def clfr = dashSplit[dashSplit.length - 1].split('\\.')[0]
+                            artifact(it) {
+                                classifier = clfr
+                            }
+                        }
+                    } else {
+                        artifact(project.shadowJar)
+                    }
+                    groupId 'edu.wpi.first.shuffleboard'
+                    artifactId = 'shuffleboard'
+                    version project.version
+                    }
+                }
+            }
+        }
+    }
+
+    version = projectVersion
+
+    // Note: plugins should override this
+    tasks.withType(Jar).configureEach {
+        manifest {
+            attributes["Implementation-Version"] = project.version as String
+            attributes["Built-Date"] = Instant.now().toString()
+        }
+    }
+
+    spotless {
+        groovyGradle {
+            trimTrailingWhitespace()
+            indentWithSpaces()
+            endWithNewline()
+        }
+        format("extraneous") {
+            target("*.sh", "*.yml")
+            trimTrailingWhitespace()
+            indentWithSpaces()
+            endWithNewline()
+        }
+        format("markdown") {
+            target("*.md")
+            trimTrailingWhitespace()
+            indentWithSpaces()
+            endWithNewline()
+        }
+    }
+
+    configurations {
+        javaFxDeps
+    }
+
+    configurations.compileOnly.extendsFrom(configurations.javaFxDeps)
+    configurations.testImplementation.extendsFrom(configurations.javaFxDeps)
+
+    dependencies {
+        javaFxDeps wpilibTools.deps.javafx("base")
+        javaFxDeps wpilibTools.deps.javafx("controls")
+        javaFxDeps wpilibTools.deps.javafx("fxml")
+        javaFxDeps wpilibTools.deps.javafx("graphics")
+
+        def junitJupiter = { name ->
+            create group: 'org.junit.jupiter', name: name, version: '5.6.1'
+        }
+
+        def testFxVersion = { name, version ->
+            create group: 'org.testfx', name: name, version: version
+        }
+
+        def testFx = { name ->
+            create group: 'org.testfx', name: name, version: '4.0.16-alpha'
+        }
+        compileOnly create(group: 'com.google.code.findbugs', name: 'annotations', version: '3.0.1')
+        testImplementation junitJupiter("junit-jupiter-api")
+        testImplementation junitJupiter("junit-jupiter-engine")
+        testImplementation junitJupiter("junit-jupiter-params")
+
+        testImplementation group: "org.junit-pioneer", name: "junit-pioneer", version: "0.3.0"
+        testRuntimeOnly group: "org.junit.platform", name: "junit-platform-launcher", version: "1.0.0"
+
+        testImplementation testFx("testfx-core")
+        testImplementation testFx("testfx-junit5")
+        testRuntimeOnly testFxVersion("openjfx-monocle", "jdk-9+181")
+
+    }
+
+    tasks.withType(JavaCompile) {
+        // UTF-8 characters are used in menus
+        options.encoding = "UTF-8"
+    }
+
+    tasks.withType(Test) {
+        // TODO: re-enable when TestFX (or the underlying JavaFX problem) is fixed
+        println("UI tests will not be run due to TestFX being broken when headless on Java 10.")
+        println("See: https://github.com/javafxports/openjdk-jfx/issues/66")
+        // Link: https://github.com/javafxports/openjdk-jfx/issues/66
+        useJUnitPlatform {
+            excludeTags("UI")
+        }
+        systemProperty("junit.jupiter.extensions.autodetection.enabled", true)
+    }
+
+    tasks.withType(Javadoc) {
+        failOnError = false
+    }
+
+    tasks.withType(GenerateModuleMetadata) {
+        enabled = false
+    }
+}
+
+allprojects {
+    apply plugin: 'checkstyle'
+    apply plugin: 'pmd'
+    apply plugin: 'com.github.spotbugs'
+    apply plugin: 'jacoco'
+
+    checkstyle {
+        toolVersion = "8.12"
+    }
+
+    pmd {
+        toolVersion = "6.7.0"
+        consoleOutput = true
+        sourceSets = [project.sourceSets["main"]]
+        reportsDir = file("${project.buildDir}/reports/pmd")
+        ruleSetFiles = files(file("$rootDir/pmd-ruleset.xml"))
+        ruleSets = []
+    }
+
+    spotbugs {
+        toolVersion = "3.1.7"
+        //it.sourceSets = [project.sourceSets["main"], project.sourceSets["test"]]
+        excludeFilter = file("$rootDir/findBugsSuppressions.xml")
+        effort = "max"
+    }
+
+    tasks.withType(SpotBugsTask) {
+        def sbTask = it
+        reports {
+            create("text") {
+                enabled = true
+            }
+            xml.enabled = false
+        }
+        finalizedBy(task("${name}Report") {
+            mustRunAfter(sbTask)
+            doLast {
+                def dest = sbTask.reports.first().destination;
+                if (dest.exists()) {
+                    def text = dest.text
+                    if (text != null && !text.isBlank()) {
+                        logger.warn(text)
+                    }
+                }
+            }
+        })
+    }
+
+    jacoco {
+        toolVersion = "0.8.2"
+    }
+
+    tasks.withType(JacocoReport) {
+        reports {
+            xml.enabled = true
+            html.enabled = true
+        }
+    }
+}
+
+project(":api") {
+    apply plugin: 'maven-publish'
+    def sourceJar = tasks.register("sourceJar", Jar) {
+        description = "Creates a JAR that contains the source code."
+        from(sourceSets["main"].allSource)
+        classifier = "sources"
+    }
+    def javadocJar = tasks.register("javadocJar", Jar) {
+        dependsOn("javadoc")
+        description = "Creates a JAR that contains the javadocs."
+        from(docsDir)
+        classifier = "javadoc"
+    }
+
+    if (System.getenv()["RUN_AZURE_ARTIFACTORY_RELEASE"] != null) {
+        artifactory {
+            publish {
+                defaults {
+                    invokeMethod("publications", "api")
+                }
+            }
+        }
+    }
+
+    publishing {
+        publications {
+            api(MavenPublication) {
+                groupId = "edu.wpi.first.shuffleboard"
+                artifactId = "api"
+                version = project.version.toString()
+                afterEvaluate {
+                    from(components["java"])
+                }
+                artifact(sourceJar.get())
+                artifact(javadocJar.get())
+            }
+        }
+    }
+}
+
+wrapper {
+    gradleVersion = '6.0.1'
+}

@@ -1,0 +1,57 @@
+plugins {
+    id 'java-library'
+}
+
+ext.platformSpecSkipPublishing = true
+
+description = """
+The bundled CameraServer plugin. This plugin provides data sources and widgets for viewing MJPEG streams from the WPILib CameraServer.
+""".trim()
+
+def javaCppVersion = "1.4.1"
+
+
+def nativeConfigName = 'wpilibNatives'
+def nativeConfig = configurations.create(nativeConfigName)
+
+def nativeTasks = wpilibTools.createExtractionTasks {
+    configurationName = nativeConfigName
+    resourceFileName = "ResourceInformation-CameraServer.json"
+}
+
+nativeTasks.addToSourceSetResources(sourceSets.main)
+
+wpilibTools.deps.wpilibVersion = "2020.+"
+
+nativeConfig.dependencies.add wpilibTools.deps.cscore()
+
+nativeTasks.extractConfiguration.configure {
+    it.skipWindowsHelperLibrary = true
+}
+
+dependencies {
+    api project(":plugins:networktables")
+    api wpilibTools.deps.wpilibJava("cscore")
+
+    implementation group: "org.bytedeco", name: "javacv", version: javaCppVersion
+
+    runtimeOnly group: "org.bytedeco.javacpp-presets", name: "ffmpeg", version: "3.4.2-$javaCppVersion", classifier: wpilibTools.platformMapper.javaCppClassifier
+    runtimeOnly group: "org.bytedeco.javacpp-presets", name: "opencv", version: "3.4.1-$javaCppVersion", classifier: wpilibTools.platformMapper.javaCppClassifier
+}
+
+def testNativeConfigName = 'wpilibTestNatives'
+def testNativeConfig = configurations.create(testNativeConfigName)
+
+def folder = project.layout.buildDirectory.dir('NativeTest')
+
+def testNativeTasks = wpilibTools.createExtractionTasks {
+    taskPostfix = "Test"
+    configurationName = testNativeConfigName
+    rootTaskFolder.set(folder)
+}
+
+testNativeTasks.addToSourceSetResources(sourceSets.test)
+
+testNativeConfig.dependencies.add wpilibTools.deps.cscore()
+testNativeConfig.dependencies.add wpilibTools.deps.wpilib("ntcore")
+testNativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")

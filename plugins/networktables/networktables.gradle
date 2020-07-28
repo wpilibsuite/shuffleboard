@@ -1,0 +1,49 @@
+plugins {
+    id 'java-library'
+}
+
+ext.platformSpecSkipPublishing = true
+
+description = """
+The bundled NetworkTable plugin. This plugin provides sources for network tables (both single entries and arbitrary
+subtables) and a widget for displaying MapData as a tree table.
+""".trim()
+
+def nativeConfigName = 'wpilibNatives'
+def nativeConfig = configurations.create(nativeConfigName)
+
+def nativeTasks = wpilibTools.createExtractionTasks {
+    configurationName = nativeConfigName
+    resourceFileName = "ResourceInformation-NetworkTables.json"
+}
+
+nativeTasks.addToSourceSetResources(sourceSets.main)
+
+wpilibTools.deps.wpilibVersion = "2020.+"
+
+nativeConfig.dependencies.add wpilibTools.deps.wpilib('ntcore')
+
+nativeTasks.extractConfiguration.configure {
+    it.skipWindowsHelperLibrary = true
+}
+
+dependencies {
+    api wpilibTools.deps.wpilibJava("ntcore")
+    api wpilibTools.deps.wpilibJava("wpiutil")
+}
+
+def testNativeConfigName = 'wpilibTestNatives'
+def testNativeConfig = configurations.create(testNativeConfigName)
+
+def folder = project.layout.buildDirectory.dir('NativeTest')
+
+def testNativeTasks = wpilibTools.createExtractionTasks {
+    taskPostfix = "Test"
+    configurationName = testNativeConfigName
+    rootTaskFolder.set(folder)
+}
+
+testNativeTasks.addToSourceSetResources(sourceSets.test)
+
+testNativeConfig.dependencies.add wpilibTools.deps.wpilib("ntcore")
+testNativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")

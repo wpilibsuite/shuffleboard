@@ -1,0 +1,9 @@
+plugins {
+    id 'java-library'
+}
+
+description = "Base shuffleboard plugin that provides the default data types and widgets."
+
+dependencies {
+    api "de.gsi.chart:chartfx-chart:11.1.5"
+}
