@@ -139,16 +139,21 @@ public class Shuffleboard extends Application {
       alert.getButtonTypes().setAll(ButtonType.YES, ButtonType.NO, ButtonType.CANCEL);
       alert.getDialogPane().setHeaderText("Save the current layout before closing?");
       alert.showAndWait().ifPresent(bt -> {
+        if (bt == ButtonType.CANCEL) {
+          // cancel the close request by consuming the event
+          closeEvent.consume();
+          return;
+        }
+
         if (bt == ButtonType.YES) {
           try {
             mainWindowController.save();
           } catch (IOException ex) {
             logger.log(Level.WARNING, "Could not save the layout", ex);
           }
-        } else if (bt == ButtonType.CANCEL) {
-          // cancel the close request by consuming the event
-          closeEvent.consume();
         }
+
+        Platform.exit();
         // Don't need to check for NO because it just lets the window close normally
       });
     });
