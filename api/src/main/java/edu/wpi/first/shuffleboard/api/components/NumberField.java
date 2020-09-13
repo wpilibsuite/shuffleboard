@@ -14,6 +14,10 @@ public class NumberField extends AbstractNumberField<Double> {
   private static final Pattern completeFloatingPointNumber = Pattern.compile("^[-+]?\\d*\\.?\\d+$");
   private static final DecimalFormat textFromNumberFormat =
           new DecimalFormat("0", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
+  
+  static {
+    textFromNumberFormat.setMaximumFractionDigits(15);
+  }
 
   /**
    * Creates a new number field with no value.
