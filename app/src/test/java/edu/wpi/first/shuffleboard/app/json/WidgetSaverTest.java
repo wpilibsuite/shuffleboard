@@ -124,7 +124,6 @@ public class WidgetSaverTest extends ApplicationTest {
   }
 
   @Test
-  @Tag("NonJenkinsTest") // More info here: https://github.com/wpilibsuite/shuffleboard/issues/214
   public void loadSimpleWidget() throws Exception {
     Components.getDefault().register(SimpleWidget.class);
     String widgetJson = "{\n"

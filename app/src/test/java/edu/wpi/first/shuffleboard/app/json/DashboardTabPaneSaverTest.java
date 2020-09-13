@@ -51,11 +51,6 @@ public class DashboardTabPaneSaverTest extends ApplicationTest {
   }
 
   @Test
-  @Tag("NonJenkinsTest")
-  // Broken on Jenkins: class com.sun.javafx.jmx.HighlightRegion declares multiple JSON fields named hash
-  // Possibly due to not being aware of the WidgetPaneSaver class? Unsure how that can happen unless there's a bug
-  // with the classpath introspection utilities in Guava. Travis, Appveyor, and local (Window 10 x64) testing all work
-  // as expected so it's most likely something weird with Jenkins (as of 2017-11-20)
   public void testDeserialize() throws Exception {
     Reader reader = new InputStreamReader(getClass().getResourceAsStream("/test.json"), "UTF-8");
     DashboardData data = JsonBuilder.forSaveFile().fromJson(reader, DashboardData.class);
