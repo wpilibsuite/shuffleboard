@@ -180,13 +180,6 @@ allprojects {
     }
 
     tasks.withType(Test) {
-        // TODO: re-enable when TestFX (or the underlying JavaFX problem) is fixed
-        println("UI tests will not be run due to TestFX being broken when headless on Java 10.")
-        println("See: https://github.com/javafxports/openjdk-jfx/issues/66")
-        // Link: https://github.com/javafxports/openjdk-jfx/issues/66
-        useJUnitPlatform {
-            excludeTags("UI")
-        }
         systemProperty("junit.jupiter.extensions.autodetection.enabled", true)
     }
 
