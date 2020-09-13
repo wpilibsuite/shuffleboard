@@ -144,10 +144,10 @@ allprojects {
     configurations.testImplementation.extendsFrom(configurations.javaFxDeps)
 
     dependencies {
-        javaFxDeps wpilibTools.deps.javafx("base")
-        javaFxDeps wpilibTools.deps.javafx("controls")
-        javaFxDeps wpilibTools.deps.javafx("fxml")
-        javaFxDeps wpilibTools.deps.javafx("graphics")
+        javaFxDeps wpilibTools.deps.javafx("base", "14")
+        javaFxDeps wpilibTools.deps.javafx("controls", "14")
+        javaFxDeps wpilibTools.deps.javafx("fxml", "14")
+        javaFxDeps wpilibTools.deps.javafx("graphics", "14")
 
         def junitJupiter = { name ->
             create group: 'org.junit.jupiter', name: name, version: '5.6.1'
