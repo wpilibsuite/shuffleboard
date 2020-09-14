@@ -19,7 +19,7 @@ public class CameraServerData extends ComplexData<CameraServerData> {
    * Creates a new data object.
    *
    * @param name      the name of the camera
-   * @param image     the images being supplied by the stream, or <tt>null</tt> if the stream is not providing an image
+   * @param image     the images being supplied by the stream, or <code>null</code> if the stream is not providing an image
    * @param fps       the current FPS of the stream. If the FPS is unknown, set to -1
    * @param bandwidth the current bandwidth of the stream, in bytes per second. If the bandwidth is unknown, set to -1
    */

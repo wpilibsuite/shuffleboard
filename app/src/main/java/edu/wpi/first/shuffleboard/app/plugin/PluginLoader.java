@@ -317,12 +317,12 @@ public class PluginLoader {
   }
 
   /**
-   * Checks if plugin <tt>A</tt> requires plugin <tt>B</tt>, either directly or through transitive dependencies.
+   * Checks if plugin <code>A</code> requires plugin <code>B</code>, either directly or through transitive dependencies.
    *
    * @param pluginA the plugin to check
-   * @param pluginB the plugin to check as a possible requirement of plugin <tt>A</tt>
+   * @param pluginB the plugin to check as a possible requirement of plugin <code>A</code>
    *
-   * @return true if plugin <tt>A</tt> requires plugin <tt>B</tt>, either directly or through transitive dependencies
+   * @return true if plugin <code>A</code> requires plugin <code>B</code>, either directly or through transitive dependencies
    */
   private boolean requires(Class<? extends Plugin> pluginA, Class<? extends Plugin> pluginB) {
     return isDirectRequirement(pluginA, pluginB)
@@ -335,9 +335,9 @@ public class PluginLoader {
    * Checks if a plugin <i>directly requires</i> on another.
    *
    * @param pluginA the plugin to check
-   * @param pluginB the plugin to check as a possible requirement of plugin <tt>A</tt>
+   * @param pluginB the plugin to check as a possible requirement of plugin <code>A</code>
    *
-   * @return true if plugin <tt>A</tt> directly requires plugin <tt>B</tt>, false if not
+   * @return true if plugin <code>A</code> directly requires plugin <code>B</code>, false if not
    */
   private static boolean isDirectRequirement(Class<? extends Plugin> pluginA, Class<? extends Plugin> pluginB) {
     Description description = PluginLoaderHelper.getDescription(pluginB);

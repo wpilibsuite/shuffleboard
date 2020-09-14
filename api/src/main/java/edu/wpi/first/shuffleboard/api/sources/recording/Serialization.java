@@ -106,18 +106,18 @@ public final class Serialization {
     public static final int VERSION_NUMBER_OFFSET = MAGIC_NUMBER_OFFSET + SIZE_OF_INT;
 
     /**
-     * The offset to the <tt>int</tt> value of the number of data points.
+     * The offset to the <code>int</code> value of the number of data points.
      */
     public static final int NUMBER_DATA_POINTS_OFFSET = VERSION_NUMBER_OFFSET + SIZE_OF_INT;
 
     /**
-     * The offset to the <tt>int</tt> value holding the position of the markers array in the file. The byte at this
+     * The offset to the <code>int</code> value holding the position of the markers array in the file. The byte at this
      * position will be the first byte in the markers array, and is preceded by the final byte of the constant pool.
      */
     public static final int MARKER_POSITION_OFFSET = NUMBER_DATA_POINTS_OFFSET + SIZE_OF_INT;
 
     /**
-     * The offset to the <tt>int</tt> value holding the position of the data array in the file. The byte at this
+     * The offset to the <code>int</code> value holding the position of the data array in the file. The byte at this
      * position will be the first byte in the data array, and is preceded by the final byte in the markers array.
      */
     public static final int DATA_POSITION_OFFSET = MARKER_POSITION_OFFSET + SIZE_OF_INT;

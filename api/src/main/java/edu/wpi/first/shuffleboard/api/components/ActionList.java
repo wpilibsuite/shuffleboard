@@ -161,7 +161,7 @@ public class ActionList {
    *   - C
    *     - C1
    *     - C2
-   * </pre></p>
+   * </pre>
    */
   public ActionList addNested(ActionList al) {
     actions.add(al::asMenu);

@@ -11,7 +11,7 @@ public final class Vector2D {
   public final double y;
 
   /**
-   * Creates a vector from the origin to the point <tt>(x, y)</tt>.
+   * Creates a vector from the origin to the point <code>(x, y)</code>.
    *
    * @param x the X-coordinate of the vector
    * @param y the Y-coordinate of the vector
@@ -43,7 +43,7 @@ public final class Vector2D {
   }
 
   /**
-   * Gets the angle of this vector, in radians in the range <tt>(-pi, pi)</tt>.
+   * Gets the angle of this vector, in radians in the range <code>(-pi, pi)</code>.
    */
   public double getAngle() {
     return Math.atan2(y, x);

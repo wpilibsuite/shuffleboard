@@ -42,20 +42,24 @@ public final class TypeUtils {
    * <p>Filter out members of a subtype from a stream of some base type.
    * For example, this code:</p>
    *
-   * <pre>{@code
+   * <pre>
+   * {@code
    *   getComponents().stream()
    *     .filter(c -> c instanceof Widget)
    *     .map(c -> (Widget) c)
    *     .forEach(w -> w.setSource(...))
-   * }</pre>
+   * }
+   * </pre>
    *
    * <p>can be turned into:</p>
    *
-   * <pre>{@code
+   * <pre>
+   * {@code
    *   getComponents()
    *     .flatMap(TypeUtils.castStream(Widget.class))
    *     .forEach(w -> w.setSource(...))
-   * }</pre>
+   * }
+   * </pre>
    */
   public static <T, U extends T> Function<T, Stream<U>> castStream(Class<U> cls) {
     return value -> cls.isAssignableFrom(value.getClass())

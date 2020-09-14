@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * Represents data from a mecanum drive base. All motor speeds are in the range <tt>(-1, 1)</tt>.
+ * Represents data from a mecanum drive base. All motor speeds are in the range <code>(-1, 1)</code>.
  */
 public final class MecanumDriveData extends DriveBaseData<MecanumDriveData> {
 
@@ -98,7 +98,7 @@ public final class MecanumDriveData extends DriveBaseData<MecanumDriveData> {
 
   /**
    * Gets the moment about the drive base's center of rotation. This value is derived from the motor speeds and is in
-   * the range <tt>(-1, 1)</tt>.
+   * the range <code>(-1, 1)</code>.
    */
   public double getMoment() {
     return moment;
@@ -106,7 +106,7 @@ public final class MecanumDriveData extends DriveBaseData<MecanumDriveData> {
 
   /**
    * Gets a vector describing the direction of movement of the drive base. This vector is derived from the motor speeds
-   * and has a magnitude in the range <tt>(-1, 1)</tt>.
+   * and has a magnitude in the range <code>(-1, 1)</code>.
    */
   public Vector2D getDirection() {
     return direction;
@@ -114,7 +114,7 @@ public final class MecanumDriveData extends DriveBaseData<MecanumDriveData> {
 
   /**
    * Gets a value describing how the drive base is turning in a differential-drive style. This is in the range
-   * <tt>(-Inf, Inf)</tt>, with negative values being turns to the right and positive values being turns to the left.
+   * <code>(-Inf, Inf)</code>, with negative values being turns to the right and positive values being turns to the left.
    * Values of Infinity mean there is no turning moment.
    */
   public double getTurn() {
@@ -140,8 +140,8 @@ public final class MecanumDriveData extends DriveBaseData<MecanumDriveData> {
   /**
    * Calculates a direction vector for the drive base caused by the mecanum wheel force vectors. This assumes that all
    * four wheels have equal weight distribution. The vector is scaled to have X and Y components in the range
-   * <tt>(-1, 1)</tt>; due to the nature of mecanum drives, the magnitude of the vector is also in the range
-   * <tt>(-1, 1)</tt>.
+   * <code>(-1, 1)</code>; due to the nature of mecanum drives, the magnitude of the vector is also in the range
+   * <code>(-1, 1)</code>.
    */
   @VisibleForTesting
   static Vector2D calculateDirectionVector(double fl, double fr, double rl, double rr) {
@@ -154,7 +154,7 @@ public final class MecanumDriveData extends DriveBaseData<MecanumDriveData> {
   /**
    * Calculates the sum of all moments caused by the mecanum wheel force vectors about the center of rotation. This
    * assumes that all four wheels have equal weight distribution. The moment is scaled to be in the range
-   * <tt>(-1, 1)</tt>, with positive values being counter-clockwise rotation and negative values being clockwise
+   * <code>(-1, 1)</code>, with positive values being counter-clockwise rotation and negative values being clockwise
    * rotation.
    */
   @VisibleForTesting

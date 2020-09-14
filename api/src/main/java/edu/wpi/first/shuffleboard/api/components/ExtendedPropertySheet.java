@@ -93,8 +93,8 @@ public class ExtendedPropertySheet extends PropertySheet {
 
     /**
      * Creates a new PropertyItem from the given property. The name of the item is generated from the name of the
-     * property by converting from <tt>camelCase</tt> to a natural-language <tt>Sentence case</tt> text. For example,
-     * a property with the name <tt>"fooBarBaz"</tt> will generate a name of <tt>"Foo bar baz"</tt>. If a name other
+     * property by converting from <code>camelCase</code> to a natural-language <code>Sentence case</code> text. For example,
+     * a property with the name <code>"fooBarBaz"</code> will generate a name of <code>"Foo bar baz"</code>. If a name other
      * than the property name is desired, or if generating a sentence-case string would be inappropriate, use
      * {@link #PropertyItem(Property, String)} that lets the name be directly specified.
      *
@@ -117,7 +117,7 @@ public class ExtendedPropertySheet extends PropertySheet {
 
     /**
      * Converts a "CamelCase" string to "Sentence case". This is implemented by replacing every upper-case character
-     * (except for the first one, if it is upper-case) with a space character (<tt>' '</tt>) and that character's
+     * (except for the first one, if it is upper-case) with a space character (<code>' '</code>) and that character's
      * lower-case representation.
      */
     private static String camelCaseToSentence(String camel) {

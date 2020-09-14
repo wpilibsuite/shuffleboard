@@ -76,15 +76,15 @@ final class PluginLoaderHelper {
   }
 
   /**
-   * Checks if version <tt>A</tt> is a backwards-compatible with version <tt>B</tt>; that is, something that depends on
-   * version <tt>B</tt> will still function when version <tt>A</tt> is present. This assumes that the versioning scheme
+   * Checks if version <code>A</code> is a backwards-compatible with version <code>B</code>; that is, something that depends on
+   * version <code>B</code> will still function when version <code>A</code> is present. This assumes that the versioning scheme
    * strictly follows semantic versioning guidelines and increments the major number whenever the API has a change that
    * breaks backwards compatibility.
    *
    * @param versionA the newer version
    * @param versionB the older version
    *
-   * @return true if version <tt>A</tt> is backwards compatible with version <tt>B</tt>
+   * @return true if version <code>A</code> is backwards compatible with version <code>B</code>
    */
   @VisibleForTesting
   static boolean isCompatible(Version versionA, Version versionB) {

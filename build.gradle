@@ -257,6 +257,15 @@ allprojects {
             html.enabled = true
         }
     }
+
+    tasks.withType(Javadoc) {
+        options.encoding = "UTF-8"
+        options.links 'https://docs.oracle.com/en/java/javase/11/docs/api/'
+        options.tags(
+                'implSpec:a:Implementation Requirements:',
+                'implNote:a:Implementation Note:'
+        )
+    }
 }
 
 project(":api") {
