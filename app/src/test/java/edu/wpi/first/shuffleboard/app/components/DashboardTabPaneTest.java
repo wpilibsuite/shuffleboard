@@ -9,6 +9,7 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.testfx.matcher.control.LabeledMatchers.hasText;
 import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
 
 @Tag("UI")
@@ -35,6 +36,7 @@ public class DashboardTabPaneTest extends ApplicationTest {
       tabPane.closeCurrentTab();
     });
     waitForFxEvents();
+    clickOn("OK");
     assertEquals(1, tabPane.getSelectionModel().getSelectedIndex(), "Wrong selected tab index");
   }
 
@@ -51,6 +53,7 @@ public class DashboardTabPaneTest extends ApplicationTest {
       tabPane.closeCurrentTab();
     });
     waitForFxEvents();
+    clickOn("OK");
     assertEquals(2, tabPane.getSelectionModel().getSelectedIndex(), "Wrong selected tab index");
   }
 
