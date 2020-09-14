@@ -171,7 +171,7 @@ allprojects {
 
         testImplementation testFx("testfx-core")
         testImplementation testFx("testfx-junit5")
-        testRuntimeOnly testFxVersion("openjfx-monocle", "jdk-9+181")
+        testRuntimeOnly testFxVersion("openjfx-monocle", "jdk-11+26")
 
     }
 
