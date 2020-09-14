@@ -1,4 +1,5 @@
 import com.github.spotbugs.snom.SpotBugsTask
+import org.gradle.internal.os.OperatingSystem;
 
 plugins {
     id 'base'
@@ -180,12 +181,14 @@ allprojects {
     }
 
     tasks.withType(Test) {
-        // TODO: re-enable when TestFX (or the underlying JavaFX problem) is fixed
-        println("UI tests will not be run due to TestFX being broken when headless on Java 10.")
-        println("See: https://github.com/javafxports/openjdk-jfx/issues/66")
-        // Link: https://github.com/javafxports/openjdk-jfx/issues/66
         useJUnitPlatform {
-            excludeTags("UI")
+            if(OperatingSystem.current().isMacOsX()) {
+                // TODO: re-enable when TestFX (or the underlying JavaFX problem) is fixed
+                println("UI tests will not be run due to JavaFX being broken when headless on MacOsX.")
+                println("See: https://github.com/wpilibsuite/shuffleboard/issues/670")
+
+                excludeTags("UI")
+            }
         }
         systemProperty("junit.jupiter.extensions.autodetection.enabled", true)
     }
