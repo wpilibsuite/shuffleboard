@@ -250,7 +250,8 @@ public final class DifferentialDriveWidget extends AbstractDriveWidget<Different
   }
 
   /**
-   * Maps a value <i>linearly</i> from the range <code>(minInput, maxInput)</code> to <code>(minOutput, maxOutput)</code>.
+   * Maps a value <i>linearly</i> from the range <code>(minInput, maxInput)</code>
+   * to <code>(minOutput, maxOutput)</code>.
    *
    * @param x         the value to map
    * @param minInput  the minimum value of the input range

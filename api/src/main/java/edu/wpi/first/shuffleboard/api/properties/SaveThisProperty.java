@@ -27,6 +27,7 @@ import java.lang.annotation.Target;
  * private final Property&lt;Foo&gt; foo = new SimpleObjectProperty(this, "foo", new Foo());
  * </code>
  * </pre>
+ *
  * <p>If the property has no name (i.e. the name string is {@code null} or {@code ""}), then the annotation <i>must</i>
  * set the name. Otherwise, an exception will be thrown when attempting to save or load the widget.
  * <pre>

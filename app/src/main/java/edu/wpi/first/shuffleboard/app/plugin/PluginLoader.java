@@ -322,7 +322,8 @@ public class PluginLoader {
    * @param pluginA the plugin to check
    * @param pluginB the plugin to check as a possible requirement of plugin <code>A</code>
    *
-   * @return true if plugin <code>A</code> requires plugin <code>B</code>, either directly or through transitive dependencies
+   * @return true if plugin <code>A</code> requires plugin <code>B</code>, either directly
+   *     or through transitive dependencies
    */
   private boolean requires(Class<? extends Plugin> pluginA, Class<? extends Plugin> pluginB) {
     return isDirectRequirement(pluginA, pluginB)

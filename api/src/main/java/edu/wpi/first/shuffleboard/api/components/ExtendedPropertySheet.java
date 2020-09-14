@@ -93,10 +93,10 @@ public class ExtendedPropertySheet extends PropertySheet {
 
     /**
      * Creates a new PropertyItem from the given property. The name of the item is generated from the name of the
-     * property by converting from <code>camelCase</code> to a natural-language <code>Sentence case</code> text. For example,
-     * a property with the name <code>"fooBarBaz"</code> will generate a name of <code>"Foo bar baz"</code>. If a name other
-     * than the property name is desired, or if generating a sentence-case string would be inappropriate, use
-     * {@link #PropertyItem(Property, String)} that lets the name be directly specified.
+     * property by converting from <code>camelCase</code> to a natural-language <code>Sentence case</code> text.
+     * For example, a property named <code>"fooBarBaz"</code> will generate a name of <code>"Foo bar baz"</code>.
+     * If a name other than the property name is desired, or if generating a sentence-case string would be
+     * inappropriate, use {@link #PropertyItem(Property, String)} that lets the name be directly specified.
      *
      * @param property the property the item represents
      */

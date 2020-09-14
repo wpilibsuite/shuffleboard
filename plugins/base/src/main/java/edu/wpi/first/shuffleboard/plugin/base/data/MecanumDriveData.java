@@ -114,8 +114,8 @@ public final class MecanumDriveData extends DriveBaseData<MecanumDriveData> {
 
   /**
    * Gets a value describing how the drive base is turning in a differential-drive style. This is in the range
-   * <code>(-Inf, Inf)</code>, with negative values being turns to the right and positive values being turns to the left.
-   * Values of Infinity mean there is no turning moment.
+   * <code>(-Inf, Inf)</code>, with negative values being turns to the right and positive values being
+   * turns to the left. Values of Infinity mean there is no turning moment.
    */
   public double getTurn() {
     return turn;

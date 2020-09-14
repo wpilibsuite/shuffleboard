@@ -76,9 +76,9 @@ final class PluginLoaderHelper {
   }
 
   /**
-   * Checks if version <code>A</code> is a backwards-compatible with version <code>B</code>; that is, something that depends on
-   * version <code>B</code> will still function when version <code>A</code> is present. This assumes that the versioning scheme
-   * strictly follows semantic versioning guidelines and increments the major number whenever the API has a change that
+   * Checks if version <code>A</code> is backwards-compatible with version <code>B</code>.
+   * This assumes that the versioning scheme strictly follows semantic versioning guidelines and
+   * increments the major number whenever the API has a change that
    * breaks backwards compatibility.
    *
    * @param versionA the newer version

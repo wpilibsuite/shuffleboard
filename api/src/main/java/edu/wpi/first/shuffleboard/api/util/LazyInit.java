@@ -10,7 +10,7 @@ import java.util.function.Supplier;
  * A holder class for lazily initialized values. This is useful for variables that may be constructed after its owner,
  * or when they may not necessarily be used at all during its owners lifecycle, and when it is expensive to instantiate.
  *
- * Example use:
+ * <p>Example use:
  * <pre>
  * {@code
  * private final LazyInit<Foo> foo = LazyInit.of(() -> expensiveFooConstruction());
