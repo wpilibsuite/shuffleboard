@@ -154,7 +154,6 @@ public class Shuffleboard extends Application {
         }
 
         Platform.exit();
-        // Don't need to check for NO because it just lets the window close normally
       });
     });
 
