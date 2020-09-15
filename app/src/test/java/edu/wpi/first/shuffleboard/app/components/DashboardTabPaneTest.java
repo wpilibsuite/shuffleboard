@@ -25,6 +25,7 @@ public class DashboardTabPaneTest extends ApplicationTest {
   }
 
   @Test
+  @Tag("NonHeadlessTests")
   public void testCloseTabKeepsSelectedIndex() {
     // Add three tabs, select the second one, then close it
     // The selected index should remain 1
@@ -41,6 +42,7 @@ public class DashboardTabPaneTest extends ApplicationTest {
   }
 
   @Test
+  @Tag("NonHeadlessTests")
   public void testCloseRightmostTabDecrementsIndex() {
     // Add four tabs, select the fourth one, then close it
     // The selected index should decrement from 3 to 2
