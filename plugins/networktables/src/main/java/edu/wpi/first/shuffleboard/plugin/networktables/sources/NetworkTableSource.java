@@ -22,7 +22,7 @@ import java.util.Optional;
  * @implNote Subclasses must call {@link #setTableListener(TableListener) setTableListener()} after
  *           the super constructor call. If a subclass needs to implement {@link #close()}, its
  *           implementation <i>must</i> call {@code super.close()} to properly remove the listener
- *           from network tables.z`
+ *           from network tables.
  */
 public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
 
