@@ -250,7 +250,20 @@ public class WidgetPane extends TilePane implements ComponentContainer {
     if (component instanceof Widget) {
       addWidget((Widget) component);
     } else {
-      TileSize size = sizeOfWidget(component);
+      addComponent(component, sizeOfWidget(component));
+    }
+  }
+
+  /**
+   * Add an arbitrary component to the WidgetPane with the specified size.
+   *
+   * @param component the component to add
+   * @param size      the size of the tile used to display the component
+   */
+  public void addComponent(Component component, TileSize size) {
+    if (component instanceof Widget) {
+      addWidget((Widget) component, size);
+    } else {
       GridPoint location = firstPoint(size.getWidth(), size.getHeight());
       if (location == null) {
         // Nowhere to place the component
@@ -274,10 +287,14 @@ public class WidgetPane extends TilePane implements ComponentContainer {
     }
     var component = optionalComponent.get();
     GridPoint position = componentModel.getPreferredPosition();
+    TileSize size = componentModel.getPreferredSize();
     if (position == null) {
-      addComponent(component);
+      if (size == null) {
+        addComponent(component);
+      } else {
+        addComponent(component, size);
+      }
     } else {
-      TileSize size = componentModel.getPreferredSize();
       if (size == null) {
         addComponent(component, position);
       } else {
@@ -292,6 +309,7 @@ public class WidgetPane extends TilePane implements ComponentContainer {
    * The tile will be the specified size.
    *
    * @param component the component to add
+   * @param location  location of the component
    * @param size      the size of the tile used to display the component
    */
   public <C extends Component> Tile<C> addComponent(C component, GridPoint location, TileSize size) {
