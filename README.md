@@ -1,7 +1,7 @@
 [![Build Status](https://dev.azure.com/wpilib/DesktopTools/_apis/build/status/wpilibsuite.shuffleboard)](https://dev.azure.com/wpilib/DesktopTools/_build/latest?definitionId=11)
 [![codecov](https://codecov.io/gh/wpilibsuite/shuffleboard/branch/master/graph/badge.svg)](https://codecov.io/gh/wpilibsuite/shuffleboard)
 
-# shuffleboard
+# shuffleboard - an amazing project
 
 
 ## Structure
