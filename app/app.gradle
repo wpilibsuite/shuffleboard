@@ -69,6 +69,18 @@ tasks.withType(ShadowJar).configureEach {
     archiveVersion = ""
     exclude("module-info.class")
     archiveClassifier.set(wpilibTools.platformMapper.currentPlatform.platformName)
+
+    if (project.hasProperty("developerID")) {
+        doLast {
+            exec {
+                workingDir rootDir
+                def args = ["sh", "codesign.sh", project.findProperty("developerID"),
+                            archiveFile.get().getAsFile().getAbsolutePath()]
+                commandLine args
+                println "Location: " + archiveFile.get().getAsFile().getAbsolutePath()
+            }
+        }
+    }
 }
 
 addTaskToCopyAllOutputs(shadowJar)
