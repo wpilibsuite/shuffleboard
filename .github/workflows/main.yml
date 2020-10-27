@@ -11,15 +11,19 @@ jobs:
           - os: windows-latest
             artifact-name: Win32
             architecture: x86
+            args: ""
           - os: windows-latest
             artifact-name: Win64
             architecture: x64
+            args: ""
           - os: macos-latest
             artifact-name: macOS
             architecture: x64
+            args: "-x :plugins:cameraserver:test -x :plugins:networktables:test"
           - os: ubuntu-latest
             artifact-name: Linux
             architecture: x64
+            args: ""
 
     name: "Build - ${{ matrix.artifact-name }}"
     runs-on: ${{ matrix.os }}
@@ -40,15 +44,15 @@ jobs:
           keychain-password: ${{ secrets.APPLE_KEYCHAIN_PASSWORD }}
         if: |
           (matrix.artifact-name == 'macOS') && (github.repository_owner == 'wpilibsuite') &&
-          (startsWith(github.refs, 'refs/heads/') || startsWith(github.refs, 'refs/tags/v'))
+          (startsWith(github.ref, 'refs/heads/') || startsWith(github.ref, 'refs/tags/v'))
 
       - name: Build with Gradle
-        run: ./gradlew build -PbuildServer -PdeveloperID=${{ secrets.APPLE_DEVELOPER_ID }}
-        if: ${{ !github.repository_owner == 'wpilibsuite' || !startsWith(github.refs, 'refs/tags/v') }}
+        run: ./gradlew build -PbuildServer -PdeveloperID=${{ secrets.APPLE_DEVELOPER_ID }} ${{ matrix.args }}
+        if: ${{ !github.repository_owner == 'wpilibsuite' || !startsWith(github.ref, 'refs/tags/v') }}
 
       - name: Build with Gradle (Release)
-        run: ./gradlew build -PbuildServer -PreleaseMode -PdeveloperID=${{ secrets.APPLE_DEVLEOPER_ID }}
-        if: ${{ github.repository_owner == 'wpilibsuite' && startsWith(github.refs, 'refs/tags/v') }}
+        run: ./gradlew build -PbuildServer -PreleaseMode -PdeveloperID=${{ secrets.APPLE_DEVELOPER_ID }} ${{ matrix.args }}
+        if: ${{ github.repository_owner == 'wpilibsuite' && startsWith(github.ref, 'refs/tags/v') }}
 
       - uses: actions/upload-artifact@v2
         with:
@@ -81,11 +85,11 @@ jobs:
         run: ./gradlew publish -PbuildServer -PprCombinePublish
         if: |
           (github.repository_owner != 'wpilibsuite') ||
-          (github.refs != 'refs/heads/master' && !startsWith(github.refs, 'refs/tags/v'))
+          (github.ref != 'refs/heads/master' && !startsWith(github.ref, 'refs/tags/v'))
 
       - name: Combine (Master)
         run: ./gradlew publish -PbuildServer
-        if: ${{ github.repository_owner == 'wpilibsuite' && github.refs == 'refs/heads/master' }}
+        if: ${{ github.repository_owner == 'wpilibsuite' && github.ref == 'refs/heads/master' }}
         env:
           RUN_AZURE_ARTIFACTORY_RELEASE: 'TRUE'
           ARTIFACTORY_PUBLISH_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
@@ -93,7 +97,7 @@ jobs:
 
       - name: Combine (Release)
         run: ./gradlew publish -PbuildServer -PreleaseMode
-        if: ${{ github.repository_owner == 'wpilibsuite' && startsWith(github.refs, 'refs/tags/v') }}
+        if: ${{ github.repository_owner == 'wpilibsuite' && startsWith(github.ref, 'refs/tags/v') }}
         env:
           RUN_AZURE_ARTIFACTORY_RELEASE: 'TRUE'
           ARTIFACTORY_PUBLISH_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
