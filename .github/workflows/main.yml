@@ -39,8 +39,7 @@ jobs:
           certificate-passphrase: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
           keychain-password: ${{ secrets.APPLE_KEYCHAIN_PASSWORD }}
         if: |
-          (matrix.artifact-name == 'macOS') && (github.repository_owner == 'prateekma') &&
-          (github.refs == 'refs/heads/actions2' || startsWith(github.refs, 'refs/tags/v'))
+          (startsWith(github.refs, 'refs/heads/') || startsWith(github.refs, 'refs/tags/v'))
 
       - name: Build with Gradle
         run: ./gradlew build -PbuildServer -PdeveloperID=${{ secrets.APPLE_DEVELOPER_ID }}
