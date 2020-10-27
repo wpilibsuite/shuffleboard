@@ -73,9 +73,18 @@ jobs:
         with:
           fetch-depth: 0
 
+      - uses: actions/checkout@v2
+        with:
+          repository: prateekma/wpilib-tool-plugin
+          ref: mac-adhoc
+          path: wpilib-tool-plugin
+
       - uses: actions/setup-java@v1
         with:
           java-version: 11
+
+      - run: ./gradlew publishToMavenLocal
+        working-directory: wpilib-tool-plugin
 
       - uses: actions/download-artifact@v2
         with:
