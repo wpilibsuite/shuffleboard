@@ -8,7 +8,7 @@ plugins {
     id 'edu.wpi.first.wpilib.repositories.WPILibRepositoriesPlugin' version '2020.2'
     id 'com.diffplug.gradle.spotless' version '3.28.0'
     id 'com.github.spotbugs' version '4.4.4'
-    id 'edu.wpi.first.WpilibTools' version '0.6.1'
+    id 'edu.wpi.first.WpilibTools' version '0.7.1'
 }
 
 if (project.hasProperty('buildServer')) {
