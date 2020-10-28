@@ -70,14 +70,12 @@ tasks.withType(ShadowJar).configureEach {
     exclude("module-info.class")
     archiveClassifier.set(wpilibTools.platformMapper.currentPlatform.platformName)
 
-    if (wpilibTools.platformMapper.currentPlatform.platformName.startsWith("mac")) {
+    if (wpilibTools.platformMapper.currentPlatform.platformName.startsWith("mac") &&
+        project.hasProperty("developerID") && project.findProperty("developerID") != "") {
         doLast {
             exec {
-                String id = "-"
-                if (project.hasProperty("developerID") && project.findProperty("developerID") != "")
-                    id = project.findProperty("developerID")
                 workingDir rootDir
-                def args = ["sh", "codesign.sh", id,
+                def args = ["sh", "codesign.sh", project.findProperty("developerID"),
                             archiveFile.get().getAsFile().getAbsolutePath()]
                 commandLine args
                 println "Location: " + archiveFile.get().getAsFile().getAbsolutePath()
