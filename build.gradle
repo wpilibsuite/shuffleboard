@@ -56,6 +56,7 @@ allprojects {
     apply plugin: 'maven-publish'
     apply plugin: 'com.diffplug.gradle.spotless'
     apply plugin: 'edu.wpi.first.WpilibTools'
+    apply plugin: 'com.jfrog.artifactory'
 
     def publishingFromAllOutputs = false
     if (project.hasProperty('prCombinePublish')) {
@@ -102,6 +103,15 @@ allprojects {
                     groupId 'edu.wpi.first.shuffleboard'
                     artifactId = 'shuffleboard'
                     version project.version
+                    }
+                }
+            }
+            if (System.getenv()["RUN_AZURE_ARTIFACTORY_RELEASE"] != null) {
+                artifactory {
+                    publish {
+                        defaults {
+                            publications('maven')
+                        }
                     }
                 }
             }
