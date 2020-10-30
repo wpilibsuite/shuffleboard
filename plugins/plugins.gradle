@@ -20,11 +20,11 @@ subprojects {
             from(tasks.named("javadoc"))
             classifier = "javadoc"
         }
-        if (System.getenv()["RUN_AZURE_ARTIFACTORY_RELEASE"] != null) {
+        if (System.getenv()['RUN_AZURE_ARTIFACTORY_RELEASE'] != null) {
             artifactory {
                 publish {
                     defaults {
-                        invokeMethod("publications", "plugin.${project.name}")
+                        publications("plugin.${project.name}")
                     }
                 }
             }
