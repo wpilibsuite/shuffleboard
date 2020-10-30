@@ -279,7 +279,7 @@ project(":api") {
         artifactory {
             publish {
                 defaults {
-                    publications ('api')
+                    publications('api')
                 }
             }
         }

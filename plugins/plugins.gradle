@@ -24,7 +24,7 @@ subprojects {
             artifactory {
                 publish {
                     defaults {
-                        publications ("plugin.${project.name}")
+                        publications("plugin.${project.name}")
                     }
                 }
             }
