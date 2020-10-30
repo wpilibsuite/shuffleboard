@@ -1,4 +1,4 @@
-[![Build Status](https://dev.azure.com/wpilib/DesktopTools/_apis/build/status/wpilibsuite.shuffleboard)](https://dev.azure.com/wpilib/DesktopTools/_build/latest?definitionId=11)
+![CI](https://github.com/wpilibsuite/shuffleboard/workflows/CI/badge.svg)
 [![codecov](https://codecov.io/gh/wpilibsuite/shuffleboard/branch/master/graph/badge.svg)](https://codecov.io/gh/wpilibsuite/shuffleboard)
 
 # shuffleboard
