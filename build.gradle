@@ -62,20 +62,20 @@ allprojects {
         publishingFromAllOutputs = true
     }
 
-    if (System.getenv()["RUN_AZURE_ARTIFACTORY_RELEASE"] != null) {
+    if (System.getenv()['RUN_AZURE_ARTIFACTORY_RELEASE'] != null) {
         publishingFromAllOutputs = true
         artifactory {
-            setContextUrl("https://frcmaven.wpi.edu/artifactory") // base artifactory url
+            contextUrl = 'https://frcmaven.wpi.edu/artifactory' // base artifactory url
             publish {
                 repository {
-                    if (project.hasProperty("releaseMode")) {
-                        setProperty("repoKey", "release")
-                    } else {
-                        setProperty("repoKey", "development")
-                    }
-                    setProperty("username", System.getenv()["ARTIFACTORY_PUBLISH_USERNAME"])
-                    setProperty("password", System.getenv()["ARTIFACTORY_PUBLISH_PASSWORD"])
-                    setProperty("maven", true)
+                if (project.hasProperty('releaseMode')) {
+                    repoKey = 'release'
+                } else {
+                    repoKey = 'development'
+                }
+                    username = System.getenv()["ARTIFACTORY_PUBLISH_USERNAME"]
+                    password = System.getenv()["ARTIFACTORY_PUBLISH_PASSWORD"]
+                    maven = true
                 }
             }
             clientConfig.info.setBuildName("Shuffleboard")
@@ -279,7 +279,7 @@ project(":api") {
         artifactory {
             publish {
                 defaults {
-                    invokeMethod("publications", "api")
+                    publications ('api')
                 }
             }
         }
