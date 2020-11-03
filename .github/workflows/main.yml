@@ -11,15 +11,19 @@ jobs:
           - os: windows-latest
             artifact-name: Win32
             architecture: x86
+            args: "-x pmdMain -x pmdTest"
           - os: windows-latest
             artifact-name: Win64
             architecture: x64
+            args: ""
           - os: macos-latest
             artifact-name: macOS
             architecture: x64
+            args: ""
           - os: ubuntu-latest
             artifact-name: Linux
             architecture: x64
+            args: ""
 
     name: "Build - ${{ matrix.artifact-name }}"
     runs-on: ${{ matrix.os }}
@@ -43,11 +47,11 @@ jobs:
           (startsWith(github.ref, 'refs/heads/') || startsWith(github.ref, 'refs/tags/v'))
 
       - name: Build with Gradle
-        run: ./gradlew build -PbuildServer -PdeveloperID=${{ secrets.APPLE_DEVELOPER_ID }}
+        run: ./gradlew build -PbuildServer ${{ matrix.args}} -PdeveloperID=${{ secrets.APPLE_DEVELOPER_ID }}
         if: ${{ !github.repository_owner == 'wpilibsuite' || !startsWith(github.ref, 'refs/tags/v') }}
 
       - name: Build with Gradle (Release)
-        run: ./gradlew build -PbuildServer -PreleaseMode -PdeveloperID=${{ secrets.APPLE_DEVELOPER_ID }}
+        run: ./gradlew build -PbuildServer -PreleaseMode ${{ matrix.args }} -PdeveloperID=${{ secrets.APPLE_DEVELOPER_ID }}
         if: ${{ github.repository_owner == 'wpilibsuite' && startsWith(github.ref, 'refs/tags/v') }}
 
       - uses: actions/upload-artifact@v2
