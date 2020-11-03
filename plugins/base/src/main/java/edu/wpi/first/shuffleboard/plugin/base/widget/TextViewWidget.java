@@ -4,6 +4,8 @@ import edu.wpi.first.shuffleboard.api.components.NumberField;
 import edu.wpi.first.shuffleboard.api.widget.Description;
 import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 import edu.wpi.first.shuffleboard.api.widget.SimpleAnnotatedWidget;
+import edu.wpi.first.shuffleboard.plugin.base.data.AnalogInputData;
+import edu.wpi.first.shuffleboard.plugin.base.data.types.AnalogInputType;
 
 import org.fxmisc.easybind.EasyBind;
 
@@ -18,7 +20,7 @@ import javafx.scene.layout.Pane;
     name = "Text View",
     summary = "Display a value as text",
     dataTypes = {
-        String.class, Number.class, Boolean.class
+        String.class, Number.class, Boolean.class, AnalogInputType.class
     })
 @ParametrizedController("TextViewWidget.fxml")
 public class TextViewWidget extends SimpleAnnotatedWidget<Object> {
@@ -38,12 +40,15 @@ public class TextViewWidget extends SimpleAnnotatedWidget<Object> {
           numberField.setNumber(((Number) cur).doubleValue());
         } else if (cur instanceof String || cur instanceof Boolean) {
           textField.setText(cur.toString());
+        } else if (cur instanceof AnalogInputData) {
+          numberField.setNumber(((AnalogInputData) cur).getValue());
         } else {
           throw new UnsupportedOperationException("Unsupported type: " + cur.getClass().getName());
         }
       }
     });
-    numberField.visibleProperty().bind(EasyBind.map(dataProperty(), d -> d instanceof Number).orElse(false));
+    numberField.visibleProperty().bind(EasyBind.map(dataProperty(), d -> d instanceof Number
+            || d instanceof AnalogInputData).orElse(false));
     textField.visibleProperty().bind(numberField.visibleProperty().not());
 
     textField.textProperty().addListener((__, oldText, newText) -> {
@@ -55,7 +60,17 @@ public class TextViewWidget extends SimpleAnnotatedWidget<Object> {
         setData(newText);
       }
     });
-    numberField.numberProperty().addListener((__, oldNumber, newNumber) -> setData(newNumber));
+    numberField.numberProperty().addListener((__, oldNumber, newNumber) -> {
+      if (newNumber != null) {
+        if (getData() instanceof Number || getData() instanceof String || getData() instanceof Boolean) {
+          setData(newNumber);
+        } else if (getData() instanceof AnalogInputData) {
+          //Analog inputs can't accept data
+        } else {
+          throw new UnsupportedOperationException("Unsupported type: " + getData().getClass().getName());
+        }
+      }
+    });
   }
 
   @Override

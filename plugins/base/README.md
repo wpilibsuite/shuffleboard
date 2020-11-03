@@ -6,7 +6,7 @@ This includes, but is not limited to:
 
 | Data type | Compatible widgets | Default widget |
 |---|---|---|
-| Analog Input | Voltage View |
+| Analog Input | Voltage View, Text View | Voltage View
 | Boolean | Boolean Box, Toggle Button, Toggle Switch, Text View | Boolean Box
 | Command | Command |
 | Number | Number Slider, Linear Indicator, Slider, Text View, Graph | Linear Indicator
