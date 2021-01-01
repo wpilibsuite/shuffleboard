@@ -4,22 +4,15 @@ plugins {
     id 'base'
     id 'com.github.johnrengelman.shadow' version '6.0.0' apply false
     id "com.jfrog.artifactory" version "4.16.0"
-    id 'edu.wpi.first.wpilib.versioning.WPILibVersioningPlugin' version '4.0.2'
+    id 'edu.wpi.first.wpilib.versioning.WPILibVersioningPlugin' version '4.1.0'
     id 'edu.wpi.first.wpilib.repositories.WPILibRepositoriesPlugin' version '2020.2'
     id 'com.diffplug.gradle.spotless' version '3.28.0'
     id 'com.github.spotbugs' version '4.4.4'
     id 'edu.wpi.first.WpilibTools' version '0.7.1'
 }
 
-if (project.hasProperty('buildServer')) {
-    wpilibVersioning.buildServerMode = true
-    wpilibVersioning.useAllTags = true
-}
-
-if (project.hasProperty('releaseMode')) {
-    wpilibVersioning.releaseMode = true
-    wpilibVersioning.useAllTags = true
-}
+wpilibVersioning.buildServerMode = project.hasProperty('buildServer')
+wpilibVersioning.releaseMode = project.hasProperty('releaseMode')
 
 allprojects {
     repositories {
