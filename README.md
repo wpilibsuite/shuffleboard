@@ -1,5 +1,5 @@
 ![CI](https://github.com/wpilibsuite/shuffleboard/workflows/CI/badge.svg)
-[![codecov](https://codecov.io/gh/wpilibsuite/shuffleboard/branch/master/graph/badge.svg)](https://codecov.io/gh/wpilibsuite/shuffleboard)
+[![codecov](https://codecov.io/gh/wpilibsuite/shuffleboard/branch/main/graph/badge.svg)](https://codecov.io/gh/wpilibsuite/shuffleboard)
 
 # shuffleboard
 
