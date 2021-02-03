@@ -17,7 +17,7 @@ shuffleboard.py in `~/wpilib/<year>/tools` (Linux or Mac).
 
 ### Requirements
 - [JRE 11](https://adoptopenjdk.net/). Java 11 is required.
-No other version of Java is supported. Java 11 is installed the
+No other version of Java is supported. Java 11 is installed by the
 [WPILib installer](https://github.com/wpilibsuite/allwpilib/releases).
 
 ## Building
