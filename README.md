@@ -1,7 +1,6 @@
 ![CI](https://github.com/wpilibsuite/shuffleboard/workflows/CI/badge.svg)
-[![codecov](https://codecov.io/gh/wpilibsuite/shuffleboard/branch/master/graph/badge.svg)](https://codecov.io/gh/wpilibsuite/shuffleboard)
 
-# shuffleboard
+# Shuffleboard
 
 
 ## Structure
@@ -11,16 +10,15 @@ subprojects that the main app depends on to provide data types, widgets, and dat
 
 ## Running
 
-Shuffleboard is installed by the FRC vscode extension: [Installation Instructions](http://wpilib.screenstepslive.com/s/currentCS/m/java/l/1027503-installing-c-and-java-development-tools-for-frc).
+Shuffleboard is installed by the FRC vscode extension: [Installation Instructions](https://docs.wpilib.org/en/stable/docs/zero-to-robot/step-2/wpilib-setup.html).
 It can be launched from the WPILib menu in Visual Studio Code (start tool).
-It can also be run manually by running the shuffleboard.vbs in `c:\Users\public\frc<year>\tools` (Windows) or
-shuffleboard.py in `~/frc<year>/tools` (Linux or Mac).
+It can also be run manually by running the shuffleboard.vbs in `c:\Users\public\wpilib\<year>\tools` (Windows) or
+shuffleboard.py in `~/wpilib/<year>/tools` (Linux or Mac).
 
 ### Requirements
-- [JRE 11](http://jdk.java.net/11/). Java 11 is required.
-No other version of Java is supported. Java 11 is installed on Windows by the
-[WPILib installer](https://github.com/wpilibsuite/allwpilib/releases). Users on Mac or Linux will have to install Java 11
-manually.
+- [JRE 11](https://adoptopenjdk.net/). Java 11 is required.
+No other version of Java is supported. Java 11 is installed the
+[WPILib installer](https://github.com/wpilibsuite/allwpilib/releases).
 
 ## Building
 
@@ -43,5 +41,5 @@ Only the listed platforms are supported
 To build _all_ platform-specific JARs at once, use the command `./gradlew :app:shadowJarAllPlatforms`
 
 ### Requirements
-- [JDK 11](http://jdk.java.net/11/). JDK 11 is required.
+- [JDK 11](https://adoptopenjdk.net/). JDK 11 is required.
 No other version of Java is supported.
