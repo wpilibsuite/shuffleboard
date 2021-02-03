@@ -324,7 +324,7 @@ public class MainWindowController {
   private void openDocsInBrowser() {
     if (Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
       try {
-        Desktop.getDesktop().browse(new URI("https://docs.wpilib.org/en/latest/docs/software/wpilib-tools/shuffleboard/index.html"));
+        Desktop.getDesktop().browse(new URI("https://docs.wpilib.org/en/stable/docs/software/wpilib-tools/shuffleboard/index.html"));
       } catch (IOException | URISyntaxException e) {
         log.log(Level.WARNING, "Could not open users default browser!", e);
       }
