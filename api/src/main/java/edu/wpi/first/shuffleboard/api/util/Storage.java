@@ -129,9 +129,10 @@ public final class Storage {
    * following variables to be injected:
    *
    * <table>
-   * <tr><th>String</th><th>Value</th></tr>
-   * <tr><td>{@code ${date}}</td><td>The ISO-8601 formatted string for the date of the {@code startTime}</td></tr>
-   * <tr><td>{@code ${time}}</td><td>The time of the {@code startTime} in a "HH.mm.ss" format</td></tr>
+   *  <caption>Recording File Data Format</caption>
+     * <tr><th>String</th><th>Value</th></tr>
+     * <tr><td>{@code ${date}}</td><td>The ISO-8601 formatted string for the date of the {@code startTime}</td></tr>
+     * <tr><td>{@code ${time}}</td><td>The time of the {@code startTime} in a "HH.mm.ss" format</td></tr>
    * </table>
    *
    * <p>For example, a file name format of {@code "practice-match-${time}"} results in paths such as

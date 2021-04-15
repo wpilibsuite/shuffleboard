@@ -11,13 +11,15 @@ public interface SettingsHolder {
    * settings per group.
    *
    * <p>General structure:
-   * <pre>{@code
+   * <pre>
+   * {@code
    * List.of(
    *   Group.of("Group Name",
    *     Setting.of("Setting name", "Setting description", settingProperty, TypeOfSetting.class)
    *   )
    * );
-   * }</pre>
+   * }
+   * </pre>
    */
   List<Group> getSettings();
 

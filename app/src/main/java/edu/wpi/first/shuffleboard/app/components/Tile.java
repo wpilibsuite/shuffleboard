@@ -40,7 +40,7 @@ public class Tile<T extends Component> extends BorderPane {
           .selectProperty(Component::titleProperty);
 
   /**
-   * Creates an empty tile. The content and size must be set with {@link #setContent(T)} and
+   * Creates an empty tile. The content and size must be set with {@link #setContent(Component)} and
    * {@link #setSize(TileSize)}.
    */
   protected Tile() {

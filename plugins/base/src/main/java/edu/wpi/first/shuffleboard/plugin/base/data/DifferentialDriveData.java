@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * Represents data from a differential drive base. All motor speeds are in the range <tt>(-1, 1)</tt>.
+ * Represents data from a differential drive base. All motor speeds are in the range <code>(-1, 1)</code>.
  */
 public final class DifferentialDriveData extends DriveBaseData<DifferentialDriveData> {
 

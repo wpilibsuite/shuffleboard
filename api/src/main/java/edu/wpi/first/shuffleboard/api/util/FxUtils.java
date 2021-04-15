@@ -227,7 +227,7 @@ public final class FxUtils {
 
   /**
    * Fires a close request on a window. This is useful to call on the main application window to allow shutdown
-   * listeners to run, since they are not run when <tt>System.exit()</tt> or <tt>Platform.exit()</tt> are called.
+   * listeners to run, since they are not run when <code>System.exit()</code> or <code>Platform.exit()</code> is called.
    *
    * @param window the window to request to close
    */

@@ -44,6 +44,12 @@ ext.addTaskToCopyAllOutputs = { task ->
     copyAllOutputs.from task.archivePath
 }
 
+//TODO: Remove when we upgrade to Java 12
+final JAVADOC_FIX_SEARCH_STR = '\n\n' +
+        'getURLPrefix = function(ui) {\n' +
+        '    return \'\';\n' +
+        '};\n'
+
 allprojects {
     apply plugin: 'java'
     apply plugin: 'maven-publish'
@@ -196,7 +202,18 @@ allprojects {
     }
 
     tasks.withType(Javadoc) {
-        failOnError = false
+        options.encoding = "UTF-8"
+        options.links 'https://docs.oracle.com/en/java/javase/11/docs/api/'
+        options.tags(
+                'implSpec:a:Implementation Requirements:',
+                'implNote:a:Implementation Note:'
+        )
+
+        doLast {
+            // Append the fix to the file
+            def searchScript = new File(destinationDir.getAbsolutePath() + '/search.js')
+            searchScript.append JAVADOC_FIX_SEARCH_STR
+        }
     }
 
     tasks.withType(GenerateModuleMetadata) {
@@ -260,6 +277,21 @@ allprojects {
         reports {
             xml.enabled = true
             html.enabled = true
+        }
+    }
+
+    tasks.withType(Javadoc) {
+        options.encoding = "UTF-8"
+        options.links 'https://docs.oracle.com/en/java/javase/11/docs/api/'
+        options.tags(
+                'implSpec:a:Implementation Requirements:',
+                'implNote:a:Implementation Note:'
+        )
+
+        doLast {
+            // Append the fix to the file
+            def searchScript = new File(destinationDir.getAbsolutePath() + '/search.js')
+            searchScript.append JAVADOC_FIX_SEARCH_STR
         }
     }
 }

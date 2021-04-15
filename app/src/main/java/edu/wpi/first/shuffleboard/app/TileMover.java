@@ -59,7 +59,7 @@ public class TileMover {
   }
 
   /**
-   * Collapses or moves the given tile in the given direction by up to <tt>count</tt> rows or columns. Tiles will be
+   * Collapses or moves the given tile in the given direction by up to <code>count</code> rows or columns. Tiles will be
    * moved to fill empty spaces, then the rightmost/bottommost tiles will be shrunk until they reach their minimum size,
    * which is content-dependent.
    *

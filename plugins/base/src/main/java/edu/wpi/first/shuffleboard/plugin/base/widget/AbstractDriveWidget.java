@@ -61,7 +61,7 @@ public abstract class AbstractDriveWidget<T extends DriveBaseData<T>> extends Si
   }
 
   /**
-   * Generates an X-shape centered at <tt>(0, 0)</tt>.
+   * Generates an X-shape centered at <code>(0, 0)</code>.
    *
    * @param width the width of the X to generate
    */
