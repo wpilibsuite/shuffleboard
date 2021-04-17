@@ -44,8 +44,8 @@ public final class StreamDiscoverer implements Closeable {
   /**
    * Removes leading camera protocols from an array of stream URLs. These URLs are usually in the format
    * {@code mjpg:http://...}, {@code ip:http://...}. This method will remove the leading {@code mjpg}. This will also
-   * replace a trailing <tt>/?action=stream</tt> with <tt>/stream.mjpg?</tt> due to a bug in cscore not handling URL
-   * parameters correctly.
+   * replace a trailing <code>/?action=stream</code> with <code>/stream.mjpg?</code>
+   * due to a bug in cscore not handling URL parameters correctly.
    *
    * <p>This does not modify the existing array and returns a new array.
    *

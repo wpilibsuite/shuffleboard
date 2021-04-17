@@ -20,7 +20,8 @@ import java.lang.annotation.Target;
  * controls in the widget; for example, the value of the slider changes when a user moves the slider - it does not need
  * to be editable another way.
  *
- * <pre>{@code
+ * <pre>
+ * <code>
  * // Bad API -- exposes properties to the user that should not be editable!
  * class MyWidget implements Widget {
  *
@@ -36,8 +37,8 @@ import java.lang.annotation.Target;
  *     speedSlider.maxProperty().bindBidirectional(maxSpeed);
  *   }
  *
- *  @literal @Override
- *   public List<Property> getProperties() {
+ *  {@literal @}Override
+ *   public List&lt;Property&gt; getProperties() {
  *     return ImmutableList.of(
  *       speed,
  *       minSpeed,
@@ -45,22 +46,24 @@ import java.lang.annotation.Target;
  *     );
  *   }
  * }
- * }</pre>
+ * </code>
+ * </pre>
  *
  * <p>A better API is to use this annotation to specify the properties to save and the names to save them as. No
  * properties have to be exposed to users, no dummy properties have to be created to set the name, and the code is
  * <i>much</i> clearer:
  *
- * <pre>{@code
+ * <pre>
+ * <code>
  * class MyWidget implements Widget {
  *
- *  @literal @SavePropertyFrom(propertyName = "value", savedName = "speed")
- *  @literal @SavePropertyFrom(propertyName = "min", savedName = "minSpeed")
- *  @literal @SavePropertyFrom(propertyName = "max", savedName = "maxSpeed")
- *   private final Slider speedSlider = new Slider();
- *
+ *  {@literal @}SavePropertyFrom(propertyName = "value", savedName = "speed")
+ *  {@literal @}SavePropertyFrom(propertyName = "min", savedName = "minSpeed")
+ *  {@literal @}SavePropertyFrom(propertyName = "max", savedName = "maxSpeed")
+ *  private final Slider speedSlider = new Slider();
  * }
- * }</pre>
+ * </code>
+ * </pre>
  *
  * <h2>Using</h2>
  * An empty string for either {@code propertyName} or {@code savedName} will throw an exception when the widget is

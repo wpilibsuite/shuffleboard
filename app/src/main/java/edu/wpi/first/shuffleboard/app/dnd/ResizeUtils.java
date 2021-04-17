@@ -29,7 +29,7 @@ public final class ResizeUtils {
   }
 
   /**
-   * Sets the currently resized tile. May be <tt>null</tt> if no tile is being resized.
+   * Sets the currently resized tile. May be <code>null</code> if no tile is being resized.
    */
   public static void setCurrentTile(Tile<?> tile) {
     currentTile.set(tile);

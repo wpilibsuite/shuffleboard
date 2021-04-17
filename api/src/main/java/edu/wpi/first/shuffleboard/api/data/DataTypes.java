@@ -69,7 +69,7 @@ public class DataTypes extends Registry<DataType> {
   public static final DataType<Boolean> Boolean = BooleanType.Instance;
 
   /**
-   * The type corresponding to a boolean array (<tt>boolean[]</tt>).
+   * The type corresponding to a boolean array (<code>boolean[]</code>).
    */
   public static final DataType<boolean[]> BooleanArray = BooleanArrayType.Instance;
 
@@ -79,8 +79,8 @@ public class DataTypes extends Registry<DataType> {
   public static final DataType<Number> Number = NumberType.Instance;
 
   /**
-   * The type corresponding to an array of numeric data (<tt>double[]</tt>). Note that number arrays <i>must</i> be
-   * implemented as <tt>double[]</tt> in order to be represented by this type.
+   * The type corresponding to an array of numeric data (<code>double[]</code>). Note that number arrays <i>must</i> be
+   * implemented as <code>double[]</code> in order to be represented by this type.
    */
   public static final DataType<double[]> NumberArray = NumberArrayType.Instance;
 
@@ -90,12 +90,12 @@ public class DataTypes extends Registry<DataType> {
   public static final DataType<String> String = StringType.Instance;
 
   /**
-   * The type corresponding to an array of strings (<tt>String[]</tt>).
+   * The type corresponding to an array of strings (<code>String[]</code>).
    */
   public static final DataType<String[]> StringArray = StringArrayType.Instance;
 
   /**
-   * The type corresponding to an array of raw bytes (<tt>byte[]</tt>).
+   * The type corresponding to an array of raw bytes (<code>byte[]</code>).
    */
   public static final DataType<byte[]> ByteArray = RawByteType.Instance;
 

@@ -30,9 +30,9 @@ public final class ListUtils {
    * @param predicate the predicate to use
    * @param <T>       the type of elements in the list
    *
-   * @return the index of the first element to pass the predicate, or <tt>-1</tt> if no element matched
+   * @return the index of the first element to pass the predicate, or <code>-1</code> if no element matched
    *
-   * @throws NullPointerException if either <tt>list</tt> or <tt>predicate</tt> is <tt>null</tt>
+   * @throws NullPointerException if either <code>list</code> or <code>predicate</code> is <code>null</code>
    */
   public static <T> int firstIndexOf(List<? extends T> list, Predicate<? super T> predicate) {
     Objects.requireNonNull(list, "list");
@@ -83,12 +83,14 @@ public final class ListUtils {
    * Creates a new collector for immutable lists.
    *
    * <p>For example:
-   * <pre>{@code
+   * <pre>
+   * {@code
    * ImmutableList<T> list = values.stream()
    *   .filter(...)
    *   .map(...)
    *   .collect(toImmutableList());
-   * }</pre>
+   * }
+   * </pre>
    *
    * @param <T> the type of elements to collect
    */
@@ -216,7 +218,7 @@ public final class ListUtils {
      *
      * @param replacementSupplier the supplier to use to get replacement values
      *
-     * @throws IllegalStateException if no values were specified to be replaced with {@link #replace(T)}
+     * @throws IllegalStateException if no values were specified to be replaced with {@link #replace(Object)}
      *                               or {@link #replace(Predicate)}
      */
     public void with(Supplier<? extends T> replacementSupplier) {

@@ -60,7 +60,7 @@ public final class DataSourceUtils {
   }
 
   /**
-   * Gets the base name of a data source, eg "/foo/bar" -> "bar".
+   * Gets the base name of a data source, eg "/foo/bar" -&gt; "bar".
    *
    * @param sourcePath the source path to get the base name for
    *

@@ -53,8 +53,8 @@ public class TilePane extends GridPane {
   /**
    * Creates a tile pane with the given number of columns and rows.
    *
-   * @param numColumns the number of columns in the grid. Must be >= 1
-   * @param numRows    the number of rows in the grid. Must be >= 1
+   * @param numColumns the number of columns in the grid. Must be &gt;= 1
+   * @param numRows    the number of rows in the grid. Must be &gt;= 1
    */
   public TilePane(int numColumns, int numRows) {
     this.numColumns.addListener((obs, oldCount, newCount) -> {

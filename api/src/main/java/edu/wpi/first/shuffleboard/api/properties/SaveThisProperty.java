@@ -14,28 +14,36 @@ import java.lang.annotation.Target;
  * or when the name of the property is not particularly descriptive.
  *
  * <p>For example, this will save a property named {@code foo} with the name of the property ("foo"):
- * <pre>{@code
- *@literal @SaveThisProperty
- * private final Property<Foo> foo = new SimpleObjectProperty(this, "foo", new Foo());
- * }</pre>
+ * <pre>
+ * <code>
+ * {@literal @}SaveThisProperty
+ * private final Property&lt;Foo&gt; foo = new SimpleObjectProperty(this, "foo", new Foo());
+ * </code>
+ * </pre>
  * This will save it as "a foo":
- * <pre>{@code
- *@literal @SaveThisProperty(name = "a foo")
- * private final Property<Foo> foo = new SimpleObjectProperty(this, "foo", new Foo());
- * }</pre>
+ * <pre>
+ * <code>
+ * {@literal @}SaveThisProperty(name = "a foo")
+ * private final Property&lt;Foo&gt; foo = new SimpleObjectProperty(this, "foo", new Foo());
+ * </code>
+ * </pre>
  *
  * <p>If the property has no name (i.e. the name string is {@code null} or {@code ""}), then the annotation <i>must</i>
  * set the name. Otherwise, an exception will be thrown when attempting to save or load the widget.
- * <pre>{@code
+ * <pre>
+ * <code>
  * // No name set!
- *@literal @SaveThisProperty
- * private final Property<Foo> foo = new SimpleObjectProperty(this, "", new Foo());
- * }</pre>
- * <pre>{@code
+ * {@literal @}SaveThisProperty
+ * private final Property&lt;Foo&gt; foo = new SimpleObjectProperty(this, "", new Foo());
+ * </code>
+ * </pre>
+ * <pre>
+ * <code>
  * // Good - the name is set in the annotation
- *@literal @SaveThisProperty(name = "a foo")
- * private final Property<Foo> foo = new SimpleObjectProperty(this, "", new Foo());
- * }</pre>
+ * {@literal @}SaveThisProperty(name = "a foo")
+ * private final Property&lt;Foo&gt; foo = new SimpleObjectProperty(this, "", new Foo());
+ * </code>
+ * </pre>
  *
  * <p>Placing this annotation on a field that does not subclass {@link javafx.beans.property.Property} will have no
  * effect.
