@@ -37,6 +37,10 @@ jobs:
           java-version: 11
           architecture: ${{ matrix.architecture }}
 
+      - name: Install dependencies
+        run: sudo apt-get install -y libgtk2.0-0
+        if: runner.os == 'Linux'
+
       - uses: wpilibsuite/import-signing-certificate@v1
         with:
           certificate-data: ${{ secrets.APPLE_CERTIFICATE_DATA }}
