@@ -99,8 +99,8 @@ allprojects {
                     } else {
                         artifact(project.shadowJar)
                     }
-                    groupId 'edu.wpi.first.shuffleboard'
-                    artifactId = 'shuffleboard'
+                    groupId 'edu.wpi.first.tools'
+                    artifactId = 'Shuffleboard'
                     version project.version
                     }
                 }
