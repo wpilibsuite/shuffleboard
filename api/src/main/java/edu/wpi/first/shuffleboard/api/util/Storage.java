@@ -22,7 +22,10 @@ public final class Storage {
   /**
    * The root dashboard storage directory.
    */
-  private static final String STORAGE_DIR = SystemProperties.USER_HOME + "/Shuffleboard";
+  private static final String WPILIB_VERSION = Storage.class.getPackage().getImplementationVersion().split("\\.")[0];
+  private static final String WPILIB_DIR = SystemProperties.USER_HOME + "/wpilib/" + WPILIB_VERSION;
+
+  private static final String STORAGE_DIR = WPILIB_DIR + "/tools/Shuffleboard";
 
   private static final String RECORDING_DIR = STORAGE_DIR + "/recordings";
 
