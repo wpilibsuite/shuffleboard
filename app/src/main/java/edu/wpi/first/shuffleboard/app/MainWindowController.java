@@ -331,4 +331,12 @@ public class MainWindowController {
     }
   }
 
+  /**
+   * Check if the current state is saved.
+   *
+   * @return if it is saved or not
+   */
+  public boolean isSaved() {
+    return saveFileHandler.isUpToDate(getData());
+  }
 }
