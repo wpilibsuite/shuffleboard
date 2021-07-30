@@ -128,4 +128,19 @@ public final class SaveFileHandler {
     currentFile = null;
   }
 
+
+  /**
+   * Check whether the given data is up to date with the current file if it exists.
+   *
+   * @param data the data to check
+   *
+   * @return if the data is up to date
+   */
+  public boolean isUpToDate(DashboardData data) {
+    try {
+      return JsonBuilder.forSaveFile().toJson(data).equals(Files.toString(currentFile, Charset.forName("UTF-8")));
+    } catch (IOException e) {
+      return false;
+    }
+  }
 }

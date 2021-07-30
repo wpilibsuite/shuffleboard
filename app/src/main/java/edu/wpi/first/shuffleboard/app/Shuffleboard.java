@@ -129,7 +129,7 @@ public class Shuffleboard extends Application {
     primaryStage.setWidth(Screen.getPrimary().getVisualBounds().getWidth());
     primaryStage.setHeight(Screen.getPrimary().getVisualBounds().getHeight());
     primaryStage.setOnCloseRequest(closeEvent -> {
-      if (!AppPreferences.getInstance().isConfirmExit()) {
+      if (!AppPreferences.getInstance().isConfirmExit() || mainWindowController.isSaved()) {
         // Don't show the confirmation dialog, just exit
         return;
       }
