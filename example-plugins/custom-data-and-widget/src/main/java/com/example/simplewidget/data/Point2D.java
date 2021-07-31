@@ -24,7 +24,7 @@ public final class Point2D extends ComplexData<Point2D> {
   }
 
   /**
-   * Gets the Y-coordinate of this point.
+   * Gets the X-coordinate of this point.
    */
   public double getX() {
     return x;
