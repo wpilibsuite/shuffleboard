@@ -22,6 +22,7 @@ import edu.wpi.first.shuffleboard.plugin.base.data.types.BasicSubsystemType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.CommandType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.DifferentialDriveType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.EncoderType;
+import edu.wpi.first.shuffleboard.plugin.base.data.types.FieldType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.FmsInfoType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.GyroType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.MecanumDriveType;
@@ -48,6 +49,7 @@ import edu.wpi.first.shuffleboard.plugin.base.widget.ComboBoxChooserWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.CommandWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.DifferentialDriveWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.EncoderWidget;
+import edu.wpi.first.shuffleboard.plugin.base.widget.FieldWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.GraphWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.GyroWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.MecanumDriveWidget;
@@ -123,7 +125,8 @@ public class BasePlugin extends Plugin {
         MecanumDriveType.Instance,
         DifferentialDriveType.Instance,
         FmsInfoType.Instance,
-        UltrasonicType.Instance
+        UltrasonicType.Instance,
+        FieldType.Instance
     );
   }
 
@@ -157,6 +160,7 @@ public class BasePlugin extends Plugin {
         WidgetType.forAnnotatedWidget(MecanumDriveWidget.class),
         WidgetType.forAnnotatedWidget(BasicFmsInfoWidget.class),
         WidgetType.forAnnotatedWidget(UltrasonicWidget.class),
+        WidgetType.forAnnotatedWidget(FieldWidget.class),
         new LayoutClass<>("List Layout", ListLayout.class),
         new LayoutClass<>("Grid Layout", GridLayout.class),
         createSubsystemLayoutType()

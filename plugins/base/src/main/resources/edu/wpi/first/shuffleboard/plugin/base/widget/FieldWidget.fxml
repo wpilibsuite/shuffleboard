@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="edu.wpi.first.shuffleboard.plugin.base.widget.FieldWidget"
+      fx:id="root"
+      spacing="8">
+    <StackPane>
+        <Label fx:id="xLabel" text="Hello World" />
+    </StackPane>
+</VBox>
