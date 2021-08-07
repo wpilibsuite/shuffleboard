@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.geometry.Insets?>
+<?import javafx.scene.image.ImageView?>
 
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="edu.wpi.first.shuffleboard.plugin.base.widget.FieldWidget"
       fx:id="root"
-      spacing="8">
-    <StackPane>
-        <Label fx:id="xLabel" text="Hello World" />
+      spacing="8"  minWidth="192">
+    <StackPane fx:id="pane">
+        <ImageView fx:id="backgroundImage" preserveRatio="true"/>
+        <ImageView fx:id="robot" preserveRatio="true"/>
     </StackPane>
 </VBox>

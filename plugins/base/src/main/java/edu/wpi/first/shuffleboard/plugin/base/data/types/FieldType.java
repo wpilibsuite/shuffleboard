@@ -20,6 +20,6 @@ public class FieldType extends ComplexDataType<FieldData> {
 
   @Override
   public FieldData getDefaultValue() {
-    return new FieldData(new double[]{0, 0, 0}, Map.of());
+    return new FieldData(new FieldData.SimplePose2d(0, 0, 0), Map.of());
   }
 }
