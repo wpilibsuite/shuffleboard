@@ -13,12 +13,14 @@ public class FieldData extends ComplexData<FieldData> {
     private final double y;
     private final double degrees;
 
+    @SuppressWarnings("JavadocMethod")
     public SimplePose2d(double x, double y, double degrees) {
       this.x = x;
       this.y = y;
       this.degrees = degrees;
     }
 
+    @SuppressWarnings("JavadocMethod")
     public SimplePose2d(double[] data) {
       this.x = data[0];
       this.y = data[1];
@@ -46,8 +48,9 @@ public class FieldData extends ComplexData<FieldData> {
     this.objects = objects;
   }
 
+  @SuppressWarnings("JavadocMethod")
   public FieldData(Map<String, Object> map) {
-    this.robot = new SimplePose2d((double[])map.get("Robot"));
+    this.robot = new SimplePose2d((double[]) map.get("Robot"));
     this.objects = new HashMap<>();
 
     for (String key : map.keySet()) {
@@ -62,7 +65,10 @@ public class FieldData extends ComplexData<FieldData> {
         for (int i = 0; i < doubles.length; i++) {
           ByteBuffer buffer = ByteBuffer.allocate(Double.BYTES);
           // this implementation assumes Double.BYTES is 8
-          buffer.put(new byte[]{data[8*i], data[8*i+1], data[8*i+2], data[8*i+3], data[8*i+4], data[8*i+5], data[8*i+6], data[8*i+7]});
+          buffer.put(new byte[]{
+                  data[8 * i], data[8 * i + 1], data[8 * i + 2], data[8 * i + 3],
+                  data[8 * i + 4], data[8 * i + 5], data[8 * i + 6], data[8 * i + 7]
+          });
           buffer.flip();
           doubles[i] = buffer.getDouble();
         }
@@ -72,7 +78,7 @@ public class FieldData extends ComplexData<FieldData> {
 
       SimplePose2d[] poses = new SimplePose2d[doubles.length / 3];
       for (int i = 0; i < poses.length; i++) {
-        poses[i] = new SimplePose2d(doubles[3*i], doubles[3*i+1], doubles[3*i+2]);
+        poses[i] = new SimplePose2d(doubles[3 * i], doubles[3 * i + 1], doubles[3 * i + 2]);
       }
 
       this.objects.put(key, poses);

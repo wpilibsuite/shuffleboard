@@ -8,6 +8,17 @@ import edu.wpi.first.shuffleboard.api.widget.Description;
 import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 import edu.wpi.first.shuffleboard.api.widget.SimpleAnnotatedWidget;
 import edu.wpi.first.shuffleboard.plugin.base.data.FieldData;
+
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.fxml.FXML;
@@ -15,40 +26,43 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
-import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Circle;
 
-import java.io.*;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 @Description(name = "Field", dataTypes = FieldData.class)
+@SuppressWarnings("EmptyCatchBlock")
 @ParametrizedController("FieldWidget.fxml")
 public class FieldWidget extends SimpleAnnotatedWidget<FieldData> {
   @FXML
-  Pane root;
+  private Pane root;
 
   @FXML
-  BorderPane pane;
+  private BorderPane pane;
 
   @FXML
-  ImageView backgroundImage, robot;
+  private ImageView backgroundImage;
 
-  double imageStartX, imageStartY, imageEndX, imageEndY, fieldWidth, fieldHeight;
+  @FXML
+  private ImageView robot;
 
-  StringProperty game = new SimpleStringProperty("field/2021-infiniterecharge.json");
+  private double imageStartX;
+  private double imageStartY;
+  private double imageEndX;
+  private double imageEndY;
+  private double fieldWidth;
+  private double fieldHeight;
 
-  Map<String, String> colors = new HashMap<String, String>();
+  private StringProperty game =
+          new SimpleStringProperty("field/2021-infiniterecharge.json");
+
+  private Map<String, String> colors = new HashMap<String, String>();
 
   private static final double ROBOT_SIZE = 30;
 
   @FXML
   private void initialize() {
-    robot.setImage(new Image(getClass().getResource("field/robot.png").toExternalForm()));
+    robot.setImage(
+            new Image(getClass().getResource("field/robot.png").toExternalForm()));
     robot.setFitWidth(ROBOT_SIZE);
     robot.setFitHeight(ROBOT_SIZE);
     setGame(game.get());
@@ -76,24 +90,36 @@ public class FieldWidget extends SimpleAnnotatedWidget<FieldData> {
       updateRobotPosition();
       updateObjects();
     });
-
   }
 
   private double getActualBackgroundHeight() {
-    return Math.min(backgroundImage.getFitHeight(), backgroundImage.getFitWidth() * (backgroundImage.getImage().getHeight() / backgroundImage.getImage().getWidth()));
+    return Math.min(backgroundImage.getFitHeight(),
+            backgroundImage.getFitWidth()
+                    * (backgroundImage.getImage().getHeight()
+                    / backgroundImage.getImage().getWidth()));
   }
 
   private double getActualBackgroundWidth() {
-    return Math.min(backgroundImage.getFitWidth(), backgroundImage.getFitHeight() / ((backgroundImage.getImage().getHeight() / backgroundImage.getImage().getWidth())));
+    return Math.min(backgroundImage.getFitWidth(),
+            backgroundImage.getFitHeight()
+                    / ((backgroundImage.getImage().getHeight()
+                    / backgroundImage.getImage().getWidth())));
   }
 
   private void centerImage() {
-    double imageRatio = (backgroundImage.getImage().getHeight() / backgroundImage.getImage().getWidth());
-    if (backgroundImage.getFitWidth() * imageRatio < backgroundImage.getFitHeight()) {
+    double imageRatio = backgroundImage.getImage().getHeight() / backgroundImage.getImage().getWidth();
+    if (backgroundImage.getFitWidth() * imageRatio
+            < backgroundImage.getFitHeight()) {
       backgroundImage.setX(ROBOT_SIZE / 4);
-      backgroundImage.setY((backgroundImage.getFitHeight() - backgroundImage.getFitWidth() * imageRatio) / 2 + ROBOT_SIZE / 4);
+      backgroundImage.setY((backgroundImage.getFitHeight()
+              - backgroundImage.getFitWidth() * imageRatio)
+              / 2
+              + ROBOT_SIZE / 4);
     } else {
-      backgroundImage.setX((backgroundImage.getFitWidth() - backgroundImage.getFitHeight() / imageRatio) / 2 + ROBOT_SIZE / 4);
+      backgroundImage.setX((backgroundImage.getFitWidth()
+              - backgroundImage.getFitHeight() / imageRatio)
+              / 2
+              + ROBOT_SIZE / 4);
       backgroundImage.setY(ROBOT_SIZE / 4);
     }
   }
@@ -113,39 +139,64 @@ public class FieldWidget extends SimpleAnnotatedWidget<FieldData> {
       Reader reader = new BufferedReader(new InputStreamReader(stream));
       Map<?, ?> map = gson.fromJson(reader, Map.class);
 
-      String directory = Paths.get(jsonPath).getParent().getFileName().toString();
+      String directory =
+              Paths.get(jsonPath).getParent().getFileName().toString();
 
-      Image image = new Image(getClass().getResource(Paths.get(directory, (String) map.get("field-image")).toString()).toExternalForm());
+      Image image = new Image(
+              getClass()
+                      .getResource(Paths.get(directory, (String) map.get("field-image"))
+                              .toString())
+                      .toExternalForm());
       backgroundImage.setImage(image);
 
-      imageStartX = ((List<Double>) ((Map<?, ?>) map.get("field-corners")).get("top-left")).get(0);
-      imageEndX = ((List<Double>) ((Map<?, ?>) map.get("field-corners")).get("bottom-right")).get(0);
-      imageStartY = image.getHeight() - ((List<Double>) ((Map<?, ?>) map.get("field-corners")).get("bottom-right")).get(1);
-      imageEndY = image.getHeight() - ((List<Double>) ((Map<?, ?>) map.get("field-corners")).get("top-left")).get(1);
+      imageStartX =
+              ((List<Double>) ((Map<?, ?>) map.get("field-corners")).get("top-left"))
+                      .get(0);
+      imageEndX = ((List<Double>) ((Map<?, ?>) map.get("field-corners"))
+              .get("bottom-right"))
+              .get(0);
+      imageStartY = image.getHeight() 
+              - ((List<Double>) ((Map<?, ?>) map.get("field-corners"))
+                      .get("bottom-right"))
+                      .get(1);
+      imageEndY =
+              image.getHeight() 
+                      - ((List<Double>) ((Map<?, ?>) map.get("field-corners")).get("top-left"))
+                              .get(1);
 
       fieldWidth = ((List<Double>) map.get("field-size")).get(0);
       fieldHeight = ((List<Double>) map.get("field-size")).get(1);
 
-      String fieldUnit = ((String) map.get("field-unit"));
+      String fieldUnit = (String) map.get("field-unit");
       if (fieldUnit.equals("feet") || fieldUnit.equals("foot")) {
-        fieldWidth = UltrasonicWidget.Unit.FOOT.as(fieldWidth, UltrasonicWidget.Unit.METER);
-        fieldHeight = UltrasonicWidget.Unit.FOOT.as(fieldHeight, UltrasonicWidget.Unit.METER);
+        fieldWidth = UltrasonicWidget.Unit.FOOT.as(fieldWidth,
+                UltrasonicWidget.Unit.METER);
+        fieldHeight = UltrasonicWidget.Unit.FOOT.as(
+                fieldHeight, UltrasonicWidget.Unit.METER);
       }
     } catch (Exception ignored) {
     }
   }
 
   private double transformX(double robotX, double size) {
-    return backgroundImage.getX() + (imageStartX + robotX / fieldWidth * (imageEndX - imageStartX)) * getActualBackgroundWidth() / backgroundImage.getImage().getWidth() - size;
+    return backgroundImage.getX()
+            + (imageStartX + robotX / fieldWidth * (imageEndX - imageStartX))
+            * getActualBackgroundWidth() / backgroundImage.getImage().getWidth()
+            - size;
   }
 
   private double transformY(double robotY, double size) {
-    return backgroundImage.getY() + getActualBackgroundHeight() - (imageStartY + robotY / fieldHeight * (imageEndY - imageStartY)) * getActualBackgroundHeight() / backgroundImage.getImage().getHeight() - size;
+    return backgroundImage.getY() + getActualBackgroundHeight()
+            - (imageStartY + robotY / fieldHeight * (imageEndY - imageStartY))
+                    * getActualBackgroundHeight()
+                    / backgroundImage.getImage().getHeight() - size;
   }
 
   private void updateRobotPosition() {
-    robot.setTranslateX(transformX(dataOrDefault.get().getRobot().getX(), ROBOT_SIZE / 2));
-    robot.setTranslateY(transformY(dataOrDefault.get().getRobot().getY(), ROBOT_SIZE / 2));
+    robot.setTranslateX(
+            transformX(dataOrDefault.get().getRobot().getX(), ROBOT_SIZE / 2));
+    robot.setTranslateY(
+            transformY(dataOrDefault.get().getRobot().getY(), ROBOT_SIZE / 2));
     robot.setRotate(-dataOrDefault.get().getRobot().getDegrees());
   }
 
@@ -156,14 +207,17 @@ public class FieldWidget extends SimpleAnnotatedWidget<FieldData> {
       if (!colors.containsKey(object)) {
         colors.put(object, "#ffffff");
       }
-      for (FieldData.SimplePose2d pose : dataOrDefault.get().getObjects().get(object)) {
+      for (FieldData.SimplePose2d pose :
+              dataOrDefault.get().getObjects().get(object)) {
         Paint paint;
         try {
           paint = Paint.valueOf(colors.get(object));
         } catch (Exception ignored) {
           paint = Paint.valueOf("#ffffff");
         }
-        pane.getChildren().add(new Circle(transformX(pose.getX(), 1.25), transformY(pose.getY(), 1.25), 2.5, paint));
+        pane.getChildren().add(new Circle(transformX(pose.getX(), 1.25),
+                transformY(pose.getY(), 1.25), 2.5,
+                paint));
       }
     }
   }
@@ -182,8 +236,6 @@ public class FieldWidget extends SimpleAnnotatedWidget<FieldData> {
 
     return ImmutableList.of(
             Group.of("Field", Setting.of("Game", game, String.class)),
-            Group.of("Colors", colorSettings)
-    );
+            Group.of("Colors", colorSettings));
   }
-
 }
