@@ -19,6 +19,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javafx.beans.property.Property;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.fxml.FXML;
@@ -52,10 +54,31 @@ public class FieldWidget extends SimpleAnnotatedWidget<FieldData> {
   private double fieldWidth;
   private double fieldHeight;
 
-  private StringProperty game =
-          new SimpleStringProperty("field/2021-infiniterecharge.json");
+  private enum Game {
+    A2018_Power_Up,
+    A2019_Deep_Space,
+    A2020_Infinite_Recharge,
+    A2021_Barrel_Racing_Path,
+    A2021_Bounce_Path,
+    A2021_Galactic_Search_A,
+    A2021_Galactic_Search_B,
+    A2021_Infinite_Recharge,
+    A2021_Slalom_Path;
 
-  private Map<String, String> colors = new HashMap<String, String>();
+    public String json() {
+      return "field/" + this.name().substring(1).toLowerCase().replaceFirst("_", "-").replaceAll("_", "") + ".json";
+    }
+
+    @Override
+    public String toString() {
+      return this.name().substring(1).replaceAll("_", " ");
+    }
+  }
+
+  private Property<Game> game =
+          new SimpleObjectProperty<>(Game.A2021_Infinite_Recharge);
+
+  private Map<String, String> colors = new HashMap<>();
 
   private static final double ROBOT_SIZE = 30;
 
@@ -65,7 +88,7 @@ public class FieldWidget extends SimpleAnnotatedWidget<FieldData> {
             new Image(getClass().getResource("field/robot.png").toExternalForm()));
     robot.setFitWidth(ROBOT_SIZE);
     robot.setFitHeight(ROBOT_SIZE);
-    setGame(game.get());
+    setGame(game.getValue());
     game.addListener((__, ___, newGame) -> {
       setGame(newGame);
       centerImage();
@@ -129,10 +152,11 @@ public class FieldWidget extends SimpleAnnotatedWidget<FieldData> {
     return root;
   }
 
-  private void setGame(String jsonPath) {
+  private void setGame(Game game) {
     try {
+      String jsonPath = getClass().getResource(game.json()).toExternalForm();
       Gson gson = new Gson();
-      InputStream stream = getClass().getResourceAsStream(jsonPath);
+      InputStream stream = getClass().getResourceAsStream(game.json());
       if (stream == null) {
         throw new Exception("Cannot read JSON at " + jsonPath);
       }
@@ -144,9 +168,9 @@ public class FieldWidget extends SimpleAnnotatedWidget<FieldData> {
 
       Image image = new Image(
               getClass()
-                      .getResource(Paths.get(directory, (String) map.get("field-image"))
-                              .toString())
+                      .getResource(Paths.get(directory, (String) map.get("field-image")).toString())
                       .toExternalForm());
+      System.out.println("FLAG: " + image.getUrl());
       backgroundImage.setImage(image);
 
       imageStartX =
@@ -235,7 +259,7 @@ public class FieldWidget extends SimpleAnnotatedWidget<FieldData> {
     }
 
     return ImmutableList.of(
-            Group.of("Field", Setting.of("Game", game, String.class)),
+            Group.of("Field", Setting.of("Game", game, Game.class)),
             Group.of("Colors", colorSettings));
   }
 }
