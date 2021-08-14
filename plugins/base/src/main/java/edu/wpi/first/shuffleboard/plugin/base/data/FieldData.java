@@ -48,10 +48,10 @@ public class FieldData extends ComplexData<FieldData> {
 
   public FieldData(Map<String, Object> map) {
     this.robot = new SimplePose2d((double[])map.get("Robot"));
-    this.objects = new HashMap<String, SimplePose2d[]>();
+    this.objects = new HashMap<>();
 
     for (String key : map.keySet()) {
-      if (key.equals("Robot")) {
+      if (key.equals("Robot") || key.startsWith(".")) {
         continue;
       }
 
@@ -81,6 +81,10 @@ public class FieldData extends ComplexData<FieldData> {
 
   public SimplePose2d getRobot() {
     return robot;
+  }
+
+  public Map<String, SimplePose2d[]> getObjects() {
+    return objects;
   }
 
   @Override
