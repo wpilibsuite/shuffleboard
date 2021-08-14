@@ -8,6 +8,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class FieldData extends ComplexData<FieldData> {
+  private final SimplePose2d robot;
+  private final Map<String, SimplePose2d[]> objects;
+
   public static class SimplePose2d {
     private final double x;
     private final double y;
@@ -40,9 +43,6 @@ public class FieldData extends ComplexData<FieldData> {
     }
   }
 
-  private final SimplePose2d robot;
-  private final Map<String, SimplePose2d[]> objects;
-
   public FieldData(SimplePose2d robot, Map<String, SimplePose2d[]> objects) {
     this.robot = robot;
     this.objects = objects;
@@ -53,14 +53,15 @@ public class FieldData extends ComplexData<FieldData> {
     this.robot = new SimplePose2d((double[]) map.get("Robot"));
     this.objects = new HashMap<>();
 
-    for (String key : map.keySet()) {
+    for (Map.Entry<String, Object> entry : map.entrySet()) {
+      String key = entry.getKey();
       if (key.equals("Robot") || key.startsWith(".")) {
         continue;
       }
 
       double[] doubles;
-      if (map.get(key) instanceof byte[]) {
-        byte[] data = (byte[]) map.get(key);
+      if (entry.getValue() instanceof byte[]) {
+        byte[] data = (byte[]) entry.getValue();
         doubles = new double[data.length / Double.BYTES];
         for (int i = 0; i < doubles.length; i++) {
           ByteBuffer buffer = ByteBuffer.allocate(Double.BYTES);

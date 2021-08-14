@@ -12,7 +12,10 @@ import edu.wpi.first.shuffleboard.plugin.base.data.FieldData;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.IOException;
 import java.io.Reader;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,13 +24,12 @@ import java.util.Map;
 
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 import javafx.fxml.FXML;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
+import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Circle;
 
@@ -75,10 +77,10 @@ public class FieldWidget extends SimpleAnnotatedWidget<FieldData> {
     }
   }
 
-  private Property<Game> game =
+  private final Property<Game> game =
           new SimpleObjectProperty<>(Game.A2021_Infinite_Recharge);
 
-  private Map<String, String> colors = new HashMap<>();
+  private final Map<String, Paint> colors = new HashMap<>();
 
   private static final double ROBOT_SIZE = 30;
 
@@ -89,27 +91,29 @@ public class FieldWidget extends SimpleAnnotatedWidget<FieldData> {
     robot.setFitWidth(ROBOT_SIZE);
     robot.setFitHeight(ROBOT_SIZE);
     setGame(game.getValue());
-    game.addListener((__, ___, newGame) -> {
-      setGame(newGame);
+    game.addListener(__ -> {
+      setGame(game.getValue());
       centerImage();
       updateRobotPosition();
       updateObjects();
     });
 
-    root.heightProperty().addListener((__, ___, height) -> {
-      backgroundImage.setFitHeight(height.doubleValue() - ROBOT_SIZE / 2);
+    root.heightProperty().addListener(__ -> {
+      double height = root.getHeight();
+      backgroundImage.setFitHeight(height - ROBOT_SIZE / 2);
       centerImage();
       updateRobotPosition();
       updateObjects();
     });
-    root.widthProperty().addListener((__, ___, width) -> {
-      backgroundImage.setFitWidth(width.doubleValue() - ROBOT_SIZE / 2);
+    root.widthProperty().addListener(__ -> {
+      double width = root.getWidth();
+      backgroundImage.setFitWidth(width - ROBOT_SIZE / 2);
       centerImage();
       updateRobotPosition();
       updateObjects();
     });
 
-    dataOrDefault.addListener((__, ___, data) -> {
+    dataOrDefault.addListener(__ -> {
       updateRobotPosition();
       updateObjects();
     });
@@ -147,30 +151,23 @@ public class FieldWidget extends SimpleAnnotatedWidget<FieldData> {
     }
   }
 
-  @Override
-  public Pane getView() {
-    return root;
-  }
-
   private void setGame(Game game) {
+    InputStream stream = getClass().getResourceAsStream(game.json());
+
     try {
-      String jsonPath = getClass().getResource(game.json()).toExternalForm();
-      Gson gson = new Gson();
-      InputStream stream = getClass().getResourceAsStream(game.json());
       if (stream == null) {
-        throw new Exception("Cannot read JSON at " + jsonPath);
+        throw new Exception("Cannot read JSON of " + game);
       }
-      Reader reader = new BufferedReader(new InputStreamReader(stream));
+      Gson gson = new Gson();
+      Reader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
       Map<?, ?> map = gson.fromJson(reader, Map.class);
 
-      String directory =
-              Paths.get(jsonPath).getParent().getFileName().toString();
-
-      Image image = new Image(
-              getClass()
-                      .getResource(Paths.get(directory, (String) map.get("field-image")).toString())
-                      .toExternalForm());
-      System.out.println("FLAG: " + image.getUrl());
+      URL imagePath = getClass()
+              .getResource(Paths.get("field", (String) map.get("field-image")).toString());
+      if (imagePath == null) {
+        throw new Exception("Cannot get image at " + Paths.get("field", (String) map.get("field-image")));
+      }
+      Image image = new Image(imagePath.toExternalForm());
       backgroundImage.setImage(image);
 
       imageStartX =
@@ -199,6 +196,12 @@ public class FieldWidget extends SimpleAnnotatedWidget<FieldData> {
                 fieldHeight, UltrasonicWidget.Unit.METER);
       }
     } catch (Exception ignored) {
+    } finally {
+      try {
+        if (stream != null) {
+          stream.close();
+        }
+      } catch (IOException ignored) { }
     }
   }
 
@@ -229,13 +232,13 @@ public class FieldWidget extends SimpleAnnotatedWidget<FieldData> {
 
     for (String object : dataOrDefault.get().getObjects().keySet()) {
       if (!colors.containsKey(object)) {
-        colors.put(object, "#ffffff");
+        colors.put(object, Color.valueOf("#ffffff"));
       }
       for (FieldData.SimplePose2d pose :
               dataOrDefault.get().getObjects().get(object)) {
         Paint paint;
         try {
-          paint = Paint.valueOf(colors.get(object));
+          paint = colors.get(object);
         } catch (Exception ignored) {
           paint = Paint.valueOf("#ffffff");
         }
@@ -249,17 +252,22 @@ public class FieldWidget extends SimpleAnnotatedWidget<FieldData> {
   @Override
   public List<Group> getSettings() {
     List<Setting<?>> colorSettings = new ArrayList<>();
-    for (String object : colors.keySet()) {
-      StringProperty property = new SimpleStringProperty(colors.get(object));
-      property.addListener((__, ___, newColor) -> {
-        colors.put(object, newColor);
+    for (Map.Entry<String, Paint> entry : colors.entrySet()) {
+      Property<Paint> property = new SimpleObjectProperty<>(entry.getValue());
+      property.addListener(__ -> {
+        colors.put(entry.getKey(), property.getValue());
         updateObjects();
       });
-      colorSettings.add(Setting.of(object, property, String.class));
+      colorSettings.add(Setting.of(entry.getKey(), property, Color.class));
     }
 
     return ImmutableList.of(
             Group.of("Field", Setting.of("Game", game, Game.class)),
             Group.of("Colors", colorSettings));
+  }
+
+  @Override
+  public Pane getView() {
+    return root;
   }
 }
