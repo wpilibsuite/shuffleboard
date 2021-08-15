@@ -64,14 +64,10 @@ public class FieldData extends ComplexData<FieldData> {
         byte[] data = (byte[]) entry.getValue();
         doubles = new double[data.length / Double.BYTES];
         for (int i = 0; i < doubles.length; i++) {
-          ByteBuffer buffer = ByteBuffer.allocate(Double.BYTES);
-          // this implementation assumes Double.BYTES is 8
-          buffer.put(new byte[]{
-                  data[8 * i], data[8 * i + 1], data[8 * i + 2], data[8 * i + 3],
-                  data[8 * i + 4], data[8 * i + 5], data[8 * i + 6], data[8 * i + 7]
-          });
-          buffer.flip();
-          doubles[i] = buffer.getDouble();
+          doubles[i] = ByteBuffer.allocate(Double.BYTES)
+                  .put(data, Double.BYTES * i, Double.BYTES)
+                  .flip()
+                  .getDouble();
         }
       } else {
         doubles = (double[]) map.get(key);

@@ -22,7 +22,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.Property;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.fxml.FXML;
 import javafx.scene.image.Image;
@@ -56,40 +60,15 @@ public class FieldWidget extends SimpleAnnotatedWidget<FieldData> {
   private double fieldWidth;
   private double fieldHeight;
 
-  private enum Game {
-    A2018_Power_Up,
-    A2019_Deep_Space,
-    A2020_Infinite_Recharge,
-    A2021_Barrel_Racing_Path,
-    A2021_Bounce_Path,
-    A2021_Galactic_Search_A,
-    A2021_Galactic_Search_B,
-    A2021_Infinite_Recharge,
-    A2021_Slalom_Path;
-
-    public String json() {
-      return "field/" + this.name().substring(1).toLowerCase().replaceFirst("_", "-").replaceAll("_", "") + ".json";
-    }
-
-    @Override
-    public String toString() {
-      return this.name().substring(1).replaceAll("_", " ");
-    }
-  }
-
+  private final Map<String, Paint> colors = new HashMap<>();
   private final Property<Game> game =
           new SimpleObjectProperty<>(Game.A2021_Infinite_Recharge);
+  private final DoubleProperty robotSize = new SimpleDoubleProperty(30);
+  private final BooleanProperty showCirclesOutsideOfField = new SimpleBooleanProperty(false);
 
-  private final Map<String, Paint> colors = new HashMap<>();
-
-  private static final double ROBOT_SIZE = 30;
 
   @FXML
   private void initialize() {
-    robot.setImage(
-            new Image(getClass().getResource("field/robot.png").toExternalForm()));
-    robot.setFitWidth(ROBOT_SIZE);
-    robot.setFitHeight(ROBOT_SIZE);
     setGame(game.getValue());
     game.addListener(__ -> {
       setGame(game.getValue());
@@ -98,16 +77,31 @@ public class FieldWidget extends SimpleAnnotatedWidget<FieldData> {
       updateObjects();
     });
 
+    robot.setImage(
+            new Image(getClass().getResource("field/robot.png").toExternalForm()));
+    robot.setFitWidth(robotSize.get());
+    robot.setFitHeight(robotSize.get());
+    robotSize.addListener(__ -> {
+      double size = robotSize.get();
+      robot.setFitWidth(size);
+      robot.setFitHeight(size);
+      backgroundImage.setFitHeight(root.getHeight() - robotSize.get() / 2);
+      backgroundImage.setFitWidth(root.getWidth() - robotSize.get() / 2);
+      updateRobotPosition();
+    });
+
+    showCirclesOutsideOfField.addListener(__ -> updateObjects());
+
     root.heightProperty().addListener(__ -> {
       double height = root.getHeight();
-      backgroundImage.setFitHeight(height - ROBOT_SIZE / 2);
+      backgroundImage.setFitHeight(height - robotSize.get() / 2);
       centerImage();
       updateRobotPosition();
       updateObjects();
     });
     root.widthProperty().addListener(__ -> {
       double width = root.getWidth();
-      backgroundImage.setFitWidth(width - ROBOT_SIZE / 2);
+      backgroundImage.setFitWidth(width - robotSize.get() / 2);
       centerImage();
       updateRobotPosition();
       updateObjects();
@@ -137,17 +131,17 @@ public class FieldWidget extends SimpleAnnotatedWidget<FieldData> {
     double imageRatio = backgroundImage.getImage().getHeight() / backgroundImage.getImage().getWidth();
     if (backgroundImage.getFitWidth() * imageRatio
             < backgroundImage.getFitHeight()) {
-      backgroundImage.setX(ROBOT_SIZE / 4);
+      backgroundImage.setX(robotSize.get() / 4);
       backgroundImage.setY((backgroundImage.getFitHeight()
               - backgroundImage.getFitWidth() * imageRatio)
               / 2
-              + ROBOT_SIZE / 4);
+              + robotSize.get() / 4);
     } else {
       backgroundImage.setX((backgroundImage.getFitWidth()
               - backgroundImage.getFitHeight() / imageRatio)
               / 2
-              + ROBOT_SIZE / 4);
-      backgroundImage.setY(ROBOT_SIZE / 4);
+              + robotSize.get() / 4);
+      backgroundImage.setY(robotSize.get() / 4);
     }
   }
 
@@ -221,24 +215,33 @@ public class FieldWidget extends SimpleAnnotatedWidget<FieldData> {
 
   private void updateRobotPosition() {
     robot.setTranslateX(
-            transformX(dataOrDefault.get().getRobot().getX(), ROBOT_SIZE / 2));
+            transformX(dataOrDefault.get().getRobot().getX(), robotSize.get() / 2));
     robot.setTranslateY(
-            transformY(dataOrDefault.get().getRobot().getY(), ROBOT_SIZE / 2));
+            transformY(dataOrDefault.get().getRobot().getY(), robotSize.get() / 2));
     robot.setRotate(-dataOrDefault.get().getRobot().getDegrees());
   }
 
   private void updateObjects() {
     pane.getChildren().removeIf(n -> n instanceof Circle);
 
-    for (String object : dataOrDefault.get().getObjects().keySet()) {
-      if (!colors.containsKey(object)) {
-        colors.put(object, Color.valueOf("#ffffff"));
+    for (Map.Entry<String, FieldData.SimplePose2d[]> entry : dataOrDefault.get().getObjects().entrySet()) {
+      String key = entry.getKey();
+      if (!colors.containsKey(key)) {
+        colors.put(key, Color.valueOf("#ffffff"));
       }
-      for (FieldData.SimplePose2d pose :
-              dataOrDefault.get().getObjects().get(object)) {
+
+      for (FieldData.SimplePose2d pose : entry.getValue()) {
+        if (!showCirclesOutsideOfField.get() && (
+                pose.getX() < 0
+                || pose.getY() < 0
+                || pose.getX() > fieldWidth
+                || pose.getY() > fieldHeight)) {
+          continue;
+        }
+
         Paint paint;
         try {
-          paint = colors.get(object);
+          paint = colors.get(key);
         } catch (Exception ignored) {
           paint = Paint.valueOf("#ffffff");
         }
@@ -262,12 +265,38 @@ public class FieldWidget extends SimpleAnnotatedWidget<FieldData> {
     }
 
     return ImmutableList.of(
-            Group.of("Field", Setting.of("Game", game, Game.class)),
-            Group.of("Colors", colorSettings));
+            Group.of("Game", Setting.of("Game", game, Game.class)),
+            Group.of("Visuals",
+                    Setting.of("Robot Icon Size", robotSize, Double.class),
+                    Setting.of("Show Outside Circles", showCirclesOutsideOfField, Boolean.class)
+            ),
+            Group.of("Colors", colorSettings)
+    );
   }
 
   @Override
   public Pane getView() {
     return root;
+  }
+
+  private enum Game {
+    A2018_Power_Up,
+    A2019_Deep_Space,
+    A2020_Infinite_Recharge,
+    A2021_Barrel_Racing_Path,
+    A2021_Bounce_Path,
+    A2021_Galactic_Search_A,
+    A2021_Galactic_Search_B,
+    A2021_Infinite_Recharge,
+    A2021_Slalom_Path;
+
+    public String json() {
+      return "field/" + this.name().substring(1).toLowerCase().replaceFirst("_", "-").replaceAll("_", "") + ".json";
+    }
+
+    @Override
+    public String toString() {
+      return this.name().substring(1).replaceAll("_", " ");
+    }
   }
 }
