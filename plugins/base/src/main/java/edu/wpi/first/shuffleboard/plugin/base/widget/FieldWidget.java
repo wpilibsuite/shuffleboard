@@ -63,7 +63,7 @@ public class FieldWidget extends SimpleAnnotatedWidget<FieldData> {
   private final Map<String, Paint> colors = new HashMap<>();
   private final Property<Game> game =
           new SimpleObjectProperty<>(Game.A2021_Infinite_Recharge);
-  private final DoubleProperty robotSize = new SimpleDoubleProperty(30);
+  private final DoubleProperty robotSize = new SimpleDoubleProperty(50);
   private final BooleanProperty showCirclesOutsideOfField = new SimpleBooleanProperty(false);
 
 
