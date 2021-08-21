@@ -157,7 +157,7 @@ public class FieldWidget extends SimpleAnnotatedWidget<FieldData> {
       Map<?, ?> map = gson.fromJson(reader, Map.class);
 
       URL imagePath = getClass()
-              .getResource(Paths.get("field", (String) map.get("field-image")).toString());
+              .getResource("field/" + map.get("field-image"));
       if (imagePath == null) {
         throw new Exception("Cannot get image at " + Paths.get("field", (String) map.get("field-image")));
       }
