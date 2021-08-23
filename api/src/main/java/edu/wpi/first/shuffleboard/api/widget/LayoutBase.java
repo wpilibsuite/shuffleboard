@@ -10,10 +10,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import javafx.beans.property.Property;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
+import javafx.beans.property.*;
 import javafx.scene.Node;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Label;
@@ -33,6 +30,7 @@ public abstract class LayoutBase implements Layout {
   private final List<Component> children = new ArrayList<>();
   private final StringProperty title = new SimpleStringProperty(this, "title", getName());
   private final Property<FontAwesome.Glyph> glyph = new SimpleObjectProperty<>(this, "glyph", FontAwesome.Glyph.CUBES);
+  private final BooleanProperty showGlyph = new SimpleBooleanProperty(this, "showGlyph", false);
   private final Property<LabelPosition> labelPosition =
       new SimpleObjectProperty<>(this, "labelPosition", LabelPosition.BOTTOM);
 
@@ -82,6 +80,9 @@ public abstract class LayoutBase implements Layout {
 
   @Override
   public Property<FontAwesome.Glyph> glyphProperty() { return glyph; }
+
+  @Override
+  public BooleanProperty showGlyphProperty() { return showGlyph; }
 
   /**
    * Gets the side on which labels for components should be displayed.

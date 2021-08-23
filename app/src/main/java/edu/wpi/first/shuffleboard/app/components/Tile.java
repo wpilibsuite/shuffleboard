@@ -41,7 +41,11 @@ public class Tile<T extends Component> extends BorderPane {
       EasyBind.monadic(content)
           .selectProperty(Component::titleProperty);
 
-  private final PropertyBinding<FontAwesome.Glyph> contentGlyph = EasyBind.monadic(content).selectProperty(Component::glyphProperty);
+  private final PropertyBinding<FontAwesome.Glyph> contentGlyph =
+          EasyBind.monadic(content).selectProperty(Component::glyphProperty);
+
+  private final PropertyBinding<Boolean> contentShowGlyph =
+          EasyBind.monadic(content).selectProperty(Component::showGlyphProperty);
 
   /**
    * Creates an empty tile. The content and size must be set with {@link #setContent(Component)} and
@@ -74,7 +78,10 @@ public class Tile<T extends Component> extends BorderPane {
     });
     contentTitle.addListener((__, prev, cur) -> editableLabel.setText(cur));
 
-    ((Glyph) lookup("#titleGlyph")).iconProperty().bind(contentGlyph);
+    Glyph titleGlyph = ((Glyph) lookup("#titleGlyph"));
+    titleGlyph.iconProperty().bind(contentGlyph);
+    titleGlyph.visibleProperty().bind(contentShowGlyph);
+    titleGlyph.managedProperty().bind(contentShowGlyph);
   }
 
   private Optional<Pane> getContentPane() {
