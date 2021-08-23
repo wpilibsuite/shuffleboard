@@ -4,6 +4,7 @@ import java.util.stream.Stream;
 
 import javafx.beans.property.Property;
 import javafx.scene.layout.Pane;
+import org.controlsfx.glyphfont.FontAwesome;
 
 /**
  * A Component is base interface for any part of the dashboard that can be instantiated by the user. For example, a
@@ -25,6 +26,11 @@ public interface Component extends SettingsHolder {
    * Gets the label for this component.
    */
   Property<String> titleProperty();
+
+  /**
+   * Gets the glyph for this component.
+   */
+  Property<FontAwesome.Glyph> glyphProperty();
 
   default String getTitle() {
     return titleProperty().getValue();

@@ -9,12 +9,15 @@ import com.google.common.collect.ImmutableList;
 import java.util.List;
 
 import javafx.beans.InvalidationListener;
+import javafx.beans.property.Property;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import org.controlsfx.glyphfont.FontAwesome;
 
 /**
  * A partial implementation of {@link Widget} that implements property methods.
@@ -24,6 +27,7 @@ public abstract class AbstractWidget implements Widget {
   protected final ObservableList<DataSource> sources = FXCollections.observableArrayList();
 
   private final StringProperty title = new SimpleStringProperty(this, "title", "");
+  private final Property<FontAwesome.Glyph> glyph = new SimpleObjectProperty<>(this, "glyph", FontAwesome.Glyph.CUBE);
 
   private final ChangeListener<Boolean> connectionListener = (__, was, is) -> {
     if (is) {
@@ -79,6 +83,9 @@ public abstract class AbstractWidget implements Widget {
   public StringProperty titleProperty() {
     return title;
   }
+
+  @Override
+  public Property<FontAwesome.Glyph> glyphProperty() { return glyph; }
 
   @Override
   public final ObservableList<DataSource> getSources() {

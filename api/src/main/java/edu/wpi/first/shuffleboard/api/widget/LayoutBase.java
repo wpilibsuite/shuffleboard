@@ -23,6 +23,7 @@ import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
+import org.controlsfx.glyphfont.FontAwesome;
 
 /**
  * A base class for layouts that provides helpful methods for interacting with components inside the layout.
@@ -31,6 +32,7 @@ public abstract class LayoutBase implements Layout {
 
   private final List<Component> children = new ArrayList<>();
   private final StringProperty title = new SimpleStringProperty(this, "title", getName());
+  private final Property<FontAwesome.Glyph> glyph = new SimpleObjectProperty<>(this, "glyph", FontAwesome.Glyph.CUBES);
   private final Property<LabelPosition> labelPosition =
       new SimpleObjectProperty<>(this, "labelPosition", LabelPosition.BOTTOM);
 
@@ -77,6 +79,9 @@ public abstract class LayoutBase implements Layout {
   public Property<String> titleProperty() {
     return title;
   }
+
+  @Override
+  public Property<FontAwesome.Glyph> glyphProperty() { return glyph; }
 
   /**
    * Gets the side on which labels for components should be displayed.
