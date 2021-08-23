@@ -10,7 +10,12 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import javafx.beans.property.*;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.Property;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.scene.Node;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Label;
@@ -79,10 +84,14 @@ public abstract class LayoutBase implements Layout {
   }
 
   @Override
-  public Property<FontAwesome.Glyph> glyphProperty() { return glyph; }
+  public Property<FontAwesome.Glyph> glyphProperty() {
+    return glyph;
+  }
 
   @Override
-  public BooleanProperty showGlyphProperty() { return showGlyph; }
+  public BooleanProperty showGlyphProperty() {
+    return showGlyph;
+  }
 
   /**
    * Gets the side on which labels for components should be displayed.

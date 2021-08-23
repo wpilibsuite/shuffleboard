@@ -78,7 +78,7 @@ public class Tile<T extends Component> extends BorderPane {
     });
     contentTitle.addListener((__, prev, cur) -> editableLabel.setText(cur));
 
-    Glyph titleGlyph = ((Glyph) lookup("#titleGlyph"));
+    Glyph titleGlyph = (Glyph) lookup("#titleGlyph");
     titleGlyph.iconProperty().bind(contentGlyph);
     titleGlyph.visibleProperty().bind(contentShowGlyph);
     titleGlyph.managedProperty().bind(contentShowGlyph);

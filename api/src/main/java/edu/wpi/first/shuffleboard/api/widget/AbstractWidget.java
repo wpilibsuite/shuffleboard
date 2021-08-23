@@ -9,7 +9,12 @@ import com.google.common.collect.ImmutableList;
 import java.util.List;
 
 import javafx.beans.InvalidationListener;
-import javafx.beans.property.*;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.Property;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -83,10 +88,14 @@ public abstract class AbstractWidget implements Widget {
   }
 
   @Override
-  public Property<FontAwesome.Glyph> glyphProperty() { return glyph; }
+  public Property<FontAwesome.Glyph> glyphProperty() {
+    return glyph;
+  }
 
   @Override
-  public BooleanProperty showGlyphProperty() { return showGlyph; }
+  public BooleanProperty showGlyphProperty() {
+    return showGlyph;
+  }
 
   @Override
   public final ObservableList<DataSource> getSources() {
