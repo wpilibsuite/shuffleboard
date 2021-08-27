@@ -13,6 +13,12 @@ import edu.wpi.first.shuffleboard.app.components.DashboardTab;
 import edu.wpi.first.shuffleboard.app.components.DashboardTabPane;
 import edu.wpi.first.shuffleboard.app.components.Tile;
 
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.Property;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import org.controlsfx.glyphfont.FontAwesome;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
@@ -25,8 +31,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import javafx.beans.property.Property;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.layout.Pane;
@@ -109,6 +113,16 @@ public class DashboardTabPaneSaverTest extends ApplicationTest {
     @Override
     public Property<String> titleProperty() {
       return new SimpleStringProperty();
+    }
+
+    @Override
+    public Property<FontAwesome.Glyph> glyphProperty() {
+      return new SimpleObjectProperty<>();
+    }
+
+    @Override
+    public BooleanProperty showGlyphProperty() {
+      return new SimpleBooleanProperty();
     }
 
     @Override

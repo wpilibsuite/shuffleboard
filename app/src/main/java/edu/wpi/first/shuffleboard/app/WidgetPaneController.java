@@ -639,6 +639,16 @@ public class WidgetPaneController {
             "Title",
             "The title of this " + component.getName().toLowerCase(Locale.US),
             component.titleProperty()
+        ),
+        Setting.of(
+                "Show Glyph",
+                "Show the glyph for this " + component.getName().toLowerCase(Locale.US),
+                component.showGlyphProperty()
+        ),
+        Setting.of(
+          "Glyph",
+          "The glyph of this " + component.getName().toLowerCase(Locale.US),
+          component.glyphProperty()
         )
     );
   }

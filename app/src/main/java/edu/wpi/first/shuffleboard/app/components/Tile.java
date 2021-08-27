@@ -8,6 +8,8 @@ import edu.wpi.first.shuffleboard.api.widget.Layout;
 import edu.wpi.first.shuffleboard.api.widget.TileSize;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 
+import org.controlsfx.glyphfont.FontAwesome;
+import org.controlsfx.glyphfont.Glyph;
 import org.fxmisc.easybind.EasyBind;
 import org.fxmisc.easybind.monadic.MonadicBinding;
 import org.fxmisc.easybind.monadic.PropertyBinding;
@@ -39,6 +41,12 @@ public class Tile<T extends Component> extends BorderPane {
       EasyBind.monadic(content)
           .selectProperty(Component::titleProperty);
 
+  private final PropertyBinding<FontAwesome.Glyph> contentGlyph =
+          EasyBind.monadic(content).selectProperty(Component::glyphProperty);
+
+  private final PropertyBinding<Boolean> contentShowGlyph =
+          EasyBind.monadic(content).selectProperty(Component::showGlyphProperty);
+
   /**
    * Creates an empty tile. The content and size must be set with {@link #setContent(Component)} and
    * {@link #setSize(TileSize)}.
@@ -69,6 +77,11 @@ public class Tile<T extends Component> extends BorderPane {
           });
     });
     contentTitle.addListener((__, prev, cur) -> editableLabel.setText(cur));
+
+    Glyph titleGlyph = (Glyph) lookup("#titleGlyph");
+    titleGlyph.iconProperty().bind(contentGlyph);
+    titleGlyph.visibleProperty().bind(contentShowGlyph);
+    titleGlyph.managedProperty().bind(contentShowGlyph);
   }
 
   private Optional<Pane> getContentPane() {

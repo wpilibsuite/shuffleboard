@@ -9,11 +9,14 @@ import com.google.common.collect.ImmutableList;
 
 import java.util.List;
 
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.Property;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.layout.Pane;
+import org.controlsfx.glyphfont.FontAwesome;
 
 public final class MockWidget implements Widget {
 
@@ -30,6 +33,16 @@ public final class MockWidget implements Widget {
   @Override
   public Property<String> titleProperty() {
     return new SimpleObjectProperty<>();
+  }
+
+  @Override
+  public Property<FontAwesome.Glyph> glyphProperty() {
+    return new SimpleObjectProperty<>();
+  }
+
+  @Override
+  public BooleanProperty showGlyphProperty() {
+    return new SimpleBooleanProperty();
   }
 
   @Override
