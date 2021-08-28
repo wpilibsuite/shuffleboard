@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.app.json;
 
+import edu.wpi.first.shuffleboard.api.TileTitleDisplayMode;
 import edu.wpi.first.shuffleboard.api.json.AnnotatedTypeAdapter;
 import edu.wpi.first.shuffleboard.api.json.ElementTypeAdapter;
 import edu.wpi.first.shuffleboard.api.util.GridPoint;
@@ -31,6 +32,7 @@ public class WidgetPaneSaver implements ElementTypeAdapter<WidgetPane> {
     object.addProperty("showGrid", src.isShowGrid());
     object.addProperty("hgap", src.getHgap());
     object.addProperty("vgap", src.getVgap());
+    object.addProperty("titleType", src.tileType().getValue().ordinal());
     JsonObject tiles = new JsonObject();
 
     for (Tile<?> tile : src.getTiles()) {
@@ -57,6 +59,9 @@ public class WidgetPaneSaver implements ElementTypeAdapter<WidgetPane> {
     pane.setTileSize(object.get("gridSize").getAsDouble());
     pane.setHgap(object.get("hgap").getAsDouble());
     pane.setVgap(object.get("vgap").getAsDouble());
+    if (object.get("titleType") != null) {
+      pane.tileType().setValue(TileTitleDisplayMode.values()[object.get("titleType").getAsInt()]);
+    }
 
     JsonObject tiles = object.get("tiles").getAsJsonObject();
 

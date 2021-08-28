@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.app.components;
 
+import edu.wpi.first.shuffleboard.api.TileTitleDisplayMode;
 import edu.wpi.first.shuffleboard.api.css.SimpleColorCssMetaData;
 import edu.wpi.first.shuffleboard.api.css.SimpleCssMetaData;
 import edu.wpi.first.shuffleboard.api.tab.model.ComponentModel;
@@ -74,6 +75,7 @@ public class WidgetPane extends TilePane implements ComponentContainer {
       = new SimpleIntegerProperty(this, "secondaryGridLineThickness", 1);
   private final Property<Color> gridLineColor
       = new SimpleObjectProperty<>(this, "gridLineColor", Color.TRANSPARENT);
+  private final Property<TileTitleDisplayMode> type = new SimpleObjectProperty<>(TileTitleDisplayMode.DEFAULT);
 
   /**
    * Creates a new widget pane. This sets up everything needed for dragging widgets and sources
@@ -147,6 +149,10 @@ public class WidgetPane extends TilePane implements ComponentContainer {
     } catch (IOException e) {
       throw new IllegalStateException("Can't load FXML : " + getClass().getSimpleName(), e);
     }
+  }
+
+  public Property<TileTitleDisplayMode> tileType() {
+    return type;
   }
 
   @Override
