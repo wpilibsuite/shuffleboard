@@ -31,6 +31,13 @@ import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
 import edu.wpi.first.shuffleboard.app.prefs.SettingsDialog;
 import edu.wpi.first.shuffleboard.app.sources.DestroyedSource;
 
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Label;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.SeparatorMenuItem;
 import org.fxmisc.easybind.EasyBind;
 
 import java.util.ArrayList;
@@ -56,11 +63,6 @@ import javafx.fxml.FXML;
 import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import javafx.scene.SnapshotParameters;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.Label;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.ContextMenuEvent;
@@ -215,12 +217,21 @@ public class WidgetPaneController {
 
     // Removes all the tiles from the pane. Destructive operation!
     MenuItem clear = FxUtils.menuItem("Clear", __ -> {
-      List<Tile> tiles = new ArrayList<>(pane.getTiles());
-      tiles.stream()
-          .map((Function<Tile, Component>) pane::removeTile)
-          .flatMap(Component::allComponents)
-          .flatMap(TypeUtils.castStream(Sourced.class))
-          .forEach(Sourced::removeAllSources);
+      Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+      alert.setTitle("Confirm Tab Clear");
+      alert.setHeaderText("Do you want to clear this tab?");
+      alert.getDialogPane().getScene().getStylesheets()
+              .setAll(AppPreferences.getInstance().getTheme().getStyleSheets());
+      if (alert.showAndWait()
+              .map(b -> b.getButtonData() == ButtonBar.ButtonData.OK_DONE)
+              .orElse(false)) {
+        List<Tile> tiles = new ArrayList<>(pane.getTiles());
+        tiles.stream()
+                .map((Function<Tile, Component>) pane::removeTile)
+                .flatMap(Component::allComponents)
+                .flatMap(TypeUtils.castStream(Sourced.class))
+                .forEach(Sourced::removeAllSources);
+      }
     });
     ContextMenu contextMenu = new ContextMenu(addLayouts, new SeparatorMenuItem(), clear);
     contextMenu.show(pane.getScene().getWindow(), e.getScreenX(), e.getScreenY());
