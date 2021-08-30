@@ -13,7 +13,7 @@
       xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="edu.wpi.first.shuffleboard.app.MainWindowController">
 
-    <MenuBar>
+    <MenuBar useSystemMenuBar="true">
         <Menu mnemonicParsing="false" text="File">
             <MenuItem onAction="#newLayout" text="New" accelerator="SHORTCUT+N"/>
             <MenuItem onAction="#save" text="Save" accelerator="SHORTCUT+S"/>
