@@ -131,6 +131,7 @@ public class Shuffleboard extends Application {
     primaryStage.setOnCloseRequest(closeEvent -> {
       if (!AppPreferences.getInstance().isConfirmExit() || mainWindowController.isSaved()) {
         // Don't show the confirmation dialog, just exit
+        Platform.exit();
         return;
       }
       Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
