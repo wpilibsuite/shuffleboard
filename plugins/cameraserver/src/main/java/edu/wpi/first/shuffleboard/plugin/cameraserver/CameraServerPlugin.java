@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.plugin.cameraserver;
 
+import edu.wpi.first.cscore.CameraServerJNI;
 import edu.wpi.first.shuffleboard.api.PropertyParser;
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.plugin.Description;
@@ -14,12 +15,11 @@ import edu.wpi.first.shuffleboard.plugin.cameraserver.source.CameraServerSourceT
 import edu.wpi.first.shuffleboard.plugin.cameraserver.source.CameraStreamAdapter;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.widget.CameraServerWidget;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.widget.CameraServerWidget.Rotation;
-import edu.wpi.first.wpiutil.CombinedRuntimeLoader;
+import edu.wpi.first.util.CombinedRuntimeLoader;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
-import edu.wpi.cscore.CameraServerJNI;
 import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacpp.opencv_java;
 

@@ -2,8 +2,8 @@ package edu.wpi.first.shuffleboard.app;
 
 import com.sun.javafx.application.LauncherImpl;
 
-import edu.wpi.first.wpiutil.CombinedRuntimeLoader;
-import edu.wpi.first.wpiutil.WPIUtilJNI;
+import edu.wpi.first.util.CombinedRuntimeLoader;
+import edu.wpi.first.util.WPIUtilJNI;
 
 import java.io.IOException;
 import java.util.logging.Level;

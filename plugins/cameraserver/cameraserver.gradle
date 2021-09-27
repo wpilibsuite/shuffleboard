@@ -8,7 +8,7 @@ description = """
 The bundled CameraServer plugin. This plugin provides data sources and widgets for viewing MJPEG streams from the WPILib CameraServer.
 """.trim()
 
-def javaCppVersion = "1.4.1"
+def javaCppVersion = "1.4.4"
 
 
 def nativeConfigName = 'wpilibNatives'
@@ -21,7 +21,7 @@ def nativeTasks = wpilibTools.createExtractionTasks {
 
 nativeTasks.addToSourceSetResources(sourceSets.main)
 
-wpilibTools.deps.wpilibVersion = "2021.+"
+wpilibTools.deps.wpilibVersion = "2022.+"
 
 nativeConfig.dependencies.add wpilibTools.deps.cscore()
 
@@ -36,7 +36,7 @@ dependencies {
     implementation group: "org.bytedeco", name: "javacv", version: javaCppVersion
 
     runtimeOnly group: "org.bytedeco.javacpp-presets", name: "ffmpeg", version: "3.4.2-$javaCppVersion", classifier: wpilibTools.platformMapper.javaCppClassifier
-    runtimeOnly group: "org.bytedeco.javacpp-presets", name: "opencv", version: "3.4.1-$javaCppVersion", classifier: wpilibTools.platformMapper.javaCppClassifier
+    runtimeOnly group: "org.bytedeco.javacpp-presets", name: "opencv", version: "4.0.1-$javaCppVersion", classifier: wpilibTools.platformMapper.javaCppClassifier
 }
 
 def testNativeConfigName = 'wpilibTestNatives'

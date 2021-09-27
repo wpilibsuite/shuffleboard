@@ -17,10 +17,10 @@ import edu.wpi.first.shuffleboard.plugin.cameraserver.data.LazyCameraServerData;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.data.Resolution;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.data.type.CameraServerDataType;
 
-import edu.wpi.cscore.CameraServerJNI;
-import edu.wpi.cscore.HttpCamera;
-import edu.wpi.cscore.VideoEvent;
-import edu.wpi.cscore.VideoException;
+import edu.wpi.first.cscore.CameraServerJNI;
+import edu.wpi.first.cscore.HttpCamera;
+import edu.wpi.first.cscore.VideoEvent;
+import edu.wpi.first.cscore.VideoException;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 
