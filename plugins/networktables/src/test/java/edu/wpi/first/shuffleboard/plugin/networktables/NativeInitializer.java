@@ -4,8 +4,8 @@ import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
 import edu.wpi.first.networktables.NetworkTablesJNI;
-import edu.wpi.first.wpiutil.CombinedRuntimeLoader;
-import edu.wpi.first.wpiutil.WPIUtilJNI;
+import edu.wpi.first.util.CombinedRuntimeLoader;
+import edu.wpi.first.util.WPIUtilJNI;
 
 public class NativeInitializer implements BeforeAllCallback {
 
