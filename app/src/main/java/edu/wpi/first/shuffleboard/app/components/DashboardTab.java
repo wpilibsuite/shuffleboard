@@ -50,6 +50,7 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.layout.StackPane;
+import org.fxmisc.easybind.monadic.PropertyBinding;
 
 public class DashboardTab extends Tab implements HandledTab, Populatable, SettingsHolder {
 
@@ -57,7 +58,8 @@ public class DashboardTab extends Tab implements HandledTab, Populatable, Settin
   private final StringProperty title = new SimpleStringProperty(this, "title", "");
   private final BooleanProperty autoPopulate = new SimpleBooleanProperty(this, "autoPopulate", false);
   private final StringProperty sourcePrefix = new SimpleStringProperty(this, "sourcePrefix", "");
-  private final Property<TileTitleDisplayMode> tileType = new SimpleObjectProperty<>(TileTitleDisplayMode.DEFAULT);
+  private final PropertyBinding<TileTitleDisplayMode> tileType =
+          EasyBind.monadic(widgetPane).selectProperty(WidgetPane::tileType);
 
   private static final PseudoClass MINIMAL_TITLES = PseudoClass.getPseudoClass("minimal-tile-titles");
   private static final PseudoClass HIDDEN_TITLES = PseudoClass.getPseudoClass("no-tile-titles");
