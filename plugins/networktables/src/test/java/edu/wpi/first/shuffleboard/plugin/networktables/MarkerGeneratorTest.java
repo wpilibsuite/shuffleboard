@@ -39,7 +39,6 @@ public class MarkerGeneratorTest {
 
   @AfterEach
   public void tearDown() {
-    NetworkTableUtils.shutdown(ntInstance);
     ntInstance.close();
     AsyncUtils.setAsyncRunner(FxUtils::runOnFxThread);
   }

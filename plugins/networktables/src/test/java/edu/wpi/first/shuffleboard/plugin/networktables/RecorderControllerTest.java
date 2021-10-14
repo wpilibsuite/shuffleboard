@@ -40,8 +40,7 @@ public class RecorderControllerTest {
 
   @AfterEach
   public void tearDownNetworktables() {
-    NetworkTableUtils.shutdown(ntInstance);
-    //ntInstance.close();
+    ntInstance.close();
     DashboardMode.setCurrentMode(DashboardMode.NORMAL);
   }
 
