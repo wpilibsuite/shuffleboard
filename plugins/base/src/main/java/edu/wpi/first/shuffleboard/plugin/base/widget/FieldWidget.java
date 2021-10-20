@@ -38,7 +38,7 @@ import javafx.scene.paint.Paint;
 import javafx.scene.shape.Circle;
 
 @Description(name = "Field", dataTypes = FieldData.class)
-@SuppressWarnings("EmptyCatchBlock")
+@SuppressWarnings({"EmptyCatchBlock", "PMD.TooManyFields"})
 @ParametrizedController("FieldWidget.fxml")
 public class FieldWidget extends SimpleAnnotatedWidget<FieldData> {
   @FXML
@@ -61,6 +61,8 @@ public class FieldWidget extends SimpleAnnotatedWidget<FieldData> {
   private double fieldHeight;
 
   private final Map<String, Paint> colors = new HashMap<>();
+  private final Map<String, Circle[]> objectCircles = new HashMap<>();
+  private Map<String, FieldData.SimplePose2d[]> previousObjects = new HashMap<>();
   private final Property<Game> game =
           new SimpleObjectProperty<>(Game.A2021_Infinite_Recharge);
   private final DoubleProperty robotSize = new SimpleDoubleProperty(50);
@@ -74,7 +76,7 @@ public class FieldWidget extends SimpleAnnotatedWidget<FieldData> {
       setGame(game.getValue());
       centerImage();
       updateRobotPosition();
-      updateObjects();
+      updateObjects(true);
     });
 
     robot.setImage(
@@ -90,26 +92,26 @@ public class FieldWidget extends SimpleAnnotatedWidget<FieldData> {
       updateRobotPosition();
     });
 
-    showCirclesOutsideOfField.addListener(__ -> updateObjects());
+    showCirclesOutsideOfField.addListener(__ -> updateObjects(true));
 
     root.heightProperty().addListener(__ -> {
       double height = root.getHeight();
       backgroundImage.setFitHeight(height - robotSize.get() / 2);
       centerImage();
       updateRobotPosition();
-      updateObjects();
+      updateObjects(true);
     });
     root.widthProperty().addListener(__ -> {
       double width = root.getWidth();
       backgroundImage.setFitWidth(width - robotSize.get() / 2);
       centerImage();
       updateRobotPosition();
-      updateObjects();
+      updateObjects(true);
     });
 
     dataOrDefault.addListener(__ -> {
       updateRobotPosition();
-      updateObjects();
+      updateObjects(false);
     });
   }
 
@@ -221,16 +223,43 @@ public class FieldWidget extends SimpleAnnotatedWidget<FieldData> {
     robot.setRotate(-dataOrDefault.get().getRobot().getDegrees());
   }
 
-  private void updateObjects() {
-    pane.getChildren().removeIf(n -> n instanceof Circle);
-
+  private void updateObjects(boolean forceUpdateObjects) {
+    var newObjects = dataOrDefault.get().getObjects();
     for (Map.Entry<String, FieldData.SimplePose2d[]> entry : dataOrDefault.get().getObjects().entrySet()) {
       String key = entry.getKey();
+      var newObject = entry.getValue();
+
+      if (!forceUpdateObjects && previousObjects.containsKey(key)) {
+        boolean changed = false;
+        var previousObject = previousObjects.get(key);
+        if (previousObject.length == newObject.length) {
+          for (int i = 0; i < previousObject.length; i++) {
+            if (!previousObject[i].equals(newObject[i])) {
+              changed = true;
+              break;
+            }
+          }
+        } else {
+          changed = true;
+        }
+
+        if (!changed) {
+          continue;
+        }
+      }
+
+      for (var circle : objectCircles.getOrDefault(key, new Circle[0])) {
+        pane.getChildren().remove(circle);
+      }
+
       if (!colors.containsKey(key)) {
         colors.put(key, Color.valueOf("#ffffff"));
       }
 
-      for (FieldData.SimplePose2d pose : entry.getValue()) {
+      var newCircles = new Circle[newObject.length];
+      for (int i = 0; i < newObject.length; i++) {
+        var pose = newObject[i];
+
         if (!showCirclesOutsideOfField.get() && (
                 pose.getX() < 0
                 || pose.getY() < 0
@@ -245,11 +274,16 @@ public class FieldWidget extends SimpleAnnotatedWidget<FieldData> {
         } catch (Exception ignored) {
           paint = Paint.valueOf("#ffffff");
         }
-        pane.getChildren().add(new Circle(transformX(pose.getX(), 1.25),
+
+        newCircles[i] = new Circle(transformX(pose.getX(), 1.25),
                 transformY(pose.getY(), 1.25), 2.5,
-                paint));
+                paint);
+
+        pane.getChildren().add(newCircles[i]);
       }
+      objectCircles.put(key, newCircles);
     }
+    previousObjects = newObjects;
   }
 
   @Override
@@ -259,7 +293,7 @@ public class FieldWidget extends SimpleAnnotatedWidget<FieldData> {
       Property<Paint> property = new SimpleObjectProperty<>(entry.getValue());
       property.addListener(__ -> {
         colors.put(entry.getKey(), property.getValue());
-        updateObjects();
+        updateObjects(true);
       });
       colorSettings.add(Setting.of(entry.getKey(), property, Color.class));
     }
