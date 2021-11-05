@@ -2,7 +2,7 @@ package edu.wpi.first.shuffleboard.plugin.cameraserver.source;
 
 import edu.wpi.first.shuffleboard.plugin.cameraserver.data.CameraServerData;
 
-import edu.wpi.cscore.CameraServerJNI;
+import edu.wpi.first.cscore.CameraServerJNI;
 
 import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacpp.opencv_java;

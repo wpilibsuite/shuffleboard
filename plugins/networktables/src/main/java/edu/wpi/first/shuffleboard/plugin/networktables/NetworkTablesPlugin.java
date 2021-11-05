@@ -18,7 +18,7 @@ import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.api.widget.WidgetType;
 import edu.wpi.first.shuffleboard.plugin.networktables.sources.NetworkTableSourceType;
 import edu.wpi.first.shuffleboard.plugin.networktables.util.NetworkTableUtils;
-import edu.wpi.first.wpiutil.CombinedRuntimeLoader;
+import edu.wpi.first.util.CombinedRuntimeLoader;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;

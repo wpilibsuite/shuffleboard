@@ -2,14 +2,14 @@ package edu.wpi.first.shuffleboard.plugin.cameraserver;
 
 import java.nio.ByteBuffer;
 
-import edu.wpi.cscore.VideoMode;
-import edu.wpi.cscore.ImageSink;
+import edu.wpi.first.cscore.VideoMode;
+import edu.wpi.first.cscore.ImageSink;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 
-import edu.wpi.cscore.VideoMode.PixelFormat;
-import edu.wpi.cscore.CameraServerJNI;
-import edu.wpi.cscore.raw.RawFrame;
+import edu.wpi.first.cscore.VideoMode.PixelFormat;
+import edu.wpi.first.cscore.CameraServerJNI;
+import edu.wpi.first.cscore.raw.RawFrame;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
