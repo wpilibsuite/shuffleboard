@@ -6,7 +6,6 @@ import edu.wpi.first.shuffleboard.plugin.networktables.util.NetworkTableUtils;
 
 import edu.wpi.first.networktables.NetworkTableInstance;
 
-import org.junit.jupiter.api.parallel.ResourceLock;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -20,7 +19,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Disabled("hangs on Linux CI runner")
-@ResourceLock("NetworkTables")
 public class RecorderControllerTest {
 
   private static final Logger log = Logger.getLogger(RecorderControllerTest.class.getName());

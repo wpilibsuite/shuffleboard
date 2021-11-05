@@ -10,7 +10,6 @@ import edu.wpi.first.shuffleboard.plugin.networktables.util.NetworkTableUtils;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 
-import org.junit.jupiter.api.parallel.ResourceLock;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -21,7 +20,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
 @Disabled("hangs on Linux CI runner")
-@ResourceLock("NetworkTables")
 public class MarkerGeneratorTest {
 
   private static final String MARKER_NAME = "MyEvent";
