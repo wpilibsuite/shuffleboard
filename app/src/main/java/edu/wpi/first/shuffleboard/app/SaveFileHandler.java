@@ -139,7 +139,7 @@ public final class SaveFileHandler {
   public boolean isUpToDate(DashboardData data) {
     try {
       return JsonBuilder.forSaveFile().toJson(data).equals(Files.toString(currentFile, Charset.forName("UTF-8")));
-    } catch (IOException e) {
+    } catch (IOException | NullPointerException e) {
       return false;
     }
   }
