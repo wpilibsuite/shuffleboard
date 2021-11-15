@@ -26,6 +26,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javafx.collections.ObservableList;
+import org.controlsfx.glyphfont.FontAwesome;
 
 @AnnotatedTypeAdapter(forType = Layout.class)
 public class LayoutSaver implements ElementTypeAdapter<Layout> {
@@ -46,6 +47,8 @@ public class LayoutSaver implements ElementTypeAdapter<Layout> {
     }
 
     object.addProperty("_title", src.getTitle());
+    object.addProperty("_glyph", src.glyphProperty().getValue().ordinal());
+    object.addProperty("_showGlyph", src.showGlyphProperty().getValue());
 
     propertySaver.saveAllProperties(src, context, object);
 
@@ -93,6 +96,16 @@ public class LayoutSaver implements ElementTypeAdapter<Layout> {
     JsonElement title = obj.get("_title");
     if (title != null) {
       layout.setTitle(title.getAsString());
+    }
+
+    JsonElement glyph = obj.get("_glyph");
+    if (glyph != null) {
+      layout.glyphProperty().setValue(FontAwesome.Glyph.values()[glyph.getAsInt()]);
+    }
+
+    JsonElement showGlyph = obj.get("_showGlyph");
+    if (showGlyph != null) {
+      layout.showGlyphProperty().setValue(showGlyph.getAsBoolean());
     }
 
     JsonArray children = obj.get("_children").getAsJsonArray();
