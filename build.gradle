@@ -2,7 +2,7 @@ import com.github.spotbugs.snom.SpotBugsTask
 
 plugins {
     id 'base'
-    id 'com.github.johnrengelman.shadow' version '6.0.0' apply false
+    id 'com.github.johnrengelman.shadow' version '7.1.0' apply false
     id "com.jfrog.artifactory" version "4.16.0"
     id 'edu.wpi.first.wpilib.versioning.WPILibVersioningPlugin' version '4.1.0'
     id 'edu.wpi.first.wpilib.repositories.WPILibRepositoriesPlugin' version '2020.2'
