@@ -87,3 +87,7 @@ tasks.withType(ShadowJar).configureEach {
 addTaskToCopyAllOutputs(shadowJar)
 
 sourceSets["test"].resources.srcDirs.add(new File(project("test_plugins").buildDir, "libs"))
+
+tasks.withType(Copy) {
+    duplicatesStrategy = 'exclude'
+}

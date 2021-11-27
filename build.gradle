@@ -34,7 +34,6 @@ def outputsFolder = file("$buildDir/allOutputs")
 
 task copyAllOutputs(type: Copy) {
     destinationDir outputsFolder
-    duplicatesStrategy = 'exclude'
 }
 
 build.dependsOn copyAllOutputs
