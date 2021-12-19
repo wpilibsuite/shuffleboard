@@ -8,6 +8,7 @@ import edu.wpi.first.shuffleboard.api.plugin.Plugin;
 import edu.wpi.first.shuffleboard.api.plugin.Requires;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.recording.serialization.TypeAdapter;
+import edu.wpi.first.shuffleboard.api.util.OsDetector;
 import edu.wpi.first.shuffleboard.api.widget.ComponentType;
 import edu.wpi.first.shuffleboard.api.widget.WidgetType;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.data.type.CameraServerDataType;
@@ -45,18 +46,22 @@ public class CameraServerPlugin extends Plugin {
   private static final PropertyParser<Rotation> CAMERA_ROTATION = PropertyParser.forEnum(Rotation.class);
 
   @Override
-  public void onLoad() {
-    // Make sure the JNI is loaded. If it's not, this plugin can't work!
-    Loader.load(opencv_java.class);
-
+  public void onLoad() throws Exception {
     CameraServerJNI.Helper.setExtractOnStaticLoad(false);
     try {
+      // Make sure the JNI is loaded. If it's not, this plugin can't work!
+      Loader.load(opencv_java.class);
       var files = CombinedRuntimeLoader.extractLibraries(CameraServerPlugin.class,
           "/ResourceInformation-CameraServer.json");
       CombinedRuntimeLoader.loadLibrary("cscorejnicvstatic", files);
       CameraServerJNI.setTelemetryPeriod(1.0);
-    } catch (IOException ex) {
+    } catch (IOException | UnsatisfiedLinkError ex) {
       log.log(Level.SEVERE, "Failed to load CV Libraries", ex);
+      if (OsDetector.isWindows()) {
+        log.log(Level.SEVERE, "This failure is likely caused by running an N version of windows."
+            + " Camera support will not work");
+      }
+      throw ex;
     }
   }
 

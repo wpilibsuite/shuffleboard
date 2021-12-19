@@ -305,7 +305,23 @@ public class PluginLoader {
     converters.registerAll(plugin.getRecordingConverters());
     propertyParsers.registerAll(plugin.getPropertyParsers());
 
-    plugin.onLoad();
+    try {
+      plugin.onLoad();
+    } catch (Throwable ex) {
+      log.log(Level.SEVERE, "Plugin: " + plugin.getName() + " failed to load", ex);
+      // Since plugin loading is not transactional, we have to act like we fully loaded.
+      // Ideally this should be fixed by making loading transactional.
+      plugin.setLoaded(true);
+
+      loadedPlugins.add(plugin);
+      if (!knownPlugins.contains(plugin)) {
+        knownPlugins.add(plugin);
+      }
+      unload(plugin);
+      knownPlugins.remove(plugin);
+      knownPluginClasses.remove(plugin.getClass());
+      return false;
+    }
     plugin.setLoaded(true);
 
     loadedPlugins.add(plugin);
