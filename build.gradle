@@ -2,12 +2,12 @@ import com.github.spotbugs.snom.SpotBugsTask
 
 plugins {
     id 'base'
-    id 'com.github.johnrengelman.shadow' version '6.0.0' apply false
-    id "com.jfrog.artifactory" version "4.16.0"
+    id 'com.github.johnrengelman.shadow' version '7.1.1' apply false
+    id "com.jfrog.artifactory" version "4.25.2"
     id 'edu.wpi.first.wpilib.versioning.WPILibVersioningPlugin' version '4.1.0'
     id 'edu.wpi.first.wpilib.repositories.WPILibRepositoriesPlugin' version '2020.2'
-    id 'com.diffplug.gradle.spotless' version '3.28.0'
-    id 'com.github.spotbugs' version '4.4.4'
+    id 'com.diffplug.spotless' version '6.0.5'
+    id 'com.github.spotbugs' version '5.0.3'
     id 'edu.wpi.first.WpilibTools' version '0.8.1'
 }
 
@@ -53,7 +53,7 @@ final JAVADOC_FIX_SEARCH_STR = '\n\n' +
 allprojects {
     apply plugin: 'java'
     apply plugin: 'maven-publish'
-    apply plugin: 'com.diffplug.gradle.spotless'
+    apply plugin: 'com.diffplug.spotless'
     apply plugin: 'edu.wpi.first.WpilibTools'
     apply plugin: 'com.jfrog.artifactory'
 
@@ -275,8 +275,8 @@ allprojects {
 
     tasks.withType(JacocoReport) {
         reports {
-            xml.enabled = true
-            html.enabled = true
+            xml.required = true
+            html.required = true
         }
     }
 
@@ -337,5 +337,5 @@ project(":api") {
 }
 
 wrapper {
-    gradleVersion = '6.0.1'
+    gradleVersion = '7.3.2'
 }

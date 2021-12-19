@@ -47,7 +47,7 @@ dependencies {
 def theMainClassName = "edu.wpi.first.shuffleboard.app.Main"
 
 application {
-    mainClassName = theMainClassName
+    mainClass = theMainClassName
     applicationDefaultJvmArgs = [
             "-Xverify:none",
             "-Dprism.order=d3d,es2,sw"
