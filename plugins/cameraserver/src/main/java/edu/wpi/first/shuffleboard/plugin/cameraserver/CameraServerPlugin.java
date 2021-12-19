@@ -58,7 +58,8 @@ public class CameraServerPlugin extends Plugin {
     } catch (IOException | UnsatisfiedLinkError ex) {
       log.log(Level.SEVERE, "Failed to load CV Libraries", ex);
       if (OsDetector.isWindows()) {
-        log.log(Level.SEVERE, "This failure is likely caused by running an N version of windows. Camera support will not work");
+        log.log(Level.SEVERE, "This failure is likely caused by running an N version of windows."
+            + " Camera support will not work");
       }
       throw ex;
     }
