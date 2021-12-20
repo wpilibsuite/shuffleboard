@@ -47,7 +47,7 @@ dependencies {
 def theMainClassName = "edu.wpi.first.shuffleboard.app.Main"
 
 application {
-    mainClassName = theMainClassName
+    mainClass = theMainClassName
     applicationDefaultJvmArgs = [
             "-Xverify:none",
             "-Dprism.order=d3d,es2,sw"
@@ -85,5 +85,13 @@ tasks.withType(ShadowJar).configureEach {
 }
 
 addTaskToCopyAllOutputs(shadowJar)
+
+distTar {
+    duplicatesStrategy = 'exclude'
+}
+
+distZip {
+    duplicatesStrategy = 'exclude'
+}
 
 sourceSets["test"].resources.srcDirs.add(new File(project("test_plugins").buildDir, "libs"))
