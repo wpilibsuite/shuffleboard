@@ -64,7 +64,7 @@ public class FieldWidget extends SimpleAnnotatedWidget<FieldData> {
   private final Map<String, Circle[]> objectCircles = new HashMap<>();
   private Map<String, FieldData.SimplePose2d[]> previousObjects = new HashMap<>();
   private final Property<Game> game =
-          new SimpleObjectProperty<>(Game.A2021_Infinite_Recharge);
+          new SimpleObjectProperty<>(Game.A2022_Rapid_React);
   private final DoubleProperty robotSize = new SimpleDoubleProperty(50);
   private final BooleanProperty showCirclesOutsideOfField = new SimpleBooleanProperty(false);
 
@@ -322,7 +322,8 @@ public class FieldWidget extends SimpleAnnotatedWidget<FieldData> {
     A2021_Galactic_Search_A,
     A2021_Galactic_Search_B,
     A2021_Infinite_Recharge,
-    A2021_Slalom_Path;
+    A2021_Slalom_Path,
+    A2022_Rapid_React;
 
     public String json() {
       return "field/" + this.name().substring(1).toLowerCase().replaceFirst("_", "-").replaceAll("_", "") + ".json";
