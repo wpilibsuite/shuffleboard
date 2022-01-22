@@ -28,7 +28,7 @@ import javafx.scene.control.Slider;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 
-@Description(name = "Speed Controller", dataTypes = SpeedControllerType.class)
+@Description(name = "Motor Controller", dataTypes = SpeedControllerType.class)
 @ParametrizedController("SpeedControllerWidget.fxml")
 public class SpeedControllerWidget extends SimpleAnnotatedWidget<SpeedControllerData> {
 

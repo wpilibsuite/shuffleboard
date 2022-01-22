@@ -11,7 +11,7 @@ public final class SpeedControllerType extends ComplexDataType<SpeedControllerDa
   public static final SpeedControllerType Instance = new SpeedControllerType();
 
   private SpeedControllerType() {
-    super("Speed Controller", SpeedControllerData.class);
+    super("Motor Controller", SpeedControllerData.class);
   }
 
   @Override
