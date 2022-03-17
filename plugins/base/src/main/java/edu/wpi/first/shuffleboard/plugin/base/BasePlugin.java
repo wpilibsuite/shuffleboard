@@ -192,6 +192,7 @@ public class BasePlugin extends Plugin {
         .put(FmsInfoType.Instance, WidgetType.forAnnotatedWidget(BasicFmsInfoWidget.class))
         .put(UltrasonicType.Instance, WidgetType.forAnnotatedWidget(UltrasonicWidget.class))
         .put(BasicSubsystemType.Instance, WidgetType.forAnnotatedWidget(BasicSubsystemWidget.class))
+	.put(FieldType.Instance, WidgetType.forAnnotatedWidget(FieldWidget.class))
         .put(SubsystemType.Instance, createSubsystemLayoutType())
         .build();
   }
