@@ -19,7 +19,7 @@ def nativeTasks = wpilibTools.createExtractionTasks {
 
 nativeTasks.addToSourceSetResources(sourceSets.main)
 
-wpilibTools.deps.wpilibVersion = "2022.+"
+wpilibTools.deps.wpilibVersion = "2023.+"
 
 nativeConfig.dependencies.add wpilibTools.deps.wpilib('ntcore')
 
@@ -46,4 +46,5 @@ def testNativeTasks = wpilibTools.createExtractionTasks {
 testNativeTasks.addToSourceSetResources(sourceSets.test)
 
 testNativeConfig.dependencies.add wpilibTools.deps.wpilib("ntcore")
+testNativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
 testNativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
