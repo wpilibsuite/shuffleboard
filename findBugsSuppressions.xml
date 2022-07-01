@@ -4,7 +4,41 @@
         <Method name="close"/>
         <Bug pattern="DM_EXIT"/>
     </Match>
-    
+    <Match>
+        <Class name="edu.wpi.first.shuffleboard.app.PlaybackController"/>
+        <Bug pattern="DMI_HARDCODED_ABSOLUTE_FILENAME"/>
+    </Match>
+    <Match>
+        <Class name="edu.wpi.first.shuffleboard.app.SaveFileHandler"/>
+        <Method name="isUpToDate"/>
+        <Bug pattern="DCN_NULLPOINTER_EXCEPTION"/>
+    </Match>
+    <Match>
+        <Class name="edu.wpi.first.shuffleboard.app.plugin.PluginLoader"/>
+        <Method name="loadPluginClass"/>
+        <Bug pattern="REFLC_REFLECTION_MAY_INCREASE_ACCESSIBILITY_OF_CLASS"/>
+    </Match>
+    <Match>
+        <Class name="~.*"/>
+        <Bug pattern="MS_EXPOSE_REP"/>
+    </Match>
+    <Match>
+        <Class name="~.*"/>
+        <Bug pattern="EI_EXPOSE_REP"/>
+    </Match>
+    <Match>
+        <Class name="~.*"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+    <Match>
+        <Class name="~.*"/>
+        <Bug pattern="MS_EXPOSE_BUF"/>
+    </Match>
+    <Match>
+        <Class name="~.*"/>
+        <Bug pattern="EI_EXPOSE_STATIC_REP2"/>
+    </Match>
+
     <!-- Reason: http://junit.org/junit5/docs/current/user-guide/#writing-tests-nested -->
     <Match>
         <Class name="~.*Test\$.*"/>
