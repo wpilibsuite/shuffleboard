@@ -37,6 +37,7 @@ dependencies {
 
     runtimeOnly group: "org.bytedeco", name: "ffmpeg", version: "5.0-$javaCppVersion", classifier: wpilibTools.platformMapper.javaCppClassifier
     runtimeOnly group: "org.bytedeco", name: "opencv", version: "4.5.5-$javaCppVersion", classifier: wpilibTools.platformMapper.javaCppClassifier
+    runtimeOnly group: "org.bytedeco", name: "openblas", version: "0.3.19-$javaCppVersion", classifier: wpilibTools.platformMapper.javaCppClassifier
 }
 
 def testNativeConfigName = 'wpilibTestNatives'
