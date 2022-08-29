@@ -39,7 +39,7 @@ public class NumberBarWidget extends SimpleAnnotatedWidget<Number> {
   private final IntegerProperty numTicks = new SimpleIntegerProperty(this, "numTickMarks", 5);
   private final BooleanProperty showText = new SimpleBooleanProperty(this, "showText", true);
   private final Property<Orientation> orientation =
-    new SimpleObjectProperty<>(this, "orientation", Orientation.HORIZONTAL);
+      new SimpleObjectProperty<>(this, "orientation", Orientation.HORIZONTAL);
 
   @FXML
   private void initialize() {
