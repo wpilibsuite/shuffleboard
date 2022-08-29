@@ -15,6 +15,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonSerializationContext;
+import org.controlsfx.glyphfont.FontAwesome;
 
 import java.util.Optional;
 import java.util.logging.Level;
@@ -36,6 +37,8 @@ public class WidgetSaver implements ElementTypeAdapter<Widget> {
       object.addProperty("_source" + i, src.getSources().get(i).getId());
     }
     object.addProperty("_title", src.getTitle());
+    object.addProperty("_glyph", src.glyphProperty().getValue().ordinal());
+    object.addProperty("_showGlyph", src.showGlyphProperty().getValue());
 
     propertySaver.saveAllProperties(src, context, object);
 
@@ -52,6 +55,16 @@ public class WidgetSaver implements ElementTypeAdapter<Widget> {
     JsonElement title = obj.get("_title");
     if (title != null) {
       widget.setTitle(title.getAsString());
+    }
+
+    JsonElement glyph = obj.get("_glyph");
+    if (glyph != null) {
+      widget.glyphProperty().setValue(FontAwesome.Glyph.values()[glyph.getAsInt()]);
+    }
+
+    JsonElement showGlyph = obj.get("_showGlyph");
+    if (showGlyph != null) {
+      widget.showGlyphProperty().setValue(showGlyph.getAsBoolean());
     }
 
     propertySaver.readAllProperties(widget, context, obj);
