@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.api.util;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
@@ -97,8 +98,9 @@ public final class TypeUtils {
    * @throws IllegalAccessException if the constructor matching the given arguments is not public
    * @throws InstantiationException if the class is abstract
    */
-  public static <T> T tryInstantiate(Class<T> type) throws IllegalAccessException, InstantiationException {
-    return type.newInstance();
+  public static <T> T tryInstantiate(Class<T> type) throws IllegalAccessException, InstantiationException,
+      InvocationTargetException, NoSuchMethodException {
+    return type.getConstructor().newInstance();
   }
 
 }

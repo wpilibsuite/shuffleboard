@@ -22,7 +22,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import org.bytedeco.javacpp.Loader;
-import org.bytedeco.javacpp.opencv_java;
+import org.bytedeco.opencv.opencv_java;
 
 import java.io.IOException;
 import java.util.List;

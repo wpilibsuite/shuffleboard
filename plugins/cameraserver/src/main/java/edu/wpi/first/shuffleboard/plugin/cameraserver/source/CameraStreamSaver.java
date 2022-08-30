@@ -3,8 +3,8 @@ package edu.wpi.first.shuffleboard.plugin.cameraserver.source;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.data.CameraServerData;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.data.Resolution;
 
-import org.bytedeco.javacpp.avcodec;
-import org.bytedeco.javacpp.avutil;
+import org.bytedeco.ffmpeg.global.avcodec;
+import org.bytedeco.ffmpeg.global.avutil;
 import org.bytedeco.javacpp.indexer.UByteBufferIndexer;
 import org.bytedeco.javacv.FFmpegFrameRecorder;
 import org.bytedeco.javacv.Frame;

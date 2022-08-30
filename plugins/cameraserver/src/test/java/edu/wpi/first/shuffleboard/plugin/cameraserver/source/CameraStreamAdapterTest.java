@@ -5,7 +5,7 @@ import edu.wpi.first.shuffleboard.plugin.cameraserver.data.CameraServerData;
 import edu.wpi.first.cscore.CameraServerJNI;
 
 import org.bytedeco.javacpp.Loader;
-import org.bytedeco.javacpp.opencv_java;
+import org.bytedeco.opencv.opencv_java;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

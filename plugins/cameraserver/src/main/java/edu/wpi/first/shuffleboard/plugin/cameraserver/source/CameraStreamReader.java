@@ -1,6 +1,6 @@
 package edu.wpi.first.shuffleboard.plugin.cameraserver.source;
 
-import org.bytedeco.javacpp.avcodec;
+import org.bytedeco.ffmpeg.global.avcodec;
 import org.bytedeco.javacpp.indexer.UByteIndexer;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.Frame;
