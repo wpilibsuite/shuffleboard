@@ -16,9 +16,12 @@ import java.util.List;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.Property;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.fxml.FXML;
+import javafx.geometry.Orientation;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
 
@@ -35,6 +38,8 @@ public class NumberBarWidget extends SimpleAnnotatedWidget<Number> {
 
   private final IntegerProperty numTicks = new SimpleIntegerProperty(this, "numTickMarks", 5);
   private final BooleanProperty showText = new SimpleBooleanProperty(this, "showText", true);
+  private final Property<Orientation> orientation =
+      new SimpleObjectProperty<>(this, "orientation", Orientation.HORIZONTAL);
 
   @FXML
   private void initialize() {
@@ -50,6 +55,7 @@ public class NumberBarWidget extends SimpleAnnotatedWidget<Number> {
                 return max.doubleValue() - min.doubleValue();
               }
             }));
+    indicator.orientationProperty().bind(orientation);
   }
 
   @Override
@@ -62,7 +68,8 @@ public class NumberBarWidget extends SimpleAnnotatedWidget<Number> {
         ),
         Group.of("Visuals",
             Setting.of("Num tick marks", numTicks, Integer.class),
-            Setting.of("Show text", showText, Boolean.class)
+            Setting.of("Show text", showText, Boolean.class),
+            Setting.of("Orientation", orientation, Orientation.class)
         )
     );
   }
