@@ -18,11 +18,12 @@ allprojects {
     repositories {
         mavenCentral()
     }
-    if (project.hasProperty('releaseMode')) {
-        wpilibRepositories.addAllReleaseRepositories(it)
-    } else {
-        wpilibRepositories.addAllDevelopmentRepositories(it)
-    }
+    // Until we update ntcore, always use the development repos
+    // if (project.hasProperty('releaseMode')) {
+    //     wpilibRepositories.addAllReleaseRepositories(it)
+    // } else {
+    wpilibRepositories.addAllDevelopmentRepositories(it)
+    //}
 }
 
 wpilibVersioning.version.finalizeValue()
