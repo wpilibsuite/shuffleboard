@@ -22,7 +22,7 @@ def nativeTasks = wpilibTools.createExtractionTasks {
 
 nativeTasks.addToSourceSetResources(sourceSets.main)
 
-wpilibTools.deps.wpilibVersion = "2023.0.0-alpha-1-137-g90cfa00"
+wpilibTools.deps.wpilibVersion = "2023.+"
 
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
