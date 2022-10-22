@@ -12,8 +12,10 @@ import edu.wpi.first.shuffleboard.plugin.cameraserver.data.type.CameraServerData
 import edu.wpi.first.shuffleboard.plugin.networktables.util.NetworkTableUtils;
 
 import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableEvent;
 import edu.wpi.first.networktables.NetworkTableInstance;
 
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,24 +35,30 @@ public final class CameraServerSourceType extends SourceType {
 
   private CameraServerSourceType() {
     super("CameraServer", true, "camera_server://", CameraServerSourceType::forName);
-    NetworkTableInstance.getDefault().addEntryListener("/CameraPublisher", entryNotification ->
-        FxUtils.runOnFxThread(() -> {
-          List<String> hierarchy = NetworkTable.getHierarchy(entryNotification.name);
-          // 0 is "/", 1 is "/CameraPublisher", 2 is "/CameraPublisher/<name>"
-          String name = NetworkTable.basenameKey(hierarchy.get(2));
-          String uri = toUri(name);
-          NetworkTable table = NetworkTableInstance.getDefault().getTable(hierarchy.get(2));
-          if (table.getKeys().isEmpty() && table.getSubTables().isEmpty()) {
-            // No keys and no subtables, remove it
-            availableUris.remove(uri);
-            availableSources.remove(uri);
-          } else if (!NetworkTableUtils.isDelete(entryNotification.flags)) {
-            if (!availableUris.contains(uri)) {
-              availableUris.add(uri);
+    NetworkTableInstance.getDefault().addListener(
+        new String[] {"/CameraPublisher"},
+        EnumSet.of(
+          NetworkTableEvent.Kind.kUnpublish,
+          NetworkTableEvent.Kind.kValueAll,
+          NetworkTableEvent.Kind.kImmediate),
+        event ->
+          FxUtils.runOnFxThread(() -> {
+            List<String> hierarchy = NetworkTable.getHierarchy(NetworkTableUtils.topicNameForEvent(event));
+            // 0 is "/", 1 is "/CameraPublisher", 2 is "/CameraPublisher/<name>"
+            String name = NetworkTable.basenameKey(hierarchy.get(2));
+            String uri = toUri(name);
+            NetworkTable table = NetworkTableInstance.getDefault().getTable(hierarchy.get(2));
+            if (table.getKeys().isEmpty() && table.getSubTables().isEmpty()) {
+              // No keys and no subtables, remove it
+              availableUris.remove(uri);
+              availableSources.remove(uri);
+            } else if (!event.is(NetworkTableEvent.Kind.kUnpublish)) {
+              if (!availableUris.contains(uri)) {
+                availableUris.add(uri);
+              }
+              availableSources.put(uri, new CameraServerData(name, null, 0, 0));
             }
-            availableSources.put(uri, new CameraServerData(name, null, 0, 0));
-          }
-        }), 0xFF);
+          }));
   }
 
   public static CameraServerSource forName(String name) {

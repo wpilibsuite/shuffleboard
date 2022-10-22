@@ -2,11 +2,9 @@ package edu.wpi.first.shuffleboard.plugin.networktables.util;
 
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
-import edu.wpi.first.shuffleboard.api.util.BitUtils;
 
-import edu.wpi.first.networktables.EntryListenerFlags;
 import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableEvent;
 import edu.wpi.first.networktables.NetworkTableInstance;
 
 /**
@@ -25,28 +23,19 @@ public final class NetworkTableUtils {
   }
 
   /**
-   * Checks if network table flags contains a specific flag.
+   * Gets the topic name for a particular event. Throws if event is not topic or value event.
    *
-   * @param flags the network table flags
-   * @param flag  the flag to check (eg {@link EntryListenerFlags#kDelete})
-   *
-   * @return true if the flags match, false otherwise
-   * @deprecated use {@link BitUtils#flagMatches(int, int)} instead
+   * @param event event
+   * @return topic name
    */
-  @Deprecated
-  public static boolean flagMatches(int flags, int flag) {
-    return BitUtils.flagMatches(flags, flag);
-  }
-
-  /**
-   * Checks if the given network table flags contains the {@link EntryListenerFlags#kDelete delete flag}.
-   *
-   * <p>This is equivalent to {@code flagMatches(flags, EntryListenerFlags.kDelete)}
-   *
-   * @see BitUtils#flagMatches(int, int)
-   */
-  public static boolean isDelete(int flags) {
-    return BitUtils.flagMatches(flags, EntryListenerFlags.kDelete);
+  public static String topicNameForEvent(NetworkTableEvent event) {
+    if (event.topicInfo != null) {
+      return event.topicInfo.name;
+    } else if (event.valueData != null) {
+      return event.valueData.getTopic().getName();
+    } else {
+      throw new IllegalArgumentException("event does not have a name");
+    }
   }
 
   /**
@@ -93,13 +82,5 @@ public final class NetworkTableUtils {
     instance.stopDSClient();
     instance.stopClient();
     instance.stopServer();
-    // Wait for the network mode to be zero (everything off)
-    while (instance.getNetworkMode() != 0) { // NOPMD empty 'while' statement
-      // busy wait
-    }
-    // delete ALL entries, including persistent ones (deleteAllEntries skips persistent entries)
-    for (NetworkTableEntry entry : instance.getEntries("", 0)) {
-      entry.delete();
-    }
   }
 }

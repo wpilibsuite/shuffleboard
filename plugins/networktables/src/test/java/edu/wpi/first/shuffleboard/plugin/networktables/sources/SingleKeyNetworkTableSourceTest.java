@@ -28,24 +28,17 @@ public class SingleKeyNetworkTableSourceTest {
   private NetworkTable table;
   private NetworkTableInstance inst;
 
-  @BeforeAll
-  public static void clinit() {
-    NetworkTableSourceType.setInstance(new NetworkTableSourceType(new NetworkTablesPlugin()));
-  }
-
   @BeforeEach
   public void setUp() {
     AsyncUtils.setAsyncRunner(Runnable::run);
-    NetworkTableUtils.shutdown();
     inst = NetworkTableInstance.create();
-    inst.waitForEntryListenerQueue(-1.0);
-    inst.setUpdateRate(0.01);
+    NetworkTableSourceType.setInstance(new NetworkTableSourceType(new NetworkTablesPlugin(inst)));
     table = inst.getTable("");
   }
 
   @AfterEach
   public void tearDown() {
-    NetworkTableUtils.shutdown(inst);
+    inst.close();
     AsyncUtils.setAsyncRunner(FxUtils::runOnFxThread);
   }
 
@@ -68,7 +61,7 @@ public class SingleKeyNetworkTableSourceTest {
     SingleKeyNetworkTableSource<String> source
         = new SingleKeyNetworkTableSource<>(table, key, type);
     table.getEntry(key).setString("a value");
-    NetworkTableInstance.getDefault().waitForEntryListenerQueue(-1.0);
+    NetworkTableInstance.getDefault().waitForListenerQueue(1.0);
     assertEquals("a value", source.getData());
     assertTrue(source.isActive(), "The source should be active");
     source.close();
@@ -81,7 +74,7 @@ public class SingleKeyNetworkTableSourceTest {
     SingleKeyNetworkTableSource<String> source
         = new SingleKeyNetworkTableSource<>(table, key, type);
     table.getEntry(key).setNumber(12345);
-    NetworkTableInstance.getDefault().waitForEntryListenerQueue(-1.0);
+    NetworkTableInstance.getDefault().waitForListenerQueue(1.0);
     assertEquals(type.getDefaultValue(), source.getData(), "The source should not have any data");
     assertFalse(source.isActive());
     source.close();

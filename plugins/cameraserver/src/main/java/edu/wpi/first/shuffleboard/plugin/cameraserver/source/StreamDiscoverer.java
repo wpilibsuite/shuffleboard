@@ -2,17 +2,14 @@ package edu.wpi.first.shuffleboard.plugin.cameraserver.source;
 
 import edu.wpi.first.shuffleboard.api.properties.AsyncProperty;
 import edu.wpi.first.shuffleboard.api.properties.AtomicProperty;
-import edu.wpi.first.shuffleboard.api.util.BitUtils;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import edu.wpi.first.networktables.EntryListenerFlags;
-import edu.wpi.first.networktables.EntryNotification;
 import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableEntry;
-import edu.wpi.first.networktables.NetworkTableType;
+import edu.wpi.first.networktables.NetworkTableEvent;
+import edu.wpi.first.networktables.StringArraySubscriber;
 
-import java.io.Closeable;
+import java.util.EnumSet;
 import java.util.stream.Stream;
 
 import javafx.beans.property.ReadOnlyProperty;
@@ -20,14 +17,14 @@ import javafx.beans.property.ReadOnlyProperty;
 /**
  * Discovers stream URLs for a specific cscore camera.
  */
-public final class StreamDiscoverer implements Closeable {
+public final class StreamDiscoverer implements AutoCloseable {
 
-  private final NetworkTableEntry streams;
+  private final StringArraySubscriber streamsSub;
+  private final int streamsListener;
   private static final String STREAMS_KEY = "streams";
   private static final String[] emptyStringArray = new String[0];
 
   private final AtomicProperty<String[]> urls = new AsyncProperty<>(this, "urls", emptyStringArray);
-  private final int listenerHandle;
 
   /**
    * Creates a new stream discoverer.
@@ -36,9 +33,20 @@ public final class StreamDiscoverer implements Closeable {
    * @param cameraName     the name of the camera to discover streams for
    */
   public StreamDiscoverer(NetworkTable publisherTable, String cameraName) {
-    streams = publisherTable.getSubTable(cameraName).getEntry(STREAMS_KEY);
-
-    listenerHandle = streams.addListener(this::updateUrls,0xFF);
+    streamsSub = publisherTable.getSubTable(cameraName).getStringArrayTopic(STREAMS_KEY).subscribe(emptyStringArray);
+    streamsListener = publisherTable.getInstance().addListener(
+        streamsSub,
+        EnumSet.of(
+          NetworkTableEvent.Kind.kUnpublish,
+          NetworkTableEvent.Kind.kValueAll,
+          NetworkTableEvent.Kind.kImmediate),
+        event -> {
+          if (event.is(NetworkTableEvent.Kind.kUnpublish)) {
+            urls.setValue(emptyStringArray);
+          } else if (event.valueData != null) {
+            urls.setValue(removeCameraProtocols(event.valueData.value.getStringArray()));
+          }
+        });
   }
 
   /**
@@ -72,20 +80,8 @@ public final class StreamDiscoverer implements Closeable {
 
   @Override
   public void close() {
-    streams.removeListener(listenerHandle);
+    streamsSub.getTopic().getInstance().removeListener(streamsListener);
+    streamsSub.close();
     urls.setValue(emptyStringArray);
-  }
-
-  /**
-   * Updates the URLs from a NetworkTables entry notification.
-   */
-  private void updateUrls(EntryNotification notification) {
-    if (BitUtils.flagMatches(notification.flags, EntryListenerFlags.kDelete)
-        || notification.getEntry().getType() != NetworkTableType.kStringArray) {
-      urls.setValue(emptyStringArray);
-    } else {
-      String[] arr = notification.getEntry().getStringArray(emptyStringArray);
-      urls.setValue(removeCameraProtocols(arr));
-    }
   }
 }

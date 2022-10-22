@@ -1,7 +1,9 @@
 package edu.wpi.first.shuffleboard.plugin.cameraserver.source;
 
+import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StringArrayPublisher;
 
 import org.junit.jupiter.api.Test;
 
@@ -15,29 +17,30 @@ public class StreamDiscovererTest {
 
   @Test
   public void testArrayChanges() {
-    final StreamDiscoverer discoverer = new StreamDiscoverer(rootTable, "Camera");
     String[] urls = {"foo", "bar"};
-    rootTable.getEntry("Camera/streams").setStringArray(urls);
-    waitForNtEvents();
-
-    assertArrayEquals(urls, discoverer.getUrls());
+    try (final StreamDiscoverer discoverer = new StreamDiscoverer(rootTable, "Camera");
+         final StringArrayPublisher publisher = rootTable.getStringArrayTopic("Camera/streams").publish()) {
+      publisher.set(urls);
+      waitForNtEvents();
+      assertArrayEquals(urls, discoverer.getUrls());
+    }
   }
 
   @Test
   public void testInitiallyEmpty() {
-    final StreamDiscoverer discoverer = new StreamDiscoverer(rootTable, "Camera");
-
-    assertArrayEquals(new String[0], discoverer.getUrls(), "Initial URL array should be empty");
+    try (final StreamDiscoverer discoverer = new StreamDiscoverer(rootTable, "Camera")) {
+      assertArrayEquals(new String[0], discoverer.getUrls(), "Initial URL array should be empty");
+    }
   }
 
   @Test
   public void testEmptyWhenIncorrectType() {
-    StreamDiscoverer discoverer = new StreamDiscoverer(rootTable, "Camera");
-
-    rootTable.getEntry("Camera/streams").setDouble(12.34);
-    waitForNtEvents();
-
-    assertArrayEquals(new String[0], discoverer.getUrls());
+    try (final StreamDiscoverer discoverer = new StreamDiscoverer(rootTable, "Camera");
+         final DoublePublisher publisher = rootTable.getDoubleTopic("Camera/streams").publish()) {
+      publisher.set(12.34);
+      waitForNtEvents();
+      assertArrayEquals(new String[0], discoverer.getUrls());
+    }
   }
 
   @Test
@@ -47,7 +50,7 @@ public class StreamDiscovererTest {
     rootTable.getEntry("Camera/streams").setStringArray(urls);
     waitForNtEvents();
 
-    rootTable.getEntry("Camera/streams").forceSetBoolean(false);
+    rootTable.getEntry("Camera2/streams").setBoolean(false);
     waitForNtEvents();
 
     assertArrayEquals(new String[0], discoverer.getUrls());
@@ -56,20 +59,23 @@ public class StreamDiscovererTest {
   @Test
   public void testClose() {
     final StreamDiscoverer discoverer = new StreamDiscoverer(rootTable, "Camera");
+
     String[] urls = {"foo", "bar"};
-    rootTable.getEntry("Camera/streams").setStringArray(urls);
-    waitForNtEvents();
+    try (final StringArrayPublisher publisher = rootTable.getStringArrayTopic("Camera/streams").publish()) {
+      publisher.set(urls);
+      waitForNtEvents();
 
-    discoverer.close();
+      discoverer.close();
 
-    rootTable.getEntry("Camera/streams").setStringArray(new String[]{"bar", "foo"});
-    waitForNtEvents();
+      publisher.set(new String[]{"bar", "foo"});
+      waitForNtEvents();
 
-    assertArrayEquals(new String[0], discoverer.getUrls());
+      assertArrayEquals(new String[0], discoverer.getUrls());
+    }
   }
 
   private void waitForNtEvents() {
-    if (!ntInstance.waitForEntryListenerQueue(0.5)) {
+    if (!ntInstance.waitForListenerQueue(0.5)) {
       fail("Timed out while waiting for entry listeners to fire");
     }
   }

@@ -13,8 +13,6 @@ import edu.wpi.first.shuffleboard.api.util.ThreadUtils;
 
 import com.google.common.util.concurrent.Futures;
 
-import edu.wpi.first.networktables.NetworkTableInstance;
-
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.HashSet;
@@ -231,8 +229,6 @@ public final class Playback {
     }
     nextFrameFuture.cancel(true);
     currentPlayback.setValue(null);
-    NetworkTableInstance inst = NetworkTableInstance.getDefault();
-    inst.deleteAllEntries();
     SourceTypes.getDefault().getItems().forEach(SourceType::connect);
     Recorder.getInstance().start();
   }

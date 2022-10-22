@@ -14,14 +14,17 @@ import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.api.widget.TileSize;
 import edu.wpi.first.shuffleboard.plugin.networktables.sources.NetworkTableSource;
 
-import edu.wpi.first.networktables.EntryListenerFlags;
-import edu.wpi.first.networktables.EntryNotification;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableEvent;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.NetworkTableType;
 import edu.wpi.first.networktables.NetworkTableValue;
+import edu.wpi.first.networktables.StringArraySubscriber;
+import edu.wpi.first.networktables.Topic;
 
+import java.text.NumberFormat;
+import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +55,7 @@ final class TabGenerator {
 
   private final TabStructure tabs = new TabStructure();
   private final NetworkTableInstance inst;
+  private StringArraySubscriber tabsSubscriber;
   private int tabsListener;
   private int metadataListener;
   private int dataListener;
@@ -68,32 +72,33 @@ final class TabGenerator {
   public void start() {
     // Make sure all tabs exist if they're defined, even if they're empty
     NetworkTable rootMetaTable = inst.getTable(METADATA_TABLE_NAME);
-    tabsListener = rootMetaTable.addEntryListener(TABS_ENTRY_KEY, (table, key, entry, value, flags) -> {
-      String[] tabNames = value.getStringArray();
-      for (String tabName : tabNames) {
-        tabs.getTab(tabName);
-      }
-      tabs.dirty();
-    }, 0xFF);
+    tabsSubscriber = rootMetaTable.getStringArrayTopic(TABS_ENTRY_KEY).subscribe(new String[] {});
+    tabsListener = inst.addListener(tabsSubscriber,
+      EnumSet.of(NetworkTableEvent.Kind.kValueAll, NetworkTableEvent.Kind.kImmediate), event -> {
+        for (String tabName : event.valueData.value.getStringArray()) {
+          tabs.getTab(tabName);
+        }
+        tabs.dirty();
+      });
 
-    metadataListener = inst.addEntryListener(METADATA_TABLE_NAME + "/", this::metadataChanged,
-        EntryListenerFlags.kImmediate
-            | EntryListenerFlags.kLocal
-            | EntryListenerFlags.kNew
-            | EntryListenerFlags.kUpdate);
-    dataListener = inst.addEntryListener(ROOT_TABLE_NAME + "/", this::dataChanged,
-        EntryListenerFlags.kImmediate
-            | EntryListenerFlags.kLocal
-            | EntryListenerFlags.kNew);
+    metadataListener = inst.addListener(
+        new String[] {METADATA_TABLE_NAME + "/"},
+        EnumSet.of(NetworkTableEvent.Kind.kValueAll, NetworkTableEvent.Kind.kImmediate),
+        this::metadataChanged);
+    dataListener = inst.addListener(
+        new String[] {ROOT_TABLE_NAME + "/"},
+        EnumSet.of(NetworkTableEvent.Kind.kValueAll, NetworkTableEvent.Kind.kImmediate),
+        this::dataChanged);
   }
 
   /**
    * Stops the generator.
    */
   public void stop() {
-    inst.getTable(METADATA_TABLE_NAME).removeEntryListener(tabsListener);
-    inst.removeEntryListener(metadataListener);
-    inst.removeEntryListener(dataListener);
+    tabsSubscriber.close();
+    inst.removeListener(tabsListener);
+    inst.removeListener(metadataListener);
+    inst.removeListener(dataListener);
   }
 
   /**
@@ -103,16 +108,17 @@ final class TabGenerator {
     return tabs;
   }
 
-  private void metadataChanged(EntryNotification event) {
-    String name = event.name;
+  private void metadataChanged(NetworkTableEvent event) {
+    String name = event.valueData.getTopic().getName();
 
     // Special case for global metadata, not tab or widget data
     if (name.equals("/Shuffleboard/.metadata/Selected")) {
-      // If the value is a double, assume it's the tab index. If it's a string, assume tab title.
-      if (event.getEntry().getType() == NetworkTableType.kDouble) {
-        tabs.setSelectedTab((int) event.getEntry().getValue().getDouble());
-      } else if (event.getEntry().getType() == NetworkTableType.kString) {
-        tabs.setSelectedTab(event.getEntry().getValue().getString());
+      // If the value can be parsed as an int, assume it's the tab index, otherwise assume tab title.
+      String str = event.valueData.value.getString();
+      try {
+        tabs.setSelectedTab(Integer.parseInt(str));
+      } catch (NumberFormatException e) {
+        tabs.setSelectedTab(str);
       }
       return;
     }
@@ -131,7 +137,7 @@ final class TabGenerator {
       if (tab.getChild(real) == null) {
         return;
       }
-      tab.getChild(real).setDisplayType(event.getEntry().getValue().getString());
+      tab.getChild(real).setDisplayType(event.valueData.value.getString());
     }
 
     // Component size
@@ -141,7 +147,7 @@ final class TabGenerator {
         // No component yet
         return;
       }
-      double[] size = inst.getEntry(name).getDoubleArray(new double[0]);
+      double[] size = event.valueData.value.getDoubleArray();
       if (size.length == 2) {
         tab.getChild(real).setPreferredSize(new TileSize((int) size[0], (int) size[1]));
       }
@@ -154,7 +160,7 @@ final class TabGenerator {
         // No component yet
         return;
       }
-      double[] pos = inst.getEntry(name).getDoubleArray(new double[0]);
+      double[] pos = event.valueData.value.getDoubleArray();
       if (pos.length == 2) {
         tab.getChild(real).setPreferredPosition(new GridPoint((int) pos[0], (int) pos[1]));
       }
@@ -182,20 +188,21 @@ final class TabGenerator {
     tabs.dirty();
   }
 
-  private void dataChanged(EntryNotification event) {
+  private void dataChanged(NetworkTableEvent event) {
     for (String tabName : inst.getEntry(TABS_ENTRY_PATH).getStringArray(new String[0])) {
       // Make sure the tabs exist, and in the order specified
       tabs.getTab(tabName);
     }
-    if (event.name.startsWith(METADATA_TABLE_NAME)) {
+    String name = event.valueData.getTopic().getName();
+    if (name.startsWith(METADATA_TABLE_NAME)) {
       return;
     }
-    List<String> hierarchy = NetworkTable.getHierarchy(event.name);
+    List<String> hierarchy = NetworkTable.getHierarchy(name);
     if (hierarchy.size() < 3) {
       // Not enough data
       return;
     }
-    if (event.name.contains("/.")) {
+    if (name.contains("/.")) {
       // The entry is metadata, but may be the only entry in a table, so make sure it's updated correctly
       var tables = hierarchy.stream()
           .takeWhile(s -> !s.contains("/."))
@@ -267,10 +274,10 @@ final class TabGenerator {
    * @param path the path to the data to get a data source for
    */
   private MappableSupplier<? extends DataSource<?>> sourceForPath(String path) {
-    NetworkTableEntry[] entries = inst.getEntries("/", 0);
-    Optional<String> customUri = Stream.of(entries)
-        .filter(e -> e.getName().equals(path + "/.ShuffleboardURI"))
-        .map(e -> e.getString(null))
+    Topic[] topics = inst.getTopics("/", NetworkTableType.kString.getValue());
+    Optional<String> customUri = Stream.of(topics)
+        .filter(t -> t.getName().equals(path + "/.ShuffleboardURI"))
+        .map(t -> inst.getEntry(t.getName()).getString(null))
         .filter(Objects::nonNull)
         .findFirst();
     if (customUri.isPresent()) {

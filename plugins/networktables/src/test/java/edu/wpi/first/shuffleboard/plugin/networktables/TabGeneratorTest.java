@@ -47,13 +47,12 @@ public class TabGeneratorTest {
   @BeforeEach
   public void setup() {
     ntInstance = NetworkTableInstance.create();
-    ntInstance.setUpdateRate(0.01);
     rootTable = ntInstance.getTable("/Shuffleboard");
     rootMetaTable = rootTable.getSubTable(".metadata");
     components = new Components();
     generator = new TabGenerator(ntInstance, components);
     Components.setDefault(components);
-    NetworkTableSourceType.setInstance(new NetworkTableSourceType(new NetworkTablesPlugin()));
+    NetworkTableSourceType.setInstance(new NetworkTableSourceType(new NetworkTablesPlugin(ntInstance)));
     DataTypes.getDefault().getItems().forEach(t -> components.setDefaultComponent(t, new MockWidgetType()));
   }
 
@@ -64,7 +63,7 @@ public class TabGeneratorTest {
   }
 
   private void waitForNtUpdate() {
-    if (!ntInstance.waitForEntryListenerQueue(0.5)) {
+    if (!ntInstance.waitForListenerQueue(0.5)) {
       fail("Timed out while waiting for entry listeners to fire");
     }
   }

@@ -3,10 +3,12 @@ package edu.wpi.first.shuffleboard.plugin.networktables;
 import edu.wpi.first.shuffleboard.api.DashboardMode;
 import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
 
-import edu.wpi.first.networktables.EntryListenerFlags;
-import edu.wpi.first.networktables.EntryNotification;
-import edu.wpi.first.networktables.NetworkTableEntry;
+import java.util.EnumSet;
+
+import edu.wpi.first.networktables.BooleanSubscriber;
+import edu.wpi.first.networktables.NetworkTableEvent;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StringSubscriber;
 
 /**
  * Controls the {@link Recorder Shuffleboard data recorder} in response to changes in NetworkTables. Changes to the
@@ -19,25 +21,12 @@ public final class RecorderController {
   public static final String DEFAULT_START_STOP_KEY = DEFAULT_RECORDING_ROOT_TABLE + "/RecordData";
   public static final String DEFAULT_FILE_NAME_FORMAT_KEY = DEFAULT_RECORDING_ROOT_TABLE + "/FileNameFormat";
 
-  private final NetworkTableEntry startStopControlEntry;
-  private final NetworkTableEntry fileNameFormatEntry;
+  private final BooleanSubscriber startStopControlSub;
+  private final StringSubscriber fileNameFormatSub;
   private final Recorder recorder;
   private final MarkerGenerator markerGenerator;
 
-  private static final int updateFlags =
-      EntryListenerFlags.kImmediate
-          | EntryListenerFlags.kLocal
-          | EntryListenerFlags.kNew
-          | EntryListenerFlags.kDelete
-          | EntryListenerFlags.kUpdate;
-
   private int listenerHandle = 0;
-
-  /**
-   * The entry update flags from the most recent control update. This prevents us from restarting a controller every
-   * time NetworkTables updates.
-   */
-  private int lastControlEntryFlags = -1;
 
   /**
    * Creates a new recorder controller using the default entries {@link #DEFAULT_START_STOP_KEY} and
@@ -66,8 +55,8 @@ public final class RecorderController {
                             String startStopKey,
                             String fileNameFormatKey,
                             Recorder recorder) {
-    startStopControlEntry = ntInstance.getEntry(startStopKey);
-    fileNameFormatEntry = ntInstance.getEntry(fileNameFormatKey);
+    startStopControlSub = ntInstance.getBooleanTopic(startStopKey).subscribe(false);
+    fileNameFormatSub = ntInstance.getStringTopic(fileNameFormatKey).subscribe(Recorder.DEFAULT_RECORDING_FILE_NAME_FORMAT);
     this.recorder = recorder;
     this.markerGenerator = new MarkerGenerator(ntInstance, recorder);
   }
@@ -77,7 +66,8 @@ public final class RecorderController {
    * running.
    */
   public void start() {
-    listenerHandle = startStopControlEntry.addListener(this::updateControl, updateFlags);
+    listenerHandle = startStopControlSub.getTopic().getInstance().addListener(startStopControlSub,
+        EnumSet.of(NetworkTableEvent.Kind.kValueAll, NetworkTableEvent.Kind.kImmediate), this::updateControl);
     markerGenerator.start();
   }
 
@@ -85,7 +75,7 @@ public final class RecorderController {
    * Stops this controller. This does NOT stop the data recorder if it is running.
    */
   public void stop() {
-    startStopControlEntry.removeListener(listenerHandle);
+    startStopControlSub.getTopic().getInstance().removeListener(listenerHandle);
     markerGenerator.stop();
   }
 
@@ -95,15 +85,11 @@ public final class RecorderController {
    *
    * @param event the network table event
    */
-  private void updateControl(EntryNotification event) {
-    if (event.flags == lastControlEntryFlags) {
-      return;
-    }
-    lastControlEntryFlags = event.flags;
-    if (event.value.isBoolean() && !DashboardMode.inPlayback()) {
-      if (event.value.getBoolean()) {
+  private void updateControl(NetworkTableEvent event) {
+    if (!DashboardMode.inPlayback()) {
+      if (event.valueData.value.getBoolean()) {
         recorder.stop();
-        recorder.setFileNameFormat(fileNameFormatEntry.getString(Recorder.DEFAULT_RECORDING_FILE_NAME_FORMAT));
+        recorder.setFileNameFormat(fileNameFormatSub.get());
         recorder.start();
       } else {
         recorder.stop();
