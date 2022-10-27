@@ -31,7 +31,9 @@ configurations.implementation.extendsFrom(configurations.javaFxDeps)
 
 dependencies {
     javaFxDeps wpilibTools.deps.javafx("media")
-    javaFxDeps wpilibTools.deps.javafx("swing")
+    if (!project.hasProperty('ArchOverride') || project.getProperty('ArchOverride') != 'linuxarm32') {
+        javaFxDeps wpilibTools.deps.javafx("swing")
+    }
     javaFxDeps wpilibTools.deps.javafx("web")
 
     implementation project(':api')
