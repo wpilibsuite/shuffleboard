@@ -55,16 +55,16 @@ jobs:
           certificate-passphrase: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
           keychain-password: ${{ secrets.APPLE_KEYCHAIN_PASSWORD }}
         if: |
-          (matrix.artifact-name == 'macOS') && (github.repository_owner == 'wpilibsuite') &&
+          (startsWith(matrix.artifact-name, 'macOS') && (github.repository_owner == 'wpilibsuite') &&
           (startsWith(github.ref, 'refs/heads/') || startsWith(github.ref, 'refs/tags/v'))
 
       - name: Build with Gradle
         run: ./gradlew build -PbuildServer -PdeveloperID=${{ secrets.APPLE_DEVELOPER_ID }}
-        if: ${{ (matrix.artifact-name == 'none') && (!github.repository_owner == 'wpilibsuite' || !startsWith(github.ref, 'refs/tags/v')) }}
+        if: ${{ (matrix.arch-override == 'none') && (!github.repository_owner == 'wpilibsuite' || !startsWith(github.ref, 'refs/tags/v')) }}
 
       - name: Build with Gradle (Release)
         run: ./gradlew build -PbuildServer -PreleaseMode -PdeveloperID=${{ secrets.APPLE_DEVELOPER_ID }}
-        if: ${{ (matrix.artifact-name == 'none') && (github.repository_owner == 'wpilibsuite' && startsWith(github.ref, 'refs/tags/v')) }}
+        if: ${{ (matrix.arch-override == 'none') && (github.repository_owner == 'wpilibsuite' && startsWith(github.ref, 'refs/tags/v')) }}
 
       - name: Build Cross with Gradle
         run: ./gradlew copyAllOutputs -PArchOverride=${{ matrix.arch-override }} -PbuildServer -PdeveloperID=${{ secrets.APPLE_DEVELOPER_ID }}
