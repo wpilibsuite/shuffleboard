@@ -11,15 +11,27 @@ jobs:
           - os: windows-latest
             artifact-name: Win64
             architecture: x64
+            arch-override: none
           - os: macos-latest
             artifact-name: macOS
             architecture: x64
-          - os: macos-latest
-            artifact-name: macOSArm
-            architecture: x64
+            arch-override: none
           - os: ubuntu-latest
             artifact-name: Linux
             architecture: x64
+            arch-override: none
+          - os: macos-latest
+            artifact-name: macOSArm
+            architecture: x64
+            arch-override: macarm64
+          - os: ubuntu-latest
+            artifact-name: LinuxArm32
+            architecture: x64
+            arch-override: linuxarm32
+          - os: ubuntu-latest
+            artifact-name: LinuxArm64
+            architecture: x64
+            arch-override: linuxarm64
 
     name: "Build - ${{ matrix.artifact-name }}"
     runs-on: ${{ matrix.os }}
@@ -43,26 +55,24 @@ jobs:
           certificate-passphrase: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
           keychain-password: ${{ secrets.APPLE_KEYCHAIN_PASSWORD }}
         if: |
-          (matrix.artifact-name == 'macOS') && (github.repository_owner == 'wpilibsuite') &&
+          startsWith(matrix.artifact-name, 'macOS') && (github.repository_owner == 'wpilibsuite') &&
           (startsWith(github.ref, 'refs/heads/') || startsWith(github.ref, 'refs/tags/v'))
 
       - name: Build with Gradle
         run: ./gradlew build -PbuildServer -PdeveloperID=${{ secrets.APPLE_DEVELOPER_ID }}
-        if: ${{ (matrix.artifact-name != 'macOSArm') && (!github.repository_owner == 'wpilibsuite' || !startsWith(github.ref, 'refs/tags/v')) }}
+        if: ${{ (matrix.arch-override == 'none') && (!github.repository_owner == 'wpilibsuite' || !startsWith(github.ref, 'refs/tags/v')) }}
 
       - name: Build with Gradle (Release)
         run: ./gradlew build -PbuildServer -PreleaseMode -PdeveloperID=${{ secrets.APPLE_DEVELOPER_ID }}
-        if: ${{ (matrix.artifact-name != 'macOSArm') && (github.repository_owner == 'wpilibsuite' && startsWith(github.ref, 'refs/tags/v')) }}
+        if: ${{ (matrix.arch-override == 'none') && (github.repository_owner == 'wpilibsuite' && startsWith(github.ref, 'refs/tags/v')) }}
 
-      - name: Build Mac Arm with Gradle
-        run: ./gradlew copyAllOutputs -PArchOverride=macarm64 -PbuildServer -PdeveloperID=${{ secrets.APPLE_DEVELOPER_ID }}
-        if: ${{ (matrix.artifact-name == 'macOSArm') && (!github.repository_owner == 'wpilibsuite' || !startsWith(github.ref, 'refs/tags/v')) }}
+      - name: Build Cross with Gradle
+        run: ./gradlew copyAllOutputs -PArchOverride=${{ matrix.arch-override }} -PbuildServer -PdeveloperID=${{ secrets.APPLE_DEVELOPER_ID }}
+        if: ${{ (matrix.arch-override != 'none') && (!github.repository_owner == 'wpilibsuite' || !startsWith(github.ref, 'refs/tags/v')) }}
 
-      - name: Build Mac Arm with Gradle (Release)
-        run: ./gradlew copyAllOutputs -PArchOverride=macarm64 -PbuildServer -PreleaseMode -PdeveloperID=${{ secrets.APPLE_DEVELOPER_ID }}
-        if: ${{ (matrix.artifact-name == 'macOSArm') && (github.repository_owner == 'wpilibsuite' && startsWith(github.ref, 'refs/tags/v')) }}
-
-
+      - name: Build Cross with Gradle (Release)
+        run: ./gradlew copyAllOutputs -PArchOverride=${{ matrix.arch-override }} -PbuildServer -PreleaseMode -PdeveloperID=${{ secrets.APPLE_DEVELOPER_ID }}
+        if: ${{ (matrix.arch-override != 'none') && (github.repository_owner == 'wpilibsuite' && startsWith(github.ref, 'refs/tags/v')) }}
 
       - uses: actions/upload-artifact@v2
         with:
