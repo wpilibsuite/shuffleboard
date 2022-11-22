@@ -11,7 +11,7 @@ public final class PowerDistributionType extends ComplexDataType<PowerDistributi
   public static final PowerDistributionType Instance = new PowerDistributionType();
 
   private PowerDistributionType() {
-    super("PowerDistributionPanel", PowerDistributionData.class);
+    super("PowerDistribution", PowerDistributionData.class);
   }
 
   @Override
