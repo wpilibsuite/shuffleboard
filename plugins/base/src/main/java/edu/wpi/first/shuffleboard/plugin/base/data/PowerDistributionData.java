@@ -15,8 +15,6 @@ import java.util.Map;
  */
 public class PowerDistributionData extends ComplexData<PowerDistributionData> {
 
-  private static final int NUM_CHANNELS = 16;
-
   private final double[] currents;
   private final double voltage;
   private final double totalCurrent;
@@ -24,14 +22,11 @@ public class PowerDistributionData extends ComplexData<PowerDistributionData> {
   /**
    * Creates a new data object for PDP data.
    *
-   * @param currents     an array of the currents. This <i>must</i> have 16 entries
+   * @param currents     an array of the currents. This <i>must</i> have a maximum of 24 entries
    * @param voltage      the current voltage of the PDP
    * @param totalCurrent the total current sourced by the PDP
    */
   public PowerDistributionData(double[] currents, double voltage, double totalCurrent) {
-    if (currents.length != NUM_CHANNELS) {
-      throw new IllegalArgumentException("Require " + NUM_CHANNELS + " channels, but was " + currents.length);
-    }
     this.currents = currents.clone();
     this.voltage = voltage;
     this.totalCurrent = totalCurrent;
@@ -82,7 +77,7 @@ public class PowerDistributionData extends ComplexData<PowerDistributionData> {
   @Override
   public Map<String, Object> asMap() {
     ImmutableMap.Builder<String, Object> builder = ImmutableMap.builder();
-    for (int i = 0; i < NUM_CHANNELS; i++) {
+    for (int i = 0; i < currents.length; i++) {
       builder.put("Chan" + i, currents[i]);
     }
     builder.put("Voltage", voltage);
