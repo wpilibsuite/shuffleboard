@@ -11,7 +11,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly group: "edu.wpi.first.shuffleboard", name: "api", version: "2020.3.2"
+    compileOnly project(":api")
 }
 
 tasks.register("installPlugin", Copy) {
