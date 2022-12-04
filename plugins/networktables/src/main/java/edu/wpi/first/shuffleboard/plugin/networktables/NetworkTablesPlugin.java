@@ -65,17 +65,7 @@ public class NetworkTablesPlugin extends Plugin {
 
   private final ChangeListener<String> serverChangeListener;
 
-  /**
-   * Constructs the NetworkTables plugin.
-   */
-  public NetworkTablesPlugin() {
-    this(NetworkTableInstance.getDefault());
-  }
-
-  /**
-   * Constructs the NetworkTables plugin.
-   */
-  public NetworkTablesPlugin(NetworkTableInstance inst) {
+  private static NetworkTableInstance getDefaultInstance() {
     NetworkTablesJNI.Helper.setExtractOnStaticLoad(false);
     try {
       var files = CombinedRuntimeLoader.extractLibraries(NetworkTablesPlugin.class,
@@ -85,6 +75,20 @@ public class NetworkTablesPlugin extends Plugin {
       log.log(Level.SEVERE, "Failed to load NT Core Libraries", ex);
     }
 
+    return NetworkTableInstance.getDefault();
+  }
+
+  /**
+   * Constructs the NetworkTables plugin.
+   */
+  public NetworkTablesPlugin() {
+    this(getDefaultInstance());
+  }
+
+  /**
+   * Constructs the NetworkTables plugin.
+   */
+  public NetworkTablesPlugin(NetworkTableInstance inst) {
     this.inst = inst;
     tabGenerator = new TabGenerator(inst, Components.getDefault());
     recorderController = RecorderController.createWithDefaultEntries(inst);
