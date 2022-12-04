@@ -12,7 +12,6 @@ import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
 import edu.wpi.first.shuffleboard.api.tab.model.TabStructure;
 import edu.wpi.first.shuffleboard.api.util.PreferencesUtils;
-import edu.wpi.first.shuffleboard.api.util.ShutdownHooks;
 import edu.wpi.first.shuffleboard.api.widget.ComponentType;
 import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.api.widget.WidgetType;

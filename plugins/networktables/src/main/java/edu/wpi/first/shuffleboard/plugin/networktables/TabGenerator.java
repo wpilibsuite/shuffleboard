@@ -15,7 +15,6 @@ import edu.wpi.first.shuffleboard.api.widget.TileSize;
 import edu.wpi.first.shuffleboard.plugin.networktables.sources.NetworkTableSource;
 
 import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableEvent;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.NetworkTableType;
@@ -23,7 +22,6 @@ import edu.wpi.first.networktables.NetworkTableValue;
 import edu.wpi.first.networktables.StringArraySubscriber;
 import edu.wpi.first.networktables.Topic;
 
-import java.text.NumberFormat;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.List;
