@@ -70,7 +70,7 @@ public final class NetworkTableSourceType extends SourceType {
                   Sources sources = Sources.getDefault();
                   sources.get(uri).ifPresent(sources::unregister);
                   NetworkTableSource.removeCachedSource(uri);
-                } else {
+                } else if (event.valueData != null) {
                   availableSources.put(uri, event.valueData.value.getValue());
                 }
               }
