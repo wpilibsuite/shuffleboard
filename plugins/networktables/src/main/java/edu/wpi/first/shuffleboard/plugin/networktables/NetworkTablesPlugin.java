@@ -133,18 +133,21 @@ public class NetworkTablesPlugin extends Plugin {
     // This is done here because each key under N subtables would have N+1 copies
     // in the recording (eg "/a/b/c" has 2 tables and 3 copies: "/a", "/a/b", and "/a/b/c")
     // This significantly reduces the size of recording files.
-    recorderUid = inst.addListener(new String[] {""}, EnumSet.of(NetworkTableEvent.Kind.kImmediate, NetworkTableEvent.Kind.kValueAll), event -> {
-      Object value = event.valueData.value.getValue();
-      String name = NetworkTableUtils.topicNameForEvent(event);
-      DataTypes.getDefault().forJavaType(value.getClass())
-          .ifPresent(type -> {
-            Recorder.getInstance().record(
-                NetworkTableSourceType.getInstance().toUri(name),
-                type,
-                value
-            );
-          });
-    });
+    recorderUid = inst.addListener(
+        new String[] {""},
+        EnumSet.of(NetworkTableEvent.Kind.kImmediate, NetworkTableEvent.Kind.kValueAll),
+        event -> {
+          Object value = event.valueData.value.getValue();
+          String name = NetworkTableUtils.topicNameForEvent(event);
+          DataTypes.getDefault().forJavaType(value.getClass())
+              .ifPresent(type -> {
+                Recorder.getInstance().record(
+                    NetworkTableSourceType.getInstance().toUri(name),
+                    type,
+                    value
+                );
+              });
+        });
 
     DashboardMode.currentModeProperty().addListener(dashboardModeChangeListener);
     recorderController.start();

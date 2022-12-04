@@ -16,7 +16,7 @@ public class NativeInitializer implements BeforeAllCallback {
     NetworkTablesJNI.Helper.setExtractOnStaticLoad(false);
     CameraServerJNI.Helper.setExtractOnStaticLoad(false);
 
-    CombinedRuntimeLoader.loadLibraries(NativeInitializer.class, "ntcorejni", "cscorejnicvstatic");
+    CombinedRuntimeLoader.loadLibraries(NativeInitializer.class, "ntcorejni", "wpiutiljni", "cscorejnicvstatic");
   }
 
 }

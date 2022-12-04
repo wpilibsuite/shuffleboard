@@ -40,7 +40,8 @@ public final class NetworkTableSourceType extends SourceType {
     setConnectionStatus(new ConnectionStatus(plugin.getServerId(), false));
     NetworkTableInstance inst = NetworkTableInstance.getDefault();
     plugin.serverIdProperty().addListener((__, old, serverId) -> setConnectionStatus(serverId, false));
-    inst.addConnectionListener(true, event -> setConnectionStatus(plugin.getServerId(), event.is(NetworkTableEvent.Kind.kConnected)));
+    inst.addConnectionListener(true,
+        event -> setConnectionStatus(plugin.getServerId(), event.is(NetworkTableEvent.Kind.kConnected)));
     inst.addConnectionListener(false, event -> {
       if (event.is(NetworkTableEvent.Kind.kDisconnected)) {
         FxUtils.runOnFxThread(() -> {
@@ -50,31 +51,37 @@ public final class NetworkTableSourceType extends SourceType {
         });
       }
     });
-    inst.addListener(new String[] {""}, EnumSet.of(NetworkTableEvent.Kind.kImmediate, NetworkTableEvent.Kind.kTopic, NetworkTableEvent.Kind.kValueAll), event -> {
-      AsyncUtils.runAsync(() -> {
-        final boolean delete = event.is(NetworkTableEvent.Kind.kUnpublish);
-        final String name = NetworkTableUtils.topicNameForEvent(event);
-        List<String> hierarchy = NetworkTable.getHierarchy(name);
-        for (int i = 0; i < hierarchy.size(); i++) {
-          String uri = toUri(hierarchy.get(i));
-          if (i == hierarchy.size() - 1) {
-            if (delete) {
-              availableSources.remove(uri);
-              Sources sources = Sources.getDefault();
-              sources.get(uri).ifPresent(sources::unregister);
-              NetworkTableSource.removeCachedSource(uri);
-            } else {
-              availableSources.put(uri, event.valueData.value.getValue());
+    inst.addListener(
+        new String[] {""},
+        EnumSet.of(
+          NetworkTableEvent.Kind.kImmediate,
+          NetworkTableEvent.Kind.kTopic,
+          NetworkTableEvent.Kind.kValueAll),
+        event -> {
+          AsyncUtils.runAsync(() -> {
+            final boolean delete = event.is(NetworkTableEvent.Kind.kUnpublish);
+            final String name = NetworkTableUtils.topicNameForEvent(event);
+            List<String> hierarchy = NetworkTable.getHierarchy(name);
+            for (int i = 0; i < hierarchy.size(); i++) {
+              String uri = toUri(hierarchy.get(i));
+              if (i == hierarchy.size() - 1) {
+                if (delete) {
+                  availableSources.remove(uri);
+                  Sources sources = Sources.getDefault();
+                  sources.get(uri).ifPresent(sources::unregister);
+                  NetworkTableSource.removeCachedSource(uri);
+                } else {
+                  availableSources.put(uri, event.valueData.value.getValue());
+                }
+              }
+              if (delete) {
+                availableSourceIds.remove(uri);
+              } else if (!availableSourceIds.contains(uri)) {
+                availableSourceIds.add(uri);
+              }
             }
-          }
-          if (delete) {
-            availableSourceIds.remove(uri);
-          } else if (!availableSourceIds.contains(uri)) {
-            availableSourceIds.add(uri);
-          }
-        }
-      });
-    });
+          });
+        });
   }
 
   private void setConnectionStatus(String serverId, boolean connected) {

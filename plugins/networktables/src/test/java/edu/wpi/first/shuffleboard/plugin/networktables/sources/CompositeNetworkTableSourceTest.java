@@ -40,7 +40,7 @@ public class CompositeNetworkTableSourceTest extends ApplicationTest {
   private final NetworkTableInstance ntInstance = NetworkTableInstance.getDefault();
 
   private void waitForNtEvents() {
-    if (!ntInstance.waitForEntryListenerQueue(0.5)) {
+    if (!ntInstance.waitForListenerQueue(0.5)) {
       fail("Timed out while waiting for entry listeners to fire");
     }
   }

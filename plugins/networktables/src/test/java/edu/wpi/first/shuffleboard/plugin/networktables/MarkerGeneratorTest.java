@@ -33,7 +33,6 @@ public class MarkerGeneratorTest {
   public void setup() {
     AsyncUtils.setAsyncRunner(Runnable::run);
     ntInstance = NetworkTableInstance.create();
-    ntInstance.setUpdateRate(0.01);
     entry = ntInstance.getEntry(MarkerGenerator.EVENT_TABLE_NAME + MARKER_NAME + MarkerGenerator.EVENT_INFO_KEY);
     recorder = Recorder.createDummyInstance();
     generator = new MarkerGenerator(ntInstance, recorder);
@@ -71,7 +70,7 @@ public class MarkerGeneratorTest {
   private void waitForEntry() {
     recorder.start();
     generator.start();
-    if (!ntInstance.waitForEntryListenerQueue(10)) {
+    if (!ntInstance.waitForListenerQueue(10)) {
       fail("Entry notification timed out");
     }
   }

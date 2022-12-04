@@ -2,6 +2,7 @@ package edu.wpi.first.shuffleboard.plugin.networktables.components;
 
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StringPublisher;
 import edu.wpi.first.shuffleboard.api.components.SourceTreeTable;
 import edu.wpi.first.shuffleboard.plugin.networktables.util.NetworkTableUtils;
 import edu.wpi.first.shuffleboard.plugin.networktables.NetworkTableTreeWidget;
@@ -68,7 +69,7 @@ public class NetworkTableTreeTest extends ApplicationTest {
   @Test
   public void testFirstLevel() {
     table.getEntry("entry").setString("value");
-    NetworkTableInstance.getDefault().waitForEntryListenerQueue(-1.0);
+    NetworkTableInstance.getDefault().waitForListenerQueue(-1.0);
     waitForFxEvents();
 
     ObservableList<TreeItem<NetworkTableSourceEntry>> children = root.getChildren();
@@ -83,7 +84,7 @@ public class NetworkTableTreeTest extends ApplicationTest {
   @Test
   public void testBranches() {
     table.getEntry("branch/entry").setString("x");
-    NetworkTableInstance.getDefault().waitForEntryListenerQueue(-1.0);
+    NetworkTableInstance.getDefault().waitForListenerQueue(-1.0);
     waitForFxEvents();
     ObservableList<TreeItem<NetworkTableSourceEntry>> children = root.getChildren();
 
@@ -111,7 +112,7 @@ public class NetworkTableTreeTest extends ApplicationTest {
     table.getEntry("a").setString("");
     table.getEntry("b").setString("");
     table.getEntry("sub_b/sub_entry_b").setString("");
-    NetworkTableInstance.getDefault().waitForEntryListenerQueue(-1.0);
+    NetworkTableInstance.getDefault().waitForListenerQueue(-1.0);
     waitForFxEvents();
     tree.sort();
 
@@ -144,14 +145,14 @@ public class NetworkTableTreeTest extends ApplicationTest {
     final NetworkTableInstance inst = NetworkTableInstance.getDefault();
 
     String key = "testDelete";
-    table.getEntry(key).setString("value");
-    inst.waitForEntryListenerQueue(-1.0);
-    waitForFxEvents();
+    try (StringPublisher pub = table.getStringTopic(key).publish()) {
+      pub.set("value");
+      inst.waitForListenerQueue(-1.0);
+      waitForFxEvents();
 
-    assertNotNull(lookup(hasText(key)).query(), "There should be a cell for the entry");
-
-    table.delete(key);
-    inst.waitForEntryListenerQueue(-1.0);
+      assertNotNull(lookup(hasText(key)).query(), "There should be a cell for the entry");
+    }
+    inst.waitForListenerQueue(-1.0);
     waitForFxEvents();
     assertNull(lookup(hasText(key)).query(), "The cell should have been removed");
   }
@@ -164,7 +165,7 @@ public class NetworkTableTreeTest extends ApplicationTest {
     final NetworkTableInstance inst = NetworkTableInstance.getDefault();
 
     table.getEntry(key).setString(firstValue);
-    inst.waitForEntryListenerQueue(-1.0);
+    inst.waitForListenerQueue(-1.0);
     waitForFxEvents();
     assertCellIndex(key, 0);
     assertCellIndex(firstValue, 0);
@@ -172,7 +173,7 @@ public class NetworkTableTreeTest extends ApplicationTest {
     assertNull(lookup(hasText(secondValue)).query());
 
     table.getEntry(key).setString(secondValue);
-    inst.waitForEntryListenerQueue(-1.0);
+    inst.waitForListenerQueue(-1.0);
     waitForFxEvents();
     assertCellIndex(key, 0);
     assertNull(lookup(hasText(firstValue)).query());

@@ -44,19 +44,6 @@ public class StreamDiscovererTest {
   }
 
   @Test
-  public void testEmptyWhenTypeChanges() {
-    final StreamDiscoverer discoverer = new StreamDiscoverer(rootTable, "Camera");
-    String[] urls = {"foo", "bar"};
-    rootTable.getEntry("Camera/streams").setStringArray(urls);
-    waitForNtEvents();
-
-    rootTable.getEntry("Camera2/streams").setBoolean(false);
-    waitForNtEvents();
-
-    assertArrayEquals(new String[0], discoverer.getUrls());
-  }
-
-  @Test
   public void testClose() {
     final StreamDiscoverer discoverer = new StreamDiscoverer(rootTable, "Camera");
 

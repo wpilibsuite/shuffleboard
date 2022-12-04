@@ -58,27 +58,33 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
     NetworkTableInstance inst = NetworkTableInstance.getDefault();
     inst.removeListener(listenerUid);
     setConnected(true);
-    listenerUid = inst.addListener(new String[] {fullTableKey}, EnumSet.of(NetworkTableEvent.Kind.kImmediate, NetworkTableEvent.Kind.kTopic, NetworkTableEvent.Kind.kValueAll), event -> {
-      String name = NetworkTableUtils.topicNameForEvent(event);
-      if (isSingular() && !name.equals(fullTableKey)) {
-        // Since NetworkTableInstance.addEntryListener() will fire on anything that starts with the key,
-        // a singular source will be notified for an unrelated entry.
-        // For example, a singular source for the entry "/S" will also be fired for any changing entry that
-        // starts with "/S", such as "/SmartDashboard/<anything>" or "/SomeUnrelatedEntry".
-        // This check prevents the source from being erroneously updated for an unrelated entry.
-        return;
-      }
-      if (isConnected()) {
-        AsyncUtils.runAsync(() -> {
-          try {
-            ntUpdate = true;
-            listener.onChange(name, event);
-          } finally {
-            ntUpdate = false;
+    listenerUid = inst.addListener(
+        new String[] {fullTableKey},
+        EnumSet.of(
+          NetworkTableEvent.Kind.kImmediate,
+          NetworkTableEvent.Kind.kTopic,
+          NetworkTableEvent.Kind.kValueAll),
+        event -> {
+          String name = NetworkTableUtils.topicNameForEvent(event);
+          if (isSingular() && !name.equals(fullTableKey)) {
+            // Since NetworkTableInstance.addEntryListener() will fire on anything that starts with the key,
+            // a singular source will be notified for an unrelated entry.
+            // For example, a singular source for the entry "/S" will also be fired for any changing entry that
+            // starts with "/S", such as "/SmartDashboard/<anything>" or "/SomeUnrelatedEntry".
+            // This check prevents the source from being erroneously updated for an unrelated entry.
+            return;
+          }
+          if (isConnected()) {
+            AsyncUtils.runAsync(() -> {
+              try {
+                ntUpdate = true;
+                listener.onChange(name, event);
+              } finally {
+                ntUpdate = false;
+              }
+            });
           }
         });
-      }
-    });
   }
 
   /**
