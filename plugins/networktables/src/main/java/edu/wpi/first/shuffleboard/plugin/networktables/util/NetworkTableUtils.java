@@ -28,6 +28,7 @@ public final class NetworkTableUtils {
    * @param event event
    * @return topic name
    */
+  @SuppressWarnings("PMD.ConfusingTernary")
   public static String topicNameForEvent(NetworkTableEvent event) {
     if (event.topicInfo != null) {
       return event.topicInfo.name;
