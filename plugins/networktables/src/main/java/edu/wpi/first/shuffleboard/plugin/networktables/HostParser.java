@@ -19,7 +19,7 @@ public final class HostParser {
 
   private static final Logger log = Logger.getLogger(HostParser.class.getName());
 
-  public static final int DEFAULT_PORT = NetworkTableInstance.kDefaultPort;
+  public static final int DEFAULT_PORT = NetworkTableInstance.kDefaultPort4;
 
   /**
    * Information about a NetworkTable server host.

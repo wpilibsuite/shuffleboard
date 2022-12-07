@@ -53,7 +53,7 @@ public class MainWindowControllerTest extends ApplicationTest {
   public void testDragSingleNetworkTableSourceToWidgetPane() {
     NetworkTableInstance inst = NetworkTableInstance.getDefault();
     inst.getEntry("/a string source").setString("foo");
-    inst.waitForEntryListenerQueue(-1.0);
+    inst.waitForListenerQueue(-1.0);
     WaitForAsyncUtils.waitForFxEvents();
 
     drag(TextMatchers.hasText("a string source"), MouseButton.PRIMARY)
@@ -68,7 +68,7 @@ public class MainWindowControllerTest extends ApplicationTest {
   public void testNetworkTableSourceContextMenu() {
     NetworkTableInstance inst = NetworkTableInstance.getDefault();
     inst.getEntry("/testSourceContextMenu").setString("value");
-    inst.waitForEntryListenerQueue(-1.0);
+    inst.waitForListenerQueue(-1.0);
     WaitForAsyncUtils.waitForFxEvents();
 
     rightClickOn(TextMatchers.hasText("testSourceContextMenu"));

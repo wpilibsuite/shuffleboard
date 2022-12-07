@@ -7,6 +7,7 @@ import edu.wpi.first.shuffleboard.api.sources.Sources;
 import edu.wpi.first.shuffleboard.plugin.networktables.util.NetworkTableUtils;
 
 import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableEvent;
 import edu.wpi.first.networktables.NetworkTableInstance;
 
 import java.util.HashMap;
@@ -44,13 +45,12 @@ public class CompositeNetworkTableSource<D extends ComplexData<D>> extends Netwo
     NetworkTable table = NetworkTableInstance.getDefault().getTable(path);
     setData(dataType.getDefaultValue());
 
-    setTableListener((key, value, flags) -> {
-      boolean delete = NetworkTableUtils.isDelete(flags);
+    setTableListener((key, event) -> {
       String relativeKey = NetworkTable.normalizeKey(key.substring(path.length() + 1), false);
-      if (delete) {
+      if (event.is(NetworkTableEvent.Kind.kUnpublish)) {
         backingMap.remove(relativeKey);
-      } else {
-        backingMap.put(relativeKey, value);
+      } else if (event.valueData != null) {
+        backingMap.put(relativeKey, event.valueData.value.getValue());
       }
       setActive(Objects.equals(NetworkTableUtils.dataTypeForEntry(fullTableKey), dataType));
       try {

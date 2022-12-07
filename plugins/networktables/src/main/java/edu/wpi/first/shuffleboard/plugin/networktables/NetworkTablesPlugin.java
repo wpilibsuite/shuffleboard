@@ -12,7 +12,6 @@ import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
 import edu.wpi.first.shuffleboard.api.tab.model.TabStructure;
 import edu.wpi.first.shuffleboard.api.util.PreferencesUtils;
-import edu.wpi.first.shuffleboard.api.util.ShutdownHooks;
 import edu.wpi.first.shuffleboard.api.widget.ComponentType;
 import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.api.widget.WidgetType;
@@ -23,10 +22,12 @@ import edu.wpi.first.util.CombinedRuntimeLoader;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import edu.wpi.first.networktables.NetworkTableEvent;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.NetworkTablesJNI;
 
 import java.io.IOException;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -63,10 +64,7 @@ public class NetworkTablesPlugin extends Plugin {
 
   private final ChangeListener<String> serverChangeListener;
 
-  /**
-   * Constructs the NetworkTables plugin.
-   */
-  public NetworkTablesPlugin() {
+  private static NetworkTableInstance getDefaultInstance() {
     NetworkTablesJNI.Helper.setExtractOnStaticLoad(false);
     try {
       var files = CombinedRuntimeLoader.extractLibraries(NetworkTablesPlugin.class,
@@ -76,7 +74,21 @@ public class NetworkTablesPlugin extends Plugin {
       log.log(Level.SEVERE, "Failed to load NT Core Libraries", ex);
     }
 
-    inst = NetworkTableInstance.getDefault();
+    return NetworkTableInstance.getDefault();
+  }
+
+  /**
+   * Constructs the NetworkTables plugin.
+   */
+  public NetworkTablesPlugin() {
+    this(getDefaultInstance());
+  }
+
+  /**
+   * Constructs the NetworkTables plugin.
+   */
+  public NetworkTablesPlugin(NetworkTableInstance inst) {
+    this.inst = inst;
     tabGenerator = new TabGenerator(inst, Components.getDefault());
     recorderController = RecorderController.createWithDefaultEntries(inst);
 
@@ -110,8 +122,7 @@ public class NetworkTablesPlugin extends Plugin {
       } else {
         inst.setServer(hostInfo.getHost(), hostInfo.getPort());
       }
-      inst.setNetworkIdentity("shuffleboard");
-      inst.startClient();
+      inst.startClient4("shuffleboard");
       inst.startDSClient();
     };
   }
@@ -125,17 +136,21 @@ public class NetworkTablesPlugin extends Plugin {
     // This is done here because each key under N subtables would have N+1 copies
     // in the recording (eg "/a/b/c" has 2 tables and 3 copies: "/a", "/a/b", and "/a/b/c")
     // This significantly reduces the size of recording files.
-    recorderUid = inst.addEntryListener("", event -> {
-      Object value = event.value.getValue();
-      DataTypes.getDefault().forJavaType(value.getClass())
-          .ifPresent(type -> {
-            Recorder.getInstance().record(
-                NetworkTableSourceType.getInstance().toUri(event.name),
-                type,
-                value
-            );
-          });
-    }, 0xFF);
+    recorderUid = inst.addListener(
+        new String[] {""},
+        EnumSet.of(NetworkTableEvent.Kind.kImmediate, NetworkTableEvent.Kind.kValueAll),
+        event -> {
+          Object value = event.valueData.value.getValue();
+          String name = NetworkTableUtils.topicNameForEvent(event);
+          DataTypes.getDefault().forJavaType(value.getClass())
+              .ifPresent(type -> {
+                Recorder.getInstance().record(
+                    NetworkTableSourceType.getInstance().toUri(name),
+                    type,
+                    value
+                );
+              });
+        });
 
     DashboardMode.currentModeProperty().addListener(dashboardModeChangeListener);
     recorderController.start();
@@ -143,13 +158,6 @@ public class NetworkTablesPlugin extends Plugin {
 
     serverChangeListener.changed(null, null, serverId.get());
     serverId.addListener(serverChangeListener);
-
-    // Manually shut down the client to avoid a shutdown deadlock in ntcore. Don't want zombie processes eating up RAM
-    // Note: this only seems to occur on Windows 7 machines
-    ShutdownHooks.addHook(() -> {
-      inst.stopClient();
-      inst.stopDSClient();
-    });
   }
 
   @Override
@@ -157,7 +165,7 @@ public class NetworkTablesPlugin extends Plugin {
     DashboardMode.currentModeProperty().removeListener(dashboardModeChangeListener);
     recorderController.stop();
     tabGenerator.stop();
-    NetworkTablesJNI.removeEntryListener(recorderUid);
+    NetworkTablesJNI.removeListener(recorderUid);
     NetworkTableUtils.shutdown(inst);
     serverId.removeListener(serverSaver);
   }

@@ -8,7 +8,7 @@ plugins {
     id 'edu.wpi.first.wpilib.repositories.WPILibRepositoriesPlugin' version '2020.2'
     id 'com.diffplug.spotless' version '6.0.5'
     id 'com.github.spotbugs' version '5.0.4'
-    id 'edu.wpi.first.WpilibTools' version '0.10.0'
+    id 'edu.wpi.first.WpilibTools' version '1.0.0'
 }
 
 wpilibVersioning.buildServerMode = project.hasProperty('buildServer')
@@ -18,12 +18,11 @@ allprojects {
     repositories {
         mavenCentral()
     }
-    // Until we update ntcore, always use the development repos
-    // if (project.hasProperty('releaseMode')) {
-    //     wpilibRepositories.addAllReleaseRepositories(it)
-    // } else {
-    wpilibRepositories.addAllDevelopmentRepositories(it)
-    //}
+    if (project.hasProperty('releaseMode')) {
+        wpilibRepositories.addAllReleaseRepositories(it)
+    } else {
+        wpilibRepositories.addAllDevelopmentRepositories(it)
+    }
 }
 
 wpilibVersioning.version.finalizeValue()

@@ -14,7 +14,7 @@ public class NativeInitializer implements BeforeAllCallback {
     WPIUtilJNI.Helper.setExtractOnStaticLoad(false);
     NetworkTablesJNI.Helper.setExtractOnStaticLoad(false);
 
-    CombinedRuntimeLoader.loadLibraries(NativeInitializer.class, "ntcorejni");
+    CombinedRuntimeLoader.loadLibraries(NativeInitializer.class, "ntcorejni", "wpiutiljni");
   }
 
 }

@@ -3,12 +3,12 @@ package edu.wpi.first.shuffleboard.plugin.networktables;
 import edu.wpi.first.shuffleboard.api.sources.recording.MarkerImportance;
 import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
 
-import edu.wpi.first.networktables.EntryListenerFlags;
-import edu.wpi.first.networktables.EntryNotification;
 import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableEvent;
 import edu.wpi.first.networktables.NetworkTableInstance;
 
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.logging.Logger;
@@ -42,10 +42,6 @@ final class MarkerGenerator {
   private final NetworkTableInstance inst;
   private final Recorder recorder;
 
-  private static final int LISTENER_FLAGS = EntryListenerFlags.kImmediate
-      | EntryListenerFlags.kNew
-      | EntryListenerFlags.kUpdate;
-
   private int listenerHandle = 0;
 
   MarkerGenerator(NetworkTableInstance inst, Recorder recorder) {
@@ -54,23 +50,28 @@ final class MarkerGenerator {
   }
 
   public void start() {
-    listenerHandle = inst.addEntryListener(EVENT_TABLE_NAME, this::handleMarkerEvent, LISTENER_FLAGS);
+    listenerHandle = inst.addListener(new String[] {EVENT_TABLE_NAME},
+        EnumSet.of(NetworkTableEvent.Kind.kValueAll, NetworkTableEvent.Kind.kImmediate), this::handleMarkerEvent);
   }
 
   public void stop() {
-    inst.removeEntryListener(listenerHandle);
+    inst.removeListener(listenerHandle);
   }
 
-  private void handleMarkerEvent(EntryNotification event) {
-    if (!event.name.endsWith(EVENT_INFO_KEY)) {
+  private void handleMarkerEvent(NetworkTableEvent event) {
+    String name = event.valueData.getTopic().getName();
+    if (!name.endsWith(EVENT_INFO_KEY)) {
       return;
     }
-    String[] markerInfo = event.getEntry().getStringArray(EMPTY);
+    String[] markerInfo = EMPTY;
+    if (event.valueData.value.isStringArray()) {
+      markerInfo = event.valueData.value.getStringArray();
+    }
     if (markerInfo.length != 2) {
       log.warning("Malformed marker info: " + Arrays.toString(markerInfo));
       return;
     }
-    List<String> hierarchy = NetworkTable.getHierarchy(event.name);
+    List<String> hierarchy = NetworkTable.getHierarchy(name);
     String markerName = NetworkTable.basenameKey(hierarchy.get(hierarchy.size() - 2));
     String description = markerInfo[0];
     String importanceName = markerInfo[1];

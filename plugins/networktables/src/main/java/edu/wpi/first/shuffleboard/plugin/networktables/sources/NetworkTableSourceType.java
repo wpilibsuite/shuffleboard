@@ -14,8 +14,10 @@ import edu.wpi.first.shuffleboard.plugin.networktables.util.NetworkTableUtils;
 
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableEvent;
 import edu.wpi.first.networktables.NetworkTableInstance;
 
+import java.util.EnumSet;
 import java.util.List;
 
 import javafx.application.Platform;
@@ -38,40 +40,48 @@ public final class NetworkTableSourceType extends SourceType {
     setConnectionStatus(new ConnectionStatus(plugin.getServerId(), false));
     NetworkTableInstance inst = NetworkTableInstance.getDefault();
     plugin.serverIdProperty().addListener((__, old, serverId) -> setConnectionStatus(serverId, false));
-    inst.addConnectionListener(notification -> setConnectionStatus(plugin.getServerId(), notification.connected), true);
-    inst.addConnectionListener(notification -> {
-      if (!notification.connected) {
+    inst.addConnectionListener(true,
+        event -> setConnectionStatus(plugin.getServerId(), event.is(NetworkTableEvent.Kind.kConnected)));
+    inst.addConnectionListener(false, event -> {
+      if (event.is(NetworkTableEvent.Kind.kDisconnected)) {
         FxUtils.runOnFxThread(() -> {
           availableSources.clear();
           availableSourceIds.clear();
           NetworkTableSource.removeAllCachedSources();
         });
       }
-    }, false);
-    inst.addEntryListener("", event -> {
-      AsyncUtils.runAsync(() -> {
-        final boolean delete = NetworkTableUtils.isDelete(event.flags);
-        List<String> hierarchy = NetworkTable.getHierarchy(event.name);
-        for (int i = 0; i < hierarchy.size(); i++) {
-          String uri = toUri(hierarchy.get(i));
-          if (i == hierarchy.size() - 1) {
-            if (delete) {
-              availableSources.remove(uri);
-              Sources sources = Sources.getDefault();
-              sources.get(uri).ifPresent(sources::unregister);
-              NetworkTableSource.removeCachedSource(uri);
-            } else {
-              availableSources.put(uri, event.value.getValue());
+    });
+    inst.addListener(
+        new String[] {""},
+        EnumSet.of(
+          NetworkTableEvent.Kind.kImmediate,
+          NetworkTableEvent.Kind.kTopic,
+          NetworkTableEvent.Kind.kValueAll),
+        event -> {
+          AsyncUtils.runAsync(() -> {
+            final boolean delete = event.is(NetworkTableEvent.Kind.kUnpublish);
+            final String name = NetworkTableUtils.topicNameForEvent(event);
+            List<String> hierarchy = NetworkTable.getHierarchy(name);
+            for (int i = 0; i < hierarchy.size(); i++) {
+              String uri = toUri(hierarchy.get(i));
+              if (i == hierarchy.size() - 1) {
+                if (delete) {
+                  availableSources.remove(uri);
+                  Sources sources = Sources.getDefault();
+                  sources.get(uri).ifPresent(sources::unregister);
+                  NetworkTableSource.removeCachedSource(uri);
+                } else if (event.valueData != null) {
+                  availableSources.put(uri, event.valueData.value.getValue());
+                }
+              }
+              if (delete) {
+                availableSourceIds.remove(uri);
+              } else if (!availableSourceIds.contains(uri)) {
+                availableSourceIds.add(uri);
+              }
             }
-          }
-          if (delete) {
-            availableSourceIds.remove(uri);
-          } else if (!availableSourceIds.contains(uri)) {
-            availableSourceIds.add(uri);
-          }
-        }
-      });
-    }, 0xFF);
+          });
+        });
   }
 
   private void setConnectionStatus(String serverId, boolean connected) {
@@ -118,7 +128,7 @@ public final class NetworkTableSourceType extends SourceType {
 
   @Override
   public void disconnect() {
-    NetworkTableUtils.shutdown(NetworkTableInstance.getDefault());
+    NetworkTableUtils.shutdown();
     availableSourceIds.clear();
     availableSources.clear();
     super.disconnect();

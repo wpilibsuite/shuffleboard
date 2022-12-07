@@ -4,10 +4,10 @@ import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.sources.Sources;
 import edu.wpi.first.shuffleboard.api.util.EqualityUtils;
-import edu.wpi.first.shuffleboard.plugin.networktables.util.NetworkTableUtils;
 
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableEvent;
 
 /**
  * A data source backed by a single key-value pair in a network table.
@@ -33,17 +33,22 @@ public class SingleKeyNetworkTableSource<T> extends NetworkTableSource<T> {
   public SingleKeyNetworkTableSource(NetworkTable table, String key, DataType dataType) {
     super(key, dataType);
     setName(key);
-    setTableListener((__, value, flags) -> {
-      if (!initialUpdate && EqualityUtils.isEqual(value, getData())) {
-        // No change
-        return;
-      }
-      initialUpdate = true;
-      boolean deleted = NetworkTableUtils.isDelete(flags);
-      setActive(!deleted && DataTypes.getDefault().forJavaType(value.getClass()).map(dataType::equals).orElse(false));
+    setTableListener((__, event) -> {
+      if (event.is(NetworkTableEvent.Kind.kUnpublish)) {
+        setActive(false);
+      } else if (event.valueData != null) {
+        Object value = event.valueData.value.getValue();
+        setActive(DataTypes.getDefault().forJavaType(value.getClass()).map(dataType::equals).orElse(false));
+        if (!initialUpdate && EqualityUtils.isEqual(value, getData())) {
+          // No change
+          return;
+        }
+        initialUpdate = true;
 
-      if (isActive()) {
-        setData((T) value);
+
+        if (isActive()) {
+          setData((T) value);
+        }
       }
     });
 
