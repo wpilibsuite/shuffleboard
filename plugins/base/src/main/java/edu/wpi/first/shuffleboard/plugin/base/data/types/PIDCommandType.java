@@ -21,7 +21,7 @@ public final class PIDCommandType extends ComplexDataType<PIDCommandData> {
 
   @Override
   public PIDCommandData getDefaultValue() {
-    return new PIDCommandData("", false, false, 0, 0, 0, 0, 0, false);
+    return new PIDCommandData("", false, false, 0, 0, 0, 0);
   }
 
 }
