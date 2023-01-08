@@ -2,6 +2,8 @@ package edu.wpi.first.shuffleboard.plugin.base.widget;
 
 import com.google.common.collect.ImmutableList;
 import com.google.gson.Gson;
+import edu.wpi.fields.FieldConfig;
+import edu.wpi.fields.Fields;
 import edu.wpi.first.shuffleboard.api.prefs.Group;
 import edu.wpi.first.shuffleboard.api.prefs.Setting;
 import edu.wpi.first.shuffleboard.api.widget.Description;
@@ -17,10 +19,7 @@ import java.io.Reader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
@@ -63,8 +62,8 @@ public class FieldWidget extends SimpleAnnotatedWidget<FieldData> {
   private final Map<String, Paint> colors = new HashMap<>();
   private final Map<String, Circle[]> objectCircles = new HashMap<>();
   private Map<String, FieldData.SimplePose2d[]> previousObjects = new HashMap<>();
-  private final Property<Game> game =
-          new SimpleObjectProperty<>(Game.A2022_Rapid_React);
+  private final Property<Fields> game =
+          new SimpleObjectProperty<>(Fields.kDefaultField);
   private final DoubleProperty robotSize = new SimpleDoubleProperty(50);
   private final BooleanProperty showCirclesOutsideOfField = new SimpleBooleanProperty(false);
 
@@ -147,57 +146,28 @@ public class FieldWidget extends SimpleAnnotatedWidget<FieldData> {
     }
   }
 
-  private void setGame(Game game) {
-    InputStream stream = getClass().getResourceAsStream(game.json());
-
+  private void setGame(Fields field) {
     try {
-      if (stream == null) {
-        throw new Exception("Cannot read JSON of " + game);
-      }
-      Gson gson = new Gson();
-      Reader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
-      Map<?, ?> map = gson.fromJson(reader, Map.class);
+      FieldConfig config = FieldConfig.loadField(field);
+      InputStream imageStream = config.getImageAsStream();
+      Objects.requireNonNull(imageStream);
 
-      URL imagePath = getClass()
-              .getResource("field/" + map.get("field-image"));
-      if (imagePath == null) {
-        throw new Exception("Cannot get image at " + Paths.get("field", (String) map.get("field-image")));
-      }
-      Image image = new Image(imagePath.toExternalForm());
+      Image image = new Image(imageStream);
       backgroundImage.setImage(image);
+      imageStartX = config.m_fieldCorners.m_topLeft[0];
+      imageEndX = config.m_fieldCorners.m_bottomRight[0];
+      imageStartY = image.getHeight() - config.m_fieldCorners.m_bottomRight[1];
+      imageEndY = image.getHeight() - config.m_fieldCorners.m_topLeft[1];
 
-      imageStartX =
-              ((List<Double>) ((Map<?, ?>) map.get("field-corners")).get("top-left"))
-                      .get(0);
-      imageEndX = ((List<Double>) ((Map<?, ?>) map.get("field-corners"))
-              .get("bottom-right"))
-              .get(0);
-      imageStartY = image.getHeight() 
-              - ((List<Double>) ((Map<?, ?>) map.get("field-corners"))
-                      .get("bottom-right"))
-                      .get(1);
-      imageEndY =
-              image.getHeight() 
-                      - ((List<Double>) ((Map<?, ?>) map.get("field-corners")).get("top-left"))
-                              .get(1);
+      fieldWidth = config.m_fieldSize[0];
+      fieldHeight = config.m_fieldSize[1];
 
-      fieldWidth = ((List<Double>) map.get("field-size")).get(0);
-      fieldHeight = ((List<Double>) map.get("field-size")).get(1);
-
-      String fieldUnit = (String) map.get("field-unit");
-      if (fieldUnit.equals("feet") || fieldUnit.equals("foot")) {
-        fieldWidth = UltrasonicWidget.Unit.FOOT.as(fieldWidth,
-                UltrasonicWidget.Unit.METER);
-        fieldHeight = UltrasonicWidget.Unit.FOOT.as(
-                fieldHeight, UltrasonicWidget.Unit.METER);
+      if ("feet".equals(config.m_fieldUnit) || "foot".equals(config.m_fieldUnit)) {
+        fieldWidth  = UltrasonicWidget.Unit.FOOT.as(fieldWidth, UltrasonicWidget.Unit.METER);
+        fieldHeight = UltrasonicWidget.Unit.FOOT.as(fieldHeight, UltrasonicWidget.Unit.METER);
       }
-    } catch (Exception ignored) {
-    } finally {
-      try {
-        if (stream != null) {
-          stream.close();
-        }
-      } catch (IOException ignored) { }
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
   }
 
@@ -299,7 +269,7 @@ public class FieldWidget extends SimpleAnnotatedWidget<FieldData> {
     }
 
     return ImmutableList.of(
-            Group.of("Game", Setting.of("Game", game, Game.class)),
+            Group.of("Game", Setting.of("Game", game, Fields.class)),
             Group.of("Visuals",
                     Setting.of("Robot Icon Size", robotSize, Double.class),
                     Setting.of("Show Outside Circles", showCirclesOutsideOfField, Boolean.class)
@@ -311,27 +281,5 @@ public class FieldWidget extends SimpleAnnotatedWidget<FieldData> {
   @Override
   public Pane getView() {
     return root;
-  }
-
-  private enum Game {
-    A2018_Power_Up,
-    A2019_Deep_Space,
-    A2020_Infinite_Recharge,
-    A2021_Barrel_Racing_Path,
-    A2021_Bounce_Path,
-    A2021_Galactic_Search_A,
-    A2021_Galactic_Search_B,
-    A2021_Infinite_Recharge,
-    A2021_Slalom_Path,
-    A2022_Rapid_React;
-
-    public String json() {
-      return "field/" + this.name().substring(1).toLowerCase().replaceFirst("_", "-").replaceAll("_", "") + ".json";
-    }
-
-    @Override
-    public String toString() {
-      return this.name().substring(1).replaceAll("_", " ");
-    }
   }
 }
