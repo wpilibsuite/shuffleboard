@@ -1,7 +1,6 @@
 package edu.wpi.first.shuffleboard.plugin.base.widget;
 
 import com.google.common.collect.ImmutableList;
-import com.google.gson.Gson;
 import edu.wpi.fields.FieldConfig;
 import edu.wpi.fields.Fields;
 import edu.wpi.first.shuffleboard.api.prefs.Group;
@@ -11,15 +10,14 @@ import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 import edu.wpi.first.shuffleboard.api.widget.SimpleAnnotatedWidget;
 import edu.wpi.first.shuffleboard.plugin.base.data.FieldData;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+
 import java.io.IOException;
-import java.io.Reader;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Paths;
-import java.util.*;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
