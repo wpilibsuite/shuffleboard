@@ -16,11 +16,9 @@ public final class PIDCommandData extends ComplexData<PIDCommandData> {
                         double p,
                         double i,
                         double d,
-                        double f,
-                        double setpoint,
-                        boolean enabled) {
+                        double setpoint) {
     commandData = new CommandData(name, running, isParented);
-    pidControllerData = new PIDControllerData(p, i, d, f, setpoint, enabled);
+    pidControllerData = new PIDControllerData(p, i, d, setpoint);
   }
 
   public PIDCommandData(Map<String, Object> map) {
@@ -73,24 +71,12 @@ public final class PIDCommandData extends ComplexData<PIDCommandData> {
     return pidControllerData.getD();
   }
 
-  public double getF() {
-    return pidControllerData.getF();
-  }
-
   public double getSetpoint() {
     return pidControllerData.getSetpoint();
   }
 
-  public boolean isEnabled() {
-    return pidControllerData.isEnabled();
-  }
-
   public PIDCommandData withP(double p) {
     return new PIDCommandData(commandData, pidControllerData.withP(p));
-  }
-
-  public PIDCommandData withEnabled(boolean enabled) {
-    return new PIDCommandData(commandData, pidControllerData.withEnabled(enabled));
   }
 
   public PIDCommandData withRunning(boolean running) {

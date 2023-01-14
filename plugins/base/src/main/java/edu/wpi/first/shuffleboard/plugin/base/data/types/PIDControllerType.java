@@ -21,7 +21,7 @@ public final class PIDControllerType extends ComplexDataType<PIDControllerData> 
 
   @Override
   public PIDControllerData getDefaultValue() {
-    return new PIDControllerData(0, 0, 0, 0, 0, false);
+    return new PIDControllerData(0, 0, 0, 0);
   }
 
 }

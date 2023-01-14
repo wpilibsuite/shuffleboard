@@ -6,8 +6,6 @@ import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 import edu.wpi.first.shuffleboard.api.widget.SimpleAnnotatedWidget;
 import edu.wpi.first.shuffleboard.plugin.base.data.PIDControllerData;
 
-import org.controlsfx.control.ToggleSwitch;
-
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextField;
@@ -30,13 +28,7 @@ public class PIDControllerWidget extends SimpleAnnotatedWidget<PIDControllerData
   @FXML
   private NumberField dField;
   @FXML
-  private NumberField fField;
-  @FXML
   private NumberField setpointField;
-  @FXML
-  private ToggleSwitch enableToggle;
-
-  private boolean togglingFromDataChange = true;
 
   @FXML
   private void initialize() {
@@ -45,25 +37,13 @@ public class PIDControllerWidget extends SimpleAnnotatedWidget<PIDControllerData
       pField.setNumber(newData.getP());
       iField.setNumber(newData.getI());
       dField.setNumber(newData.getD());
-      fField.setNumber(newData.getF());
       setpointField.setNumber(newData.getSetpoint());
-      togglingFromDataChange = true;
-      enableToggle.setSelected(newData.isEnabled());
-      togglingFromDataChange = false;
     });
 
     actOnFocusLost(pField);
     actOnFocusLost(iField);
     actOnFocusLost(dField);
-    actOnFocusLost(fField);
     actOnFocusLost(setpointField);
-
-    enableToggle.selectedProperty().addListener((__, prev, cur) -> {
-      if (!togglingFromDataChange) {
-        PIDControllerData data = getData();
-        setData(data.withEnabled(!data.isEnabled()));
-      }
-    });
   }
 
   private void actOnFocusLost(TextField field) {
@@ -92,11 +72,6 @@ public class PIDControllerWidget extends SimpleAnnotatedWidget<PIDControllerData
   @FXML
   private void setD() {
     setData(getData().withD(dField.getNumber()));
-  }
-
-  @FXML
-  private void setF() {
-    setData(getData().withF(fField.getNumber()));
   }
 
   @FXML
