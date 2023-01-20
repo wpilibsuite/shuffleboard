@@ -37,6 +37,9 @@ public final class NetworkTableSourceEntry implements SourceEntry {
     if (value == null) {
       return "";
     }
+    if (value instanceof long[]) {
+      return Arrays.toString((long[]) value);
+    }
     if (value instanceof double[]) {
       return Arrays.toString((double[]) value);
     }
