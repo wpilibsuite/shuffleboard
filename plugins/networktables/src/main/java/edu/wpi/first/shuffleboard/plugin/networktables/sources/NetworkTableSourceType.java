@@ -50,14 +50,14 @@ public final class NetworkTableSourceType extends SourceType {
           availableSourceIds.clear();
           NetworkTableSource.removeAllCachedSources();
         });
-      } else if(event.is(NetworkTableEvent.Kind.kConnected)) {
+      } else if (event.is(NetworkTableEvent.Kind.kConnected)) {
         FxUtils.runOnFxThread(() -> {
-          for(Topic topic : event.getInstance().getTopics()) {
+          for (Topic topic : event.getInstance().getTopics()) {
             String uri = toUri(topic.getName());
-            if(!availableSources.containsKey(uri)) {
+            if (!availableSources.containsKey(uri)) {
               availableSources.put(uri, topic.genericSubscribe().get().getValue());
             }
-            if(!availableSourceIds.contains(uri)) {
+            if (!availableSourceIds.contains(uri)) {
               availableSourceIds.add(uri);
             }
           }
