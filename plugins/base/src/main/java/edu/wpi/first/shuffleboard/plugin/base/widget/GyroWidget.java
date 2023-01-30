@@ -19,9 +19,9 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
 
-@Description(name = "Gyro", dataTypes = GyroData.class)
+@Description(name = "Gyro", dataTypes = {GyroData.class, Number.class})
 @ParametrizedController("GyroWidget.fxml")
-public class GyroWidget extends SimpleAnnotatedWidget<GyroData> {
+public class GyroWidget extends SimpleAnnotatedWidget<Object> {
 
   @FXML
   private Pane root;
@@ -32,8 +32,34 @@ public class GyroWidget extends SimpleAnnotatedWidget<GyroData> {
 
   @FXML
   private void initialize() {
-    gauge.valueProperty().bind(dataOrDefault.map(GyroData::getWrappedValue));
-    valueLabel.textProperty().bind(dataOrDefault.map(GyroData::getValue).map(d -> String.format("%.2f°", d)));
+    dataProperty().addListener((__, prev, cur) -> {
+      if (cur != null) {
+        double angle = 0;
+        if (cur instanceof Number) {
+          angle = ((Number) cur).doubleValue();
+        } else if (cur instanceof GyroData) {
+          angle = ((GyroData) cur).getWrappedValue();
+        }
+        angle = wrapAngle(angle);
+
+        gauge.setValue(angle);
+        valueLabel.setText(String.format("%.2f", angle));
+      }
+    });
+  }
+
+  /**
+   * Helper method to keep an angle in the range [0, 360).
+   * eg wrapAngle(90)  -> 90
+   *    wrapAngle(360) -> 0
+   *    wrapAngle(-15) -> 345
+   */
+  private double wrapAngle(double angle) {
+    if (angle < 0) {
+      return ((angle % 360) + 360) % 360;
+    } else {
+      return angle % 360;
+    }
   }
 
   @Override
