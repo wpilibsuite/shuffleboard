@@ -16,6 +16,7 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableEvent;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.Topic;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -48,6 +49,18 @@ public final class NetworkTableSourceType extends SourceType {
           availableSources.clear();
           availableSourceIds.clear();
           NetworkTableSource.removeAllCachedSources();
+        });
+      } else if (event.is(NetworkTableEvent.Kind.kConnected)) {
+        FxUtils.runOnFxThread(() -> {
+          for (Topic topic : event.getInstance().getTopics()) {
+            String uri = toUri(topic.getName());
+            if (!availableSources.containsKey(uri)) {
+              availableSources.put(uri, topic.genericSubscribe().get().getValue());
+            }
+            if (!availableSourceIds.contains(uri)) {
+              availableSourceIds.add(uri);
+            }
+          }
         });
       }
     });
