@@ -93,6 +93,8 @@ public class NetworkTablesPlugin extends Plugin {
     recorderController = RecorderController.createWithDefaultEntries(inst);
 
     NetworkTableSourceType.setInstance(new NetworkTableSourceType(this));
+    inst.startClient4("shuffleboard");
+    inst.startDSClient();
 
     dashboardModeChangeListener = (__, old, mode) -> {
       if (mode == DashboardMode.PLAYBACK) {
@@ -113,8 +115,6 @@ public class NetworkTablesPlugin extends Plugin {
 
       var hostInfo = hostInfoOpt.get();
 
-      NetworkTableUtils.shutdown(inst);
-
       if (hostInfo.getTeam().isPresent()) {
         inst.setServerTeam(hostInfo.getTeam().getAsInt(), hostInfo.getPort());
       } else if (hostInfo.getHost().isEmpty()) {
@@ -122,8 +122,7 @@ public class NetworkTablesPlugin extends Plugin {
       } else {
         inst.setServer(hostInfo.getHost(), hostInfo.getPort());
       }
-      inst.startClient4("shuffleboard");
-      inst.startDSClient();
+      inst.disconnect();
     };
   }
 
