@@ -8,15 +8,9 @@ import org.junit.jupiter.params.provider.MethodSource;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class EqualityUtilsTest extends UtilityClassTest<EqualityUtils> {
-
-  @Test
-  public void isEqualInvalidPrimativeTest() {
-    assertThrows(UnsupportedOperationException.class, () -> EqualityUtils.isEqual(new long[0], new long[0]));
-  }
 
   @Test
   public void isDifferentArrayTest() {
@@ -51,6 +45,7 @@ public class EqualityUtilsTest extends UtilityClassTest<EqualityUtils> {
         Arguments.of(null, null),
         Arguments.of("Test", "Test"),
         Arguments.of(new int[]{1}, new int[]{1}),
+        Arguments.of(new long[]{1}, new long[]{1}),
         Arguments.of(new double[]{1.1}, new double[]{1.1}),
         Arguments.of(new byte[]{3}, new byte[]{3}),
         Arguments.of(new short[]{4}, new short[]{4}),
@@ -68,6 +63,8 @@ public class EqualityUtilsTest extends UtilityClassTest<EqualityUtils> {
         Arguments.of("", "A"),
         Arguments.of(new int[0], ""),
         Arguments.of(new int[]{1}, new int[]{2}),
+        Arguments.of(new long[0], ""),
+        Arguments.of(new long[]{1}, new long[]{2}),
         Arguments.of(new double[]{1.1}, new double[]{1.2}),
         Arguments.of(new byte[]{3}, new byte[]{4}),
         Arguments.of(new short[]{4}, new short[]{5}),
