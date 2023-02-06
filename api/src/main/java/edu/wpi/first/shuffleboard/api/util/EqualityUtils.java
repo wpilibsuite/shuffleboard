@@ -63,6 +63,8 @@ public final class EqualityUtils {
             return Arrays.equals((int[]) o1, (int[]) o2);
           } else if (arrayType == double.class) {
             return Arrays.equals((double[]) o1, (double[]) o2);
+          } else if (arrayType == long.class) {
+            return Arrays.equals((long[]) o1, (long[]) o2);
           } else if (arrayType == byte.class) {
             return Arrays.equals((byte[]) o1, (byte[]) o2);
           } else if (arrayType == short.class) {
