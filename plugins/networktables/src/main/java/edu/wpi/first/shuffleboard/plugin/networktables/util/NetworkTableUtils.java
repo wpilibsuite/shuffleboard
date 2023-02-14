@@ -52,7 +52,10 @@ public final class NetworkTableUtils {
       return DataTypes.Map;
     }
     if (rootTable.containsKey(normalKey)) {
-      return DataTypes.getDefault().forJavaType(rootTable.getEntry(normalKey).getValue().getValue().getClass()).get();
+      var ntValue = rootTable.getEntry(normalKey).getValue();
+      if (ntValue.isValid()) {
+        return DataTypes.getDefault().forJavaType(ntValue.getValue().getClass()).get();
+      }
     }
     if (rootTable.containsSubTable(normalKey)) {
       NetworkTable table = rootTable.getSubTable(normalKey);
