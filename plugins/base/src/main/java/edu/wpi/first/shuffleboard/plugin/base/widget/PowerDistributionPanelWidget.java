@@ -84,8 +84,6 @@ public class PowerDistributionPanelWidget extends SimpleAnnotatedWidget<PowerDis
   @FXML
   private LinearIndicator channel23;
   @FXML
-  private LinearIndicator channel24;
-  @FXML
   private LinearIndicator voltage;
   @FXML
   private LinearIndicator totalCurrent;
@@ -123,8 +121,7 @@ public class PowerDistributionPanelWidget extends SimpleAnnotatedWidget<PowerDis
         channel20,
         channel21,
         channel22,
-        channel23,
-        channel24
+        channel23
     };
 
     imageView.fitHeightProperty().bind(root.heightProperty().multiply(0.6));
