@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import edu.wpi.first.shuffleboard.api.components.NumberField?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<GridPane xmlns="http://javafx.com/javafx"
+          xmlns:fx="http://javafx.com/fxml"
+          fx:controller="edu.wpi.first.shuffleboard.plugin.base.widget.ProfiledPIDControllerWidget"
+          fx:id="root"
+          minWidth="112" minHeight="168"
+          hgap="4" vgap="4">
+    <columnConstraints>
+        <ColumnConstraints minWidth="52" prefWidth="52" maxWidth="52"/>
+        <ColumnConstraints maxWidth="Infinity"/>
+    </columnConstraints>
+    <padding>
+        <Insets topRightBottomLeft="8"/>
+    </padding>
+    <Label text="P" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+    <Label text="I" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+    <Label text="D" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+    <Label text="Goal" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+    <NumberField fx:id="pField" onAction="#setP" GridPane.columnIndex="1" GridPane.rowIndex="0" GridPane.hgrow="ALWAYS"/>
+    <NumberField fx:id="iField" onAction="#setI" GridPane.columnIndex="1" GridPane.rowIndex="1" GridPane.hgrow="ALWAYS"/>
+    <NumberField fx:id="dField" onAction="#setD" GridPane.columnIndex="1" GridPane.rowIndex="2" GridPane.hgrow="ALWAYS"/>
+    <NumberField fx:id="goalField" onAction="#setGoal" GridPane.columnIndex="1" GridPane.rowIndex="3" GridPane.hgrow="ALWAYS"/>
+</GridPane>
