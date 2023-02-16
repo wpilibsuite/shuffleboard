@@ -2,17 +2,13 @@ package edu.wpi.first.shuffleboard.api;
 
 import edu.wpi.first.shuffleboard.api.util.Registry;
 import edu.wpi.first.shuffleboard.api.widget.LayoutBase;
-
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import javafx.geometry.Orientation;
 import javafx.scene.paint.Color;
 
-/**
- * Registry for {@link PropertyParser PropertyParsers}.
- */
+/** Registry for {@link PropertyParser PropertyParsers}. */
 public final class PropertyParsers extends Registry<PropertyParser<?>> {
 
   private static final PropertyParser<Orientation> ORIENTATION =
@@ -58,28 +54,29 @@ public final class PropertyParsers extends Registry<PropertyParser<?>> {
   /**
    * Parses the given input as a value of the given output type.
    *
-   * @param input      the value to parse
+   * @param input the value to parse
    * @param outputType the type of the value to parse as
-   * @param <T>        the type of the parsed result
-   *
+   * @param <T> the type of the parsed result
    * @return the parse result
-   *
    * @throws IllegalStateException if there are multiple registered parsers for type {@code T}
    */
   public <T> Optional<T> parse(Object input, Class<T> outputType) {
-    Set<T> possibilities = getItems()
-        .stream()
-        .filter(p -> p.outputType().isAssignableFrom(outputType))
-        .filter(p -> p.canParse(input))
-        .map(p -> (PropertyParser<T>) p)
-        .map(p -> p.parse(input))
-        .collect(Collectors.toSet());
+    Set<T> possibilities =
+        getItems().stream()
+            .filter(p -> p.outputType().isAssignableFrom(outputType))
+            .filter(p -> p.canParse(input))
+            .map(p -> (PropertyParser<T>) p)
+            .map(p -> p.parse(input))
+            .collect(Collectors.toSet());
     if (possibilities.isEmpty()) {
       return Optional.empty();
     }
     if (possibilities.size() > 1) {
       throw new IllegalStateException(
-          "Multiple parsers for " + input + " supporting output type " + outputType.getSimpleName());
+          "Multiple parsers for "
+              + input
+              + " supporting output type "
+              + outputType.getSimpleName());
     }
     return Optional.of(possibilities.iterator().next());
   }
@@ -143,9 +140,7 @@ public final class PropertyParsers extends Registry<PropertyParser<?>> {
 
     @Override
     public boolean canParse(Object input) {
-      return input instanceof Color
-          || input instanceof String
-          || input instanceof Number;
+      return input instanceof Color || input instanceof String || input instanceof Number;
     }
 
     @Override

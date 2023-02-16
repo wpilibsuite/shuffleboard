@@ -1,9 +1,7 @@
 package edu.wpi.first.shuffleboard.plugin.base.data;
 
 import com.google.common.collect.ImmutableMap;
-
 import edu.wpi.first.shuffleboard.api.data.ComplexData;
-
 import java.util.Map;
 import java.util.Objects;
 
@@ -14,7 +12,8 @@ public final class ThreeAxisAccelerometerData extends ComplexData<ThreeAxisAccel
   private final double z;
 
   /**
-   * Creates a new 3-axis accelerometer data object containing the measured acceleration along the 3 3D axes.
+   * Creates a new 3-axis accelerometer data object containing the measured acceleration along the 3
+   * 3D axes.
    *
    * @param x the x-axis acceleration, in Gs
    * @param y the y-axis acceleration, in Gs
@@ -27,11 +26,12 @@ public final class ThreeAxisAccelerometerData extends ComplexData<ThreeAxisAccel
   }
 
   /**
-   * Creates a new data object from a map. The map should contain values for "X", "Y", and "Z" as doubles; otherwise,
-   * default values of zero are used.
+   * Creates a new data object from a map. The map should contain values for "X", "Y", and "Z" as
+   * doubles; otherwise, default values of zero are used.
    */
   public ThreeAxisAccelerometerData(Map<String, Object> map) {
-    this((double) map.getOrDefault("X", 0.0),
+    this(
+        (double) map.getOrDefault("X", 0.0),
         (double) map.getOrDefault("Y", 0.0),
         (double) map.getOrDefault("Z", 0.0));
   }
@@ -62,9 +62,7 @@ public final class ThreeAxisAccelerometerData extends ComplexData<ThreeAxisAccel
       return false;
     }
     ThreeAxisAccelerometerData that = (ThreeAxisAccelerometerData) obj;
-    return this.x == that.x
-        && this.y == that.y
-        && this.z == that.z;
+    return this.x == that.x && this.y == that.y && this.z == that.z;
   }
 
   @Override

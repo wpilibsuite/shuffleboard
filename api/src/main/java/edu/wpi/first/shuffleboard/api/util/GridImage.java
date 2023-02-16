@@ -1,15 +1,15 @@
 package edu.wpi.first.shuffleboard.api.util;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import javafx.scene.image.Image;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 /**
- * A representation of an image of a grid. This is not itself an image, but can create a new image based on this
- * representation with {@link #getAsImage(Color) getAsImage()}.
+ * A representation of an image of a grid. This is not itself an image, but can create a new image
+ * based on this representation with {@link #getAsImage(Color) getAsImage()}.
  */
 public final class GridImage {
 
@@ -22,16 +22,22 @@ public final class GridImage {
   /**
    * Creates a new grid image representation.
    *
-   * @param width                  the overall width of the image
-   * @param height                 the overall height of the image
-   * @param borderThickness        the thickness of the borders
-   * @param secondaryLineCount     the number of secondary lines
+   * @param width the overall width of the image
+   * @param height the overall height of the image
+   * @param borderThickness the thickness of the borders
+   * @param secondaryLineCount the number of secondary lines
    * @param secondaryLineThickness the thickness of the secondary lines
    */
-  public GridImage(int width, int height, int borderThickness, int secondaryLineCount, int secondaryLineThickness) {
+  public GridImage(
+      int width,
+      int height,
+      int borderThickness,
+      int secondaryLineCount,
+      int secondaryLineThickness) {
     checkArgument(width > 0, "Width must be positive (given: " + width + ")");
     checkArgument(height > 0, "Height must be positive (given: " + height + ")");
-    checkArgument(borderThickness > 0, "Border thickness must be positive (given: " + borderThickness + ")");
+    checkArgument(
+        borderThickness > 0, "Border thickness must be positive (given: " + borderThickness + ")");
     checkArgument(secondaryLineCount >= 0, "Secondary line count must be non-negative");
     checkArgument(secondaryLineThickness > 0, "Secondary line thickness must be positive");
     this.width = width;
@@ -45,7 +51,6 @@ public final class GridImage {
    * Creates an image of a grid based off this model.
    *
    * @param lineColor the color of the lines of the grid
-   *
    * @return a new image of the grid
    */
   public Image getAsImage(Color lineColor) {
@@ -85,10 +90,10 @@ public final class GridImage {
    * Draws a filled rectangle with the given dimensions and color on an image.
    *
    * @param image the image to draw the rectangle on
-   * @param x     the x-coordinate of the top-left corner of the rectangle, in pixels
-   * @param y     the y-coordinate of the top-left corner of the rectangle, in pixels
-   * @param w     the width of the rectangle, in pixels
-   * @param h     the height of the rectangle, in pixels
+   * @param x the x-coordinate of the top-left corner of the rectangle, in pixels
+   * @param y the y-coordinate of the top-left corner of the rectangle, in pixels
+   * @param w the width of the rectangle, in pixels
+   * @param h the height of the rectangle, in pixels
    * @param color the color of the rectangle
    */
   private void fillRect(WritableImage image, int x, int y, int w, int h, Color color) {
@@ -103,5 +108,4 @@ public final class GridImage {
       }
     }
   }
-
 }

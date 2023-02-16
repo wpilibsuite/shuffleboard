@@ -69,19 +69,17 @@ import edu.wpi.first.shuffleboard.plugin.base.widget.ToggleButtonWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.ToggleSwitchWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.UltrasonicWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.VoltageViewWidget;
-import javafx.beans.InvalidationListener;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.prefs.Preferences;
+import javafx.beans.InvalidationListener;
 
 @Description(
     group = "edu.wpi.first.shuffleboard",
     name = "Base",
     version = "1.3.4",
-    summary = "Defines all the WPILib data types and stock widgets"
-)
+    summary = "Defines all the WPILib data types and stock widgets")
 @SuppressWarnings("PMD.CouplingBetweenObjects")
 public class BasePlugin extends Plugin {
   private final Preferences preferences = Preferences.userNodeForPackage(getClass());
@@ -126,8 +124,7 @@ public class BasePlugin extends Plugin {
         DifferentialDriveType.Instance,
         FmsInfoType.Instance,
         UltrasonicType.Instance,
-        FieldType.Instance
-    );
+        FieldType.Instance);
   }
 
   @Override
@@ -163,8 +160,7 @@ public class BasePlugin extends Plugin {
         WidgetType.forAnnotatedWidget(FieldWidget.class),
         new LayoutClass<>("List Layout", ListLayout.class),
         new LayoutClass<>("Grid Layout", GridLayout.class),
-        createSubsystemLayoutType()
-    );
+        createSubsystemLayoutType());
   }
 
   @Override
@@ -174,20 +170,32 @@ public class BasePlugin extends Plugin {
         .put(DataTypes.Number, WidgetType.forAnnotatedWidget(TextViewWidget.class))
         .put(DataTypes.String, WidgetType.forAnnotatedWidget(TextViewWidget.class))
         .put(AnalogInputType.Instance, WidgetType.forAnnotatedWidget(VoltageViewWidget.class))
-        .put(PowerDistributionType.Instance, WidgetType.forAnnotatedWidget(PowerDistributionPanelWidget.class))
-        .put(SendableChooserType.Instance, WidgetType.forAnnotatedWidget(ComboBoxChooserWidget.class))
+        .put(
+            PowerDistributionType.Instance,
+            WidgetType.forAnnotatedWidget(PowerDistributionPanelWidget.class))
+        .put(
+            SendableChooserType.Instance,
+            WidgetType.forAnnotatedWidget(ComboBoxChooserWidget.class))
         .put(EncoderType.Instance, WidgetType.forAnnotatedWidget(EncoderWidget.class))
         .put(QuadratureEncoderType.Instance, WidgetType.forAnnotatedWidget(EncoderWidget.class))
-        .put(RobotPreferencesType.Instance, WidgetType.forAnnotatedWidget(RobotPreferencesWidget.class))
-        .put(SpeedControllerType.Instance, WidgetType.forAnnotatedWidget(SpeedControllerWidget.class))
+        .put(
+            RobotPreferencesType.Instance,
+            WidgetType.forAnnotatedWidget(RobotPreferencesWidget.class))
+        .put(
+            SpeedControllerType.Instance,
+            WidgetType.forAnnotatedWidget(SpeedControllerWidget.class))
         .put(CommandType.Instance, WidgetType.forAnnotatedWidget(CommandWidget.class))
         .put(PIDCommandType.Instance, WidgetType.forAnnotatedWidget(PIDCommandWidget.class))
         .put(PIDControllerType.Instance, WidgetType.forAnnotatedWidget(PIDControllerWidget.class))
         .put(AccelerometerType.Instance, WidgetType.forAnnotatedWidget(AccelerometerWidget.class))
-        .put(ThreeAxisAccelerometerType.Instance, WidgetType.forAnnotatedWidget(ThreeAxisAccelerometerWidget.class))
+        .put(
+            ThreeAxisAccelerometerType.Instance,
+            WidgetType.forAnnotatedWidget(ThreeAxisAccelerometerWidget.class))
         .put(GyroType.Instance, WidgetType.forAnnotatedWidget(GyroWidget.class))
         .put(RelayType.Instance, WidgetType.forAnnotatedWidget(RelayWidget.class))
-        .put(DifferentialDriveType.Instance, WidgetType.forAnnotatedWidget(DifferentialDriveWidget.class))
+        .put(
+            DifferentialDriveType.Instance,
+            WidgetType.forAnnotatedWidget(DifferentialDriveWidget.class))
         .put(MecanumDriveType.Instance, WidgetType.forAnnotatedWidget(MecanumDriveWidget.class))
         .put(FmsInfoType.Instance, WidgetType.forAnnotatedWidget(BasicFmsInfoWidget.class))
         .put(UltrasonicType.Instance, WidgetType.forAnnotatedWidget(UltrasonicWidget.class))
@@ -201,8 +209,7 @@ public class BasePlugin extends Plugin {
   public Set<PropertyParser<?>> getPropertyParsers() {
     return Set.of(
         PropertyParser.forEnum(ThreeAxisAccelerometerWidget.Range.class),
-        PropertyParser.forEnum(UltrasonicWidget.Unit.class)
-    );
+        PropertyParser.forEnum(UltrasonicWidget.Unit.class));
   }
 
   private static LayoutClass<SubsystemLayout> createSubsystemLayoutType() {
@@ -217,28 +224,28 @@ public class BasePlugin extends Plugin {
   @Override
   public List<TabInfo> getDefaultTabInfo() {
     return ImmutableList.of(
-        TabInfo.builder().name("SmartDashboard").autoPopulate().sourcePrefix("SmartDashboard/").build(),
-        TabInfo.builder().name("LiveWindow").autoPopulate().sourcePrefix("LiveWindow/").build()
-    );
+        TabInfo.builder()
+            .name("SmartDashboard")
+            .autoPopulate()
+            .sourcePrefix("SmartDashboard/")
+            .build(),
+        TabInfo.builder().name("LiveWindow").autoPopulate().sourcePrefix("LiveWindow/").build());
   }
 
   @Override
   public List<ElementTypeAdapter<?>> getCustomTypeAdapters() {
-    return ImmutableList.of(
-        GridLayoutSaver.Instance
-    );
+    return ImmutableList.of(GridLayoutSaver.Instance);
   }
 
   @Override
   public List<Group> getSettings() {
     return ImmutableList.of(
-            Group.of("Graph settings",
-                    Setting.of("Graph Update Rate",
-                            "How many times a second graph widgets update at. "
-                                    + "Faster update rates may cause performance issues",
-                            updater.graphUpdateRateProperty()
-                    )
-            )
-    );
+        Group.of(
+            "Graph settings",
+            Setting.of(
+                "Graph Update Rate",
+                "How many times a second graph widgets update at. "
+                    + "Faster update rates may cause performance issues",
+                updater.graphUpdateRateProperty())));
   }
 }

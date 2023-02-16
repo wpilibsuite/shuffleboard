@@ -2,7 +2,6 @@ package edu.wpi.first.shuffleboard.api.sources.recording.serialization;
 
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.sources.recording.Serialization;
-
 import java.io.UnsupportedEncodingException;
 
 public class StringAdapter extends TypeAdapter<String> {
@@ -22,9 +21,10 @@ public class StringAdapter extends TypeAdapter<String> {
     int length = Serialization.readInt(buffer, cursor);
     cursor += Serialization.SIZE_OF_INT;
     if (buffer.length < cursor + length) {
-      throw new IllegalArgumentException(String.format(
-          "Not enough bytes to read from. String length = %d, starting position = %d, buffer length = %d",
-          length, cursor, buffer.length));
+      throw new IllegalArgumentException(
+          String.format(
+              "Not enough bytes to read from. String length = %d, starting position = %d, buffer length = %d",
+              length, cursor, buffer.length));
     }
     byte[] bytes = Serialization.subArray(buffer, cursor, cursor + length);
     try {
@@ -38,5 +38,4 @@ public class StringAdapter extends TypeAdapter<String> {
   public int getSerializedSize(String value) {
     return serialize(value).length;
   }
-
 }

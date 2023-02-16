@@ -1,13 +1,10 @@
 package edu.wpi.first.shuffleboard.plugin.base.data.types;
 
 import edu.wpi.first.shuffleboard.api.data.ComplexDataType;
-
 import java.util.Map;
 import java.util.function.Function;
 
-/**
- * Type of a simple subsystem. Subsystems don't contain any data in and of themselves.
- */
+/** Type of a simple subsystem. Subsystems don't contain any data in and of themselves. */
 public final class SubsystemType extends ComplexDataType {
 
   public static final SubsystemType Instance = new SubsystemType();
@@ -25,5 +22,4 @@ public final class SubsystemType extends ComplexDataType {
   public Object getDefaultValue() {
     return null;
   }
-
 }

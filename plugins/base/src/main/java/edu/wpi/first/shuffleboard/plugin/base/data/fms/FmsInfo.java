@@ -2,13 +2,10 @@ package edu.wpi.first.shuffleboard.plugin.base.data.fms;
 
 import edu.wpi.first.shuffleboard.api.data.ComplexData;
 import edu.wpi.first.shuffleboard.api.util.Maps;
-
 import java.util.Locale;
 import java.util.Map;
 
-/**
- * Contains information sent by the FMS to the RoboRIO.
- */
+/** Contains information sent by the FMS to the RoboRIO. */
 public final class FmsInfo extends ComplexData<FmsInfo> {
 
   private static final String GAME_SPECIFIC_MESSAGE = "GameSpecificMessage";
@@ -33,22 +30,23 @@ public final class FmsInfo extends ComplexData<FmsInfo> {
    * Creates a new FMS info object.
    *
    * @param gameSpecificMessage the game-specific message sent by the FMS
-   * @param eventName           the name of the event being played at
-   * @param matchNumber         the match number being played
-   * @param replayNumber        the number of the replay, or 0 if no replay is being played
-   * @param matchType           the type of the match being played
-   * @param alliance            the alliance the robot is on
-   * @param stationNumber       the station number for this team
-   * @param fmsControlData      miscellaneous FMS control data
+   * @param eventName the name of the event being played at
+   * @param matchNumber the match number being played
+   * @param replayNumber the number of the replay, or 0 if no replay is being played
+   * @param matchType the type of the match being played
+   * @param alliance the alliance the robot is on
+   * @param stationNumber the station number for this team
+   * @param fmsControlData miscellaneous FMS control data
    */
-  public FmsInfo(String gameSpecificMessage,
-                 String eventName,
-                 int matchNumber,
-                 int replayNumber,
-                 MatchType matchType,
-                 Alliance alliance,
-                 int stationNumber,
-                 ControlWord fmsControlData) {
+  public FmsInfo(
+      String gameSpecificMessage,
+      String eventName,
+      int matchNumber,
+      int replayNumber,
+      MatchType matchType,
+      Alliance alliance,
+      int stationNumber,
+      ControlWord fmsControlData) {
     this.gameSpecificMessage = gameSpecificMessage;
     this.eventName = eventName;
     this.matchNumber = matchNumber;
@@ -59,9 +57,7 @@ public final class FmsInfo extends ComplexData<FmsInfo> {
     this.fmsControlData = fmsControlData;
   }
 
-  /**
-   * Creates a new FMS info object from a map.
-   */
+  /** Creates a new FMS info object from a map. */
   public FmsInfo(Map<String, Object> map) {
     this(
         Maps.get(map, GAME_SPECIFIC_MESSAGE),
@@ -71,8 +67,7 @@ public final class FmsInfo extends ComplexData<FmsInfo> {
         MatchType.fromOrdinal(Maps.<String, Number>get(map, MATCH_TYPE).intValue()),
         Maps.<String, Boolean>get(map, IS_RED_ALLIANCE) ? Alliance.RED : Alliance.BLUE,
         Maps.<String, Number>get(map, STATION_NUMBER).intValue(),
-        ControlWord.fromBits(Maps.<String, Number>get(map, FMS_CONTROL_DATA).intValue())
-    );
+        ControlWord.fromBits(Maps.<String, Number>get(map, FMS_CONTROL_DATA).intValue()));
   }
 
   @Override
@@ -89,60 +84,49 @@ public final class FmsInfo extends ComplexData<FmsInfo> {
         .build();
   }
 
-  /**
-   * Gets the game-specific message from the FMS.
-   */
+  /** Gets the game-specific message from the FMS. */
   public String getGameSpecificMessage() {
     return gameSpecificMessage;
   }
 
   /**
-   * Gets the name of the event. This is the event code; for example, the Archimedes championship field will have an
-   * event name of "ARCHIMEDES".
+   * Gets the name of the event. This is the event code; for example, the Archimedes championship
+   * field will have an event name of "ARCHIMEDES".
    */
   public String getEventName() {
     return eventName;
   }
 
-  /**
-   * Gets the number of the match being played.
-   */
+  /** Gets the number of the match being played. */
   public int getMatchNumber() {
     return matchNumber;
   }
 
   /**
-   * Gets the replay number of the match. A value of zero means this is the first match between the two alliances;
-   * a value of 1 means this is the first rematch and second match overall, and so on for increasing numbers.
+   * Gets the replay number of the match. A value of zero means this is the first match between the
+   * two alliances; a value of 1 means this is the first rematch and second match overall, and so on
+   * for increasing numbers.
    */
   public int getReplayNumber() {
     return replayNumber;
   }
 
-  /**
-   * Gets the type of the match being played.
-   */
+  /** Gets the type of the match being played. */
   public MatchType getMatchType() {
     return matchType;
   }
 
-  /**
-   * Gets the alliance color.
-   */
+  /** Gets the alliance color. */
   public Alliance getAlliance() {
     return alliance;
   }
 
-  /**
-   * Gets the station number.
-   */
+  /** Gets the station number. */
   public int getStationNumber() {
     return stationNumber;
   }
 
-  /**
-   * Gets the control information.
-   */
+  /** Gets the control information. */
   public ControlWord getFmsControlData() {
     return fmsControlData;
   }
@@ -157,7 +141,6 @@ public final class FmsInfo extends ComplexData<FmsInfo> {
         alliance.name().toLowerCase(Locale.US),
         stationNumber,
         gameSpecificMessage,
-        fmsControlData
-    );
+        fmsControlData);
   }
 }

@@ -2,7 +2,6 @@ package edu.wpi.first.shuffleboard.plugin.base.data.types;
 
 import edu.wpi.first.shuffleboard.api.data.ComplexDataType;
 import edu.wpi.first.shuffleboard.plugin.base.data.GyroData;
-
 import java.util.Map;
 import java.util.function.Function;
 
@@ -23,5 +22,4 @@ public final class GyroType extends ComplexDataType<GyroData> {
   public GyroData getDefaultValue() {
     return new GyroData(0);
   }
-
 }

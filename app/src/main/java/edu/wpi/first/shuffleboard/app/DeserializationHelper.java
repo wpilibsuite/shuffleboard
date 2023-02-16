@@ -3,7 +3,6 @@ package edu.wpi.first.shuffleboard.app;
 import edu.wpi.first.shuffleboard.api.sources.SourceEntry;
 import edu.wpi.first.shuffleboard.app.plugin.PluginLoader;
 import edu.wpi.first.shuffleboard.app.plugin.PluginObjectInputStream;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -15,6 +14,7 @@ public final class DeserializationHelper {
 
   /**
    * A workaround for DragBoard serialization not using Plugin classloaders.
+   *
    * @param object an object returned by the dragboard
    * @return a SourceEntry, either the object casted or deserialized
    */
@@ -24,7 +24,8 @@ public final class DeserializationHelper {
 
       try {
         ByteArrayInputStream is = new ByteArrayInputStream(buffer.array());
-        PluginObjectInputStream pois = new PluginObjectInputStream(PluginLoader.getDefault().getClassLoaders(), is);
+        PluginObjectInputStream pois =
+            new PluginObjectInputStream(PluginLoader.getDefault().getClassLoaders(), is);
         return (SourceEntry) pois.readObject();
       } catch (IOException | ClassNotFoundException e) {
         throw new RuntimeException(e);

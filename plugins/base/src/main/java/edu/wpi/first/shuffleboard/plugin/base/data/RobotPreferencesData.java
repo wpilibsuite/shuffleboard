@@ -1,7 +1,6 @@
 package edu.wpi.first.shuffleboard.plugin.base.data;
 
 import edu.wpi.first.shuffleboard.api.data.MapData;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,5 +16,4 @@ public class RobotPreferencesData extends MapData {
     map.put(key, value);
     return new RobotPreferencesData(map);
   }
-
 }

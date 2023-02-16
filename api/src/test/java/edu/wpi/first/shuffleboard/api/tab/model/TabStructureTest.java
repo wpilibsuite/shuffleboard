@@ -1,12 +1,11 @@
 package edu.wpi.first.shuffleboard.api.tab.model;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import java.util.concurrent.atomic.AtomicInteger;
-
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.util.concurrent.atomic.AtomicInteger;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class TabStructureTest {
 
@@ -23,8 +22,7 @@ public class TabStructureTest {
     TabModel tab = structure.getTab("Title");
     assertAll(
         () -> assertEquals(1, structure.getTabs().size(), "Should be one tab now"),
-        () -> assertEquals(tab, structure.getTabs().get("Title"))
-    );
+        () -> assertEquals(tab, structure.getTabs().get("Title")));
   }
 
   @Test
@@ -40,5 +38,4 @@ public class TabStructureTest {
     structure.getTab("Tab 2");
     assertEquals(1, updates.get(), "The listener was removed and should not have been fired");
   }
-
 }

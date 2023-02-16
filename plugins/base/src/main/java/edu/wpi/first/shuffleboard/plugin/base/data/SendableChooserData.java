@@ -2,14 +2,11 @@ package edu.wpi.first.shuffleboard.plugin.base.data;
 
 import edu.wpi.first.shuffleboard.api.data.ComplexData;
 import edu.wpi.first.shuffleboard.api.util.Maps;
-
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
 
-/**
- * Represents data options sent by the robot that may be selected by the drivers.
- */
+/** Represents data options sent by the robot that may be selected by the drivers. */
 public final class SendableChooserData extends ComplexData<SendableChooserData> {
 
   public static final String OPTIONS_KEY = "options";
@@ -28,14 +25,16 @@ public final class SendableChooserData extends ComplexData<SendableChooserData> 
    * @param map the map backing the data
    */
   public SendableChooserData(Map<String, Object> map) {
-    this((String[]) map.getOrDefault(OPTIONS_KEY, new String[0]),
+    this(
+        (String[]) map.getOrDefault(OPTIONS_KEY, new String[0]),
         (String) map.getOrDefault(DEFAULT_OPTION_KEY, ""),
         (String) map.getOrDefault(SELECTED_OPTION_KEY, map.getOrDefault(DEFAULT_OPTION_KEY, "")),
         (String) map.getOrDefault(ACTIVE_OPTION_KEY, ""));
   }
 
   @SuppressWarnings("JavadocMethod")
-  public SendableChooserData(String[] options, String defaultOption, String selectedOption, String activeOption) {
+  public SendableChooserData(
+      String[] options, String defaultOption, String selectedOption, String activeOption) {
     this.options = Objects.requireNonNull(options, "options").clone();
     this.defaultOption = Objects.requireNonNull(defaultOption, "defaultOption");
     this.selectedOption = Objects.requireNonNull(selectedOption, "selectedOption");
@@ -72,7 +71,8 @@ public final class SendableChooserData extends ComplexData<SendableChooserData> 
 
   @Override
   public String toString() {
-    return String.format("SendableChooserData(options=%s, defaultOption=%s, selectedOption=%s, activeOption=%s)",
+    return String.format(
+        "SendableChooserData(options=%s, defaultOption=%s, selectedOption=%s, activeOption=%s)",
         Arrays.toString(options), defaultOption, selectedOption, activeOption);
   }
 
@@ -116,9 +116,6 @@ public final class SendableChooserData extends ComplexData<SendableChooserData> 
   public String toHumanReadableString() {
     return String.format(
         "options=%s, selectedOption=%s, activeOption=%s",
-        Arrays.toString(options),
-        selectedOption,
-        activeOption
-    );
+        Arrays.toString(options), selectedOption, activeOption);
   }
 }

@@ -10,12 +10,11 @@ public final class StringUtils {
   }
 
   /**
-   * Checks if the base string contains the test string, ignoring uppercase/lowercase differences (using the American
-   * English definitions of "upper" and "lower" case).
+   * Checks if the base string contains the test string, ignoring uppercase/lowercase differences
+   * (using the American English definitions of "upper" and "lower" case).
    *
    * @param base the base text to search in
    * @param test the string to search for
-   *
    * @return true if {@code base} contains {@code test}, ignoring case differences
    */
   public static boolean containsIgnoreCase(String base, String test) {
@@ -23,8 +22,8 @@ public final class StringUtils {
   }
 
   /**
-   * Generates a string representation of any object. This supports {@code null}, primitives, arrays, primitive arrays,
-   * and multi-dimensioned arrays of any type.
+   * Generates a string representation of any object. This supports {@code null}, primitives,
+   * arrays, primitive arrays, and multi-dimensioned arrays of any type.
    */
   public static String deepToString(Object object) {
     if (object == null) {
@@ -54,17 +53,15 @@ public final class StringUtils {
   }
 
   /**
-   * Checks if two strings are equal, ignoring capitalization and spaces. For example,
-   * {@code equalsIgnoreCaseAndWhitespace("A B C", "abc")} will return true since the only differences are in
-   * whitespace and capitalization.
+   * Checks if two strings are equal, ignoring capitalization and spaces. For example, {@code
+   * equalsIgnoreCaseAndWhitespace("A B C", "abc")} will return true since the only differences are
+   * in whitespace and capitalization.
    *
-   * @param first  the first string
+   * @param first the first string
    * @param second the second string
-   *
    * @return true if the inputs are textually equal except for whitespace and capitalization
    */
   public static boolean equalsIgnoreCaseAndWhitespace(String first, String second) {
     return first.replace(" ", "").equalsIgnoreCase(second.replace(" ", ""));
   }
-
 }

@@ -1,5 +1,7 @@
 package edu.wpi.first.shuffleboard.plugin.base.widget;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.primitives.Doubles;
 import edu.wpi.first.shuffleboard.api.components.LinearIndicator;
 import edu.wpi.first.shuffleboard.api.components.NumberField;
 import edu.wpi.first.shuffleboard.api.prefs.Group;
@@ -9,14 +11,7 @@ import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 import edu.wpi.first.shuffleboard.api.widget.SimpleAnnotatedWidget;
 import edu.wpi.first.shuffleboard.plugin.base.data.SpeedControllerData;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.SpeedControllerType;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.primitives.Doubles;
-
-import org.fxmisc.easybind.EasyBind;
-
 import java.util.List;
-
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -27,30 +22,27 @@ import javafx.geometry.Orientation;
 import javafx.scene.control.Slider;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
+import org.fxmisc.easybind.EasyBind;
 
 @Description(name = "Motor Controller", dataTypes = SpeedControllerType.class)
 @ParametrizedController("SpeedControllerWidget.fxml")
 public class SpeedControllerWidget extends SimpleAnnotatedWidget<SpeedControllerData> {
 
-  private final BooleanProperty controllable = new SimpleBooleanProperty(this, "controllable", true);
+  private final BooleanProperty controllable =
+      new SimpleBooleanProperty(this, "controllable", true);
 
-  @FXML
-  private StackPane root;
-  @FXML
-  private Pane viewPane;
-  @FXML
-  private Pane controlPane;
-  @FXML
-  private LinearIndicator view;
-  @FXML
-  private Slider control;
-  @FXML
-  private NumberField valueField;
+  @FXML private StackPane root;
+  @FXML private Pane viewPane;
+  @FXML private Pane controlPane;
+  @FXML private LinearIndicator view;
+  @FXML private Slider control;
+  @FXML private NumberField valueField;
 
-  private final ChangeListener<? super Number> numberUpdateListener = (__, prev, cur) -> {
-    double value = Doubles.constrainToRange(cur.doubleValue(), -1, 1);
-    setData(new SpeedControllerData(getData().getName(), value, getData().isControllable()));
-  };
+  private final ChangeListener<? super Number> numberUpdateListener =
+      (__, prev, cur) -> {
+        double value = Doubles.constrainToRange(cur.doubleValue(), -1, 1);
+        setData(new SpeedControllerData(getData().getName(), value, getData().isControllable()));
+      };
 
   private final Property<Orientation> orientation =
       new SimpleObjectProperty<>(this, "orientation", Orientation.HORIZONTAL);
@@ -65,10 +57,11 @@ public class SpeedControllerWidget extends SimpleAnnotatedWidget<SpeedController
 
     control.valueProperty().addListener(numberUpdateListener);
     valueField.numberProperty().addListener(numberUpdateListener);
-    dataOrDefault.addListener((__, prev, cur) -> {
-      control.setValue(cur.getValue());
-      valueField.setNumber(cur.getValue());
-    });
+    dataOrDefault.addListener(
+        (__, prev, cur) -> {
+          control.setValue(cur.getValue());
+          valueField.setNumber(cur.getValue());
+        });
     control.orientationProperty().bind(orientation);
     view.orientationProperty().bind(orientation);
   }
@@ -76,10 +69,7 @@ public class SpeedControllerWidget extends SimpleAnnotatedWidget<SpeedController
   @Override
   public List<Group> getSettings() {
     return ImmutableList.of(
-        Group.of("Visuals",
-            Setting.of("Orientation", orientation, Orientation.class)
-        )
-    );
+        Group.of("Visuals", Setting.of("Orientation", orientation, Orientation.class)));
   }
 
   @Override
@@ -103,5 +93,4 @@ public class SpeedControllerWidget extends SimpleAnnotatedWidget<SpeedController
   public void setOrientation(Orientation orientation) {
     this.orientation.setValue(orientation);
   }
-
 }

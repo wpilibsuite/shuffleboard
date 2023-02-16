@@ -14,5 +14,4 @@ public final class StringType extends SimpleDataType<String> {
   public String getDefaultValue() {
     return "";
   }
-
 }

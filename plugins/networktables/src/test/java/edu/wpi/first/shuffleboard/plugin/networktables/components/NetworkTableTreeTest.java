@@ -1,26 +1,5 @@
 package edu.wpi.first.shuffleboard.plugin.networktables.components;
 
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.StringPublisher;
-import edu.wpi.first.shuffleboard.api.components.SourceTreeTable;
-import edu.wpi.first.shuffleboard.plugin.networktables.util.NetworkTableUtils;
-import edu.wpi.first.shuffleboard.plugin.networktables.NetworkTableTreeWidget;
-import edu.wpi.first.shuffleboard.plugin.networktables.sources.NetworkTableSourceEntry;
-import edu.wpi.first.shuffleboard.plugin.networktables.sources.NetworkTableSource;
-
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
-import org.testfx.framework.junit5.ApplicationTest;
-
-import javafx.collections.ObservableList;
-import javafx.scene.Scene;
-import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeTableCell;
-import javafx.stage.Stage;
-
 import static edu.wpi.first.shuffleboard.plugin.networktables.components.NetworkTableTreeItemMatcher.hasDisplayString;
 import static edu.wpi.first.shuffleboard.plugin.networktables.components.NetworkTableTreeItemMatcher.hasKey;
 import static edu.wpi.first.shuffleboard.plugin.networktables.components.NetworkTableTreeItemMatcher.hasSimpleKey;
@@ -34,6 +13,25 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.testfx.util.NodeQueryUtils.hasText;
 import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
+
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StringPublisher;
+import edu.wpi.first.shuffleboard.api.components.SourceTreeTable;
+import edu.wpi.first.shuffleboard.plugin.networktables.NetworkTableTreeWidget;
+import edu.wpi.first.shuffleboard.plugin.networktables.sources.NetworkTableSource;
+import edu.wpi.first.shuffleboard.plugin.networktables.sources.NetworkTableSourceEntry;
+import edu.wpi.first.shuffleboard.plugin.networktables.util.NetworkTableUtils;
+import javafx.collections.ObservableList;
+import javafx.scene.Scene;
+import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeTableCell;
+import javafx.stage.Stage;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.testfx.framework.junit5.ApplicationTest;
 
 @Disabled("Everything is broken")
 @Tag("UI")
@@ -179,5 +177,4 @@ public class NetworkTableTreeTest extends ApplicationTest {
     assertNull(lookup(hasText(firstValue)).query());
     assertCellIndex(secondValue, 0);
   }
-
 }

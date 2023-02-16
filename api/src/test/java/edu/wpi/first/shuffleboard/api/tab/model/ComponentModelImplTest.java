@@ -1,16 +1,14 @@
 package edu.wpi.first.shuffleboard.api.tab.model;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+
 import edu.wpi.first.shuffleboard.api.util.GridPoint;
 import edu.wpi.first.shuffleboard.api.widget.TileSize;
-
-import org.junit.jupiter.api.Test;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
+import org.junit.jupiter.api.Test;
 
 public class ComponentModelImplTest {
 
@@ -32,7 +30,8 @@ public class ComponentModelImplTest {
     String displayType = "Display Type";
     String newDisplayType = "New Display Type";
 
-    ComponentModel component = new ComponentModelImpl("", null, displayType, Collections.emptyMap());
+    ComponentModel component =
+        new ComponentModelImpl("", null, displayType, Collections.emptyMap());
     assertEquals(displayType, component.getDisplayType());
 
     component.setDisplayType(newDisplayType);
@@ -68,8 +67,8 @@ public class ComponentModelImplTest {
 
   @Test
   public void testTitle() {
-    ComponentModel component = new ComponentModelImpl("/Shuffleboard/Tab/X/Y/Foo", null, null, Collections.emptyMap());
+    ComponentModel component =
+        new ComponentModelImpl("/Shuffleboard/Tab/X/Y/Foo", null, null, Collections.emptyMap());
     assertEquals("Foo", component.getTitle());
   }
-
 }

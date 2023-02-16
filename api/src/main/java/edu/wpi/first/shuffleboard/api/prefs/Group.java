@@ -1,13 +1,10 @@
 package edu.wpi.first.shuffleboard.api.prefs;
 
 import com.google.common.collect.ImmutableList;
-
 import java.util.Collection;
 import java.util.Objects;
 
-/**
- * A group of {@link Setting Settings}.
- */
+/** A group of {@link Setting Settings}. */
 public final class Group {
 
   private final String name;
@@ -16,9 +13,8 @@ public final class Group {
   /**
    * Creates a new group of settings.
    *
-   * @param name     the name of the group
+   * @param name the name of the group
    * @param settings the settings in the group
-   *
    * @return a new group
    */
   public static Group of(String name, Setting<?>... settings) {
@@ -28,9 +24,8 @@ public final class Group {
   /**
    * Creates a new group of settings.
    *
-   * @param name     the name of the group
+   * @param name the name of the group
    * @param settings the settings in the group
-   *
    * @return a new group
    */
   public static Group of(String name, Collection<Setting<?>> settings) {

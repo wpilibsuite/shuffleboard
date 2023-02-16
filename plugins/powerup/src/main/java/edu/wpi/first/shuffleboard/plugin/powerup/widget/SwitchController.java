@@ -5,8 +5,7 @@ import javafx.scene.layout.Pane;
 
 public class SwitchController extends ElementController {
 
-  @FXML
-  private Pane root;
+  @FXML private Pane root;
 
   @FXML
   @Override
@@ -14,5 +13,4 @@ public class SwitchController extends ElementController {
     super.initialize();
     root.getProperties().put("fx:controller", this);
   }
-
 }

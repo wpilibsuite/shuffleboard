@@ -1,22 +1,19 @@
 package edu.wpi.first.shuffleboard.api.properties;
 
 import java.util.concurrent.atomic.AtomicBoolean;
-
 import javafx.beans.InvalidationListener;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 
-/**
- * An implementation of {@link BooleanProperty} that makes all reads and writes atomic.
- */
+/** An implementation of {@link BooleanProperty} that makes all reads and writes atomic. */
 @SuppressWarnings("OverloadMethodsDeclarationOrder")
 public class AtomicBooleanProperty extends BooleanProperty implements AtomicProperty<Boolean> {
 
   private final AtomicBoolean holder = new AtomicBoolean(false);
   private final String name;
   private final Object bean;
-  
+
   private final AtomicPropertyListenerDelegate<Boolean> listenerDelegate;
 
   public AtomicBooleanProperty(boolean initialValue) {
@@ -106,5 +103,4 @@ public class AtomicBooleanProperty extends BooleanProperty implements AtomicProp
   public void removeListener(InvalidationListener listener) {
     listenerDelegate.removeInvalidationListener(listener);
   }
-
 }

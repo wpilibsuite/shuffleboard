@@ -1,8 +1,8 @@
 package edu.wpi.first.shuffleboard.api.sources.recording.serialization;
 
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+
+import org.junit.jupiter.api.Test;
 
 public class StringArrayAdapterTest extends AbstractAdapterTest<String[]> {
 
@@ -37,5 +37,4 @@ public class StringArrayAdapterTest extends AbstractAdapterTest<String[]> {
     String[] expected = {"foo", "bar"};
     assertArrayEquals(expected, adapter.deserialize(buffer, 0));
   }
-
 }

@@ -1,22 +1,18 @@
 package com.example.simplewidget.data.type;
 
+import com.example.simplewidget.data.Point2D;
 import edu.wpi.first.shuffleboard.api.data.ComplexDataType;
 import edu.wpi.first.shuffleboard.api.util.Maps;
-
-import com.example.simplewidget.data.Point2D;
-
 import java.util.Map;
 import java.util.function.Function;
 
-/**
- * Represents data of the {@link Point2D} type.
- */
+/** Represents data of the {@link Point2D} type. */
 public final class PointType extends ComplexDataType<Point2D> {
 
   /**
-   * The name of data of this type as it would appear in a WPILib sendable's {@code .type} entry; a differential drive
-   * base a {@code .type} of "DifferentialDrive", a sendable chooser has it set to "String Chooser"; a hypothetical
-   * 2D point would have it set to "Point2D".
+   * The name of data of this type as it would appear in a WPILib sendable's {@code .type} entry; a
+   * differential drive base a {@code .type} of "DifferentialDrive", a sendable chooser has it set
+   * to "String Chooser"; a hypothetical 2D point would have it set to "Point2D".
    */
   private static final String TYPE_NAME = "Point2D";
 
@@ -32,10 +28,7 @@ public final class PointType extends ComplexDataType<Point2D> {
 
   @Override
   public Function<Map<String, Object>, Point2D> fromMap() {
-    return map -> new Point2D(
-        Maps.getOrDefault(map, "x", 0),
-        Maps.getOrDefault(map, "y", 0)
-    );
+    return map -> new Point2D(Maps.getOrDefault(map, "x", 0), Maps.getOrDefault(map, "y", 0));
   }
 
   @Override

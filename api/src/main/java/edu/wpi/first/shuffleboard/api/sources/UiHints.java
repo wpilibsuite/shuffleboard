@@ -5,9 +5,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/**
- * Marks a source type with hints for the UI.
- */
+/** Marks a source type with hints for the UI. */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UiHints {
@@ -15,8 +13,7 @@ public @interface UiHints {
   /**
    * Flags the source type to enable the display of a connection status indicator in the UI.
    *
-   * <p>Default: {@code true}</p>
+   * <p>Default: {@code true}
    */
   boolean showConnectionIndicator() default true;
-
 }

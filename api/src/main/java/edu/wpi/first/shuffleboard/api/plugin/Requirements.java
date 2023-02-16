@@ -6,19 +6,17 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Marks a plugin class as requiring other plugins. This used so that the requirements exist on the class-level,
- * allowing plugins to reference classes or types not present on the Shuffleboard classpath at load time.
+ * Marks a plugin class as requiring other plugins. This used so that the requirements exist on the
+ * class-level, allowing plugins to reference classes or types not present on the Shuffleboard
+ * classpath at load time.
  *
- * <p>Rather than using this annotation directly, the {@link Requires @Requires} annotation can be used multiple
- * times on a single class, reducing clutter.
+ * <p>Rather than using this annotation directly, the {@link Requires @Requires} annotation can be
+ * used multiple times on a single class, reducing clutter.
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Requirements {
 
-  /**
-   * The dependencies of the plugin.
-   */
+  /** The dependencies of the plugin. */
   Requires[] value();
-
 }

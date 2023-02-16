@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.app.components;
 
+import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.shuffleboard.api.Populatable;
 import edu.wpi.first.shuffleboard.api.TileTitleDisplayMode;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
@@ -23,16 +24,10 @@ import edu.wpi.first.shuffleboard.api.widget.Sourced;
 import edu.wpi.first.shuffleboard.app.Autopopulator;
 import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
 import edu.wpi.first.shuffleboard.app.prefs.SettingsDialog;
-
-import edu.wpi.first.networktables.NetworkTable;
-
-import org.fxmisc.easybind.EasyBind;
-
 import java.time.Duration;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.Property;
@@ -50,129 +45,135 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.layout.StackPane;
+import org.fxmisc.easybind.EasyBind;
 import org.fxmisc.easybind.monadic.PropertyBinding;
 
 public class DashboardTab extends Tab implements HandledTab, Populatable, SettingsHolder {
 
-  private final ObjectProperty<WidgetPane> widgetPane = new SimpleObjectProperty<>(this, "widgetPane");
+  private final ObjectProperty<WidgetPane> widgetPane =
+      new SimpleObjectProperty<>(this, "widgetPane");
   private final StringProperty title = new SimpleStringProperty(this, "title", "");
-  private final BooleanProperty autoPopulate = new SimpleBooleanProperty(this, "autoPopulate", false);
+  private final BooleanProperty autoPopulate =
+      new SimpleBooleanProperty(this, "autoPopulate", false);
   private final StringProperty sourcePrefix = new SimpleStringProperty(this, "sourcePrefix", "");
   private final PropertyBinding<TileTitleDisplayMode> tileType =
-          EasyBind.monadic(widgetPane).selectProperty(WidgetPane::tileType);
+      EasyBind.monadic(widgetPane).selectProperty(WidgetPane::tileType);
 
-  private static final PseudoClass MINIMAL_TITLES = PseudoClass.getPseudoClass("minimal-tile-titles");
+  private static final PseudoClass MINIMAL_TITLES =
+      PseudoClass.getPseudoClass("minimal-tile-titles");
   private static final PseudoClass HIDDEN_TITLES = PseudoClass.getPseudoClass("no-tile-titles");
 
   /**
-   * Debounces populate() calls so we don't freeze the app while a source type is doing its initial discovery of
-   * available source URIs. Not debouncing makes typical application startup take at least 5 seconds on an i7-6700HQ
-   * where the user sees nothing but a blank screen - no UI elements or anything!
+   * Debounces populate() calls so we don't freeze the app while a source type is doing its initial
+   * discovery of available source URIs. Not debouncing makes typical application startup take at
+   * least 5 seconds on an i7-6700HQ where the user sees nothing but a blank screen - no UI elements
+   * or anything!
    *
-   * <p>Note that this is only used when we manually force a population call, which is only required because the
-   * filtering criteria for compatible sources changes based on the {@code sourcePrefix} property.
+   * <p>Note that this is only used when we manually force a population call, which is only required
+   * because the filtering criteria for compatible sources changes based on the {@code sourcePrefix}
+   * property.
    */
   private final Debouncer populateDebouncer =
       new Debouncer(() -> FxUtils.runOnFxThread(this::populate), Duration.ofMillis(50));
 
-  private final ListChangeListener<Tile> tileListChangeListener = c -> {
-    while (c.next()) {
-      if (c.wasAdded()) {
-        c.getAddedSubList().stream()
-            .map(Tile::getContent)
-            .flatMap(TypeUtils.castStream(Populatable.class))
-            .collect(Collectors.toList())
-            .forEach(Autopopulator.getDefault()::addTarget);
-      } else if (c.wasRemoved()) {
-        c.getRemoved().stream()
-            .map(Tile::getContent)
-            .flatMap(TypeUtils.castStream(Populatable.class))
-            .collect(Collectors.toList())
-            .forEach(Autopopulator.getDefault()::removeTarget);
-      }
-    }
-  };
+  private final ListChangeListener<Tile> tileListChangeListener =
+      c -> {
+        while (c.next()) {
+          if (c.wasAdded()) {
+            c.getAddedSubList().stream()
+                .map(Tile::getContent)
+                .flatMap(TypeUtils.castStream(Populatable.class))
+                .collect(Collectors.toList())
+                .forEach(Autopopulator.getDefault()::addTarget);
+          } else if (c.wasRemoved()) {
+            c.getRemoved().stream()
+                .map(Tile::getContent)
+                .flatMap(TypeUtils.castStream(Populatable.class))
+                .collect(Collectors.toList())
+                .forEach(Autopopulator.getDefault()::removeTarget);
+          }
+        }
+      };
 
   private boolean deferPopulation = true;
 
-  /**
-   * Creates a single dashboard tab with the given title.
-   */
+  /** Creates a single dashboard tab with the given title. */
   public DashboardTab(String title) {
     super();
     this.title.set(title);
     setGraphic(new TabHandle(this));
 
-    widgetPane.addListener((__, prev, cur) -> {
-      if (prev != null) {
-        prev.getTiles().removeListener(tileListChangeListener);
-      }
-      if (cur != null) {
-        cur.getTiles().addListener(tileListChangeListener);
-      }
-    });
+    widgetPane.addListener(
+        (__, prev, cur) -> {
+          if (prev != null) {
+            prev.getTiles().removeListener(tileListChangeListener);
+          }
+          if (cur != null) {
+            cur.getTiles().addListener(tileListChangeListener);
+          }
+        });
 
     setWidgetPane(new WidgetPane());
 
-    this.contentProperty().bind(
-        EasyBind.monadic(widgetPane)
-            .map(DashboardTab::wrapWidgetPane));
+    this.contentProperty().bind(EasyBind.monadic(widgetPane).map(DashboardTab::wrapWidgetPane));
 
-    autoPopulate.addListener((__, was, is) -> {
-      if (is) {
-        Autopopulator.getDefault().addTarget(this);
-      } else {
-        Autopopulator.getDefault().removeTarget(this);
-      }
-    });
+    autoPopulate.addListener(
+        (__, was, is) -> {
+          if (is) {
+            Autopopulator.getDefault().addTarget(this);
+          } else {
+            Autopopulator.getDefault().removeTarget(this);
+          }
+        });
     autoPopulate.addListener(__ -> populateDebouncer.run());
     sourcePrefix.addListener(__ -> populateDebouncer.run());
-    tileType.addListener((__, old, type) -> {
-      WidgetPane widgetPane = getWidgetPane();
-      switch (type) {
-        case DEFAULT:
-          widgetPane.pseudoClassStateChanged(MINIMAL_TITLES, false);
-          widgetPane.pseudoClassStateChanged(HIDDEN_TITLES, false);
-          break;
-        case MINIMAL:
-          widgetPane.pseudoClassStateChanged(MINIMAL_TITLES, true);
-          widgetPane.pseudoClassStateChanged(HIDDEN_TITLES, false);
-          break;
-        case HIDDEN:
-          widgetPane.pseudoClassStateChanged(MINIMAL_TITLES, false);
-          widgetPane.pseudoClassStateChanged(HIDDEN_TITLES, true);
-          break;
-        default:
-          throw new UnsupportedOperationException("Unknown title type " + type);
-      }
-    });
+    tileType.addListener(
+        (__, old, type) -> {
+          WidgetPane widgetPane = getWidgetPane();
+          switch (type) {
+            case DEFAULT:
+              widgetPane.pseudoClassStateChanged(MINIMAL_TITLES, false);
+              widgetPane.pseudoClassStateChanged(HIDDEN_TITLES, false);
+              break;
+            case MINIMAL:
+              widgetPane.pseudoClassStateChanged(MINIMAL_TITLES, true);
+              widgetPane.pseudoClassStateChanged(HIDDEN_TITLES, false);
+              break;
+            case HIDDEN:
+              widgetPane.pseudoClassStateChanged(MINIMAL_TITLES, false);
+              widgetPane.pseudoClassStateChanged(HIDDEN_TITLES, true);
+              break;
+            default:
+              throw new UnsupportedOperationException("Unknown title type " + type);
+          }
+        });
 
     MenuItem prefItem = FxUtils.menuItem("Preferences", __ -> showPrefsDialog());
     prefItem.setStyle("-fx-text-fill: black;");
     setContextMenu(new ContextMenu(prefItem));
 
-    setOnCloseRequest(e -> {
-      if (AppPreferences.getInstance().isConfirmTabClose()) {
-        boolean cancelClose = !requestCloseConfirmation();
-        if (cancelClose) {
-          e.consume();
-          return;
-        }
-      }
-      TabPane tabPane = getTabPane();
-      int index = tabPane.getTabs().indexOf(this);
-      // index + 1 for the next tab, since this tab has not yet been removed
-      // tabPane.getTabs().size() - 2 because -1 is the adder tab, which we do not want to select
-      tabPane.getSelectionModel().select(Math.min(index + 1, tabPane.getTabs().size() - 2));
-      tabPane.getTabs().remove(this);
-    });
+    setOnCloseRequest(
+        e -> {
+          if (AppPreferences.getInstance().isConfirmTabClose()) {
+            boolean cancelClose = !requestCloseConfirmation();
+            if (cancelClose) {
+              e.consume();
+              return;
+            }
+          }
+          TabPane tabPane = getTabPane();
+          int index = tabPane.getTabs().indexOf(this);
+          // index + 1 for the next tab, since this tab has not yet been removed
+          // tabPane.getTabs().size() - 2 because -1 is the adder tab, which we do not want to
+          // select
+          tabPane.getSelectionModel().select(Math.min(index + 1, tabPane.getTabs().size() - 2));
+          tabPane.getTabs().remove(this);
+        });
 
     getStyleClass().add("dashboard-tab");
   }
 
-  /**
-   * Creates a new tab from a tab info object.
-   */
+  /** Creates a new tab from a tab info object. */
   public DashboardTab(TabInfo tabInfo) {
     this(tabInfo.getName());
     setSourcePrefix(tabInfo.getSourcePrefix());
@@ -188,8 +189,13 @@ public class DashboardTab extends Tab implements HandledTab, Populatable, Settin
     Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
     alert.setTitle("Confirm Tab Close");
     alert.setHeaderText("Do you want to close the tab \"" + getTitle() + "\"?");
-    alert.getDialogPane().getScene().getStylesheets().setAll(AppPreferences.getInstance().getTheme().getStyleSheets());
-    return alert.showAndWait()
+    alert
+        .getDialogPane()
+        .getScene()
+        .getStylesheets()
+        .setAll(AppPreferences.getInstance().getTheme().getStyleSheets());
+    return alert
+        .showAndWait()
         .map(b -> b.getButtonData() == ButtonBar.ButtonData.OK_DONE)
         .orElse(false);
   }
@@ -201,76 +207,82 @@ public class DashboardTab extends Tab implements HandledTab, Populatable, Settin
     return stackPane;
   }
 
-  /**
-   * Shows a dialog for editing the properties of this tab.
-   */
+  /** Shows a dialog for editing the properties of this tab. */
   public void showPrefsDialog() {
     SettingsDialog dialog = new SettingsDialog(getSettingsCategory());
-    dialog.getDialogPane().getStylesheets().setAll(AppPreferences.getInstance().getTheme().getStyleSheets());
+    dialog
+        .getDialogPane()
+        .getStylesheets()
+        .setAll(AppPreferences.getInstance().getTheme().getStyleSheets());
     dialog.titleProperty().bind(EasyBind.map(this.title, t -> t + " Preferences"));
     dialog.showAndWait();
   }
 
   /**
-   * Gets the settings for this tab. This contains autopopulation and layout settings, as well as the title of the tab.
+   * Gets the settings for this tab. This contains autopopulation and layout settings, as well as
+   * the title of the tab.
    */
   @Override
   public List<Group> getSettings() {
-    // Use a flushable property here to prevent a call to populate() on every keystroke in the editor (!)
+    // Use a flushable property here to prevent a call to populate() on every keystroke in the
+    // editor (!)
     FlushableProperty<String> flushableSourcePrefix = new FlushableProperty<>(sourcePrefix);
     WidgetPane widgetPane = getWidgetPane();
-    FlushableProperty<Number> flushableTileSize = new FlushableProperty<>(widgetPane.tileSizeProperty());
+    FlushableProperty<Number> flushableTileSize =
+        new FlushableProperty<>(widgetPane.tileSizeProperty());
     return List.of(
-        Group.of("Autopopulation",
+        Group.of(
+            "Autopopulation",
             Setting.of(
                 "Autopopulate",
                 "Sets this tab to automatically populate with widgets",
                 autoPopulate,
-                Boolean.class
-            ),
+                Boolean.class),
             Setting.of(
                 "Autopopulation Prefix",
                 "The prefix for data sources to autopopulate into the tab",
                 flushableSourcePrefix,
-                String.class
-            )
-        ),
-        Group.of("Layout",
-            Setting.of("Tile size", "The size of tiles in this tab", flushableTileSize, Double.class),
+                String.class)),
+        Group.of(
+            "Layout",
+            Setting.of(
+                "Tile size", "The size of tiles in this tab", flushableTileSize, Double.class),
             Setting.of(
                 "Horizontal spacing",
                 "How far apart tiles should be, horizontally",
                 widgetPane.hgapProperty(),
-                Double.class
-            ),
+                Double.class),
             Setting.of(
                 "Vertical spacing",
                 "How far apart tiles should be, vertically",
                 widgetPane.vgapProperty(),
-                Double.class
-            )
-        ),
-        Group.of("Visual",
-            Setting.of("Show grid", "Show the alignment grid", widgetPane.showGridProperty(), Boolean.class),
-            Setting.of("Widget titles", "How to display title bars on widgets", tileType, TileTitleDisplayMode.class)
-        ),
-        Group.of("Miscellaneous",
-            Setting.of("Title", "The title of this tab", title)
-        )
-    );
+                Double.class)),
+        Group.of(
+            "Visual",
+            Setting.of(
+                "Show grid",
+                "Show the alignment grid",
+                widgetPane.showGridProperty(),
+                Boolean.class),
+            Setting.of(
+                "Widget titles",
+                "How to display title bars on widgets",
+                tileType,
+                TileTitleDisplayMode.class)),
+        Group.of("Miscellaneous", Setting.of("Title", "The title of this tab", title)));
   }
 
   /**
-   * Gets a category containing the settings of this tab. The category's name will be the same as the title of this
-   * tab.
+   * Gets a category containing the settings of this tab. The category's name will be the same as
+   * the title of this tab.
    */
   public Category getSettingsCategory() {
     return Category.of(getTitle(), getSettings());
   }
 
   /**
-   * Populates this tab with all available sources that begin with the set source prefix and don't already have a
-   * widget to display it or any higher-level source.
+   * Populates this tab with all available sources that begin with the set source prefix and don't
+   * already have a widget to display it or any higher-level source.
    */
   private void populate() {
     if (getTabPane() == null) {
@@ -284,7 +296,8 @@ public class DashboardTab extends Tab implements HandledTab, Populatable, Settin
       return;
     }
     if (deferPopulation) {
-      // Defer one last time; this method tends to trigger before row/column bindings on the widget pane
+      // Defer one last time; this method tends to trigger before row/column bindings on the widget
+      // pane
       // This makes sure the pane is properly sized before populating it
       deferPopulation = false;
       populateDebouncer.run();
@@ -381,57 +394,61 @@ public class DashboardTab extends Tab implements HandledTab, Populatable, Settin
   @Override
   @SuppressWarnings("PMD.LinguisticNaming") // Predicates prefixed with "is" makes PMD mad
   public boolean hasComponentFor(String sourceId) {
-    List<Component> topLevelComponents = getWidgetPane().getTiles().stream()
-        .map(t -> (Tile<?>) t)
-        .map(Tile::getContent)
-        .collect(Collectors.toList());
-    Predicate<Sourced> isSameSource = s -> s.getSources().stream()
-        .map(DataSource::getId)
-        .anyMatch(sourceId::equals);
-    Predicate<Sourced> isSubSource = s -> s.getSources().stream()
-        .map(i -> i.getId() + "/")
-        .anyMatch(sourceId::startsWith);
+    List<Component> topLevelComponents =
+        getWidgetPane().getTiles().stream()
+            .map(t -> (Tile<?>) t)
+            .map(Tile::getContent)
+            .collect(Collectors.toList());
+    Predicate<Sourced> isSameSource =
+        s -> s.getSources().stream().map(DataSource::getId).anyMatch(sourceId::equals);
+    Predicate<Sourced> isSubSource =
+        s -> s.getSources().stream().map(i -> i.getId() + "/").anyMatch(sourceId::startsWith);
     Predicate<Sourced> isNotContainer = s -> !(s instanceof ComponentContainer);
     Predicate<Sourced> hasComponent = isSameSource.or(isSubSource.and(isNotContainer));
     return topLevelComponents.stream()
-        .flatMap(TypeUtils.castStream(Sourced.class))
-        .anyMatch(hasComponent)
+            .flatMap(TypeUtils.castStream(Sourced.class))
+            .anyMatch(hasComponent)
         || topLevelComponents.stream()
-        .flatMap(TypeUtils.castStream(ComponentContainer.class))
-        .flatMap(ComponentContainer::allComponents)
-        .flatMap(TypeUtils.castStream(Sourced.class))
-        .anyMatch(hasComponent);
+            .flatMap(TypeUtils.castStream(ComponentContainer.class))
+            .flatMap(ComponentContainer::allComponents)
+            .flatMap(TypeUtils.castStream(Sourced.class))
+            .anyMatch(hasComponent);
   }
 
   @Override
   public void addComponentFor(DataSource<?> source) {
-    List<Populatable> targets = getWidgetPane().components()
-        .flatMap(TypeUtils.castStream(Populatable.class))
-        .filter(p -> p.supports(source.getId()))
-        .collect(Collectors.toList());
+    List<Populatable> targets =
+        getWidgetPane()
+            .components()
+            .flatMap(TypeUtils.castStream(Populatable.class))
+            .filter(p -> p.supports(source.getId()))
+            .collect(Collectors.toList());
 
     if (targets.isEmpty()) {
-      // No nested components capable of adding a component for the source, add it to the root widget pane
-      Components.getDefault().defaultComponentNameFor(source.getDataType())
+      // No nested components capable of adding a component for the source, add it to the root
+      // widget pane
+      Components.getDefault()
+          .defaultComponentNameFor(source.getDataType())
           .flatMap(s -> Components.getDefault().createComponent(s, source))
-          .ifPresent(c -> {
-            // Remove redundant source name information from the title, if necessary
-            String sourcePrefix = getSourcePrefix();
-            sourcePrefix = source.getType().removeProtocol(sourcePrefix);
-            sourcePrefix = NetworkTable.normalizeKey(sourcePrefix, false);
-            String title = c.getTitle();
-            if (!"/".equals(sourcePrefix) && !sourcePrefix.isEmpty()) {
-              if (title.startsWith(sourcePrefix)) {
-                c.setTitle(title.substring(sourcePrefix.length()));
-              } else if (title.equals(sourcePrefix)) {
-                c.setTitle(NetworkTable.basenameKey(sourcePrefix));
-              }
-            }
-            getWidgetPane().addComponent(c);
-            if (c instanceof Populatable) {
-              Autopopulator.getDefault().addTarget((Populatable) c);
-            }
-          });
+          .ifPresent(
+              c -> {
+                // Remove redundant source name information from the title, if necessary
+                String sourcePrefix = getSourcePrefix();
+                sourcePrefix = source.getType().removeProtocol(sourcePrefix);
+                sourcePrefix = NetworkTable.normalizeKey(sourcePrefix, false);
+                String title = c.getTitle();
+                if (!"/".equals(sourcePrefix) && !sourcePrefix.isEmpty()) {
+                  if (title.startsWith(sourcePrefix)) {
+                    c.setTitle(title.substring(sourcePrefix.length()));
+                  } else if (title.equals(sourcePrefix)) {
+                    c.setTitle(NetworkTable.basenameKey(sourcePrefix));
+                  }
+                }
+                getWidgetPane().addComponent(c);
+                if (c instanceof Populatable) {
+                  Autopopulator.getDefault().addTarget((Populatable) c);
+                }
+              });
     } else {
       // Add a component everywhere possible
       targets.forEach(t -> t.addComponentIfPossible(source));

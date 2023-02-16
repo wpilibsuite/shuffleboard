@@ -1,14 +1,13 @@
 package edu.wpi.first.shuffleboard.api.util;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-
-import java.util.stream.Stream;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class StringUtilsTest {
 
@@ -24,11 +23,11 @@ public class StringUtilsTest {
         Arguments.of("a string", "a string"),
         Arguments.of(1, "1"),
         Arguments.of(1.234, "1.234"),
-        Arguments.of(new int[]{1, 2, 3}, "[1, 2, 3]"),
-        Arguments.of(new double[]{0, 10}, "[0.0, 10.0]"),
-        Arguments.of(new long[][]{{1, 2, 3}, {4, 5, 6}}, "[[1, 2, 3], [4, 5, 6]]"),
-        Arguments.of(new boolean[][][]{{{true}, {false}}, {{true}}}, "[[[true], [false]], [[true]]]")
-    );
+        Arguments.of(new int[] {1, 2, 3}, "[1, 2, 3]"),
+        Arguments.of(new double[] {0, 10}, "[0.0, 10.0]"),
+        Arguments.of(new long[][] {{1, 2, 3}, {4, 5, 6}}, "[[1, 2, 3], [4, 5, 6]]"),
+        Arguments.of(
+            new boolean[][][] {{{true}, {false}}, {{true}}}, "[[[true], [false]], [[true]]]"));
   }
 
   @ParameterizedTest
@@ -47,8 +46,6 @@ public class StringUtilsTest {
         Arguments.of("", "", true),
         Arguments.of("lower", "low", true),
         Arguments.of("UPPER", "ppe", true),
-        Arguments.of("lower", "OW", true)
-    );
+        Arguments.of("lower", "OW", true));
   }
-
 }

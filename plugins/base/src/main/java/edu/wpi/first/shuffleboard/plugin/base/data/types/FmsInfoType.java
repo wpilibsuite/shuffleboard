@@ -5,7 +5,6 @@ import edu.wpi.first.shuffleboard.plugin.base.data.fms.Alliance;
 import edu.wpi.first.shuffleboard.plugin.base.data.fms.ControlWord;
 import edu.wpi.first.shuffleboard.plugin.base.data.fms.FmsInfo;
 import edu.wpi.first.shuffleboard.plugin.base.data.fms.MatchType;
-
 import java.util.Map;
 import java.util.function.Function;
 

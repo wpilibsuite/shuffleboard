@@ -2,9 +2,7 @@ package edu.wpi.first.shuffleboard.app;
 
 import edu.wpi.first.shuffleboard.app.components.DashboardTabPane;
 
-/**
- * A data class representing the state of the application layout at the moment it is saved.
- */
+/** A data class representing the state of the application layout at the moment it is saved. */
 public final class DashboardData {
 
   private final DashboardTabPane tabPane;
@@ -13,8 +11,8 @@ public final class DashboardData {
   /**
    * Creates a new dashboard data object.
    *
-   * @param tabPane         the dashboard tab pane
-   * @param windowGeometry  the geometry of the window
+   * @param tabPane the dashboard tab pane
+   * @param windowGeometry the geometry of the window
    */
   public DashboardData(DashboardTabPane tabPane, WindowGeometry windowGeometry) {
     this.tabPane = tabPane;

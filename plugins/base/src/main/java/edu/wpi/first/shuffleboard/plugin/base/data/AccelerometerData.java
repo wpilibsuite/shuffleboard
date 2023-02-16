@@ -2,7 +2,6 @@ package edu.wpi.first.shuffleboard.plugin.base.data;
 
 import edu.wpi.first.shuffleboard.api.data.ComplexData;
 import edu.wpi.first.shuffleboard.api.util.Maps;
-
 import java.util.Map;
 import java.util.Objects;
 
@@ -20,9 +19,7 @@ public final class AccelerometerData extends ComplexData<AccelerometerData> {
 
   @Override
   public Map<String, Object> asMap() {
-    return Maps.<String, Object>builder()
-        .put("Value", value)
-        .build();
+    return Maps.<String, Object>builder().put("Value", value).build();
   }
 
   @Override
@@ -46,5 +43,4 @@ public final class AccelerometerData extends ComplexData<AccelerometerData> {
   public String toString() {
     return String.format("AccelerometerData(value=%s)", value);
   }
-
 }

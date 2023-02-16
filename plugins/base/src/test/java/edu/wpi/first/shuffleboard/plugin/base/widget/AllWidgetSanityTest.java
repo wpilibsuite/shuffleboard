@@ -1,5 +1,7 @@
 package edu.wpi.first.shuffleboard.plugin.base.widget;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.sources.DummySource;
@@ -11,7 +13,7 @@ import edu.wpi.first.shuffleboard.api.widget.LayoutType;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 import edu.wpi.first.shuffleboard.api.widget.WidgetType;
 import edu.wpi.first.shuffleboard.plugin.base.BasePlugin;
-
+import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
@@ -20,13 +22,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.testfx.framework.junit5.ApplicationTest;
 
-import java.util.stream.Stream;
-
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
-/**
- * Tests all widgets with all possible data types to make sure they all
- */
+/** Tests all widgets with all possible data types to make sure they all */
 @Tag("UI")
 public class AllWidgetSanityTest extends ApplicationTest {
 
@@ -69,8 +65,9 @@ public class AllWidgetSanityTest extends ApplicationTest {
   private static Stream<Arguments> createWidgetMap() {
     return plugin.getComponents().stream()
         .flatMap(TypeUtils.castStream(WidgetType.class))
-        .flatMap(widgetType -> widgetType.getDataTypes().stream()
-            .map(type -> Arguments.of(widgetType, type)));
+        .flatMap(
+            widgetType ->
+                widgetType.getDataTypes().stream().map(type -> Arguments.of(widgetType, type)));
   }
 
   private static Stream<Arguments> createLayoutMap() {
@@ -78,5 +75,4 @@ public class AllWidgetSanityTest extends ApplicationTest {
         .flatMap(TypeUtils.castStream(LayoutType.class))
         .map(Arguments::of);
   }
-
 }

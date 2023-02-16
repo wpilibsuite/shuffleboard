@@ -1,7 +1,6 @@
 package edu.wpi.first.shuffleboard.api.data;
 
 import edu.wpi.first.shuffleboard.api.util.Maps;
-
 import java.util.Map;
 
 /**
@@ -21,10 +20,7 @@ public abstract class NamedData<T> extends ComplexData<NamedData<T>> {
 
   @Override
   public Map<String, Object> asMap() {
-    return Maps.<String, Object>builder()
-        .put("Name", name)
-        .put("Value", value)
-        .build();
+    return Maps.<String, Object>builder().put("Name", name).put("Value", value).build();
   }
 
   public final String getName() {

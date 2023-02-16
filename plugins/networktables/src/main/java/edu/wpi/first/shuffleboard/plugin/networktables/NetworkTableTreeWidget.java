@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.plugin.networktables;
 
+import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.shuffleboard.api.components.FilterableTreeItem;
 import edu.wpi.first.shuffleboard.api.components.SourceTreeTable;
 import edu.wpi.first.shuffleboard.api.data.MapData;
@@ -8,11 +9,7 @@ import edu.wpi.first.shuffleboard.api.widget.Description;
 import edu.wpi.first.shuffleboard.api.widget.SimpleAnnotatedWidget;
 import edu.wpi.first.shuffleboard.plugin.networktables.sources.NetworkTableSourceEntry;
 import edu.wpi.first.shuffleboard.plugin.networktables.sources.NetworkTableSourceType;
-
-import edu.wpi.first.networktables.NetworkTable;
-
 import java.util.Map;
-
 import javafx.scene.control.TreeItem;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
@@ -32,22 +29,27 @@ public class NetworkTableTreeWidget extends SimpleAnnotatedWidget<MapData> {
     root.setExpanded(true);
     tree.setRoot(root);
     tree.setShowRoot(false);
-    dataOrDefault.addListener((__, oldData, newData) -> {
-      final Map<String, Object> newMap = newData.asMap();
-      // Remove deleted keys
-      if (oldData != null) {
-        oldData.asMap().entrySet().stream()
-            .filter(e -> !newMap.containsKey(e.getKey()))
-            .forEach(e -> tree.removeEntry(new NetworkTableSourceEntry(e.getKey(), e.getValue())));
-      }
+    dataOrDefault.addListener(
+        (__, oldData, newData) -> {
+          final Map<String, Object> newMap = newData.asMap();
+          // Remove deleted keys
+          if (oldData != null) {
+            oldData.asMap().entrySet().stream()
+                .filter(e -> !newMap.containsKey(e.getKey()))
+                .forEach(
+                    e -> tree.removeEntry(new NetworkTableSourceEntry(e.getKey(), e.getValue())));
+          }
 
-      newData.changesFrom(oldData)
-          .forEach((key, value) -> {
-            if (DataSourceUtils.isNotMetadata(key)) {
-              tree.updateEntry(new NetworkTableSourceEntry(NetworkTable.normalizeKey(key), value));
-            }
-          });
-    });
+          newData
+              .changesFrom(oldData)
+              .forEach(
+                  (key, value) -> {
+                    if (DataSourceUtils.isNotMetadata(key)) {
+                      tree.updateEntry(
+                          new NetworkTableSourceEntry(NetworkTable.normalizeKey(key), value));
+                    }
+                  });
+        });
   }
 
   @Override
@@ -58,5 +60,4 @@ public class NetworkTableTreeWidget extends SimpleAnnotatedWidget<MapData> {
   public SourceTreeTable<NetworkTableSourceEntry, String> getTree() {
     return tree;
   }
-
 }

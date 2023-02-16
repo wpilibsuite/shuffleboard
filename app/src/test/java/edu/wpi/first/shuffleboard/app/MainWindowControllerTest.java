@@ -1,12 +1,20 @@
 package edu.wpi.first.shuffleboard.app;
 
-import edu.wpi.first.shuffleboard.api.sources.DataSource;
-import edu.wpi.first.shuffleboard.plugin.networktables.util.NetworkTableUtils;
-import edu.wpi.first.shuffleboard.api.widget.Widget;
-import edu.wpi.first.shuffleboard.app.components.WidgetTile;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.wpi.first.networktables.NetworkTableInstance;
-
+import edu.wpi.first.shuffleboard.api.sources.DataSource;
+import edu.wpi.first.shuffleboard.api.widget.Widget;
+import edu.wpi.first.shuffleboard.app.components.WidgetTile;
+import edu.wpi.first.shuffleboard.plugin.networktables.util.NetworkTableUtils;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
+import javafx.scene.Scene;
+import javafx.scene.input.MouseButton;
+import javafx.scene.layout.Pane;
+import javafx.stage.Stage;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -15,17 +23,6 @@ import org.junit.jupiter.api.Test;
 import org.testfx.framework.junit5.ApplicationTest;
 import org.testfx.matcher.control.TextMatchers;
 import org.testfx.util.WaitForAsyncUtils;
-
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Node;
-import javafx.scene.Scene;
-import javafx.scene.input.MouseButton;
-import javafx.scene.layout.Pane;
-import javafx.stage.Stage;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Disabled("Move to network table plugin tests")
 @Tag("UI")
@@ -56,8 +53,7 @@ public class MainWindowControllerTest extends ApplicationTest {
     inst.waitForListenerQueue(-1.0);
     WaitForAsyncUtils.waitForFxEvents();
 
-    drag(TextMatchers.hasText("a string source"), MouseButton.PRIMARY)
-        .dropTo(".widget-pane");
+    drag(TextMatchers.hasText("a string source"), MouseButton.PRIMARY).dropTo(".widget-pane");
 
     WidgetTile tile = lookup(".widget-pane .tile").query();
     assertNotNull(tile);
@@ -82,7 +78,6 @@ public class MainWindowControllerTest extends ApplicationTest {
     DataSource source = widget.getSources().get(0);
     assertTrue(source.isActive());
     assertEquals("testSourceContextMenu", source.getName());
-    assertEquals("value",source.getData());
+    assertEquals("value", source.getData());
   }
-
 }

@@ -3,7 +3,6 @@ package edu.wpi.first.shuffleboard.api.theme;
 import edu.wpi.first.shuffleboard.api.util.Registry;
 import edu.wpi.first.shuffleboard.api.util.Storage;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
-
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.file.Files;
@@ -13,12 +12,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import javafx.collections.ObservableList;
 
-/**
- * Keeps track of the themes available to the application.
- */
+/** Keeps track of the themes available to the application. */
 public final class Themes extends Registry<Theme> {
 
   private static final Logger log = Logger.getLogger(Themes.class.getName());
@@ -26,15 +22,16 @@ public final class Themes extends Registry<Theme> {
   // TODO replace with DI eg Guice
   private static Themes defaultInstance;
 
-  public static final Theme MATERIAL_LIGHT = new Theme("Material Light", "/edu/wpi/first/shuffleboard/app/light.css");
-  public static final Theme MATERIAL_DARK = new Theme("Material Dark", "/edu/wpi/first/shuffleboard/app/dark.css");
-  public static final Theme MIDNIGHT = new Theme("Midnight", "/edu/wpi/first/shuffleboard/app/midnight.css");
+  public static final Theme MATERIAL_LIGHT =
+      new Theme("Material Light", "/edu/wpi/first/shuffleboard/app/light.css");
+  public static final Theme MATERIAL_DARK =
+      new Theme("Material Dark", "/edu/wpi/first/shuffleboard/app/dark.css");
+  public static final Theme MIDNIGHT =
+      new Theme("Midnight", "/edu/wpi/first/shuffleboard/app/midnight.css");
 
   public static final Theme INITIAL_THEME = MATERIAL_LIGHT;
 
-  /**
-   * Gets the default themes instance.
-   */
+  /** Gets the default themes instance. */
   public static Themes getDefault() {
     synchronized (Themes.class) {
       if (defaultInstance == null) {
@@ -54,8 +51,8 @@ public final class Themes extends Registry<Theme> {
   }
 
   /**
-   * Gets the theme with the given name. If there is no theme with that name, returns
-   * {@link #INITIAL_THEME} instead.
+   * Gets the theme with the given name. If there is no theme with that name, returns {@link
+   * #INITIAL_THEME} instead.
    *
    * @param name the name of the theme to get
    */
@@ -80,9 +77,7 @@ public final class Themes extends Registry<Theme> {
     removeItem(theme);
   }
 
-  /**
-   * Gets an observable list of the registered themes.
-   */
+  /** Gets an observable list of the registered themes. */
   public ObservableList<Theme> getThemes() {
     return getItems();
   }
@@ -106,7 +101,8 @@ public final class Themes extends Registry<Theme> {
     try {
       return Optional.of(new Theme(dir.getFileName().toString(), getStyleSheetsInPath(dir)));
     } catch (IOException e) {
-      log.log(Level.WARNING, "Themes could not be loaded from directory: " + dir.toAbsolutePath(), e);
+      log.log(
+          Level.WARNING, "Themes could not be loaded from directory: " + dir.toAbsolutePath(), e);
       return Optional.empty();
     }
   }
@@ -133,5 +129,4 @@ public final class Themes extends Registry<Theme> {
       return Optional.empty();
     }
   }
-
 }

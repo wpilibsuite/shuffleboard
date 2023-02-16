@@ -5,15 +5,16 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Supplier;
 
 /**
- * An extension to {@code ReadWriteLock} that adds methods for using the read and write locks in a functional style.
+ * An extension to {@code ReadWriteLock} that adds methods for using the read and write locks in a
+ * functional style.
  */
 public interface FunctionalReadWriteLock extends ReadWriteLock {
 
   /**
-   * Creates a new functional read/write lock that uses the read and write locks from the provided delegate.
+   * Creates a new functional read/write lock that uses the read and write locks from the provided
+   * delegate.
    *
    * @param delegate the lock to delegate to
-   *
    * @return a new functional read/write lock
    */
   static FunctionalReadWriteLock create(ReadWriteLock delegate) {
@@ -24,7 +25,6 @@ public interface FunctionalReadWriteLock extends ReadWriteLock {
    * Creates a new functional read/write lock uses reentrant locks.
    *
    * @return a new functional read/write lock
-   *
    * @see ReentrantReadWriteLock
    */
   static FunctionalReadWriteLock createReentrant() {
@@ -49,8 +49,7 @@ public interface FunctionalReadWriteLock extends ReadWriteLock {
    * Performs a read operation.
    *
    * @param operation the read operation to run
-   * @param <T>       the type of the provided value
-   *
+   * @param <T> the type of the provided value
    * @return the result of the operation
    */
   default <T> T reading(Supplier<? extends T> operation) {
@@ -80,8 +79,7 @@ public interface FunctionalReadWriteLock extends ReadWriteLock {
    * Performs a write operation.
    *
    * @param operation the write operation to run
-   * @param <T>       the type of the provided value
-   *
+   * @param <T> the type of the provided value
    * @return the result of the operation
    */
   default <T> T writing(Supplier<? extends T> operation) {

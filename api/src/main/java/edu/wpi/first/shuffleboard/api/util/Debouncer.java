@@ -7,9 +7,9 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 /**
- * A simple class for debouncing method calls. Debouncing is used to prevent an expensive method from being called
- * in rapid succession, only allowing it to run after a certain amount of time has passed without it being called
- * again.
+ * A simple class for debouncing method calls. Debouncing is used to prevent an expensive method
+ * from being called in rapid succession, only allowing it to run after a certain amount of time has
+ * passed without it being called again.
  */
 public class Debouncer implements Runnable {
 
@@ -22,7 +22,7 @@ public class Debouncer implements Runnable {
   /**
    * Creates a new debouncer.
    *
-   * @param target        the target function that should be debounced
+   * @param target the target function that should be debounced
    * @param debounceDelay the maximum time delta between calls that should be allowed
    */
   public Debouncer(Runnable target, Duration debounceDelay) {
@@ -39,20 +39,15 @@ public class Debouncer implements Runnable {
     future = executorService.schedule(target, debounceDelay.toMillis(), TimeUnit.MILLISECONDS);
   }
 
-  /**
-   * Gets the maximum amount of time after a method has been called to wait before running it.
-   */
+  /** Gets the maximum amount of time after a method has been called to wait before running it. */
   public Duration getDebounceDelay() {
     return debounceDelay;
   }
 
-  /**
-   * Cancels the debouncer. The target will not run unless {@link #run()} is called later.
-   */
+  /** Cancels the debouncer. The target will not run unless {@link #run()} is called later. */
   public void cancel() {
     if (future != null) {
       future.cancel(true);
     }
   }
-
 }

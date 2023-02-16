@@ -1,15 +1,14 @@
 package edu.wpi.first.shuffleboard.app.components;
 
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
-import org.testfx.framework.junit5.ApplicationTest;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
 
 import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.testfx.framework.junit5.ApplicationTest;
 
 @Tag("UI")
 public class DashboardTabPaneTest extends ApplicationTest {
@@ -27,13 +26,14 @@ public class DashboardTabPaneTest extends ApplicationTest {
   public void testCloseTabKeepsSelectedIndex() {
     // Add three tabs, select the second one, then close it
     // The selected index should remain 1
-    Platform.runLater(() -> {
-      tabPane.addNewTab();
-      tabPane.addNewTab();
-      tabPane.addNewTab();
-      tabPane.getSelectionModel().select(1);
-      tabPane.closeCurrentTab();
-    });
+    Platform.runLater(
+        () -> {
+          tabPane.addNewTab();
+          tabPane.addNewTab();
+          tabPane.addNewTab();
+          tabPane.getSelectionModel().select(1);
+          tabPane.closeCurrentTab();
+        });
     waitForFxEvents();
     assertEquals(1, tabPane.getSelectionModel().getSelectedIndex(), "Wrong selected tab index");
   }
@@ -42,16 +42,16 @@ public class DashboardTabPaneTest extends ApplicationTest {
   public void testCloseRightmostTabDecrementsIndex() {
     // Add four tabs, select the fourth one, then close it
     // The selected index should decrement from 3 to 2
-    Platform.runLater(() -> {
-      tabPane.addNewTab();
-      tabPane.addNewTab();
-      tabPane.addNewTab();
-      tabPane.addNewTab();
-      tabPane.getSelectionModel().select(3);
-      tabPane.closeCurrentTab();
-    });
+    Platform.runLater(
+        () -> {
+          tabPane.addNewTab();
+          tabPane.addNewTab();
+          tabPane.addNewTab();
+          tabPane.addNewTab();
+          tabPane.getSelectionModel().select(3);
+          tabPane.closeCurrentTab();
+        });
     waitForFxEvents();
     assertEquals(2, tabPane.getSelectionModel().getSelectedIndex(), "Wrong selected tab index");
   }
-
 }

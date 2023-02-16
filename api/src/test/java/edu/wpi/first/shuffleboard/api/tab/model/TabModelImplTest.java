@@ -1,19 +1,17 @@
 package edu.wpi.first.shuffleboard.api.tab.model;
 
-import edu.wpi.first.shuffleboard.api.sources.DataSource;
-
-import org.junit.jupiter.api.Test;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import edu.wpi.first.shuffleboard.api.sources.DataSource;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import org.junit.jupiter.api.Test;
 
 public class TabModelImplTest {
 
@@ -48,8 +46,7 @@ public class TabModelImplTest {
     LayoutModel layout = tab.getLayout(path, "List Layout");
     assertAll(
         () -> assertSame(layout, tab.getChild(path)),
-        () -> assertSame(layout, tab.getChildren().get(path))
-    );
+        () -> assertSame(layout, tab.getChildren().get(path)));
   }
 
   @Test
@@ -72,7 +69,8 @@ public class TabModelImplTest {
   @Test
   public void testGetOrCreate() {
     TabModel tab = new TabModelImpl("Tab");
-    WidgetModel widget = tab.getOrCreate("/Shuffleboard/Tab/Foo", DataSource::none, "", Collections.emptyMap());
+    WidgetModel widget =
+        tab.getOrCreate("/Shuffleboard/Tab/Foo", DataSource::none, "", Collections.emptyMap());
     assertSame(widget, tab.getChild("/Shuffleboard/Tab/Foo"));
   }
 
@@ -92,11 +90,10 @@ public class TabModelImplTest {
     newProperties.put("foo", "bar");
     WidgetModel second = tab.getOrCreate("/", DataSource::none, "List", newProperties);
 
-    assertAll("Updates",
+    assertAll(
+        "Updates",
         () -> assertSame(widget, second, "Second getOrCreate returned a different object"),
         () -> assertEquals("List", widget.getDisplayType()),
-        () -> assertEquals(newProperties, widget.getProperties())
-    );
+        () -> assertEquals(newProperties, widget.getProperties()));
   }
-
 }

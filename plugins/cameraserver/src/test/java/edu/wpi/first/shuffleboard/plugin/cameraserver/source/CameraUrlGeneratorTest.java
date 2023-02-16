@@ -1,14 +1,12 @@
 package edu.wpi.first.shuffleboard.plugin.cameraserver.source;
 
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
 
 public class CameraUrlGeneratorTest {
 
@@ -35,12 +33,14 @@ public class CameraUrlGeneratorTest {
     String url2 = "http://10.0.0.2:1181/stream.mjpg";
     String[] baseUrls = {url1, url2};
 
-    assertArrayEquals(baseUrls, CameraUrlGenerator.generateUrls(commands, baseUrls),
+    assertArrayEquals(
+        baseUrls,
+        CameraUrlGenerator.generateUrls(commands, baseUrls),
         "No commands should return the base URLs");
 
     commands.put("foo", "bar");
     assertArrayEquals(
-        new String[]{url1 + "?foo=bar", url2 + "?foo=bar"},
+        new String[] {url1 + "?foo=bar", url2 + "?foo=bar"},
         CameraUrlGenerator.generateUrls(commands, baseUrls),
         "Generated URLs do not match");
   }
@@ -54,14 +54,16 @@ public class CameraUrlGeneratorTest {
     String url2 = "http://10.0.0.2:1181/IMAQdxStream.mjpg";
     String[] baseUrls = {url1, url2};
 
+    String[] baseUrlsWithNames =
+        Arrays.stream(baseUrls).map(x -> x + "?name=cam0").toArray(String[]::new);
+    String[] baseUrlsWithCameraNames =
+        Arrays.stream(baseUrls)
+            .map(x -> x + "?name=IMAQdx%3AMicrosoft%20LifeCam%20HD-3000")
+            .toArray(String[]::new);
 
-    String[] baseUrlsWithNames = Arrays.stream(baseUrls).map(x -> x + "?name=cam0").toArray(String[]::new);
-    String[] baseUrlsWithCameraNames = Arrays.stream(baseUrls)
-        .map(x -> x + "?name=IMAQdx%3AMicrosoft%20LifeCam%20HD-3000")
-        .toArray(String[]::new);
-
-    assertArrayEquals(baseUrlsWithCameraNames, CameraUrlGenerator.generateUrls(commands, baseUrlsWithNames),
+    assertArrayEquals(
+        baseUrlsWithCameraNames,
+        CameraUrlGenerator.generateUrls(commands, baseUrlsWithNames),
         "Name should be replaced");
   }
-
 }

@@ -34,7 +34,8 @@ final class TabModelImpl implements TabModel {
 
   @Override
   public LayoutModel getLayout(String path, String layoutType) {
-    LayoutModel layout = layouts.computeIfAbsent(path, p -> new LayoutModelImpl(p, this, layoutType));
+    LayoutModel layout =
+        layouts.computeIfAbsent(path, p -> new LayoutModelImpl(p, this, layoutType));
     children.put(path, layout);
     return layout;
   }

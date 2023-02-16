@@ -1,28 +1,26 @@
 package edu.wpi.first.shuffleboard.api.properties;
 
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
-import org.testfx.framework.junit5.ApplicationTest;
-import org.testfx.util.WaitForAsyncUtils;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.stage.Stage;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.testfx.framework.junit5.ApplicationTest;
+import org.testfx.util.WaitForAsyncUtils;
 
 @Tag("UI")
 public class AsyncPropertyTest extends ApplicationTest {
@@ -36,7 +34,8 @@ public class AsyncPropertyTest extends ApplicationTest {
   public void listenerAddedTwiceIsCalledTest() {
     AsyncProperty<String> asyncProperty = new AsyncProperty<>();
     CompletableFuture<Boolean> listenerFired = new CompletableFuture<>();
-    ChangeListener<String> listener = (observable, oldValue, newValue) -> listenerFired.complete(true);
+    ChangeListener<String> listener =
+        (observable, oldValue, newValue) -> listenerFired.complete(true);
 
     asyncProperty.addListener(listener);
     asyncProperty.addListener(listener);
@@ -50,7 +49,8 @@ public class AsyncPropertyTest extends ApplicationTest {
   public void removeListenerTest() {
     AsyncProperty<String> asyncProperty = new AsyncProperty<>();
     CompletableFuture<Boolean> listenerFired = new CompletableFuture<>();
-    ChangeListener<String> listener = (observable, oldValue, newValue) -> listenerFired.complete(true);
+    ChangeListener<String> listener =
+        (observable, oldValue, newValue) -> listenerFired.complete(true);
 
     asyncProperty.addListener(listener);
     asyncProperty.removeListener(listener);
@@ -67,11 +67,13 @@ public class AsyncPropertyTest extends ApplicationTest {
     asyncProperty.bind(boundProperty);
 
     CompletableFuture<Boolean> listenerActionThread = new CompletableFuture<>();
-    asyncProperty.addListener((observable, oldValue, newValue)
-        -> listenerActionThread.complete(Platform.isFxApplicationThread()));
+    asyncProperty.addListener(
+        (observable, oldValue, newValue) ->
+            listenerActionThread.complete(Platform.isFxApplicationThread()));
     boundProperty.set("Test");
 
-    assertTimeoutPreemptively(Duration.ofSeconds(3),
+    assertTimeoutPreemptively(
+        Duration.ofSeconds(3),
         () -> assertTrue(listenerActionThread.get(), "Listener was not run on JavaFX Thread"));
   }
 
@@ -89,7 +91,8 @@ public class AsyncPropertyTest extends ApplicationTest {
       stage.show();
 
       exceptionThrown = new CompletableFuture<>();
-      Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> exceptionThrown.complete(throwable));
+      Thread.setDefaultUncaughtExceptionHandler(
+          (thread, throwable) -> exceptionThrown.complete(throwable));
     }
 
     @Test
@@ -150,7 +153,5 @@ public class AsyncPropertyTest extends ApplicationTest {
 
       assertEquals("testValue", asyncProperty.getValue());
     }
-
   }
-
 }

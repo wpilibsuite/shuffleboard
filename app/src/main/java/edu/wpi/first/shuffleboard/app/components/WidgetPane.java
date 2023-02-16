@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.app.components;
 
+import com.google.common.collect.ImmutableList;
 import edu.wpi.first.shuffleboard.api.TileTitleDisplayMode;
 import edu.wpi.first.shuffleboard.api.css.SimpleColorCssMetaData;
 import edu.wpi.first.shuffleboard.api.css.SimpleCssMetaData;
@@ -16,18 +17,12 @@ import edu.wpi.first.shuffleboard.api.widget.Widget;
 import edu.wpi.first.shuffleboard.app.dnd.DragUtils;
 import edu.wpi.first.shuffleboard.app.dnd.ResizeUtils;
 import edu.wpi.first.shuffleboard.app.dnd.TileDragResizer;
-
-import com.google.common.collect.ImmutableList;
-
-import org.fxmisc.easybind.EasyBind;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
@@ -49,33 +44,31 @@ import javafx.scene.layout.BackgroundImage;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
+import org.fxmisc.easybind.EasyBind;
 
-/**
- * A type of tile pane specifically for widgets.
- */
+/** A type of tile pane specifically for widgets. */
 @SuppressWarnings("PMD.GodClass") // There's just a bunch of properties here
 public class WidgetPane extends TilePane implements ComponentContainer {
 
   private final ObservableList<Tile> tiles;
   private final Pane gridHighlight = new StackPane();
 
-  private final BooleanProperty highlight
-      = new SimpleBooleanProperty(this, "highlight", false);
-  private final Property<GridPoint> highlightPoint
-      = new SimpleObjectProperty<>(this, "highlightPoint", new GridPoint(0, 0));
-  private final Property<TileSize> highlightSize
-      = new SimpleObjectProperty<>(this, "highlightSize", new TileSize(1, 1));
-  private final BooleanProperty showGrid
-      = new SimpleBooleanProperty(this, "showGrid", true);
-  private final IntegerProperty gridLineBorderThickness
-      = new SimpleIntegerProperty(this, "gridLineBorderThickness", 2);
-  private final IntegerProperty secondaryGridLineCount
-      = new SimpleIntegerProperty(this, "secondaryGridLineCount", 3);
-  private final IntegerProperty secondaryGridLineThickness
-      = new SimpleIntegerProperty(this, "secondaryGridLineThickness", 1);
-  private final Property<Color> gridLineColor
-      = new SimpleObjectProperty<>(this, "gridLineColor", Color.TRANSPARENT);
-  private final Property<TileTitleDisplayMode> type = new SimpleObjectProperty<>(TileTitleDisplayMode.DEFAULT);
+  private final BooleanProperty highlight = new SimpleBooleanProperty(this, "highlight", false);
+  private final Property<GridPoint> highlightPoint =
+      new SimpleObjectProperty<>(this, "highlightPoint", new GridPoint(0, 0));
+  private final Property<TileSize> highlightSize =
+      new SimpleObjectProperty<>(this, "highlightSize", new TileSize(1, 1));
+  private final BooleanProperty showGrid = new SimpleBooleanProperty(this, "showGrid", true);
+  private final IntegerProperty gridLineBorderThickness =
+      new SimpleIntegerProperty(this, "gridLineBorderThickness", 2);
+  private final IntegerProperty secondaryGridLineCount =
+      new SimpleIntegerProperty(this, "secondaryGridLineCount", 3);
+  private final IntegerProperty secondaryGridLineThickness =
+      new SimpleIntegerProperty(this, "secondaryGridLineThickness", 1);
+  private final Property<Color> gridLineColor =
+      new SimpleObjectProperty<>(this, "gridLineColor", Color.TRANSPARENT);
+  private final Property<TileTitleDisplayMode> type =
+      new SimpleObjectProperty<>(TileTitleDisplayMode.DEFAULT);
 
   /**
    * Creates a new widget pane. This sets up everything needed for dragging widgets and sources
@@ -86,56 +79,64 @@ public class WidgetPane extends TilePane implements ComponentContainer {
     gridHighlight.getStyleClass().add("grid-highlight");
 
     // Bind the background to show a grid matching the size of the tiles (if enabled via showGrid)
-    backgroundProperty().bind(
-        Bindings.createObjectBinding(
-            this::createGridBackground,
-            tileSizeProperty(),
-            hgapProperty(),
-            vgapProperty(),
-            showGrid,
-            gridLineBorderThickness,
-            secondaryGridLineCount,
-            secondaryGridLineThickness,
-            gridLineColor
-        )
-    );
+    backgroundProperty()
+        .bind(
+            Bindings.createObjectBinding(
+                this::createGridBackground,
+                tileSizeProperty(),
+                hgapProperty(),
+                vgapProperty(),
+                showGrid,
+                gridLineBorderThickness,
+                secondaryGridLineCount,
+                secondaryGridLineThickness,
+                gridLineColor));
 
     tiles = EasyBind.map(getChildren().filtered(n -> n instanceof Tile), n -> (Tile) n);
 
     // Add the highlighter when we're told to highlight
-    highlight.addListener((__, old, highlight) -> {
-      if (highlight) {
-        getChildren().add(gridHighlight);
-        gridHighlight.toFront();
-        gridHighlight.setMouseTransparent(true);
-      } else {
-        getChildren().remove(gridHighlight);
-      }
-    });
+    highlight.addListener(
+        (__, old, highlight) -> {
+          if (highlight) {
+            getChildren().add(gridHighlight);
+            gridHighlight.toFront();
+            gridHighlight.setMouseTransparent(true);
+          } else {
+            getChildren().remove(gridHighlight);
+          }
+        });
 
     // Move the highlighter when the location changes
-    highlightPoint.addListener((__, old, point) -> {
-      if (getHighlightSize() == null || point == null) {
-        return;
-      }
-      gridHighlight.toFront();
-      moveNode(gridHighlight, point);
-      gridHighlight.pseudoClassStateChanged(
-          PseudoClass.getPseudoClass("colliding"),
-          !isOpen(point, getHighlightSize(), DragUtils.isDraggedWidget.or(ResizeUtils.isResizedTile)));
-    });
+    highlightPoint.addListener(
+        (__, old, point) -> {
+          if (getHighlightSize() == null || point == null) {
+            return;
+          }
+          gridHighlight.toFront();
+          moveNode(gridHighlight, point);
+          gridHighlight.pseudoClassStateChanged(
+              PseudoClass.getPseudoClass("colliding"),
+              !isOpen(
+                  point,
+                  getHighlightSize(),
+                  DragUtils.isDraggedWidget.or(ResizeUtils.isResizedTile)));
+        });
 
     // Resize the highlighter then when the size changes
-    highlightSize.addListener((__, old, size) -> {
-      if (getHighlightPoint() == null || size == null) {
-        return;
-      }
-      gridHighlight.toFront();
-      setSize(gridHighlight, size);
-      gridHighlight.pseudoClassStateChanged(
-          PseudoClass.getPseudoClass("colliding"),
-          !isOpen(getHighlightPoint(), size, DragUtils.isDraggedWidget.or(ResizeUtils.isResizedTile)));
-    });
+    highlightSize.addListener(
+        (__, old, size) -> {
+          if (getHighlightPoint() == null || size == null) {
+            return;
+          }
+          gridHighlight.toFront();
+          setSize(gridHighlight, size);
+          gridHighlight.pseudoClassStateChanged(
+              PseudoClass.getPseudoClass("colliding"),
+              !isOpen(
+                  getHighlightPoint(),
+                  size,
+                  DragUtils.isDraggedWidget.or(ResizeUtils.isResizedTile)));
+        });
 
     tileSizeProperty().addListener((__, prev, cur) -> resizeTiles());
     hgapProperty().addListener((__, prev, cur) -> resizeTiles());
@@ -163,12 +164,13 @@ public class WidgetPane extends TilePane implements ComponentContainer {
   }
 
   private Image makeGridImage(Number tileSize, Number hgap, Number vgap) {
-    GridImage gridImage = new GridImage(
-        (int) (tileSize.doubleValue() + hgap.doubleValue()),
-        (int) (tileSize.doubleValue() + vgap.doubleValue()),
-        gridLineBorderThickness.get(),
-        secondaryGridLineCount.get(), secondaryGridLineThickness.get()
-    );
+    GridImage gridImage =
+        new GridImage(
+            (int) (tileSize.doubleValue() + hgap.doubleValue()),
+            (int) (tileSize.doubleValue() + vgap.doubleValue()),
+            gridLineBorderThickness.get(),
+            secondaryGridLineCount.get(),
+            secondaryGridLineThickness.get());
     return gridImage.getAsImage(gridLineColor.getValue());
   }
 
@@ -197,14 +199,13 @@ public class WidgetPane extends TilePane implements ComponentContainer {
         .findFirst();
   }
 
-  /**
-   * Resizes all tiles in this pane to reflect the current tile size, vgap, and hgap.
-   */
+  /** Resizes all tiles in this pane to reflect the current tile size, vgap, and hgap. */
   private void resizeTiles() {
-    tiles.forEach(tile -> {
-      tile.setMaxWidth(tileSizeToWidth(tile.getSize().getWidth()));
-      tile.setMaxHeight(tileSizeToHeight(tile.getSize().getHeight()));
-    });
+    tiles.forEach(
+        tile -> {
+          tile.setMaxWidth(tileSizeToWidth(tile.getSize().getWidth()));
+          tile.setMaxHeight(tileSizeToHeight(tile.getSize().getHeight()));
+        });
   }
 
   /**
@@ -222,7 +223,7 @@ public class WidgetPane extends TilePane implements ComponentContainer {
    * size.
    *
    * @param widget the widget to add
-   * @param size   the size of the tile used to display the widget
+   * @param size the size of the tile used to display the widget
    */
   public WidgetTile addWidget(Widget widget, TileSize size) {
     WidgetTile tile = new WidgetTile(widget, size);
@@ -239,16 +240,12 @@ public class WidgetPane extends TilePane implements ComponentContainer {
    * Adds a component to a tile.
    *
    * @param component the component to add
-   * @param <C>       the type of the component
-   *
+   * @param <C> the type of the component
    * @return the tile containing the component, or null if no tile was added
    */
   public <C extends Component> Tile<C> addComponentToTile(C component) {
     addComponent(component);
-    return getTiles().stream()
-        .filter(t -> t.getContent() == component)
-        .findFirst()
-        .orElse(null);
+    return getTiles().stream().filter(t -> t.getContent() == component).findFirst().orElse(null);
   }
 
   @Override
@@ -264,7 +261,7 @@ public class WidgetPane extends TilePane implements ComponentContainer {
    * Add an arbitrary component to the WidgetPane with the specified size.
    *
    * @param component the component to add
-   * @param size      the size of the tile used to display the component
+   * @param size the size of the tile used to display the component
    */
   public void addComponent(Component component, TileSize size) {
     if (component instanceof Widget) {
@@ -286,7 +283,8 @@ public class WidgetPane extends TilePane implements ComponentContainer {
 
   @Override
   public Component addComponent(ComponentModel componentModel) {
-    var optionalComponent = Components.getDefault().createComponent(componentModel.getDisplayType());
+    var optionalComponent =
+        Components.getDefault().createComponent(componentModel.getDisplayType());
     if (optionalComponent.isEmpty()) {
       // Given component type is not available, bail
       return null;
@@ -311,14 +309,15 @@ public class WidgetPane extends TilePane implements ComponentContainer {
   }
 
   /**
-   * Add an arbitrary component to the WidgetPane in the specified location.
-   * The tile will be the specified size.
+   * Add an arbitrary component to the WidgetPane in the specified location. The tile will be the
+   * specified size.
    *
    * @param component the component to add
-   * @param location  location of the component
-   * @param size      the size of the tile used to display the component
+   * @param location location of the component
+   * @param size the size of the tile used to display the component
    */
-  public <C extends Component> Tile<C> addComponent(C component, GridPoint location, TileSize size) {
+  public <C extends Component> Tile<C> addComponent(
+      C component, GridPoint location, TileSize size) {
     Tile<C> tile = Tile.tileFor(component, size);
     TileDragResizer.makeResizable(this, tile);
     tile.sizeProperty().addListener(__ -> setSize(tile, tile.getSize()));
@@ -327,11 +326,11 @@ public class WidgetPane extends TilePane implements ComponentContainer {
   }
 
   /**
-   * Add an arbitrary component to the WidgetPane in the specified location. The tile's size will be calculated with
-   * {@link #sizeOfWidget(Component)}.
+   * Add an arbitrary component to the WidgetPane in the specified location. The tile's size will be
+   * calculated with {@link #sizeOfWidget(Component)}.
    *
    * @param component the component to add
-   * @param location  the location of the component
+   * @param location the location of the component
    */
   public <C extends Component> Tile<C> addComponent(C component, GridPoint location) {
     return addComponent(component, location, sizeOfWidget(component));
@@ -362,8 +361,9 @@ public class WidgetPane extends TilePane implements ComponentContainer {
   }
 
   /**
-   * Sets the size of a widget tile in this pane. This calls {@link #setSize(Node, TileSize)} as well as setting the
-   * minimum and maximum size of the tile to ensure that it aligns properly with the grid.
+   * Sets the size of a widget tile in this pane. This calls {@link #setSize(Node, TileSize)} as
+   * well as setting the minimum and maximum size of the tile to ensure that it aligns properly with
+   * the grid.
    *
    * @param tile the tile to resize
    * @param size the new size of the tile
@@ -376,16 +376,14 @@ public class WidgetPane extends TilePane implements ComponentContainer {
     tile.setMaxHeight(tileSizeToHeight(size.getHeight()));
   }
 
-  /**
-   * Get the expected size of the widget, in tiles.
-   */
+  /** Get the expected size of the widget, in tiles. */
   public TileSize sizeOfWidget(Component widget) {
     Pane view = widget.getView();
 
     return new TileSize(
         roundWidthToNearestTile(Math.max(view.getMinWidth(), view.getPrefWidth()), RoundingMode.UP),
-        roundHeightToNearestTile(Math.max(view.getMinHeight(), view.getPrefHeight()), RoundingMode.UP)
-    );
+        roundHeightToNearestTile(
+            Math.max(view.getMinHeight(), view.getPrefHeight()), RoundingMode.UP));
   }
 
   /**
@@ -400,9 +398,7 @@ public class WidgetPane extends TilePane implements ComponentContainer {
     return content;
   }
 
-  /**
-   * Gets the tile at the given point in the grid.
-   */
+  /** Gets the tile at the given point in the grid. */
   public Optional<Tile> tileAt(GridPoint point) {
     return tileAt(point.col, point.row);
   }
@@ -415,10 +411,13 @@ public class WidgetPane extends TilePane implements ComponentContainer {
    */
   public Optional<Tile> tileAt(int col, int row) {
     return tiles.stream()
-        .filter(tile -> getColumnIndex(tile) <= col
-            && getColumnIndex(tile) + tile.getSize().getWidth() > col)
-        .filter(tile -> getRowIndex(tile) <= row
-            && getRowIndex(tile) + tile.getSize().getHeight() > row)
+        .filter(
+            tile ->
+                getColumnIndex(tile) <= col
+                    && getColumnIndex(tile) + tile.getSize().getWidth() > col)
+        .filter(
+            tile ->
+                getRowIndex(tile) <= row && getRowIndex(tile) + tile.getSize().getHeight() > row)
         .findAny();
   }
 
@@ -436,9 +435,7 @@ public class WidgetPane extends TilePane implements ComponentContainer {
     return highlight;
   }
 
-  /**
-   * Sets whether or not a section of the grid should be highlighted.
-   */
+  /** Sets whether or not a section of the grid should be highlighted. */
   public final void setHighlight(boolean highlight) {
     this.highlight.set(highlight);
   }
@@ -451,9 +448,7 @@ public class WidgetPane extends TilePane implements ComponentContainer {
     return highlightPoint;
   }
 
-  /**
-   * Sets the origin point of the section of the grid to be highlighted.
-   */
+  /** Sets the origin point of the section of the grid to be highlighted. */
   public final void setHighlightPoint(GridPoint highlightPoint) {
     this.highlightPoint.setValue(highlightPoint);
   }
@@ -466,21 +461,16 @@ public class WidgetPane extends TilePane implements ComponentContainer {
     return highlightSize;
   }
 
-  /**
-   * Sets the size of the section of the grid to be highlighted.
-   */
+  /** Sets the size of the section of the grid to be highlighted. */
   public final void setHighlightSize(TileSize highlightSize) {
     this.highlightSize.setValue(highlightSize);
   }
 
-  /**
-   * Will select the widgets that match predicate, and de-select all other widgets.
-   */
+  /** Will select the widgets that match predicate, and de-select all other widgets. */
   public void selectWidgets(Predicate<Widget> predicate) {
-    tiles.filtered(t -> t instanceof WidgetTile)
-        .forEach(tile -> tile.setSelected(
-            predicate.test(((WidgetTile) tile).getContent())
-        ));
+    tiles
+        .filtered(t -> t instanceof WidgetTile)
+        .forEach(tile -> tile.setSelected(predicate.test(((WidgetTile) tile).getContent())));
   }
 
   public boolean isShowGrid() {
@@ -545,15 +535,17 @@ public class WidgetPane extends TilePane implements ComponentContainer {
 
   private Background createGridBackground() {
     if (isShowGrid()) {
-      return new Background(makeTiledBackgroundImage(makeGridImage(getTileSize(), getHgap(), getVgap())));
+      return new Background(
+          makeTiledBackgroundImage(makeGridImage(getTileSize(), getHgap(), getVgap())));
     } else {
       return null;
     }
   }
 
   /**
-   * Creates a new highlight object and adds it to this pane at (0, 0) with size (1, 1). The location and size of the
-   * highlight can be configured with {@link Highlight#withLocation} and {@link Highlight#withSize}, respectively.
+   * Creates a new highlight object and adds it to this pane at (0, 0) with size (1, 1). The
+   * location and size of the highlight can be configured with {@link Highlight#withLocation} and
+   * {@link Highlight#withSize}, respectively.
    *
    * @return a new highlight object
    */
@@ -613,36 +605,28 @@ public class WidgetPane extends TilePane implements ComponentContainer {
   private static final class WidgetPaneCss {
 
     private static final CssMetaData<WidgetPane, Color> GRID_LINE_COLOR =
-        new SimpleColorCssMetaData<>(
-            "-fx-grid-line-color",
-            WidgetPane::gridLineColorProperty
-        );
+        new SimpleColorCssMetaData<>("-fx-grid-line-color", WidgetPane::gridLineColorProperty);
     private static final CssMetaData<WidgetPane, Number> GRID_LINE_BORDER_THICKNESS =
         new SimpleCssMetaData<>(
             "-fx-grid-line-border-thickness",
             StyleConverter.getSizeConverter(),
-            WidgetPane::gridLineBorderThicknessProperty
-        );
+            WidgetPane::gridLineBorderThicknessProperty);
     private static final CssMetaData<WidgetPane, Number> SECONDARY_GRID_LINE_COUNT =
         new SimpleCssMetaData<>(
             "-fx-secondary-grid-line-count",
             StyleConverter.getSizeConverter(),
-            WidgetPane::secondaryGridLineCountProperty
-        );
+            WidgetPane::secondaryGridLineCountProperty);
     private static final CssMetaData<WidgetPane, Number> SECONDARY_GRID_LINE_THICKNESS =
         new SimpleCssMetaData<>(
             "-fx-secondary-grid-line-thickness",
             StyleConverter.getSizeConverter(),
-            WidgetPane::secondaryGridLineThicknessProperty
-        );
+            WidgetPane::secondaryGridLineThicknessProperty);
 
-    private static final List<CssMetaData<WidgetPane, ?>> STYLEABLES = ImmutableList.of(
-        GRID_LINE_COLOR,
-        GRID_LINE_BORDER_THICKNESS,
-        SECONDARY_GRID_LINE_COUNT,
-        SECONDARY_GRID_LINE_THICKNESS
-    );
-
+    private static final List<CssMetaData<WidgetPane, ?>> STYLEABLES =
+        ImmutableList.of(
+            GRID_LINE_COLOR,
+            GRID_LINE_BORDER_THICKNESS,
+            SECONDARY_GRID_LINE_COUNT,
+            SECONDARY_GRID_LINE_THICKNESS);
   }
-
 }

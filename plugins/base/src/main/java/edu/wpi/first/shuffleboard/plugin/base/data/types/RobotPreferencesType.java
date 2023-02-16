@@ -2,7 +2,6 @@ package edu.wpi.first.shuffleboard.plugin.base.data.types;
 
 import edu.wpi.first.shuffleboard.api.data.ComplexDataType;
 import edu.wpi.first.shuffleboard.plugin.base.data.RobotPreferencesData;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -24,5 +23,4 @@ public final class RobotPreferencesType extends ComplexDataType<RobotPreferences
   public RobotPreferencesData getDefaultValue() {
     return new RobotPreferencesData(new HashMap<>());
   }
-
 }

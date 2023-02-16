@@ -1,16 +1,13 @@
 package edu.wpi.first.shuffleboard.api.sources.recording.serialization;
 
-import edu.wpi.first.shuffleboard.api.data.DataTypes;
-
 import com.google.common.collect.ImmutableList;
-
+import edu.wpi.first.shuffleboard.api.data.DataTypes;
+import java.util.ArrayList;
+import java.util.Collection;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-
-import java.util.ArrayList;
-import java.util.Collection;
 
 public class AbstractAdapterTest<T> {
 
@@ -49,5 +46,4 @@ public class AbstractAdapterTest<T> {
     requirements.forEach(Serializers::remove);
     DataTypes.setDefault(new DataTypes());
   }
-
 }

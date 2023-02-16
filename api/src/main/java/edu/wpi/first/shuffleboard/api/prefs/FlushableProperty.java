@@ -1,8 +1,7 @@
 package edu.wpi.first.shuffleboard.api.prefs;
 
-import javafx.beans.property.SimpleObjectProperty;
-
 import javafx.beans.property.Property;
+import javafx.beans.property.SimpleObjectProperty;
 
 /**
  * A {@link Property} that can be flushed.
@@ -30,5 +29,4 @@ public class FlushableProperty<T> extends SimpleObjectProperty<T> {
   public void flush() {
     property.setValue(getValue());
   }
-
 }

@@ -2,23 +2,22 @@ package edu.wpi.first.shuffleboard.api.properties;
 
 import edu.wpi.first.shuffleboard.api.util.AsyncUtils;
 import edu.wpi.first.shuffleboard.api.util.EqualityUtils;
-
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-
 import javafx.beans.InvalidationListener;
 import javafx.beans.property.Property;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 
 /**
- * A helper class that implements many of the listener and binding related methods for atomic properties. Since Java
- * does not support multiple inheritance, these could not have been implemented in an abstract superclass for atomic
- * properties that also need to subclass {@link javafx.beans.property.IntegerProperty IntegerProperty},
- * {@link javafx.beans.property.BooleanProperty BooleanProperty}, etc., as there are many helper functions in JavaFX
- * that expect {@code IntegerProperty} instead of {@code Property<Integer>}.
+ * A helper class that implements many of the listener and binding related methods for atomic
+ * properties. Since Java does not support multiple inheritance, these could not have been
+ * implemented in an abstract superclass for atomic properties that also need to subclass {@link
+ * javafx.beans.property.IntegerProperty IntegerProperty}, {@link
+ * javafx.beans.property.BooleanProperty BooleanProperty}, etc., as there are many helper functions
+ * in JavaFX that expect {@code IntegerProperty} instead of {@code Property<Integer>}.
  */
 public final class AtomicPropertyListenerDelegate<T> {
 
@@ -67,16 +66,17 @@ public final class AtomicPropertyListenerDelegate<T> {
   }
 
   /**
-   * Fires all listeners when the value of the property changes. Invalidation listeners are scheduled first (but may not
-   * <i>run</i> first if this is not called from the JavaFX application thread), then, if the value has changed,
-   * the immediate listeners are called, and then the change listeners are scheduled to be called from the JavaFX
-   * application thread.
+   * Fires all listeners when the value of the property changes. Invalidation listeners are
+   * scheduled first (but may not <i>run</i> first if this is not called from the JavaFX application
+   * thread), then, if the value has changed, the immediate listeners are called, and then the
+   * change listeners are scheduled to be called from the JavaFX application thread.
    */
   public void invalidated(T oldValue, T newValue) {
     invalidationListeners.forEach(l -> AsyncUtils.runAsync(() -> l.invalidated(atomicProperty)));
     if (EqualityUtils.isDifferent(oldValue, newValue)) {
       immediateListeners.forEach(l -> l.changed(atomicProperty, oldValue, newValue));
-      changeListeners.forEach(l -> AsyncUtils.runAsync(() -> l.changed(atomicProperty, oldValue, newValue)));
+      changeListeners.forEach(
+          l -> AsyncUtils.runAsync(() -> l.changed(atomicProperty, oldValue, newValue)));
     }
   }
 
@@ -103,5 +103,4 @@ public final class AtomicPropertyListenerDelegate<T> {
   public void removeInvalidationListener(InvalidationListener listener) {
     invalidationListeners.remove(listener);
   }
-
 }

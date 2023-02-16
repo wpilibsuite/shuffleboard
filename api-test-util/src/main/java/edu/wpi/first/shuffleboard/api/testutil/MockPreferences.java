@@ -6,8 +6,8 @@ import java.util.prefs.AbstractPreferences;
 import java.util.prefs.BackingStoreException;
 
 /**
- * A mock preferences class that stores values in a {@link Map Map&lt;String, String&gt;}.
- * This cannot have child preference nodes.
+ * A mock preferences class that stores values in a {@link Map Map&lt;String, String&gt;}. This
+ * cannot have child preference nodes.
  */
 public class MockPreferences extends AbstractPreferences {
 

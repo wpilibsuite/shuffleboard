@@ -2,7 +2,6 @@ package edu.wpi.first.shuffleboard.plugin.base.data;
 
 import com.google.common.collect.ImmutableMap;
 import edu.wpi.first.shuffleboard.api.data.ComplexData;
-
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
@@ -64,7 +63,8 @@ public class FieldData extends ComplexData<FieldData> {
         byte[] data = (byte[]) entry.getValue();
         doubles = new double[data.length / Double.BYTES];
         for (int i = 0; i < doubles.length; i++) {
-          doubles[i] = ByteBuffer.allocate(Double.BYTES)
+          doubles[i] =
+              ByteBuffer.allocate(Double.BYTES)
                   .put(data, Double.BYTES * i, Double.BYTES)
                   .flip()
                   .getDouble();

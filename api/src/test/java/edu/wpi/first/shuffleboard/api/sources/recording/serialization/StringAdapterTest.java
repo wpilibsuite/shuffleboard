@@ -1,9 +1,9 @@
 package edu.wpi.first.shuffleboard.api.sources.recording.serialization;
 
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import org.junit.jupiter.api.Test;
 
 public class StringAdapterTest {
 
@@ -36,5 +36,4 @@ public class StringAdapterTest {
     String expected = "baz";
     assertEquals(expected, adapter.deserialize(buffer, 0));
   }
-
 }

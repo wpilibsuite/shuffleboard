@@ -1,9 +1,7 @@
 package edu.wpi.first.shuffleboard.plugin.base.data;
 
 import com.google.common.collect.ImmutableMap;
-
 import edu.wpi.first.shuffleboard.api.data.ComplexData;
-
 import java.util.Map;
 import java.util.Objects;
 
@@ -17,9 +15,9 @@ public final class PIDControllerData extends ComplexData<PIDControllerData> {
   /**
    * Creates a new PIDController data object.
    *
-   * @param p        the proportional constant
-   * @param i        the integral constant
-   * @param d        the derivative constant
+   * @param p the proportional constant
+   * @param i the integral constant
+   * @param d the derivative constant
    * @param setpoint the controller setpoint
    */
   public PIDControllerData(double p, double i, double d, double setpoint) {
@@ -30,11 +28,12 @@ public final class PIDControllerData extends ComplexData<PIDControllerData> {
   }
 
   /**
-   * Creates a new data object from a map. The map should contain values for all the properties of the data object. If
-   * a value is missing, the default value of {@code 0} (for numbers) is used.
+   * Creates a new data object from a map. The map should contain values for all the properties of
+   * the data object. If a value is missing, the default value of {@code 0} (for numbers) is used.
    */
   public PIDControllerData(Map<String, Object> map) {
-    this((double) map.getOrDefault("p", 0.0),
+    this(
+        (double) map.getOrDefault("p", 0.0),
         (double) map.getOrDefault("i", 0.0),
         (double) map.getOrDefault("d", 0.0),
         (double) map.getOrDefault("setpoint", 0.0));
@@ -55,7 +54,6 @@ public final class PIDControllerData extends ComplexData<PIDControllerData> {
   public double getSetpoint() {
     return setpoint;
   }
-
 
   public PIDControllerData withP(double p) {
     return new PIDControllerData(p, i, d, setpoint);
@@ -105,8 +103,7 @@ public final class PIDControllerData extends ComplexData<PIDControllerData> {
 
   @Override
   public String toString() {
-    return String.format("PIDControllerData(p=%s, i=%s, d=%s, setpoint=%s)",
-        p, i, d, setpoint);
+    return String.format("PIDControllerData(p=%s, i=%s, d=%s, setpoint=%s)", p, i, d, setpoint);
   }
 
   @Override

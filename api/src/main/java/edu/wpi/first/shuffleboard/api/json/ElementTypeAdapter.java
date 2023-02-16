@@ -6,11 +6,11 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
-
 import java.lang.reflect.Type;
 
 /**
- * Serializes values to and from JSON. Implementing classes <i>must</i> be annotated with {@link AnnotatedTypeAdapter}.
+ * Serializes values to and from JSON. Implementing classes <i>must</i> be annotated with {@link
+ * AnnotatedTypeAdapter}.
  *
  * @param <T> the type of values to serialize and deserialize
  */
@@ -26,7 +26,8 @@ public interface ElementTypeAdapter<T> extends JsonSerializer<T>, JsonDeserializ
   T deserialize(JsonElement json, JsonDeserializationContext context) throws JsonParseException;
 
   @Override
-  default T deserialize(JsonElement json, Type type, JsonDeserializationContext context) throws JsonParseException {
+  default T deserialize(JsonElement json, Type type, JsonDeserializationContext context)
+      throws JsonParseException {
     return deserialize(json, context);
   }
 }

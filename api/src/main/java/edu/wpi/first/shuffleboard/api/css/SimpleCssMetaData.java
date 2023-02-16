@@ -1,9 +1,7 @@
 package edu.wpi.first.shuffleboard.api.css;
 
 import edu.wpi.first.shuffleboard.api.properties.SimpleStyleableObjectPropertyWrapper;
-
 import java.util.function.Function;
-
 import javafx.beans.property.Property;
 import javafx.css.CssMetaData;
 import javafx.css.StyleConverter;
@@ -11,7 +9,8 @@ import javafx.css.Styleable;
 import javafx.css.StyleableProperty;
 
 /**
- * A simple implementation of CSS metadata that allows the property to be styled as long as it is not bound.
+ * A simple implementation of CSS metadata that allows the property to be styled as long as it is
+ * not bound.
  *
  * @param <S> the type of the styleable
  * @param <T> the type of the property to be styled
@@ -23,13 +22,14 @@ public class SimpleCssMetaData<S extends Styleable, T> extends CssMetaData<S, T>
   /**
    * Creates a new simple CSS metadata object.
    *
-   * @param property          the CSS property descriptor, eg {@code "-fx-background-color"}
-   * @param converter         the style converter
+   * @param property the CSS property descriptor, eg {@code "-fx-background-color"}
+   * @param converter the style converter
    * @param propertyExtractor the function to use to get the property this metadata should describe
    */
-  public SimpleCssMetaData(String property,
-                           StyleConverter<?, T> converter,
-                           Function<? super S, Property<T>> propertyExtractor) {
+  public SimpleCssMetaData(
+      String property,
+      StyleConverter<?, T> converter,
+      Function<? super S, Property<T>> propertyExtractor) {
     super(property, converter);
     this.propertyExtractor = propertyExtractor;
   }
@@ -49,5 +49,4 @@ public class SimpleCssMetaData<S extends Styleable, T> extends CssMetaData<S, T>
       return new SimpleStyleableObjectPropertyWrapper<>(this, property);
     }
   }
-
 }

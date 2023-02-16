@@ -3,7 +3,8 @@ package edu.wpi.first.shuffleboard.api.sources.recording;
 import java.util.Objects;
 
 /**
- * A container object for various settings for converting binary Shuffleboard recordings to other formats.
+ * A container object for various settings for converting binary Shuffleboard recordings to other
+ * formats.
  */
 public final class ConversionSettings {
 
@@ -48,5 +49,4 @@ public final class ConversionSettings {
   public String toString() {
     return String.format("ConversionSettings(convertMetadata=%s)", convertMetadata);
   }
-
 }

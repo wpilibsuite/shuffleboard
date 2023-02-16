@@ -45,5 +45,4 @@ public class BooleanArrayAdapter extends TypeAdapter<boolean[]> {
   public int getSerializedSize(boolean[] value) {
     return Serialization.SIZE_OF_INT + (value.length * Serialization.SIZE_OF_BOOL);
   }
-
 }

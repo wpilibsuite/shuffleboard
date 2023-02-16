@@ -1,9 +1,7 @@
 package edu.wpi.first.shuffleboard.api.sources.recording;
 
-import edu.wpi.first.shuffleboard.api.util.Registry;
-
 import com.google.common.collect.ImmutableMap;
-
+import edu.wpi.first.shuffleboard.api.util.Registry;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -23,7 +21,8 @@ public final class Converters extends Registry<Converter> {
       throw new IllegalArgumentException("Converter is already registered: " + item);
     }
     if (converters.containsKey(item.formatName())) {
-      throw new IllegalArgumentException("A converter is already registered for format '" + item.formatName() + "'");
+      throw new IllegalArgumentException(
+          "A converter is already registered for format '" + item.formatName() + "'");
     }
     converters.put(item.formatName(), item);
     addItem(item);
@@ -38,5 +37,4 @@ public final class Converters extends Registry<Converter> {
   public Map<String, Converter> getConverters() {
     return ImmutableMap.copyOf(converters);
   }
-
 }

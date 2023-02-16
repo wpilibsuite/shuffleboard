@@ -1,8 +1,6 @@
 package edu.wpi.first.shuffleboard.api.util;
 
-/**
- * Utility class for making sure certain methods may only be called from tests.
- */
+/** Utility class for making sure certain methods may only be called from tests. */
 public final class TestUtils {
 
   private TestUtils() {
@@ -17,7 +15,8 @@ public final class TestUtils {
   public static void assertRunningFromTest() throws IllegalStateException {
     boolean found = false;
     for (StackTraceElement element : Thread.currentThread().getStackTrace()) {
-      if (element.getClassName().contains("org.junit") || element.getClassName().contains("org.testfx")) {
+      if (element.getClassName().contains("org.junit")
+          || element.getClassName().contains("org.testfx")) {
         found = true;
         break;
       }
@@ -26,5 +25,4 @@ public final class TestUtils {
       throw new IllegalStateException("This method can only be called from a test suite");
     }
   }
-
 }

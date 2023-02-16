@@ -19,7 +19,6 @@ public final class TextUtils {
    *
    * @param font the used to display the text
    * @param text the text to compute the width of
-   *
    * @return the width of the text
    */
   public static double computeTextWidth(Font font, String text) {

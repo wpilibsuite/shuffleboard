@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.api.sources.recording;
 
+import com.google.common.annotations.VisibleForTesting;
 import edu.wpi.first.shuffleboard.api.DashboardMode;
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
@@ -12,9 +13,6 @@ import edu.wpi.first.shuffleboard.api.sources.recording.serialization.Serializer
 import edu.wpi.first.shuffleboard.api.util.ShutdownHooks;
 import edu.wpi.first.shuffleboard.api.util.Storage;
 import edu.wpi.first.shuffleboard.api.util.ThreadUtils;
-
-import com.google.common.annotations.VisibleForTesting;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -23,14 +21,13 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
 /**
- * Records data from sources. Each source is responsible for calling {@link #recordCurrentValue} whenever its value
- * changes.
+ * Records data from sources. Each source is responsible for calling {@link #recordCurrentValue}
+ * whenever its value changes.
  */
 public final class Recorder {
 
@@ -42,7 +39,8 @@ public final class Recorder {
   private final BooleanProperty running = new AtomicBooleanProperty(this, "running", false);
   private final StringProperty fileNameFormat =
       new SimpleStringProperty(this, "fileNameFormat", DEFAULT_RECORDING_FILE_NAME_FORMAT);
-  private String currentFileNameFormat = DEFAULT_RECORDING_FILE_NAME_FORMAT; // NOPMD - PMD can't handle lambdas
+  private String currentFileNameFormat =
+      DEFAULT_RECORDING_FILE_NAME_FORMAT; // NOPMD - PMD can't handle lambdas
   private Instant startTime = null;
   private Recording recording = null;
   private File recordingFile;
@@ -55,21 +53,23 @@ public final class Recorder {
   private Recorder(boolean enableDiskWrites) {
     this.enableDiskWrites = enableDiskWrites;
     // Save the recording at the start (get the initial values) and the stop
-    running.addListener((__, wasRunning, isRunning) -> {
-      try {
-        currentFileNameFormat = getFileNameFormat();
-        saveToDisk();
-      } catch (IOException e) {
-        log.log(Level.WARNING, "Could not save to disk", e);
-      }
-    });
-    running.addListener((__, was, is) -> {
-      if (is) {
-        DashboardMode.setCurrentMode(DashboardMode.RECORDING);
-      } else {
-        DashboardMode.setCurrentMode(DashboardMode.NORMAL);
-      }
-    });
+    running.addListener(
+        (__, wasRunning, isRunning) -> {
+          try {
+            currentFileNameFormat = getFileNameFormat();
+            saveToDisk();
+          } catch (IOException e) {
+            log.log(Level.WARNING, "Could not save to disk", e);
+          }
+        });
+    running.addListener(
+        (__, was, is) -> {
+          if (is) {
+            DashboardMode.setCurrentMode(DashboardMode.RECORDING);
+          } else {
+            DashboardMode.setCurrentMode(DashboardMode.NORMAL);
+          }
+        });
 
     // Save the recording every 2 seconds
     if (enableDiskWrites) {
@@ -83,7 +83,10 @@ public final class Recorder {
                     log.log(Level.WARNING, "Could not save recording", e);
                   }
                 }
-              }, 0, 2, TimeUnit.SECONDS);
+              },
+              0,
+              2,
+              TimeUnit.SECONDS);
     }
     ShutdownHooks.addHook(this::stop);
   }
@@ -113,23 +116,17 @@ public final class Recorder {
     log.fine("Saved recording to " + file);
   }
 
-  /**
-   * Gets the recorder instance.
-   */
+  /** Gets the recorder instance. */
   public static Recorder getInstance() {
     return instance;
   }
 
-  /**
-   * Creates a new Recorder instance that does not write anything to disk.
-   */
+  /** Creates a new Recorder instance that does not write anything to disk. */
   public static Recorder createDummyInstance() {
     return new Recorder(false);
   }
 
-  /**
-   * Starts recording data.
-   */
+  /** Starts recording data. */
   public void start() {
     synchronized (startStopLock) {
       startTime = Instant.now();
@@ -138,18 +135,20 @@ public final class Recorder {
       // Record initial conditions
       SourceTypes.getDefault().getItems().stream()
           .map(SourceType::getAvailableSources)
-          .forEach(sources -> sources.forEach((id, value) -> {
-            DataTypes.getDefault().forJavaType(value.getClass())
-                .map(t -> new TimestampedData(id, t, value, 0L))
-                .ifPresent(recording::append);
-          }));
+          .forEach(
+              sources ->
+                  sources.forEach(
+                      (id, value) -> {
+                        DataTypes.getDefault()
+                            .forJavaType(value.getClass())
+                            .map(t -> new TimestampedData(id, t, value, 0L))
+                            .ifPresent(recording::append);
+                      }));
     }
     setRunning(true);
   }
 
-  /**
-   * Stops recording data.
-   */
+  /** Stops recording data. */
   public void stop() {
     try {
       saveToDisk();
@@ -163,17 +162,13 @@ public final class Recorder {
     }
   }
 
-  /**
-   * Resets this recorder.
-   */
+  /** Resets this recorder. */
   public void reset() {
     stop();
     start();
   }
 
-  /**
-   * Records the current value of the given source.
-   */
+  /** Records the current value of the given source. */
   public void recordCurrentValue(DataSource<?> source) {
     record(source.getId(), source.getDataType(), source.getData());
   }
@@ -181,9 +176,9 @@ public final class Recorder {
   /**
    * Records a data point at the current time.
    *
-   * @param id       the ID of the value to record
+   * @param id the ID of the value to record
    * @param dataType the type of the value
-   * @param value    the value to record
+   * @param value the value to record
    */
   public void record(String id, DataType<?> dataType, Object value) {
     if (!isRunning()) {
@@ -195,9 +190,9 @@ public final class Recorder {
   /**
    * Adds a marker to the recording at the current time.
    *
-   * @param name        the name of the marker
+   * @param name the name of the marker
    * @param description a description of the marked event
-   * @param importance  the importance of the marker
+   * @param importance the importance of the marker
    */
   public void addMarker(String name, String description, MarkerImportance importance) {
     if (!isRunning()) {
@@ -239,8 +234,8 @@ public final class Recorder {
   }
 
   /**
-   * Gets the recording being recorded to. This method should only be used for tests to make sure the recording is
-   * being used properly.
+   * Gets the recording being recorded to. This method should only be used for tests to make sure
+   * the recording is being used properly.
    */
   @VisibleForTesting
   public Recording getRecording() {

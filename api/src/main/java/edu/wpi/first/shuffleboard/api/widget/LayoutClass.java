@@ -3,9 +3,7 @@ package edu.wpi.first.shuffleboard.api.widget;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- * A helper class for creating ComponentTypes from Layout classes and a name.
- */
+/** A helper class for creating ComponentTypes from Layout classes and a name. */
 public class LayoutClass<T extends Layout> implements LayoutType {
 
   private final String name;
@@ -23,19 +21,20 @@ public class LayoutClass<T extends Layout> implements LayoutType {
 
   @Override
   public Layout get() {
-    return Components.viewFor(layoutClass).orElseGet(() -> {
-      try {
-        return layoutClass.newInstance();
-      } catch (InstantiationException | IllegalAccessException e) {
-        Logger.getLogger("LayoutClass").log(Level.WARNING, "error creating widget", e);
-        return null;
-      }
-    });
+    return Components.viewFor(layoutClass)
+        .orElseGet(
+            () -> {
+              try {
+                return layoutClass.newInstance();
+              } catch (InstantiationException | IllegalAccessException e) {
+                Logger.getLogger("LayoutClass").log(Level.WARNING, "error creating widget", e);
+                return null;
+              }
+            });
   }
 
   @Override
   public Class<T> getType() {
     return layoutClass;
   }
-
 }

@@ -33,19 +33,17 @@ package edu.wpi.first.shuffleboard.api.util;
 import java.util.Comparator;
 
 /**
- * A string comparator that uses the <a href="http://www.davekoelle.com/alphanum.html">alphanum algorithm</a> to compare
- * strings that contain numbers.
+ * A string comparator that uses the <a href="http://www.davekoelle.com/alphanum.html">alphanum
+ * algorithm</a> to compare strings that contain numbers.
  *
- * <p>This is an updated version with enhancements made by Daniel Migowski,
- * Andre Bogus, and David Koelle. Updated by David Koelle in 2017.
+ * <p>This is an updated version with enhancements made by Daniel Migowski, Andre Bogus, and David
+ * Koelle. Updated by David Koelle in 2017.
  *
- * <p><a href="http://www.davekoelle.com/files/AlphanumComparator.java">Original source</a></p>
+ * <p><a href="http://www.davekoelle.com/files/AlphanumComparator.java">Original source</a>
  */
 public final class AlphanumComparator implements Comparator<String> {
 
-  /**
-   * A public default instance to use, since every instance of this class is identical.
-   */
+  /** A public default instance to use, since every instance of this class is identical. */
   public static final AlphanumComparator INSTANCE = new AlphanumComparator();
 
   private boolean isDigit(char ch) {
@@ -125,5 +123,4 @@ public final class AlphanumComparator implements Comparator<String> {
 
     return s1Length - s2Length;
   }
-
 }

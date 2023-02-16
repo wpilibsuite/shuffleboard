@@ -1,13 +1,11 @@
 package edu.wpi.first.shuffleboard.api.data;
 
-import com.google.common.collect.Lists;
-
-import org.junit.jupiter.api.Test;
-
-import java.util.List;
-
 import static edu.wpi.first.shuffleboard.api.data.DataTypes.closestTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import com.google.common.collect.Lists;
+import java.util.List;
+import org.junit.jupiter.api.Test;
 
 class DataTypesTest {
 
@@ -29,5 +27,4 @@ class DataTypesTest {
     classes.sort(closestTo(D.class));
     assertEquals(Lists.newArrayList(A.class, B.class, C.class, D.class), classes);
   }
-
 }

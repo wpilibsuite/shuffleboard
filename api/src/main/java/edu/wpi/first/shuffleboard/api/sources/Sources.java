@@ -1,7 +1,6 @@
 package edu.wpi.first.shuffleboard.api.sources;
 
 import edu.wpi.first.shuffleboard.api.util.Registry;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,12 +51,12 @@ public class Sources extends Registry<DataSource> {
         .collect(Collectors.toList());
   }
 
-  @SuppressWarnings("unchecked") //NOPMD multiple occurrences of string literal
+  @SuppressWarnings("unchecked") // NOPMD multiple occurrences of string literal
   public <T> Optional<DataSource<T>> get(String id) {
     return Optional.ofNullable(sources.get(id));
   }
 
-  @SuppressWarnings("unchecked") //NOPMD multiple occurrences of string literal
+  @SuppressWarnings("unchecked") // NOPMD multiple occurrences of string literal
   public <T> DataSource<T> computeIfAbsent(String uri, Supplier<DataSource<T>> sourceSupplier) {
     return sources.computeIfAbsent(uri, __ -> sourceSupplier.get());
   }
@@ -66,5 +65,4 @@ public class Sources extends Registry<DataSource> {
     return DataSourceUtils.getHierarchy(source.getName()).stream()
         .map(n -> source.getType().forUri(source.getType().toUri(n)));
   }
-
 }

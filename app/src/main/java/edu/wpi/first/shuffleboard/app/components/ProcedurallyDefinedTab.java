@@ -15,7 +15,6 @@ import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.ComponentContainer;
 import edu.wpi.first.shuffleboard.api.widget.SettingsHolder;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
-
 import java.time.Duration;
 import java.util.Collection;
 import java.util.List;
@@ -25,8 +24,8 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
- * A dashboard tab that generates its own contents based on an external model. {@link #populate()} must be called
- * externally to update the contents of this tab.
+ * A dashboard tab that generates its own contents based on an external model. {@link #populate()}
+ * must be called externally to update the contents of this tab.
  */
 public class ProcedurallyDefinedTab extends DashboardTab {
 
@@ -43,7 +42,7 @@ public class ProcedurallyDefinedTab extends DashboardTab {
   /**
    * Creates a new procedurally defined tab.
    *
-   * @param model   the backing tab model
+   * @param model the backing tab model
    * @param parsers the parser registry to use when resolving custom widget properties
    */
   public ProcedurallyDefinedTab(TabModel model, PropertyParsers parsers) {
@@ -69,9 +68,7 @@ public class ProcedurallyDefinedTab extends DashboardTab {
     return populateDebouncer;
   }
 
-  /**
-   * Populates this tab from the tab model.
-   */
+  /** Populates this tab from the tab model. */
   public void populate() {
     if (getTabPane() == null) {
       // No longer in the scene; bail
@@ -88,7 +85,8 @@ public class ProcedurallyDefinedTab extends DashboardTab {
       return;
     }
     if (deferPopulation) {
-      // Defer one last time; this method tends to trigger before row/column bindings on the widget pane
+      // Defer one last time; this method tends to trigger before row/column bindings on the widget
+      // pane
       // This makes sure the pane is properly sized before populating it
       deferPopulation = false;
       populateDebouncer.run();
@@ -104,7 +102,8 @@ public class ProcedurallyDefinedTab extends DashboardTab {
       if (component == null) {
         component = container.addComponent(componentModel);
         if (component == null) {
-          log.warning("No registered component with name '" + componentModel.getDisplayType() + "'");
+          log.warning(
+              "No registered component with name '" + componentModel.getDisplayType() + "'");
           continue;
         }
         component.setTitle(componentModel.getTitle());
@@ -115,24 +114,27 @@ public class ProcedurallyDefinedTab extends DashboardTab {
       }
       applySettings(component, componentModel.getProperties());
       if (componentModel instanceof LayoutModel) {
-        populateLayout((LayoutModel) componentModel, (ComponentContainer) proceduralComponents.get(componentModel));
+        populateLayout(
+            (LayoutModel) componentModel,
+            (ComponentContainer) proceduralComponents.get(componentModel));
       }
     }
   }
 
   private void applySettings(SettingsHolder target, Map<String, Object> properties) {
-    properties.forEach((name, value) -> {
-      target.getSettings().stream()
-          .map(Group::getSettings)
-          .flatMap(Collection::stream)
-          .filter(s -> s.getType() != null)
-          .filter(s -> StringUtils.equalsIgnoreCaseAndWhitespace(s.getName(), name))
-          .findFirst()
-          .ifPresent(s -> {
-            parsers.parse(value, s.getType())
-                .ifPresent(v -> ((Setting) s).setValue(v));
-          });
-    });
+    properties.forEach(
+        (name, value) -> {
+          target.getSettings().stream()
+              .map(Group::getSettings)
+              .flatMap(Collection::stream)
+              .filter(s -> s.getType() != null)
+              .filter(s -> StringUtils.equalsIgnoreCaseAndWhitespace(s.getName(), name))
+              .findFirst()
+              .ifPresent(
+                  s -> {
+                    parsers.parse(value, s.getType()).ifPresent(v -> ((Setting) s).setValue(v));
+                  });
+        });
   }
 
   @Override

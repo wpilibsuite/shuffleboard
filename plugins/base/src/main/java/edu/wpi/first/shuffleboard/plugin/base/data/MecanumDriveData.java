@@ -1,15 +1,14 @@
 package edu.wpi.first.shuffleboard.plugin.base.data;
 
+import com.google.common.annotations.VisibleForTesting;
 import edu.wpi.first.shuffleboard.api.util.Maps;
 import edu.wpi.first.shuffleboard.api.util.Vector2D;
-
-import com.google.common.annotations.VisibleForTesting;
-
 import java.util.Map;
 import java.util.Objects;
 
 /**
- * Represents data from a mecanum drive base. All motor speeds are in the range <code>(-1, 1)</code>.
+ * Represents data from a mecanum drive base. All motor speeds are in the range <code>(-1, 1)</code>
+ * .
  */
 public final class MecanumDriveData extends DriveBaseData<MecanumDriveData> {
 
@@ -28,26 +27,28 @@ public final class MecanumDriveData extends DriveBaseData<MecanumDriveData> {
   private final double turn;
 
   /**
-   * Creates a new mecanum drive data object. The turning moment and motion vector are derived from the four
-   * speeds.
+   * Creates a new mecanum drive data object. The turning moment and motion vector are derived from
+   * the four speeds.
    *
-   * @param frontLeftSpeed  the speed of the front-left motor
+   * @param frontLeftSpeed the speed of the front-left motor
    * @param frontRightSpeed the speed of the front-right motor
-   * @param rearLeftSpeed   the speed of the rear-left motor
-   * @param rearRightSpeed  the speed of the rear-right motor
+   * @param rearLeftSpeed the speed of the rear-left motor
+   * @param rearRightSpeed the speed of the rear-right motor
    */
-  public MecanumDriveData(double frontLeftSpeed,
-                          double frontRightSpeed,
-                          double rearLeftSpeed,
-                          double rearRightSpeed,
-                          boolean controllable) {
+  public MecanumDriveData(
+      double frontLeftSpeed,
+      double frontRightSpeed,
+      double rearLeftSpeed,
+      double rearRightSpeed,
+      boolean controllable) {
     super(controllable);
     this.frontLeftSpeed = frontLeftSpeed;
     this.frontRightSpeed = frontRightSpeed;
     this.rearLeftSpeed = rearLeftSpeed;
     this.rearRightSpeed = rearRightSpeed;
     this.moment = calculateMoment(frontLeftSpeed, frontRightSpeed, rearLeftSpeed, rearRightSpeed);
-    this.direction = calculateDirectionVector(frontLeftSpeed, frontRightSpeed, rearLeftSpeed, rearRightSpeed);
+    this.direction =
+        calculateDirectionVector(frontLeftSpeed, frontRightSpeed, rearLeftSpeed, rearRightSpeed);
     this.turn = Math.sqrt((direction.x * direction.x) + (direction.y * direction.y)) / moment;
   }
 
@@ -55,8 +56,8 @@ public final class MecanumDriveData extends DriveBaseData<MecanumDriveData> {
    * Creates a new mecanum drive data object from a map.
    *
    * @param map the map to create a data object from
-   *
-   * @throws java.util.NoSuchElementException if the map is missing any entry for any motor speed value
+   * @throws java.util.NoSuchElementException if the map is missing any entry for any motor speed
+   *     value
    */
   public static MecanumDriveData fromMap(Map<String, Object> map) {
     return new MecanumDriveData(
@@ -64,8 +65,7 @@ public final class MecanumDriveData extends DriveBaseData<MecanumDriveData> {
         Maps.getOrDefault(map, frontRightMotorSpeed, 0.0),
         Maps.getOrDefault(map, rearLeftMotorSpeed, 0.0),
         Maps.getOrDefault(map, rearRightMotorSpeed, 0.0),
-        Maps.getOrDefault(map, controllable, false)
-    );
+        Maps.getOrDefault(map, controllable, false));
   }
 
   @Override
@@ -97,69 +97,71 @@ public final class MecanumDriveData extends DriveBaseData<MecanumDriveData> {
   }
 
   /**
-   * Gets the moment about the drive base's center of rotation. This value is derived from the motor speeds and is in
-   * the range <code>(-1, 1)</code>.
+   * Gets the moment about the drive base's center of rotation. This value is derived from the motor
+   * speeds and is in the range <code>(-1, 1)</code>.
    */
   public double getMoment() {
     return moment;
   }
 
   /**
-   * Gets a vector describing the direction of movement of the drive base. This vector is derived from the motor speeds
-   * and has a magnitude in the range <code>(-1, 1)</code>.
+   * Gets a vector describing the direction of movement of the drive base. This vector is derived
+   * from the motor speeds and has a magnitude in the range <code>(-1, 1)</code>.
    */
   public Vector2D getDirection() {
     return direction;
   }
 
   /**
-   * Gets a value describing how the drive base is turning in a differential-drive style. This is in the range
-   * <code>(-Inf, Inf)</code>, with negative values being turns to the right and positive values being
-   * turns to the left. Values of Infinity mean there is no turning moment.
+   * Gets a value describing how the drive base is turning in a differential-drive style. This is in
+   * the range <code>(-Inf, Inf)</code>, with negative values being turns to the right and positive
+   * values being turns to the left. Values of Infinity mean there is no turning moment.
    */
   public double getTurn() {
     return turn;
   }
 
   public MecanumDriveData withFrontLeftSpeed(double frontLeftSpeed) {
-    return new MecanumDriveData(frontLeftSpeed, frontRightSpeed, rearLeftSpeed, rearRightSpeed, isControllable());
+    return new MecanumDriveData(
+        frontLeftSpeed, frontRightSpeed, rearLeftSpeed, rearRightSpeed, isControllable());
   }
 
   public MecanumDriveData withFrontRightSpeed(double frontRightSpeed) {
-    return new MecanumDriveData(frontLeftSpeed, frontRightSpeed, rearLeftSpeed, rearRightSpeed, isControllable());
+    return new MecanumDriveData(
+        frontLeftSpeed, frontRightSpeed, rearLeftSpeed, rearRightSpeed, isControllable());
   }
 
   public MecanumDriveData withRearLeftSpeed(double rearLeftSpeed) {
-    return new MecanumDriveData(frontLeftSpeed, frontRightSpeed, rearLeftSpeed, rearRightSpeed, isControllable());
+    return new MecanumDriveData(
+        frontLeftSpeed, frontRightSpeed, rearLeftSpeed, rearRightSpeed, isControllable());
   }
 
   public MecanumDriveData withRearRightSpeed(double rearRightSpeed) {
-    return new MecanumDriveData(frontLeftSpeed, frontRightSpeed, rearLeftSpeed, rearRightSpeed, isControllable());
+    return new MecanumDriveData(
+        frontLeftSpeed, frontRightSpeed, rearLeftSpeed, rearRightSpeed, isControllable());
   }
 
   /**
-   * Calculates a direction vector for the drive base caused by the mecanum wheel force vectors. This assumes that all
-   * four wheels have equal weight distribution. The vector is scaled to have X and Y components in the range
-   * <code>(-1, 1)</code>; due to the nature of mecanum drives, the magnitude of the vector is also in the range
-   * <code>(-1, 1)</code>.
+   * Calculates a direction vector for the drive base caused by the mecanum wheel force vectors.
+   * This assumes that all four wheels have equal weight distribution. The vector is scaled to have
+   * X and Y components in the range <code>(-1, 1)</code>; due to the nature of mecanum drives, the
+   * magnitude of the vector is also in the range <code>(-1, 1)</code>.
    */
   @VisibleForTesting
   static Vector2D calculateDirectionVector(double fl, double fr, double rl, double rr) {
-    return new Vector2D(
-        (fl - fr - rl + rr) / 4,
-        (fl + fr + rl + rr) / 4
-    );
+    return new Vector2D((fl - fr - rl + rr) / 4, (fl + fr + rl + rr) / 4);
   }
 
   /**
-   * Calculates the sum of all moments caused by the mecanum wheel force vectors about the center of rotation. This
-   * assumes that all four wheels have equal weight distribution. The moment is scaled to be in the range
-   * <code>(-1, 1)</code>, with positive values being counter-clockwise rotation and negative values being clockwise
-   * rotation.
+   * Calculates the sum of all moments caused by the mecanum wheel force vectors about the center of
+   * rotation. This assumes that all four wheels have equal weight distribution. The moment is
+   * scaled to be in the range <code>(-1, 1)</code>, with positive values being counter-clockwise
+   * rotation and negative values being clockwise rotation.
    */
   @VisibleForTesting
   static double calculateMoment(double fl, double fr, double rl, double rr) {
-    // -x(fl) * h/2 - y(fl) * w/2 + x(fr) * h/2 + y(fr) * w/2 - x(rl) * h/2 - y(rl) * w/2 + x(rr) * h/2 + y(rr) * w/2
+    // -x(fl) * h/2 - y(fl) * w/2 + x(fr) * h/2 + y(fr) * w/2 - x(rl) * h/2 - y(rl) * w/2 + x(rr) *
+    // h/2 + y(rr) * w/2
     // = h/2 * (-x(fl) + x(fr) - x(rl) + x(rr)) + w/2 * (-y(fl) + y(fr) - y(rl) + y(rr))
     // = (h/2 + w/2) * (-x(fl) + x(fr) - x(rl) + x(rr))
     // Drop the constant factor since we don't know the dimensions of the track or the wheel base
@@ -186,15 +188,14 @@ public final class MecanumDriveData extends DriveBaseData<MecanumDriveData> {
 
   @Override
   public int hashCode() {
-    return Objects.hash(frontLeftSpeed, frontRightSpeed, rearLeftSpeed, rearRightSpeed, isControllable());
+    return Objects.hash(
+        frontLeftSpeed, frontRightSpeed, rearLeftSpeed, rearRightSpeed, isControllable());
   }
 
   @Override
   public String toString() {
     return String.format(
         "MecanumDriveData(frontLeftSpeed=%s, frontRightSpeed=%s, rearLeftSpeed=%s, rearRightSpeed=%s, controllable=%s)",
-        frontLeftSpeed, frontRightSpeed, rearLeftSpeed, rearRightSpeed, isControllable()
-    );
+        frontLeftSpeed, frontRightSpeed, rearLeftSpeed, rearRightSpeed, isControllable());
   }
-
 }

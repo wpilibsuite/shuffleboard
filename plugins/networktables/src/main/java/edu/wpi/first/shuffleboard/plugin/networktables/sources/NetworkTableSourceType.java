@@ -1,5 +1,10 @@
 package edu.wpi.first.shuffleboard.plugin.networktables.sources;
 
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableEvent;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.Topic;
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.sources.ConnectionStatus;
@@ -11,16 +16,8 @@ import edu.wpi.first.shuffleboard.api.util.AsyncUtils;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.plugin.networktables.NetworkTablesPlugin;
 import edu.wpi.first.shuffleboard.plugin.networktables.util.NetworkTableUtils;
-
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableEntry;
-import edu.wpi.first.networktables.NetworkTableEvent;
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.Topic;
-
 import java.util.EnumSet;
 import java.util.List;
-
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -40,79 +37,87 @@ public final class NetworkTableSourceType extends SourceType {
     this.plugin = plugin;
     setConnectionStatus(new ConnectionStatus(plugin.getServerId(), false));
     NetworkTableInstance inst = NetworkTableInstance.getDefault();
-    plugin.serverIdProperty().addListener((__, old, serverId) -> setConnectionStatus(serverId, false));
-    inst.addConnectionListener(true,
-        event -> setConnectionStatus(plugin.getServerId(), event.is(NetworkTableEvent.Kind.kConnected)));
-    inst.addConnectionListener(false, event -> {
-      if (event.is(NetworkTableEvent.Kind.kDisconnected)) {
-        FxUtils.runOnFxThread(() -> {
-          availableSources.clear();
-          availableSourceIds.clear();
-          NetworkTableSource.removeAllCachedSources();
-        });
-      } else if (event.is(NetworkTableEvent.Kind.kConnected)) {
-        FxUtils.runOnFxThread(() -> {
-          for (Topic topic : event.getInstance().getTopics()) {
-            String uri = toUri(topic.getName());
-            if (!availableSources.containsKey(uri)) {
-              availableSources.put(uri, topic.genericSubscribe().get().getValue());
-            }
-            if (!availableSourceIds.contains(uri)) {
-              availableSourceIds.add(uri);
-            }
+    plugin
+        .serverIdProperty()
+        .addListener((__, old, serverId) -> setConnectionStatus(serverId, false));
+    inst.addConnectionListener(
+        true,
+        event ->
+            setConnectionStatus(plugin.getServerId(), event.is(NetworkTableEvent.Kind.kConnected)));
+    inst.addConnectionListener(
+        false,
+        event -> {
+          if (event.is(NetworkTableEvent.Kind.kDisconnected)) {
+            FxUtils.runOnFxThread(
+                () -> {
+                  availableSources.clear();
+                  availableSourceIds.clear();
+                  NetworkTableSource.removeAllCachedSources();
+                });
+          } else if (event.is(NetworkTableEvent.Kind.kConnected)) {
+            FxUtils.runOnFxThread(
+                () -> {
+                  for (Topic topic : event.getInstance().getTopics()) {
+                    String uri = toUri(topic.getName());
+                    if (!availableSources.containsKey(uri)) {
+                      availableSources.put(uri, topic.genericSubscribe().get().getValue());
+                    }
+                    if (!availableSourceIds.contains(uri)) {
+                      availableSourceIds.add(uri);
+                    }
+                  }
+                });
           }
         });
-      }
-    });
     inst.addListener(
         new String[] {""},
         EnumSet.of(
-          NetworkTableEvent.Kind.kImmediate,
-          NetworkTableEvent.Kind.kTopic,
-          NetworkTableEvent.Kind.kValueAll),
+            NetworkTableEvent.Kind.kImmediate,
+            NetworkTableEvent.Kind.kTopic,
+            NetworkTableEvent.Kind.kValueAll),
         event -> {
-          AsyncUtils.runAsync(() -> {
-            final boolean delete = event.is(NetworkTableEvent.Kind.kUnpublish);
-            final String name = NetworkTableUtils.topicNameForEvent(event);
-            List<String> hierarchy = NetworkTable.getHierarchy(name);
-            for (int i = 0; i < hierarchy.size(); i++) {
-              String uri = toUri(hierarchy.get(i));
-              if (i == hierarchy.size() - 1) {
-                if (delete) {
-                  availableSources.remove(uri);
-                  Sources sources = Sources.getDefault();
-                  sources.get(uri).ifPresent(sources::unregister);
-                  NetworkTableSource.removeCachedSource(uri);
-                } else if (event.valueData != null) {
-                  availableSources.put(uri, event.valueData.value.getValue());
+          AsyncUtils.runAsync(
+              () -> {
+                final boolean delete = event.is(NetworkTableEvent.Kind.kUnpublish);
+                final String name = NetworkTableUtils.topicNameForEvent(event);
+                List<String> hierarchy = NetworkTable.getHierarchy(name);
+                for (int i = 0; i < hierarchy.size(); i++) {
+                  String uri = toUri(hierarchy.get(i));
+                  if (i == hierarchy.size() - 1) {
+                    if (delete) {
+                      availableSources.remove(uri);
+                      Sources sources = Sources.getDefault();
+                      sources.get(uri).ifPresent(sources::unregister);
+                      NetworkTableSource.removeCachedSource(uri);
+                    } else if (event.valueData != null) {
+                      availableSources.put(uri, event.valueData.value.getValue());
+                    }
+                  }
+                  if (delete) {
+                    availableSourceIds.remove(uri);
+                  } else if (!availableSourceIds.contains(uri)) {
+                    availableSourceIds.add(uri);
+                  }
                 }
-              }
-              if (delete) {
-                availableSourceIds.remove(uri);
-              } else if (!availableSourceIds.contains(uri)) {
-                availableSourceIds.add(uri);
-              }
-            }
-          });
+              });
         });
   }
 
   private void setConnectionStatus(String serverId, boolean connected) {
-    Platform.runLater(() -> {
-      String host;
-      if (serverId.isEmpty()) {
-        // empty server ID is treated as localhost by the plugin, so display it accordingly
-        host = "localhost";
-      } else {
-        host = serverId;
-      }
-      setConnectionStatus(new ConnectionStatus(host, connected));
-    });
+    Platform.runLater(
+        () -> {
+          String host;
+          if (serverId.isEmpty()) {
+            // empty server ID is treated as localhost by the plugin, so display it accordingly
+            host = "localhost";
+          } else {
+            host = serverId;
+          }
+          setConnectionStatus(new ConnectionStatus(host, connected));
+        });
   }
 
-  /**
-   * For internal use only.
-   */
+  /** For internal use only. */
   public static void setInstance(NetworkTableSourceType instance) {
     NetworkTableSourceType.instance = instance;
   }
@@ -171,5 +176,4 @@ public final class NetworkTableSourceType extends SourceType {
   public String toUri(String sourceName) {
     return super.toUri(NetworkTable.normalizeKey(sourceName));
   }
-
 }

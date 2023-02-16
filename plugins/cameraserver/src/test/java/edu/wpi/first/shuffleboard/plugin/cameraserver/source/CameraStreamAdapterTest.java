@@ -1,9 +1,15 @@
 package edu.wpi.first.shuffleboard.plugin.cameraserver.source;
 
+import static edu.wpi.first.shuffleboard.plugin.cameraserver.source.CameraStreamAdapter.videoFilePath;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 import edu.wpi.first.shuffleboard.plugin.cameraserver.data.CameraServerData;
-
-import edu.wpi.first.cscore.CameraServerJNI;
-
+import java.io.File;
+import java.io.IOException;
+import java.util.logging.Logger;
 import org.bytedeco.javacpp.Loader;
 import org.bytedeco.opencv.opencv_java;
 import org.junit.jupiter.api.AfterEach;
@@ -14,17 +20,6 @@ import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
-
-
-import java.io.File;
-import java.io.IOException;
-import java.util.logging.Logger;
-
-import static edu.wpi.first.shuffleboard.plugin.cameraserver.source.CameraStreamAdapter.videoFilePath;
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class CameraStreamAdapterTest {
 
@@ -70,8 +65,8 @@ public class CameraStreamAdapterTest {
         () -> assertEquals(data.getName(), deserialize.getName(), "Wrong name"),
         () -> assertEquals(data.getFps(), deserialize.getFps(), "Wrong FPS"),
         () -> assertEquals(data.getBandwidth(), deserialize.getBandwidth(), "Wrong bandwidth"),
-        () -> assertNull(deserialize.getImage(), "Image should be null (video file does not exist)")
-    );
+        () ->
+            assertNull(deserialize.getImage(), "Image should be null (video file does not exist)"));
   }
 
   @Test
@@ -106,15 +101,23 @@ public class CameraStreamAdapterTest {
 
     deleteTempFiles(file);
 
-    assertAll("Images should be present for both frames",
+    assertAll(
+        "Images should be present for both frames",
         () -> assertNotNull(deserializedFrame1Image, "First deserialized frame had no image"),
-        () -> assertNotNull(deserializedFrame2Image, "Second deserialized frame had no image")
-    );
+        () -> assertNotNull(deserializedFrame2Image, "Second deserialized frame had no image"));
 
-    assertAll("Image sizes",
-        () -> assertEquals(image1Copy.total(), deserializedFrame1Image.total(), "First loaded frame has wrong size"),
-        () -> assertEquals(image2Copy.total(), deserializedFrame2Image.total(), "Second loaded frame has wrong size")
-    );
+    assertAll(
+        "Image sizes",
+        () ->
+            assertEquals(
+                image1Copy.total(),
+                deserializedFrame1Image.total(),
+                "First loaded frame has wrong size"),
+        () ->
+            assertEquals(
+                image2Copy.total(),
+                deserializedFrame2Image.total(),
+                "Second loaded frame has wrong size"));
 
     image1Copy.release();
     image2Copy.release();
@@ -122,15 +125,16 @@ public class CameraStreamAdapterTest {
 
   @Test
   public void testVideoFileName() {
-    assertAll("Video file names",
-        () -> assertEquals(
-            new File("recording-Camera.0.mp4").getAbsolutePath(),
-            videoFilePath(new File("recording.sbr"), "Camera", 0)),
-        () -> assertEquals(
-            new File("foo/bar-a b c.45.mp4").getAbsolutePath(),
-            videoFilePath(new File("foo/bar.sbr"), "a b c", 45)
-        )
-    );
+    assertAll(
+        "Video file names",
+        () ->
+            assertEquals(
+                new File("recording-Camera.0.mp4").getAbsolutePath(),
+                videoFilePath(new File("recording.sbr"), "Camera", 0)),
+        () ->
+            assertEquals(
+                new File("foo/bar-a b c.45.mp4").getAbsolutePath(),
+                videoFilePath(new File("foo/bar.sbr"), "a b c", 45)));
   }
 
   private void deleteTempFiles(File file) {
@@ -144,5 +148,4 @@ public class CameraStreamAdapterTest {
       Logger.getLogger(getClass().getName()).warning("Could not delete temporary recording files");
     }
   }
-
 }

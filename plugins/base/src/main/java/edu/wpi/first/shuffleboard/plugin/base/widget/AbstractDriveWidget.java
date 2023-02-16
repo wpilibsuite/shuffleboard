@@ -7,20 +7,17 @@ import edu.wpi.first.shuffleboard.api.widget.Widget;
 import edu.wpi.first.shuffleboard.plugin.base.data.DriveBaseData;
 import edu.wpi.first.shuffleboard.plugin.base.data.SpeedControllerData;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.SpeedControllerType;
-
 import java.util.Collection;
 import java.util.function.BiFunction;
 import java.util.function.ToDoubleFunction;
 import java.util.stream.Stream;
-
 import javafx.scene.layout.Region;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Shape;
 
-/**
- * An abstract class defining several shared methods for drive base widgets.
- */
-public abstract class AbstractDriveWidget<T extends DriveBaseData<T>> extends SimpleAnnotatedWidget<T> {
+/** An abstract class defining several shared methods for drive base widgets. */
+public abstract class AbstractDriveWidget<T extends DriveBaseData<T>>
+    extends SimpleAnnotatedWidget<T> {
 
   private static final Double ZERO = Double.valueOf(0.0);
 
@@ -30,34 +27,35 @@ public abstract class AbstractDriveWidget<T extends DriveBaseData<T>> extends Si
   protected static void overrideWidgetSize(Widget... widgets) {
     Stream.of(widgets)
         .map(Widget::getView)
-        .forEach(v -> {
-          v.setMinWidth(Region.USE_COMPUTED_SIZE);
-          v.setMinHeight(Region.USE_COMPUTED_SIZE);
-        });
+        .forEach(
+            v -> {
+              v.setMinWidth(Region.USE_COMPUTED_SIZE);
+              v.setMinHeight(Region.USE_COMPUTED_SIZE);
+            });
   }
 
   /**
    * Creates a subsource for a specific motor in a drive base.
    *
-   * @param source    the source for the drive base data
+   * @param source the source for the drive base data
    * @param motorName the motor name (eg "Left Motor" or "Right Motor")
-   * @param getter    the getter (eg {@code DifferentialDriveData::getLeftSpeed})
-   * @param setter    the setter (eg {@code DifferentialDriveData::withLeftSpeed})
+   * @param getter the getter (eg {@code DifferentialDriveData::getLeftSpeed})
+   * @param setter the setter (eg {@code DifferentialDriveData::withLeftSpeed})
    */
-  protected DataSource<SpeedControllerData> motorSource(DataSource<T> source,
-                                                        String motorName,
-                                                        ToDoubleFunction<T> getter,
-                                                        BiFunction<T, Double, T> setter) {
+  protected DataSource<SpeedControllerData> motorSource(
+      DataSource<T> source,
+      String motorName,
+      ToDoubleFunction<T> getter,
+      BiFunction<T, Double, T> setter) {
     return new SubSource<>(
         SpeedControllerType.Instance,
         source,
         d -> setter.apply(dataOrDefault.get(), d == null ? ZERO : d.getValue()),
-        t -> new SpeedControllerData(
-            motorName,
-            t == null ? ZERO : getter.applyAsDouble(t),
-            t != null && t.isControllable()
-        )
-    );
+        t ->
+            new SpeedControllerData(
+                motorName,
+                t == null ? ZERO : getter.applyAsDouble(t),
+                t != null && t.isControllable()));
   }
 
   /**
@@ -78,7 +76,6 @@ public abstract class AbstractDriveWidget<T extends DriveBaseData<T>> extends Si
    * Performs a union of an arbitrary amount of shapes.
    *
    * @param shapes the shapes to union
-   *
    * @return the shape resulting from doing a union of the given shapes
    */
   protected static Shape union(Collection<? extends Shape> shapes) {
@@ -89,7 +86,6 @@ public abstract class AbstractDriveWidget<T extends DriveBaseData<T>> extends Si
    * Performs a union of an arbitrary amount of shapes.
    *
    * @param shapes the shapes to union
-   *
    * @return the shape resulting from doing a union of the given shapes
    */
   protected static Shape union(Shape... shapes) {
@@ -119,5 +115,4 @@ public abstract class AbstractDriveWidget<T extends DriveBaseData<T>> extends Si
         return union;
     }
   }
-
 }

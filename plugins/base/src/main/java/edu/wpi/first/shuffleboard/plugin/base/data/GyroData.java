@@ -1,9 +1,7 @@
 package edu.wpi.first.shuffleboard.plugin.base.data;
 
 import com.google.common.collect.ImmutableMap;
-
 import edu.wpi.first.shuffleboard.api.data.ComplexData;
-
 import java.util.Map;
 import java.util.Objects;
 
@@ -23,10 +21,10 @@ public final class GyroData extends ComplexData<GyroData> {
   public Map<String, Object> asMap() {
     return ImmutableMap.of("Value", value);
   }
-  
+
   /**
-   * Version of getValue that always returns value between 0 and 360.
-   * This is guaranteed to be displayed properly by the Gyro widget. 
+   * Version of getValue that always returns value between 0 and 360. This is guaranteed to be
+   * displayed properly by the Gyro widget.
    */
   public double getWrappedValue() {
     if (value < 0) {

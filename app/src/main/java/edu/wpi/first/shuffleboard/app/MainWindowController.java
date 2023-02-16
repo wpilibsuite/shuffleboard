@@ -20,9 +20,6 @@ import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
 import edu.wpi.first.shuffleboard.app.prefs.SettingsDialog;
 import edu.wpi.first.shuffleboard.app.sources.recording.Playback;
 import edu.wpi.first.shuffleboard.app.tab.TabInfoRegistry;
-
-import org.fxmisc.easybind.EasyBind;
-
 import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
@@ -32,7 +29,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-
 import javafx.application.Platform;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
@@ -43,25 +39,19 @@ import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
 import javafx.stage.Screen;
 import javafx.stage.Window;
+import org.fxmisc.easybind.EasyBind;
 
-/**
- * Controller for the main UI window.
- */
+/** Controller for the main UI window. */
 @SuppressWarnings("PMD.TooManyFields")
 public class MainWindowController {
 
   private static final Logger log = Logger.getLogger(MainWindowController.class.getName());
 
-  @FXML
-  private MenuItem recordingMenu;
-  @FXML
-  private Pane root;
-  @FXML
-  private Pane contentRoot;
-  @FXML
-  private Pane leftDrawer;
-  @FXML
-  private DashboardTabPane dashboard;
+  @FXML private MenuItem recordingMenu;
+  @FXML private Pane root;
+  @FXML private Pane contentRoot;
+  @FXML private Pane leftDrawer;
+  @FXML private DashboardTabPane dashboard;
 
   private final PluginDialog pluginDialog = new PluginDialog();
   private final AboutDialog aboutDialog = new AboutDialog();
@@ -70,63 +60,78 @@ public class MainWindowController {
 
   private final SaveFileHandler saveFileHandler = new SaveFileHandler();
 
-  private final ObservableValue<List<String>> stylesheets
-      = EasyBind.map(AppPreferences.getInstance().themeProperty(), Theme::getStyleSheets);
+  private final ObservableValue<List<String>> stylesheets =
+      EasyBind.map(AppPreferences.getInstance().themeProperty(), Theme::getStyleSheets);
 
   @FXML
   private void initialize() {
-    recordingMenu.textProperty().bind(
-        EasyBind.map(
-            Recorder.getInstance().runningProperty(),
-            running -> running ? "Stop recording" : "Start recording"));
+    recordingMenu
+        .textProperty()
+        .bind(
+            EasyBind.map(
+                Recorder.getInstance().runningProperty(),
+                running -> running ? "Stop recording" : "Start recording"));
     FxUtils.bind(root.getStylesheets(), stylesheets);
 
     log.info("Setting up plugins in the UI");
     PluginLoader.getDefault().getLoadedPlugins().forEach(this::tearDownPluginWhenUnloaded);
-    PluginLoader.getDefault().getKnownPlugins().addListener((ListChangeListener<Plugin>) c -> {
-      while (c.next()) {
-        if (c.wasAdded()) {
-          c.getAddedSubList().forEach(this::tearDownPluginWhenUnloaded);
-        }
-      }
-    });
+    PluginLoader.getDefault()
+        .getKnownPlugins()
+        .addListener(
+            (ListChangeListener<Plugin>)
+                c -> {
+                  while (c.next()) {
+                    if (c.wasAdded()) {
+                      c.getAddedSubList().forEach(this::tearDownPluginWhenUnloaded);
+                    }
+                  }
+                });
 
-    root.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
-      if (e.isShortcutDown() && e.getCode().isDigitKey()) {
-        /*
-         * Numpad digits have a name of "Numpad n"; where n is the number. We need to remove the
-         * leading "Numpad " to parse the number.  Digit keys do not have this issue.
-         */
-        int digitPressed = Integer.parseInt(e.getCode().getName().replace("Numpad ", ""));
-        dashboard.selectTab(digitPressed - 1);
-      }
-    });
+    root.addEventFilter(
+        KeyEvent.KEY_PRESSED,
+        e -> {
+          if (e.isShortcutDown() && e.getCode().isDigitKey()) {
+            /*
+             * Numpad digits have a name of "Numpad n"; where n is the number. We need to remove the
+             * leading "Numpad " to parse the number.  Digit keys do not have this issue.
+             */
+            int digitPressed = Integer.parseInt(e.getCode().getName().replace("Numpad ", ""));
+            dashboard.selectTab(digitPressed - 1);
+          }
+        });
 
     setLeftDrawerCallbacks();
   }
 
   private void tearDownPluginWhenUnloaded(Plugin plugin) {
-    plugin.loadedProperty().addListener((__, was, is) -> {
-      if (!is) {
-        tearDown(plugin);
-      }
-    });
+    plugin
+        .loadedProperty()
+        .addListener(
+            (__, was, is) -> {
+              if (!is) {
+                tearDown(plugin);
+              }
+            });
   }
 
   private void setLeftDrawerCallbacks() {
     LeftDrawerController leftDrawerController = FxUtils.getController(leftDrawer);
     leftDrawerController.setAddComponentToActivePane(dashboard::addComponentToActivePane);
     leftDrawerController.setCreateTabForSource(dashboard::createTabForSource);
-    dashboard.getSelectionModel().selectedItemProperty().addListener((__, old, item) -> {
-      if (!(item instanceof AdderTab)) {
-        leftDrawerController.hide();
-      }
-    });
+    dashboard
+        .getSelectionModel()
+        .selectedItemProperty()
+        .addListener(
+            (__, old, item) -> {
+              if (!(item instanceof AdderTab)) {
+                leftDrawerController.hide();
+              }
+            });
   }
 
   /**
-   * Removes all traces from a plugin from the application window. Source trees will be removed and all widgets
-   * defined by the plugin will be removed from all dashboard tabs.
+   * Removes all traces from a plugin from the application window. Source trees will be removed and
+   * all widgets defined by the plugin will be removed from all dashboard tabs.
    */
   private void tearDown(Plugin plugin) {
     // Remove widgets
@@ -134,95 +139,93 @@ public class MainWindowController {
         .filter(tab -> tab instanceof DashboardTab)
         .map(tab -> (DashboardTab) tab)
         .map(DashboardTab::getWidgetPane)
-        .forEach(pane ->
-            pane.getTiles().stream()
-                .filter(tile -> plugin.getComponents().stream()
-                    .anyMatch(t -> tile.getContent().getName().equals(t.getName())))
-                .collect(Collectors.toList()) // collect into temporary list to prevent comodification
-                .forEach(tile -> pane.getChildren().remove(tile)));
+        .forEach(
+            pane ->
+                pane.getTiles().stream()
+                    .filter(
+                        tile ->
+                            plugin.getComponents().stream()
+                                .anyMatch(t -> tile.getContent().getName().equals(t.getName())))
+                    .collect(
+                        Collectors
+                            .toList()) // collect into temporary list to prevent comodification
+                    .forEach(tile -> pane.getChildren().remove(tile)));
   }
 
-  /**
-   * Set the currently loaded dashboard.
-   */
+  /** Set the currently loaded dashboard. */
   private void setDashboard(DashboardTabPane dashboard) {
     dashboard.setId("dashboard");
     contentRoot.getChildren().remove(this.dashboard);
-    this.dashboard.getTabs().clear(); // Lets tabs get cleaned up (e.g. cancelling deferred autopopulation calls)
+    this.dashboard
+        .getTabs()
+        .clear(); // Lets tabs get cleaned up (e.g. cancelling deferred autopopulation calls)
     this.dashboard = dashboard;
     setLeftDrawerCallbacks();
-    dashboard.getSelectionModel().selectedItemProperty().addListener((__, old, item) -> {
-      if (!(item instanceof AdderTab)) {
-        FxUtils.<LeftDrawerController>getController(leftDrawer).hide();
-      }
-    });
+    dashboard
+        .getSelectionModel()
+        .selectedItemProperty()
+        .addListener(
+            (__, old, item) -> {
+              if (!(item instanceof AdderTab)) {
+                FxUtils.<LeftDrawerController>getController(leftDrawer).hide();
+              }
+            });
     contentRoot.getChildren().add(0, dashboard);
   }
 
-  /**
-   * Sets the dashboard.
-   */
+  /** Sets the dashboard. */
   public void setDashboard(DashboardData dashboardData) {
     if (dashboardData == null) {
       return;
     }
     setDashboard(dashboardData.getTabPane());
-    Platform.runLater(() -> {
-      // Check that the window will be visible with the saved position and size
-      WindowGeometry wg = dashboardData.getWindowGeometry();
-      if (wg != null) {
-        Window window = root.getScene().getWindow();
-        List<Screen> screens = Screen.getScreensForRectangle(wg.getX(), wg.getY(), wg.getWidth(), wg.getHeight());
-        if (!screens.isEmpty()) {
-          window.setX(wg.getX());
-          window.setY(wg.getY());
-        }
-        window.setWidth(wg.getWidth());
-        window.setHeight(wg.getHeight());
-      }
-    });
+    Platform.runLater(
+        () -> {
+          // Check that the window will be visible with the saved position and size
+          WindowGeometry wg = dashboardData.getWindowGeometry();
+          if (wg != null) {
+            Window window = root.getScene().getWindow();
+            List<Screen> screens =
+                Screen.getScreensForRectangle(wg.getX(), wg.getY(), wg.getWidth(), wg.getHeight());
+            if (!screens.isEmpty()) {
+              window.setX(wg.getX());
+              window.setY(wg.getY());
+            }
+            window.setWidth(wg.getWidth());
+            window.setHeight(wg.getHeight());
+          }
+        });
   }
 
-  /**
-   * Closes from interacting with the "Close" menu item.
-   */
+  /** Closes from interacting with the "Close" menu item. */
   @FXML
   public void close() {
     log.info("Exiting app");
 
-    // Attempt to close the main window. This lets window closing handlers run. Calling System.exit() or Platform.exit()
+    // Attempt to close the main window. This lets window closing handlers run. Calling
+    // System.exit() or Platform.exit()
     // will more-or-less immediately terminate the application without calling these handlers.
     FxUtils.requestClose(root.getScene().getWindow());
     dashboard.getTabs().clear();
   }
 
   private DashboardData getData() {
-    return new DashboardData(
-        dashboard,
-        new WindowGeometry(root.getScene().getWindow())
-    );
+    return new DashboardData(dashboard, new WindowGeometry(root.getScene().getWindow()));
   }
 
-  /**
-   * Save the dashboard to an existing file, if one exists.
-   * Otherwise is identical to #saveAs.
-   */
+  /** Save the dashboard to an existing file, if one exists. Otherwise is identical to #saveAs. */
   @FXML
   public void save() throws IOException {
     saveFileHandler.save(getData());
   }
 
-  /**
-   * Choose a new file and save the dashboard to that file.
-   */
+  /** Choose a new file and save the dashboard to that file. */
   @FXML
   private void saveAs() throws IOException {
     saveFileHandler.saveAs(getData());
   }
 
-  /**
-   * Generates a new layout.
-   */
+  /** Generates a new layout. */
   @FXML
   public void newLayout() {
     saveFileHandler.clear();
@@ -235,9 +238,7 @@ public class MainWindowController {
     }
   }
 
-  /**
-   * Load the dashboard from a save file.
-   */
+  /** Load the dashboard from a save file. */
   @FXML
   public void load() throws IOException {
     setDashboard(saveFileHandler.load());
@@ -247,7 +248,6 @@ public class MainWindowController {
    * Loads the dashboard from a save file.
    *
    * @param saveFile the save file for the dashboard to load
-   *
    * @throws IOException if the file could not be read from
    */
   public void load(File saveFile) throws IOException {
@@ -272,8 +272,9 @@ public class MainWindowController {
   private void loadPlayback() throws IOException {
     FileChooser chooser = new FileChooser();
     chooser.setInitialDirectory(Storage.getRecordingDir());
-    chooser.getExtensionFilters().setAll(
-        new FileChooser.ExtensionFilter("Shuffleboard Data Recording", "*.sbr"));
+    chooser
+        .getExtensionFilters()
+        .setAll(new FileChooser.ExtensionFilter("Shuffleboard Data Recording", "*.sbr"));
     final File selected = chooser.showOpenDialog(root.getScene().getWindow());
     if (selected == null) {
       return;
@@ -294,10 +295,11 @@ public class MainWindowController {
 
   @FXML
   private void showTabPrefs() {
-    List<Category> categories = dashboard.getTabs().stream()
-        .flatMap(TypeUtils.castStream(DashboardTab.class))
-        .map(DashboardTab::getSettingsCategory)
-        .collect(Collectors.toList());
+    List<Category> categories =
+        dashboard.getTabs().stream()
+            .flatMap(TypeUtils.castStream(DashboardTab.class))
+            .map(DashboardTab::getSettingsCategory)
+            .collect(Collectors.toList());
     SettingsDialog dialog = new SettingsDialog(categories);
     dialog.getDialogPane().getStylesheets().setAll(stylesheets.getValue());
     dialog.setTitle("Tab Preferences");
@@ -324,7 +326,10 @@ public class MainWindowController {
   private void openDocsInBrowser() {
     if (Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
       try {
-        Desktop.getDesktop().browse(new URI("https://docs.wpilib.org/en/stable/docs/software/wpilib-tools/shuffleboard/index.html"));
+        Desktop.getDesktop()
+            .browse(
+                new URI(
+                    "https://docs.wpilib.org/en/stable/docs/software/wpilib-tools/shuffleboard/index.html"));
       } catch (IOException | URISyntaxException e) {
         log.log(Level.WARNING, "Could not open users default browser!", e);
       }

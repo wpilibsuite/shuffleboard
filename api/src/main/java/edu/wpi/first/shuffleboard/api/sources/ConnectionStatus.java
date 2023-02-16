@@ -2,9 +2,7 @@ package edu.wpi.first.shuffleboard.api.sources;
 
 import java.util.Objects;
 
-/**
- * Contains information about the state of a source type's connection to the source of its data.
- */
+/** Contains information about the state of a source type's connection to the source of its data. */
 public final class ConnectionStatus {
 
   public static final ConnectionStatus Nil = new ConnectionStatus("Unknown", false);
@@ -17,16 +15,12 @@ public final class ConnectionStatus {
     this.connected = connected;
   }
 
-  /**
-   * Gets the host(s) that the source type is connected to.
-   */
+  /** Gets the host(s) that the source type is connected to. */
   public String getHost() {
     return host;
   }
 
-  /**
-   * Checks if the source type connected to the {@link #getHost() host(s)}.
-   */
+  /** Checks if the source type connected to the {@link #getHost() host(s)}. */
   public boolean isConnected() {
     return connected;
   }
@@ -40,8 +34,7 @@ public final class ConnectionStatus {
       return false;
     }
     ConnectionStatus that = (ConnectionStatus) obj;
-    return this.connected == that.connected
-        && this.host.equals(that.host);
+    return this.connected == that.connected && this.host.equals(that.host);
   }
 
   @Override
@@ -53,5 +46,4 @@ public final class ConnectionStatus {
   public String toString() {
     return String.format("ConnectionStatus(host='%s', connected=%s)", host, connected);
   }
-
 }

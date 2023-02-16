@@ -1,11 +1,6 @@
 package edu.wpi.first.shuffleboard.plugin.cameraserver.source;
 
-import org.bytedeco.ffmpeg.global.avcodec;
-import org.bytedeco.javacpp.indexer.UByteIndexer;
-import org.bytedeco.javacv.FFmpegFrameGrabber;
-import org.bytedeco.javacv.Frame;
-import org.bytedeco.javacv.FrameGrabber;
-import org.opencv.core.Mat;
+import static org.opencv.core.CvType.CV_8UC3;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,12 +10,14 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.bytedeco.ffmpeg.global.avcodec;
+import org.bytedeco.javacpp.indexer.UByteIndexer;
+import org.bytedeco.javacv.FFmpegFrameGrabber;
+import org.bytedeco.javacv.Frame;
+import org.bytedeco.javacv.FrameGrabber;
+import org.opencv.core.Mat;
 
-import static org.opencv.core.CvType.CV_8UC3;
-
-/**
- * Reads images from saved video files for a single camera stream in playback.
- */
+/** Reads images from saved video files for a single camera stream in playback. */
 public final class CameraStreamReader {
 
   private static final Logger log = Logger.getLogger(CameraStreamReader.class.getName());
@@ -42,7 +39,7 @@ public final class CameraStreamReader {
   /**
    * Creates a new video recording reader.
    *
-   * @param cameraName        the name of camera stream
+   * @param cameraName the name of camera stream
    * @param rootRecordingFile the root recording file being read
    */
   public CameraStreamReader(String cameraName, File rootRecordingFile) {
@@ -52,8 +49,8 @@ public final class CameraStreamReader {
   }
 
   /**
-   * Sets the video file number to read from. File numbers are saved in the main recording file as part of the frame
-   * data.
+   * Sets the video file number to read from. File numbers are saved in the main recording file as
+   * part of the frame data.
    *
    * @param fileNumber the file number to read
    */
@@ -86,9 +83,7 @@ public final class CameraStreamReader {
    * Reads a single frame from the current video file.
    *
    * @param frameNum the frame number to read
-   *
    * @return the frame at the given frame index
-   *
    * @throws IOException if a frame could not be read from the video file
    */
   public Mat readFrame(int frameNum) throws IOException {
@@ -119,8 +114,7 @@ public final class CameraStreamReader {
         buffer = new int[(int) size];
         narrowBuffer = new byte[(int) size];
       }
-      indexer.get(0, buffer)
-          .release();
+      indexer.get(0, buffer).release();
 
       for (int i = 0; i < buffer.length; i++) {
         narrowBuffer[i] = (byte) buffer[i];
@@ -130,7 +124,8 @@ public final class CameraStreamReader {
 
       return mat.clone();
     } catch (FrameGrabber.Exception e) {
-      throw new IOException("Could not read frame " + frameNum + " from video file #" + fileNumber, e);
+      throw new IOException(
+          "Could not read frame " + frameNum + " from video file #" + fileNumber, e);
     } finally {
       lock.unlock();
     }

@@ -1,5 +1,11 @@
 package edu.wpi.first.shuffleboard.plugin.cameraserver.source;
 
+import edu.wpi.first.cscore.CameraServerJNI;
+import edu.wpi.first.cscore.HttpCamera;
+import edu.wpi.first.cscore.VideoEvent;
+import edu.wpi.first.cscore.VideoException;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.shuffleboard.api.DashboardMode;
 import edu.wpi.first.shuffleboard.api.properties.AsyncValidatingProperty;
 import edu.wpi.first.shuffleboard.api.properties.AtomicIntegerProperty;
@@ -16,50 +22,44 @@ import edu.wpi.first.shuffleboard.plugin.cameraserver.data.CameraServerData;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.data.LazyCameraServerData;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.data.Resolution;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.data.type.CameraServerDataType;
-
-import edu.wpi.first.cscore.CameraServerJNI;
-import edu.wpi.first.cscore.HttpCamera;
-import edu.wpi.first.cscore.VideoEvent;
-import edu.wpi.first.cscore.VideoException;
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableInstance;
-
-import org.opencv.core.Mat;
-
 import java.time.Duration;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.Property;
 import javafx.beans.value.ChangeListener;
+import org.opencv.core.Mat;
 
 @SuppressWarnings("PMD.TooManyFields")
 public final class CameraServerSource extends AbstractDataSource<CameraServerData> {
 
   private static final Logger log = Logger.getLogger(CameraServerSource.class.getName());
 
-  private final NetworkTable cameraPublisherTable = NetworkTableInstance.getDefault().getTable("/CameraPublisher");
+  private final NetworkTable cameraPublisherTable =
+      NetworkTableInstance.getDefault().getTable("/CameraPublisher");
   private final int eventListenerId;
   private HttpCamera camera;
-  private JavaCvSink videoSink; // NOPMD could be final - it can't due to how lambdas handle capturing final fields
+  private JavaCvSink
+      videoSink; // NOPMD could be final - it can't due to how lambdas handle capturing final fields
   private final Mat image = new Mat();
 
-  private final ExecutorService frameGrabberService = Executors.newSingleThreadExecutor(ThreadUtils::makeDaemonThread);
+  private final ExecutorService frameGrabberService =
+      Executors.newSingleThreadExecutor(ThreadUtils::makeDaemonThread);
   private final BooleanBinding enabled = active.and(connected);
-  private final ChangeListener<Boolean> enabledListener = (__, was, is) -> {
-    if (is) {
-      reEnable();
-    } else {
-      cancelFrameGrabber();
-    }
-  };
+  private final ChangeListener<Boolean> enabledListener =
+      (__, was, is) -> {
+        if (is) {
+          reEnable();
+        } else {
+          cancelFrameGrabber();
+        }
+      };
   private Future<?> frameFuture = null;
 
   /**
@@ -67,41 +67,50 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
    */
   public static final Resolution MAX_RESOLUTION = new Resolution(1920, 1080);
 
-  private final IntegerProperty targetCompression = new AtomicIntegerProperty(this, "targetCompression", -1);
+  private final IntegerProperty targetCompression =
+      new AtomicIntegerProperty(this, "targetCompression", -1);
   private final IntegerProperty targetFps = new AtomicIntegerProperty(this, "targetFps", -1);
 
   private final Property<Resolution> targetResolution =
-      new AsyncValidatingProperty<>(this, "targetResolution", Resolution.EMPTY, resolution -> {
-        return resolution.getWidth() <= MAX_RESOLUTION.getWidth()
-            && resolution.getHeight() <= MAX_RESOLUTION.getHeight();
-      });
+      new AsyncValidatingProperty<>(
+          this,
+          "targetResolution",
+          Resolution.EMPTY,
+          resolution -> {
+            return resolution.getWidth() <= MAX_RESOLUTION.getWidth()
+                && resolution.getHeight() <= MAX_RESOLUTION.getHeight();
+          });
 
   private final StreamDiscoverer streamDiscoverer;
   private final CameraUrlGenerator urlGenerator = new CameraUrlGenerator(this);
-  private final ChangeListener<String[]> urlChangeListener = (__, old, urls) -> {
-    if (urls.length == 0) {
-      setActive(false);
-    } else {
-      String[] parameterizedUrls = urlGenerator.generateUrls(urls);
-      if (camera == null) {
-        camera = new HttpCamera(getName(), parameterizedUrls);
-        videoSink.setSource(camera);
-        videoSink.setEnabled(true);
-      } else if (EqualityUtils.isDifferent(camera.getUrls(), parameterizedUrls)) {
-        setCameraUrls(parameterizedUrls);
-      }
-      setActive(true);
-    }
-  };
+  private final ChangeListener<String[]> urlChangeListener =
+      (__, old, urls) -> {
+        if (urls.length == 0) {
+          setActive(false);
+        } else {
+          String[] parameterizedUrls = urlGenerator.generateUrls(urls);
+          if (camera == null) {
+            camera = new HttpCamera(getName(), parameterizedUrls);
+            videoSink.setSource(camera);
+            videoSink.setEnabled(true);
+          } else if (EqualityUtils.isDifferent(camera.getUrls(), parameterizedUrls)) {
+            setCameraUrls(parameterizedUrls);
+          }
+          setActive(true);
+        }
+      };
 
-  private volatile boolean streaming = true; // Are we currently supposed to be grabbing frames from the stream?
+  private volatile boolean streaming =
+      true; // Are we currently supposed to be grabbing frames from the stream?
 
-  // Lets us ignore kSourceDisconnected events when we force a stream reconnect to update URL parameters
+  // Lets us ignore kSourceDisconnected events when we force a stream reconnect to update URL
+  // parameters
   // TODO remove this when cscore fixes URL parameter parsing
   private volatile boolean forceUpdatingUrls = false;
 
   // Needs to be debounced; quickly changing URLs can cause serious performance hits
-  private final Debouncer urlUpdateDebouncer = new Debouncer(this::updateUrls, Duration.ofMillis(10));
+  private final Debouncer urlUpdateDebouncer =
+      new Debouncer(this::updateUrls, Duration.ofMillis(10));
   private final InvalidationListener cameraUrlUpdater = __ -> urlUpdateDebouncer.run();
 
   CameraServerSource(String name) {
@@ -109,48 +118,57 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
     setName(name);
     setData(new CameraServerData(name, null, 0, 0));
     videoSink = new JavaCvSink(name + "-videosink");
-    eventListenerId = CameraServerJNI.addListener(e -> {
-      if (e.name.equals(name)) {
-        switch (e.kind) {
-          case kSourceConnected:
-            forceUpdatingUrls = false;
-            setConnected(true);
+    eventListenerId =
+        CameraServerJNI.addListener(
+            e -> {
+              if (e.name.equals(name)) {
+                switch (e.kind) {
+                  case kSourceConnected:
+                    forceUpdatingUrls = false;
+                    setConnected(true);
 
-            // Make sure to re-activate the stream on reconnect
-            if (DashboardMode.getCurrentMode() != DashboardMode.PLAYBACK) {
-              setActive(camera != null && camera.getUrls().length > 0);
+                    // Make sure to re-activate the stream on reconnect
+                    if (DashboardMode.getCurrentMode() != DashboardMode.PLAYBACK) {
+                      setActive(camera != null && camera.getUrls().length > 0);
+                    }
+                    break;
+                  case kSourceDisconnected:
+                    setConnected(forceUpdatingUrls);
+                    break;
+                  default:
+                    // don't care
+                    break;
+                }
+              }
+            },
+            0xFF,
+            true);
+
+    CameraServerJNI.addListener(
+        e -> {
+          if (enabled.get() && camera != null && camera.isValid() && streaming) {
+            double bandwidth;
+            double fps;
+            try {
+              bandwidth = camera.getActualDataRate();
+            } catch (VideoException ex) {
+              log.log(Level.WARNING, "Could not get bandwidth", ex);
+              bandwidth = -1;
             }
-            break;
-          case kSourceDisconnected:
-            setConnected(forceUpdatingUrls);
-            break;
-          default:
-            // don't care
-            break;
-        }
-      }
-    }, 0xFF, true);
-
-    CameraServerJNI.addListener(e -> {
-      if (enabled.get() && camera != null && camera.isValid() && streaming) {
-        double bandwidth;
-        double fps;
-        try {
-          bandwidth = camera.getActualDataRate();
-        } catch (VideoException ex) {
-          log.log(Level.WARNING, "Could not get bandwidth", ex);
-          bandwidth = -1;
-        }
-        try {
-          fps = camera.getActualFPS();
-        } catch (VideoException ex) {
-          log.log(Level.WARNING, "Could not get framerate", ex);
-          fps = -1;
-        }
-        CameraServerData currentData = getData();
-        setData(new CameraServerData(currentData.getName(), currentData.getImage(), fps, bandwidth));
-      }
-    }, VideoEvent.Kind.kTelemetryUpdated.getValue(), true);
+            try {
+              fps = camera.getActualFPS();
+            } catch (VideoException ex) {
+              log.log(Level.WARNING, "Could not get framerate", ex);
+              fps = -1;
+            }
+            CameraServerData currentData = getData();
+            setData(
+                new CameraServerData(
+                    currentData.getName(), currentData.getImage(), fps, bandwidth));
+          }
+        },
+        VideoEvent.Kind.kTelemetryUpdated.getValue(),
+        true);
 
     streamDiscoverer = new StreamDiscoverer(cameraPublisherTable, name);
     streamDiscoverer.urlsProperty().addListener(urlChangeListener);
@@ -161,15 +179,17 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
       videoSink.setEnabled(true);
     }
 
-    DashboardMode.currentModeProperty().addListener((__, old, mode) -> {
-      if (mode == DashboardMode.PLAYBACK) {
-        cancelFrameGrabber();
-        videoSink.setEnabled(false);
-      } else {
-        reEnable();
-        videoSink.setEnabled(true);
-      }
-    });
+    DashboardMode.currentModeProperty()
+        .addListener(
+            (__, old, mode) -> {
+              if (mode == DashboardMode.PLAYBACK) {
+                cancelFrameGrabber();
+                videoSink.setEnabled(false);
+              } else {
+                reEnable();
+                videoSink.setEnabled(true);
+              }
+            });
 
     enabled.addListener(enabledListener);
     targetCompression.addListener(cameraUrlUpdater);
@@ -178,11 +198,13 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
     setActive(camera != null && camera.getUrls().length > 0);
 
     // If the old data is playback data, free it to reduce memory pressure
-    dataProperty().addListener((__, old, data) -> {
-      if (old instanceof LazyCameraServerData) {
-        ((LazyCameraServerData) old).clear();
-      }
-    });
+    dataProperty()
+        .addListener(
+            (__, old, data) -> {
+              if (old instanceof LazyCameraServerData) {
+                ((LazyCameraServerData) old).clear();
+              }
+            });
 
     ShutdownHooks.addHook(this::cancelFrameGrabber);
   }
@@ -214,9 +236,9 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
   }
 
   /**
-   * Continuously reads frames from the MJPEG stream as long as the calling thread has not been interrupted. Because
-   * this is a (nearly) infinite loop, this <strong>cannot</strong> be called from the JavaFX application thread. We
-   * call this in an executor service to run asynchronously.
+   * Continuously reads frames from the MJPEG stream as long as the calling thread has not been
+   * interrupted. Because this is a (nearly) infinite loop, this <strong>cannot</strong> be called
+   * from the JavaFX application thread. We call this in an executor service to run asynchronously.
    */
   private void grabForever() {
     if (Platform.isFxApplicationThread()) {
@@ -227,7 +249,8 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
       boolean success = grabOnceBlocking();
       if (!success) {
         // Couldn't grab the frame, wait a bit to try again
-        // This may be caused by a lack of connection (such as the robot is turned off) or various other network errors
+        // This may be caused by a lack of connection (such as the robot is turned off) or various
+        // other network errors
         try {
           Thread.sleep(1000);
         } catch (InterruptedException e) {
@@ -238,7 +261,8 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
   }
 
   /**
-   * Grabs the next frame from the MJPEG stream. This will block until a frame is received or an error occurs.
+   * Grabs the next frame from the MJPEG stream. This will block until a frame is received or an
+   * error occurs.
    *
    * @return true if a frame was successfully grabbed, false if an error occurred
    */
@@ -248,7 +272,8 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
     }
     long frameTime = videoSink.grabFrameNoTimeout(image);
     if (frameTime == 0) {
-      log.warning("Error when grabbing frame from camera '" + getName() + "': " + videoSink.getError());
+      log.warning(
+          "Error when grabbing frame from camera '" + getName() + "': " + videoSink.getError());
       return false;
     } else {
       if (getData() == null) {
@@ -290,9 +315,7 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
     forceUpdatingUrls = true;
   }
 
-  /**
-   * Gets the target compression level of the stream as set by {@link #setTargetCompression}.
-   */
+  /** Gets the target compression level of the stream as set by {@link #setTargetCompression}. */
   public int getTargetCompression() {
     return targetCompression.get();
   }
@@ -302,8 +325,9 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
   }
 
   /**
-   * Sets the compression of the MJPEG stream, in the range [0, 100]. Lower values are lower compression. A value
-   * outside this range will result in the stream using its default compression level as set in the remote program.
+   * Sets the compression of the MJPEG stream, in the range [0, 100]. Lower values are lower
+   * compression. A value outside this range will result in the stream using its default compression
+   * level as set in the remote program.
    *
    * @param targetCompression the compression value of the MJPEG stream
    */
@@ -311,9 +335,7 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
     this.targetCompression.set(targetCompression);
   }
 
-  /**
-   * Gets the target FPS of the stream as set by {@link #setTargetFps}.
-   */
+  /** Gets the target FPS of the stream as set by {@link #setTargetFps}. */
   public int getTargetFps() {
     return targetFps.get();
   }
@@ -323,7 +345,8 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
   }
 
   /**
-   * Sets the output FPS of the camera. A negative or zero value will result in the camera using its default frame rate.
+   * Sets the output FPS of the camera. A negative or zero value will result in the camera using its
+   * default frame rate.
    *
    * @param targetFps the target FPS of the stream
    */
@@ -345,8 +368,8 @@ public final class CameraServerSource extends AbstractDataSource<CameraServerDat
   }
 
   /**
-   * Sets the target resolution of the stream. If {@code null}, or if either dimension is negative or zero, the stream
-   * will use its default resolution.
+   * Sets the target resolution of the stream. If {@code null}, or if either dimension is negative
+   * or zero, the stream will use its default resolution.
    *
    * @param targetResolution the target resolution of the stream
    */

@@ -2,7 +2,6 @@ package edu.wpi.first.shuffleboard.plugin.base.data.types;
 
 import edu.wpi.first.shuffleboard.api.data.ComplexDataType;
 import edu.wpi.first.shuffleboard.plugin.base.data.MecanumDriveData;
-
 import java.util.Map;
 import java.util.function.Function;
 
@@ -23,5 +22,4 @@ public final class MecanumDriveType extends ComplexDataType<MecanumDriveData> {
   public MecanumDriveData getDefaultValue() {
     return new MecanumDriveData(0, 0, 0, 0, false);
   }
-
 }

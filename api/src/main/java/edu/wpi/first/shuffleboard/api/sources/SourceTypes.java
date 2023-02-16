@@ -5,17 +5,14 @@ import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.sources.recording.TimestampedData;
 import edu.wpi.first.shuffleboard.api.util.PropertyUtils;
 import edu.wpi.first.shuffleboard.api.util.Registry;
-
-import org.fxmisc.easybind.EasyBind;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-
 import javafx.beans.InvalidationListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import org.fxmisc.easybind.EasyBind;
 
 public final class SourceTypes extends Registry<SourceType> {
 
@@ -29,9 +26,7 @@ public final class SourceTypes extends Registry<SourceType> {
   public static final SourceType None = new NoneType();
   public static final SourceType Static = new StaticType();
 
-  /**
-   * Gets the default source type registry.
-   */
+  /** Gets the default source type registry. */
   public static SourceTypes getDefault() {
     synchronized (SourceTypes.class) {
       if (defaultInstance == null) {
@@ -41,35 +36,38 @@ public final class SourceTypes extends Registry<SourceType> {
     return defaultInstance;
   }
 
-  /**
-   * Creates a new source type registry.
-   */
+  /** Creates a new source type registry. */
   public SourceTypes() {
     register(None);
     register(Static);
 
-    typeNames.addListener((InvalidationListener) __ -> {
-      Optional<ObservableList<String>> names = typeNames.stream()
-          .map(this::forName)
-          .map(SourceType::getAvailableSourceUris)
-          .reduce(PropertyUtils::combineLists);
-      names.ifPresent(l -> EasyBind.listBind(allUris, l));
-    });
+    typeNames.addListener(
+        (InvalidationListener)
+            __ -> {
+              Optional<ObservableList<String>> names =
+                  typeNames.stream()
+                      .map(this::forName)
+                      .map(SourceType::getAvailableSourceUris)
+                      .reduce(PropertyUtils::combineLists);
+              names.ifPresent(l -> EasyBind.listBind(allUris, l));
+            });
   }
 
   /**
    * Registers a new source type.
    *
    * @param sourceType the source type to register
-   *
-   * @throws IllegalArgumentException if a source type has already been registered with the same name
-   * @throws IllegalArgumentException if a source type has already been registered with the same protocol
+   * @throws IllegalArgumentException if a source type has already been registered with the same
+   *     name
+   * @throws IllegalArgumentException if a source type has already been registered with the same
+   *     protocol
    */
   @Override
   public void register(SourceType sourceType) {
     Objects.requireNonNull(sourceType, "sourceType");
     if (isRegistered(sourceType)) {
-      throw new IllegalArgumentException("Source type " + sourceType + " has already been registered");
+      throw new IllegalArgumentException(
+          "Source type " + sourceType + " has already been registered");
     }
     String name = sourceType.getName();
     if (types.containsKey(name)) {
@@ -79,7 +77,8 @@ public final class SourceTypes extends Registry<SourceType> {
 
     String protocol = sourceType.getProtocol();
     if (types.values().stream().anyMatch(t -> t.getProtocol().equals(protocol))) {
-      throw new IllegalArgumentException("A source type has already been registered with protocol '" + protocol + "'");
+      throw new IllegalArgumentException(
+          "A source type has already been registered with protocol '" + protocol + "'");
     }
     types.put(name, sourceType);
     typeNames.add(name);
@@ -102,8 +101,8 @@ public final class SourceTypes extends Registry<SourceType> {
   }
 
   /**
-   * Creates a data source corresponding to the given URI. If the protocol is not recognized, {@link DataSource#none()}
-   * is returned.
+   * Creates a data source corresponding to the given URI. If the protocol is not recognized, {@link
+   * DataSource#none()} is returned.
    *
    * @param uri the URI to create a source for
    */
@@ -112,7 +111,8 @@ public final class SourceTypes extends Registry<SourceType> {
   }
 
   /**
-   * Gets the source type with the given name, or {@link #None} if that name has not been registered.
+   * Gets the source type with the given name, or {@link #None} if that name has not been
+   * registered.
    *
    * @param name the name of the source type to get
    */
@@ -121,7 +121,8 @@ public final class SourceTypes extends Registry<SourceType> {
   }
 
   /**
-   * Gets the source type associated with the given URI, or {@link #None} if the protocol is not recognized.
+   * Gets the source type associated with the given URI, or {@link #None} if the protocol is not
+   * recognized.
    */
   public SourceType typeForUri(String uri) {
     for (SourceType type : types.values()) {
@@ -133,7 +134,8 @@ public final class SourceTypes extends Registry<SourceType> {
   }
 
   /**
-   * Tries to strip the protocol from a source URI. Has no effect if the uri does not start with a known protocol.
+   * Tries to strip the protocol from a source URI. Has no effect if the uri does not start with a
+   * known protocol.
    *
    * @param uri the uri to strip the protocol from
    */
@@ -141,9 +143,7 @@ public final class SourceTypes extends Registry<SourceType> {
     return typeForUri(uri).removeProtocol(uri);
   }
 
-  /**
-   * Gets a read-only observable list of all available source URIs of all the known types.
-   */
+  /** Gets a read-only observable list of all available source URIs of all the known types. */
   public ObservableList<String> allAvailableSourceUris() {
     return allUris;
   }
@@ -182,8 +182,5 @@ public final class SourceTypes extends Registry<SourceType> {
       return DummySource.forTypes(DataTypes.getDefault().forName(uri).orElse(DataTypes.Unknown))
           .orElseGet(DataSource::none);
     }
-
   }
-
-
 }

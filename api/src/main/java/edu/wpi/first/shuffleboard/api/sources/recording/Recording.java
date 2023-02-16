@@ -1,9 +1,7 @@
 package edu.wpi.first.shuffleboard.api.sources.recording;
 
-import edu.wpi.first.shuffleboard.api.util.concurrent.FunctionalReadWriteLock;
-
 import com.google.common.collect.ImmutableList;
-
+import edu.wpi.first.shuffleboard.api.util.concurrent.FunctionalReadWriteLock;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -51,12 +49,13 @@ public class Recording {
   }
 
   /**
-   * Gets the markers in this recording. Note: if you need to get the data objects and markers at the same time,
-   * use {@link #takeSnapshot takeSnapshot()} to avoid locking issues (the individual methods each lock, but the lists
-   * may change between method calls).
+   * Gets the markers in this recording. Note: if you need to get the data objects and markers at
+   * the same time, use {@link #takeSnapshot takeSnapshot()} to avoid locking issues (the individual
+   * methods each lock, but the lists may change between method calls).
    *
-   * <p>In live recordings, this list will not be exhaustive. Markers are removed after saving to disk to reduce
-   * memory and CPU usage. Recordings loaded in playback mode will have all the markers present.
+   * <p>In live recordings, this list will not be exhaustive. Markers are removed after saving to
+   * disk to reduce memory and CPU usage. Recordings loaded in playback mode will have all the
+   * markers present.
    *
    * @return an immutable list of the markers in this recording
    */
@@ -65,12 +64,13 @@ public class Recording {
   }
 
   /**
-   * Gets the data in this recording. Note: if you need to get the data objects and markers at the same time,
-   * use {@link #takeSnapshot takeSnapshot()} to avoid locking issues (the individual methods each lock, but the lists
-   * may change between method calls).
+   * Gets the data in this recording. Note: if you need to get the data objects and markers at the
+   * same time, use {@link #takeSnapshot takeSnapshot()} to avoid locking issues (the individual
+   * methods each lock, but the lists may change between method calls).
    *
-   * <p>In live recordings, this list will not be exhaustive. Data is removed after saving to disk to reduce
-   * memory and CPU usage. Recordings loaded in playback mode will have all the data present.
+   * <p>In live recordings, this list will not be exhaustive. Data is removed after saving to disk
+   * to reduce memory and CPU usage. Recordings loaded in playback mode will have all the data
+   * present.
    *
    * @return an immutable list of the data in this recording
    */
@@ -88,20 +88,21 @@ public class Recording {
   }
 
   /**
-   * Takes a snapshot of this recording, then clears the data in this recording. This should <strong>ONLY</strong>
-   * be called by the recording mechanism.
+   * Takes a snapshot of this recording, then clears the data in this recording. This should
+   * <strong>ONLY</strong> be called by the recording mechanism.
    *
    * @return a snapshot of this recording
    */
   @SuppressWarnings("PMD.DefaultPackage")
   // This should only be used by the Serialization class in the same package
   Snapshot takeSnapshotAndClear() {
-    return lock.writing(() -> {
-      var snapshot = Snapshot.of(this);
-      data.clear();
-      markers.clear();
-      return snapshot;
-    });
+    return lock.writing(
+        () -> {
+          var snapshot = Snapshot.of(this);
+          data.clear();
+          markers.clear();
+          return snapshot;
+        });
   }
 
   @SuppressWarnings("JavadocMethod")
@@ -120,16 +121,18 @@ public class Recording {
   }
 
   /**
-   * Gets the length of this recording in milliseconds. Recordings wth 0 or 1 data points have a length of 0.
+   * Gets the length of this recording in milliseconds. Recordings wth 0 or 1 data points have a
+   * length of 0.
    */
   public long getLength() {
-    return lock.reading(() -> {
-      if (first == null || last == null) {
-        return 0L;
-      } else {
-        return last.getTimestamp() - first.getTimestamp();
-      }
-    });
+    return lock.reading(
+        () -> {
+          if (first == null || last == null) {
+            return 0L;
+          } else {
+            return last.getTimestamp() - first.getTimestamp();
+          }
+        });
   }
 
   @Override
@@ -137,9 +140,7 @@ public class Recording {
     return lock.reading(() -> "Recording(data=" + data + ", markers=" + markers + ")");
   }
 
-  /**
-   * A snapshot of the state of a recording. Snapshots are immutable and thread-safe.
-   */
+  /** A snapshot of the state of a recording. Snapshots are immutable and thread-safe. */
   public static final class Snapshot {
     private final ImmutableList<TimestampedData> data;
     private final ImmutableList<Marker> markers;
@@ -149,15 +150,12 @@ public class Recording {
      * {@link Recording#takeSnapshotAndClear()}. This method is not thread-safe.
      *
      * @param recording the recording to create a snapshot of
-     *
      * @return a new snapshot
      */
     @SuppressWarnings("PMD.DefaultPackage")
     static Snapshot of(Recording recording) {
       return new Snapshot(
-          ImmutableList.copyOf(recording.data),
-          ImmutableList.copyOf(recording.markers)
-      );
+          ImmutableList.copyOf(recording.data), ImmutableList.copyOf(recording.markers));
     }
 
     private Snapshot(ImmutableList<TimestampedData> data, ImmutableList<Marker> markers) {
@@ -173,5 +171,4 @@ public class Recording {
       return markers;
     }
   }
-
 }

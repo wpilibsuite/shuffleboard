@@ -1,18 +1,16 @@
 package edu.wpi.first.shuffleboard.api;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.Optional;
+import java.util.stream.Stream;
+import javafx.scene.paint.Color;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
-
-import java.util.Optional;
-import java.util.stream.Stream;
-
-import javafx.scene.paint.Color;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class PropertyParsersTest {
 
@@ -57,10 +55,10 @@ public class PropertyParsersTest {
 
   private static Stream<Arguments> colorArgs() {
     return Stream.of(
-        Arguments.of(0xFFFFFFFF, Color.WHITE),  // numeric input
+        Arguments.of(0xFFFFFFFF, Color.WHITE), // numeric input
         Arguments.of(Color.BLACK, Color.BLACK), // raw color input
-        Arguments.of("#FF0000", Color.RED),     // web color (basic)
+        Arguments.of("#FF0000", Color.RED), // web color (basic)
         Arguments.of("rgb(255, 255, 255)", Color.WHITE) // web color (advanced)
-    );
+        );
   }
 }

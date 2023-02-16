@@ -1,7 +1,6 @@
 package edu.wpi.first.shuffleboard.api.properties;
 
 import java.util.concurrent.atomic.AtomicReference;
-
 import javafx.beans.InvalidationListener;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ChangeListener;
@@ -111,5 +110,4 @@ public class AsyncProperty<T> extends ObjectProperty<T> implements AtomicPropert
   public void addListener(InvalidationListener listener) {
     delegate.addInvalidationListener(listener);
   }
-
 }

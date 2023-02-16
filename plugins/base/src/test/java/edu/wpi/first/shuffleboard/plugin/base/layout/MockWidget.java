@@ -1,7 +1,6 @@
 package edu.wpi.first.shuffleboard.plugin.base.layout;
 
 import edu.wpi.first.shuffleboard.api.widget.AbstractWidget;
-
 import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
 

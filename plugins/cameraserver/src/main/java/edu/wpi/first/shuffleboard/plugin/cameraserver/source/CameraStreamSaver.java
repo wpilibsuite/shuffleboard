@@ -2,16 +2,6 @@ package edu.wpi.first.shuffleboard.plugin.cameraserver.source;
 
 import edu.wpi.first.shuffleboard.plugin.cameraserver.data.CameraServerData;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.data.Resolution;
-
-import org.bytedeco.ffmpeg.global.avcodec;
-import org.bytedeco.ffmpeg.global.avutil;
-import org.bytedeco.javacpp.indexer.UByteBufferIndexer;
-import org.bytedeco.javacv.FFmpegFrameRecorder;
-import org.bytedeco.javacv.Frame;
-import org.bytedeco.javacv.FrameRecorder;
-import org.bytedeco.javacv.OpenCVFrameConverter;
-import org.opencv.core.Mat;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -22,12 +12,21 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.bytedeco.ffmpeg.global.avcodec;
+import org.bytedeco.ffmpeg.global.avutil;
+import org.bytedeco.javacpp.indexer.UByteBufferIndexer;
+import org.bytedeco.javacv.FFmpegFrameRecorder;
+import org.bytedeco.javacv.Frame;
+import org.bytedeco.javacv.FrameRecorder;
+import org.bytedeco.javacv.OpenCVFrameConverter;
+import org.opencv.core.Mat;
 
 /**
- * Saves frames from a single camera stream to a video file on disk. {@link #finish()} must be called to finish writing
- * the video file; otherwise, it will be unreadable. Additionally, if the stream changes resolution then a new video
- * file will be created (the previous one will be completed automatically). These video files have an index number
- * embedded in their name: the first video file will be 0, the second video file will be 1, the third 2, and so on.
+ * Saves frames from a single camera stream to a video file on disk. {@link #finish()} must be
+ * called to finish writing the video file; otherwise, it will be unreadable. Additionally, if the
+ * stream changes resolution then a new video file will be created (the previous one will be
+ * completed automatically). These video files have an index number embedded in their name: the
+ * first video file will be 0, the second video file will be 1, the third 2, and so on.
  */
 public final class CameraStreamSaver {
 
@@ -49,7 +48,7 @@ public final class CameraStreamSaver {
   /**
    * Creates a new stream saver.
    *
-   * @param cameraName        the name of the camera stream
+   * @param cameraName the name of the camera stream
    * @param rootRecordingFile the the root recording file being recorded to
    */
   public CameraStreamSaver(String cameraName, File rootRecordingFile) {
@@ -59,11 +58,12 @@ public final class CameraStreamSaver {
   }
 
   /**
-   * Saves a single frame to a video file. If the image resolution changes, the current video file will be closed and
-   * cleaned up before creating a new file that the given frame will be written to. This avoids issues with changing
-   * resolutions or aspect ratios causing issues with codecs or video players. The video file name is formatted as:
-   * {@code recording-<timestamp>-<camera name>.<file number>.mp4}, eg {@code recording-15.03.11-Camera.0.mp4},
-   * {@code recording-15.03.11-Camera.1.mp4}, {@code recording-15.03.11-Camera.2.mp4}, etc.
+   * Saves a single frame to a video file. If the image resolution changes, the current video file
+   * will be closed and cleaned up before creating a new file that the given frame will be written
+   * to. This avoids issues with changing resolutions or aspect ratios causing issues with codecs or
+   * video players. The video file name is formatted as: {@code recording-<timestamp>-<camera
+   * name>.<file number>.mp4}, eg {@code recording-15.03.11-Camera.0.mp4}, {@code
+   * recording-15.03.11-Camera.1.mp4}, {@code recording-15.03.11-Camera.2.mp4}, etc.
    *
    * @param data the camera data to save
    */
@@ -85,7 +85,8 @@ public final class CameraStreamSaver {
         buffer = new byte[(int) (image.total() * image.channels())];
         wideBuffer = new int[buffer.length];
       } else if (resolution.isNotEqual(image.width(), image.height())) {
-        // Stream resolution changed. Video files don't like frames with different resolutions, so finish writing the
+        // Stream resolution changed. Video files don't like frames with different resolutions, so
+        // finish writing the
         // current file and move on to writing to a new file instead
         try {
           finish();
@@ -103,9 +104,7 @@ public final class CameraStreamSaver {
       for (int i = 0; i < buffer.length; i++) {
         wideBuffer[i] = buffer[i] & 0xFF;
       }
-      frame.<UByteBufferIndexer>createIndexer()
-          .put(0, wideBuffer)
-          .release();
+      frame.<UByteBufferIndexer>createIndexer().put(0, wideBuffer).release();
       try {
         if (!running.get()) {
           setupAndStartRecorder(data);
@@ -127,8 +126,7 @@ public final class CameraStreamSaver {
         image.width(),
         image.height(),
         OpenCVFrameConverter.getFrameDepth(image.depth()),
-        image.channels()
-    );
+        image.channels());
   }
 
   private void setupAndStartRecorder(CameraServerData data) {
@@ -138,8 +136,10 @@ public final class CameraStreamSaver {
     try {
       recorder.setImageWidth(resolution.getWidth());
       recorder.setImageHeight(resolution.getHeight());
-      //recorder.setFrameRate(data.getFps()); // Doesn't work? "[mpeg4 @ 0x7f2...] The encoder timebase is not set."
-      recorder.setVideoBitrate((int) (data.getBandwidth() * 8)); // x8 to covert bytes per second to bits per second
+      // recorder.setFrameRate(data.getFps()); // Doesn't work? "[mpeg4 @ 0x7f2...] The encoder
+      // timebase is not set."
+      recorder.setVideoBitrate(
+          (int) (data.getBandwidth() * 8)); // x8 to covert bytes per second to bits per second
       recorder.start();
       running.set(true);
     } catch (FrameRecorder.Exception e) {
@@ -147,9 +147,7 @@ public final class CameraStreamSaver {
     }
   }
 
-  /**
-   * Gets the index of the most recent frame that was saved to the current video file.
-   */
+  /** Gets the index of the most recent frame that was saved to the current video file. */
   public int getFrameNum() {
     return frameNum.get();
   }
@@ -159,7 +157,8 @@ public final class CameraStreamSaver {
   }
 
   /**
-   * Gets the video file number. The first video file written is number 0, the second is 1, and so on.
+   * Gets the video file number. The first video file written is number 0, the second is 1, and so
+   * on.
    */
   public int getFileNum() {
     return fileNum.get();
@@ -201,5 +200,4 @@ public final class CameraStreamSaver {
     recorder.setPixelFormat(avutil.AV_PIX_FMT_YUV420P);
     return recorder;
   }
-
 }

@@ -14,17 +14,15 @@ public abstract class ComplexDataType<T extends ComplexData> extends DataType<T>
     super(name, javaClass);
   }
 
-  /**
-   * Gets a function used to create a new data object from a map of values to property names.
-   */
+  /** Gets a function used to create a new data object from a map of values to property names. */
   public abstract Function<Map<String, Object>, T> fromMap();
 
   /**
    * Creates a new data object from the given map.
    *
    * @param map the map of values to create the data from
-   *
-   * @throws IncompleteDataException if the map does not have all the variables needed to create a data object
+   * @throws IncompleteDataException if the map does not have all the variables needed to create a
+   *     data object
    */
   public T fromMap(Map<String, Object> map) throws IncompleteDataException {
     try {
@@ -38,5 +36,4 @@ public abstract class ComplexDataType<T extends ComplexData> extends DataType<T>
   public final boolean isComplex() {
     return true;
   }
-
 }

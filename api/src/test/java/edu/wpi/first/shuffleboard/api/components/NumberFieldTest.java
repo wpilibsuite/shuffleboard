@@ -1,16 +1,15 @@
 package edu.wpi.first.shuffleboard.api.components;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.testfx.framework.junit5.ApplicationTest;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Tag("UI")
 public class NumberFieldTest extends ApplicationTest {
@@ -42,16 +41,11 @@ public class NumberFieldTest extends ApplicationTest {
   }
 
   @ParameterizedTest
-  @CsvSource({"0.0, a0.0",
-                 "0.0, 0.0b",
-                 "0.0, a0.0b",
-                 "0.0, 0.......0",
-                 "0.0, 0.0."})
+  @CsvSource({"0.0, a0.0", "0.0, 0.0b", "0.0, a0.0b", "0.0, 0.......0", "0.0, 0.0."})
   public void invalidNumberTest(String expectedResult, String test) {
     interact(numberField::clear);
     clickOn(".text-field").write(test);
 
     assertEquals(expectedResult, numberField.getText());
   }
-
 }

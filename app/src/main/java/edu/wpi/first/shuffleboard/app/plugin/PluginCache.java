@@ -1,10 +1,8 @@
 package edu.wpi.first.shuffleboard.app.plugin;
 
-import edu.wpi.first.shuffleboard.api.util.Storage;
-
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-
+import edu.wpi.first.shuffleboard.api.util.Storage;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -16,8 +14,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * The plugin cache is responsible for saving and loading external plugin jars so they can be automatically loaded or
- * "remembered" at startup.
+ * The plugin cache is responsible for saving and loading external plugin jars so they can be
+ * automatically loaded or "remembered" at startup.
  */
 public class PluginCache {
 
@@ -34,9 +32,9 @@ public class PluginCache {
   }
 
   /**
-   * Gets the default plugin cache instance. If it does not exist, an attempt will be made to create it before returning
-   * it. If this attempt fails, a "dummy" object will be returned instead whose save and load functions will not do
-   * anything.
+   * Gets the default plugin cache instance. If it does not exist, an attempt will be made to create
+   * it before returning it. If this attempt fails, a "dummy" object will be returned instead whose
+   * save and load functions will not do anything.
    */
   public static PluginCache getDefault() {
     if (defaultInstance == null) { // NOPMD not thread safe -- it absolutely is
@@ -73,9 +71,7 @@ public class PluginCache {
     }
   }
 
-  /**
-   * Loads plugins from the cache.
-   */
+  /** Loads plugins from the cache. */
   public void loadCache(PluginLoader loader) {
     if (cacheFile == null) {
       log.warning("No cache file to load from");
@@ -87,7 +83,8 @@ public class PluginCache {
       if (paths != null) {
 
         // Load all plugin jars until no more can be loaded
-        // This prevents issues caused when a plugin jar that appears earlier in the cache depends on plugins
+        // This prevents issues caused when a plugin jar that appears earlier in the cache depends
+        // on plugins
         // that occur later in the cache.
         boolean anyPluginsLoadedOnLastAttempt;
         List<URI> successes = new ArrayList<>();
@@ -110,5 +107,4 @@ public class PluginCache {
       log.log(Level.WARNING, "Could not read cache", e);
     }
   }
-
 }

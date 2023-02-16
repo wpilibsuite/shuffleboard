@@ -14,5 +14,4 @@ public final class BooleanType extends SimpleDataType<Boolean> {
   public Boolean getDefaultValue() {
     return false;
   }
-
 }

@@ -11,8 +11,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * A helper class for extracting information from the manifest of the application JAR. This class is only useful when
- * running shuffleboard from a JAR; running from source (eg with gradle) will not generate a manifest file.
+ * A helper class for extracting information from the manifest of the application JAR. This class is
+ * only useful when running shuffleboard from a JAR; running from source (eg with gradle) will not
+ * generate a manifest file.
  */
 public final class ApplicationManifest {
 
@@ -20,14 +21,11 @@ public final class ApplicationManifest {
 
   private static final Manifest manifest;
 
-  /**
-   * The attribute name for the implementation version in the manifest.
-   */
-  public static final Attributes.Name IMPLEMENTATION_VERSION = new Attributes.Name("Implementation-Version");
+  /** The attribute name for the implementation version in the manifest. */
+  public static final Attributes.Name IMPLEMENTATION_VERSION =
+      new Attributes.Name("Implementation-Version");
 
-  /**
-   * The attribute name for the application built date in the manifest.
-   */
+  /** The attribute name for the application built date in the manifest. */
   public static final Attributes.Name BUILT_DATE = new Attributes.Name("Built-Date");
 
   private static final Instant buildTime;
@@ -38,7 +36,10 @@ public final class ApplicationManifest {
 
   static {
     manifest = readManifest().orElse(new Manifest());
-    buildTime = Instant.parse((String) manifest.getMainAttributes().getOrDefault(BUILT_DATE, Instant.now().toString()));
+    buildTime =
+        Instant.parse(
+            (String)
+                manifest.getMainAttributes().getOrDefault(BUILT_DATE, Instant.now().toString()));
   }
 
   private static Optional<Manifest> readManifest() {
@@ -59,19 +60,19 @@ public final class ApplicationManifest {
   }
 
   /**
-   * Gets the manifest file. If shuffleboard is not running from a JAR, this will return an empty manifest with no
-   * attributes. Users should be careful to use default values when getting attributes from the manifest.
+   * Gets the manifest file. If shuffleboard is not running from a JAR, this will return an empty
+   * manifest with no attributes. Users should be careful to use default values when getting
+   * attributes from the manifest.
    */
   public static Manifest getManifest() {
     return manifest;
   }
 
   /**
-   * Gets the instant at which the application JAR was built. If shuffleboard is not running from a JAR, this will
-   * return the instant at which this class was loaded.
+   * Gets the instant at which the application JAR was built. If shuffleboard is not running from a
+   * JAR, this will return the instant at which this class was loaded.
    */
   public static Instant getBuildTime() {
     return buildTime;
   }
-
 }

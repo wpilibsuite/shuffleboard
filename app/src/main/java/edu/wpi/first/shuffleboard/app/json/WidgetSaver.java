@@ -1,5 +1,10 @@
 package edu.wpi.first.shuffleboard.app.json;
 
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonSerializationContext;
 import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
 import edu.wpi.first.shuffleboard.api.json.AnnotatedTypeAdapter;
 import edu.wpi.first.shuffleboard.api.json.ElementTypeAdapter;
@@ -9,17 +14,10 @@ import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
 import edu.wpi.first.shuffleboard.api.sources.Sources;
 import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
-
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonSerializationContext;
-import org.controlsfx.glyphfont.FontAwesome;
-
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.controlsfx.glyphfont.FontAwesome;
 
 @AnnotatedTypeAdapter(forType = Widget.class)
 public class WidgetSaver implements ElementTypeAdapter<Widget> {
@@ -46,11 +44,14 @@ public class WidgetSaver implements ElementTypeAdapter<Widget> {
   }
 
   @Override
-  public Widget deserialize(JsonElement json, JsonDeserializationContext context) throws JsonParseException {
+  public Widget deserialize(JsonElement json, JsonDeserializationContext context)
+      throws JsonParseException {
     JsonObject obj = json.getAsJsonObject();
     String type = obj.get("_type").getAsString();
-    Widget widget = Components.getDefault().createWidget(type)
-        .orElseThrow(() -> new JsonParseException("No widget found for " + type));
+    Widget widget =
+        Components.getDefault()
+            .createWidget(type)
+            .orElseThrow(() -> new JsonParseException("No widget found for " + type));
 
     JsonElement title = obj.get("_title");
     if (title != null) {
@@ -100,5 +101,4 @@ public class WidgetSaver implements ElementTypeAdapter<Widget> {
 
     return widget;
   }
-
 }

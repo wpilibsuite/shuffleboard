@@ -4,5 +4,4 @@ package edu.wpi.first.shuffleboard.api.tab.model;
 public interface StructureChangeListener {
 
   void structureChanged(TabStructure structure);
-
 }

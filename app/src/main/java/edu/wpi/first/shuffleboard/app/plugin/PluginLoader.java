@@ -1,5 +1,8 @@
 package edu.wpi.first.shuffleboard.app.plugin;
 
+import com.github.zafarkhaja.semver.Version;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Stopwatch;
 import edu.wpi.first.shuffleboard.api.PropertyParsers;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
@@ -17,11 +20,6 @@ import edu.wpi.first.shuffleboard.api.widget.Widget;
 import edu.wpi.first.shuffleboard.app.sources.DataTypeChangedException;
 import edu.wpi.first.shuffleboard.app.sources.DestroyedSource;
 import edu.wpi.first.shuffleboard.app.tab.TabInfoRegistry;
-
-import com.github.zafarkhaja.semver.Version;
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Stopwatch;
-
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Modifier;
@@ -43,7 +41,6 @@ import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableSet;
@@ -62,7 +59,8 @@ public class PluginLoader {
           Converters.getDefault(),
           PropertyParsers.getDefault());
 
-  private final ObservableSet<Plugin> loadedPlugins = FXCollections.observableSet(new LinkedHashSet<>());
+  private final ObservableSet<Plugin> loadedPlugins =
+      FXCollections.observableSet(new LinkedHashSet<>());
   private final Set<Class<? extends Plugin>> knownPluginClasses = new HashSet<>();
   private final ObservableList<Plugin> knownPlugins = FXCollections.observableArrayList();
   private final ObservableList<ClassLoader> classLoaders = FXCollections.observableArrayList();
@@ -75,26 +73,26 @@ public class PluginLoader {
   private final PropertyParsers propertyParsers;
 
   /**
-   * Creates a new plugin loader object. For app use, use {@link #getDefault() the default instance}; this should only
-   * be used for tests.
+   * Creates a new plugin loader object. For app use, use {@link #getDefault() the default
+   * instance}; this should only be used for tests.
    *
-   * @param dataTypes       the data type registry to use for registering data types from plugins
-   * @param sourceTypes     the source type registry to use for registering source types from plugins
-   * @param components      the component registry to use for registering components from plugins
-   * @param themes          the theme registry to use for registering themes from plugins
+   * @param dataTypes the data type registry to use for registering data types from plugins
+   * @param sourceTypes the source type registry to use for registering source types from plugins
+   * @param components the component registry to use for registering components from plugins
+   * @param themes the theme registry to use for registering themes from plugins
    * @param tabInfoRegistry the registry for tab information provided by plugins
-   * @param converters      the registry for custom recording file converters
+   * @param converters the registry for custom recording file converters
    * @param propertyParsers the registry for custom property parsers
-   *
    * @throws NullPointerException if any of the parameters is {@code null}
    */
-  public PluginLoader(DataTypes dataTypes,
-                      SourceTypes sourceTypes,
-                      Components components,
-                      Themes themes,
-                      TabInfoRegistry tabInfoRegistry,
-                      Converters converters,
-                      PropertyParsers propertyParsers) {
+  public PluginLoader(
+      DataTypes dataTypes,
+      SourceTypes sourceTypes,
+      Components components,
+      Themes themes,
+      TabInfoRegistry tabInfoRegistry,
+      Converters converters,
+      PropertyParsers propertyParsers) {
     this.dataTypes = Objects.requireNonNull(dataTypes, "dataTypes");
     this.sourceTypes = Objects.requireNonNull(sourceTypes, "sourceTypes");
     this.components = Objects.requireNonNull(components, "components");
@@ -105,20 +103,20 @@ public class PluginLoader {
   }
 
   /**
-   * Gets the default plugin loader instance. This should be used as the global instance for use in the application.
+   * Gets the default plugin loader instance. This should be used as the global instance for use in
+   * the application.
    */
   public static PluginLoader getDefault() {
     return defaultLoader;
   }
 
   /**
-   * Loads all jars found in the given directory. This does not load jars in nested directories. Jars will be loaded in
-   * alphabetical order.
+   * Loads all jars found in the given directory. This does not load jars in nested directories.
+   * Jars will be loaded in alphabetical order.
    *
    * @param directory the directory to load plugins from
-   *
    * @throws IllegalArgumentException if the path is not a directory
-   * @throws IOException              if the directory could not be read from
+   * @throws IOException if the directory could not be read from
    * @see #loadPluginJar
    */
   public void loadAllJarsFromDir(Path directory) throws IOException {
@@ -129,59 +127,65 @@ public class PluginLoader {
         .filter(p -> p.toString().endsWith(".jar"))
         .map(Path::toUri)
         .sorted() // sort alphabetically to make load order deterministic
-        .forEach(jar -> {
-          try {
-            loadPluginJar(jar);
-          } catch (IOException e) {
-            log.log(Level.WARNING, "Could not load plugin jar: " + jar, e);
-          }
-        });
+        .forEach(
+            jar -> {
+              try {
+                loadPluginJar(jar);
+              } catch (IOException e) {
+                log.log(Level.WARNING, "Could not load plugin jar: " + jar, e);
+              }
+            });
   }
 
   /**
-   * Loads a plugin jar and loads all plugin classes within. Plugins will be loaded in the following order:
+   * Loads a plugin jar and loads all plugin classes within. Plugins will be loaded in the following
+   * order:
    *
    * <ol>
-   * <li>By the amount of dependencies</li>
-   * <li>By dependency graph; if one plugin requires another, the requirement will be loaded first</li>
-   * <li>By class name</li>
+   *   <li>By the amount of dependencies
+   *   <li>By dependency graph; if one plugin requires another, the requirement will be loaded first
+   *   <li>By class name
    * </ol>
    *
-   * @param jarUri a URI representing  jar file to load plugins from
-   *
+   * @param jarUri a URI representing jar file to load plugins from
    * @throws IOException if the jar file denoted by the URI could not be found or read
    * @see #load(Plugin)
    */
   public void loadPluginJar(URI jarUri) throws IOException {
     log.info("Attempting to load plugin jar: " + jarUri);
     URL url = jarUri.toURL();
-    PrivilegedAction<URLClassLoader> getClassLoader = () -> {
-      return new URLClassLoader(new URL[]{url}, ClassLoader.getSystemClassLoader());
-    };
+    PrivilegedAction<URLClassLoader> getClassLoader =
+        () -> {
+          return new URLClassLoader(new URL[] {url}, ClassLoader.getSystemClassLoader());
+        };
     URLClassLoader classLoader = AccessController.doPrivileged(getClassLoader);
     try (JarFile jarFile = new JarFile(new File(jarUri))) {
-      List<? extends Class<? extends Plugin>> pluginClasses = jarFile.stream()
-          .filter(e -> e.getName().endsWith(".class"))
-          .map(e -> e.getName().replace('/', '.'))
-          .map(n -> n.substring(0, n.length() - 6)) // ".class".length() == 6
-          .flatMap(className -> PluginLoaderHelper.tryLoadClass(className, classLoader))
-          .filter(Plugin.class::isAssignableFrom)
-          .map(c -> (Class<? extends Plugin>) c)
-          .filter(c -> {
-            try {
-              Plugin.validatePluginClass(c);
-              return true;
-            } catch (InvalidPluginDefinitionException e) {
-              log.log(Level.WARNING, "Invalid plugin class " + c.getName(), e);
-              return false;
-            }
-          })
-          .collect(Collectors.toList());
+      List<? extends Class<? extends Plugin>> pluginClasses =
+          jarFile.stream()
+              .filter(e -> e.getName().endsWith(".class"))
+              .map(e -> e.getName().replace('/', '.'))
+              .map(n -> n.substring(0, n.length() - 6)) // ".class".length() == 6
+              .flatMap(className -> PluginLoaderHelper.tryLoadClass(className, classLoader))
+              .filter(Plugin.class::isAssignableFrom)
+              .map(c -> (Class<? extends Plugin>) c)
+              .filter(
+                  c -> {
+                    try {
+                      Plugin.validatePluginClass(c);
+                      return true;
+                    } catch (InvalidPluginDefinitionException e) {
+                      log.log(Level.WARNING, "Invalid plugin class " + c.getName(), e);
+                      return false;
+                    }
+                  })
+              .collect(Collectors.toList());
       knownPluginClasses.addAll(pluginClasses);
       pluginClasses.stream()
-          .sorted(Comparator.<Class<? extends Plugin>>comparingInt(p -> PluginLoaderHelper.getRequirements(p).size())
-              .thenComparing(this::comparePluginsByDependencyGraph)
-              .thenComparing(Class::getName))
+          .sorted(
+              Comparator.<Class<? extends Plugin>>comparingInt(
+                      p -> PluginLoaderHelper.getRequirements(p).size())
+                  .thenComparing(this::comparePluginsByDependencyGraph)
+                  .thenComparing(Class::getName))
           .forEach(this::loadPluginClass);
 
       if (!pluginClasses.isEmpty()) {
@@ -191,12 +195,13 @@ public class PluginLoader {
   }
 
   /**
-   * Compares plugins such that plugins with dependencies will be at the end of the list or array being sorted.
+   * Compares plugins such that plugins with dependencies will be at the end of the list or array
+   * being sorted.
    *
    * @param p1 the first plugin to compare
    * @param p2 the second plugin to compare
-   *
-   * @throws IllegalStateException if the two plugins depend on each other, creating a cyclical dependency
+   * @throws IllegalStateException if the two plugins depend on each other, creating a cyclical
+   *     dependency
    */
   @VisibleForTesting
   int comparePluginsByDependencyGraph(Class<? extends Plugin> p1, Class<? extends Plugin> p2) {
@@ -215,12 +220,11 @@ public class PluginLoader {
   }
 
   /**
-   * Attempts to load a plugin class. This class may or not be a plugin; only a plugin class will be loaded. A plugin
-   * loaded with this method will be loaded after unloading a plugin that shares the same
-   * {@link Plugin#idString() ID string}, if one exists.
+   * Attempts to load a plugin class. This class may or not be a plugin; only a plugin class will be
+   * loaded. A plugin loaded with this method will be loaded after unloading a plugin that shares
+   * the same {@link Plugin#idString() ID string}, if one exists.
    *
    * @param clazz the class to attempt to load
-   *
    * @return true if the class is a plugin class and was successfully loaded; false otherwise
    */
   public boolean loadPluginClass(Class<? extends Plugin> clazz) {
@@ -245,21 +249,20 @@ public class PluginLoader {
         .filter(p -> p.idString().equals(plugin.idString()))
         .filter(p -> !p.getVersion().equals(plugin.getVersion()))
         .findFirst()
-        .ifPresent(oldPlugin -> {
-          unload(oldPlugin);
-          knownPlugins.remove(oldPlugin);
-          knownPluginClasses.remove(plugin.getClass());
-        });
+        .ifPresent(
+            oldPlugin -> {
+              unload(oldPlugin);
+              knownPlugins.remove(oldPlugin);
+              knownPluginClasses.remove(plugin.getClass());
+            });
   }
 
   /**
    * Loads a plugin.
    *
    * @param plugin the plugin to load
-   *
-   * @return true if the plugin was loaded, false if it wasn't. This could happen if the plugin were already loaded,
-   *         or if the plugin requires other plugins that are not loaded.
-   *
+   * @return true if the plugin was loaded, false if it wasn't. This could happen if the plugin were
+   *     already loaded, or if the plugin requires other plugins that are not loaded.
    * @throws IllegalArgumentException if a plugin already exists with the same ID
    */
   public boolean load(Plugin plugin) {
@@ -289,17 +292,21 @@ public class PluginLoader {
     plugin.getDefaultComponents().forEach(components::setDefaultComponent);
     components.getActiveWidgets().stream()
         .filter(w -> w.getSources().stream().anyMatch(s -> s instanceof DestroyedSource))
-        .filter(w -> {
-          return plugin.getComponents().stream().anyMatch(t -> t.getType().equals(w.getClass()))
-              || w.getSources().stream().anyMatch(s -> plugin.getDataTypes().contains(s.getDataType()))
-              || w.getSources().stream().anyMatch(s -> plugin.getSourceTypes().contains(s.getType()));
-        })
+        .filter(
+            w -> {
+              return plugin.getComponents().stream().anyMatch(t -> t.getType().equals(w.getClass()))
+                  || w.getSources().stream()
+                      .anyMatch(s -> plugin.getDataTypes().contains(s.getDataType()))
+                  || w.getSources().stream()
+                      .anyMatch(s -> plugin.getSourceTypes().contains(s.getType()));
+            })
         .filter(w -> w.getSources().stream().anyMatch(s -> sourceTypes.isRegistered(s.getType())))
-        .forEach(w -> {
-          w.getSources().stream()
-              .filter(s -> s instanceof DestroyedSource)
-              .forEach(s -> tryRestoreSource(w, (DestroyedSource) s));
-        });
+        .forEach(
+            w -> {
+              w.getSources().stream()
+                  .filter(s -> s instanceof DestroyedSource)
+                  .forEach(s -> tryRestoreSource(w, (DestroyedSource) s));
+            });
     plugin.getThemes().forEach(themes::register);
     tabInfoRegistry.registerAll(plugin.getDefaultTabInfo());
     converters.registerAll(plugin.getRecordingConverters());
@@ -328,24 +335,29 @@ public class PluginLoader {
     if (!knownPlugins.contains(plugin)) {
       knownPlugins.add(plugin);
     }
-    log.info("Loaded plugin " + plugin.idString() + " in " + timer.elapsed(TimeUnit.MILLISECONDS) + "ms");
+    log.info(
+        "Loaded plugin "
+            + plugin.idString()
+            + " in "
+            + timer.elapsed(TimeUnit.MILLISECONDS)
+            + "ms");
     return true;
   }
 
   /**
-   * Checks if plugin <code>A</code> requires plugin <code>B</code>, either directly or through transitive dependencies.
+   * Checks if plugin <code>A</code> requires plugin <code>B</code>, either directly or through
+   * transitive dependencies.
    *
    * @param pluginA the plugin to check
    * @param pluginB the plugin to check as a possible requirement of plugin <code>A</code>
-   *
-   * @return true if plugin <code>A</code> requires plugin <code>B</code>, either directly
-   *     or through transitive dependencies
+   * @return true if plugin <code>A</code> requires plugin <code>B</code>, either directly or
+   *     through transitive dependencies
    */
   private boolean requires(Class<? extends Plugin> pluginA, Class<? extends Plugin> pluginB) {
     return isDirectRequirement(pluginA, pluginB)
         || knownPluginClasses.stream()
-        .filter(c -> isDirectRequirement(pluginA, c))
-        .anyMatch(c -> requires(c, pluginB));
+            .filter(c -> isDirectRequirement(pluginA, c))
+            .anyMatch(c -> requires(c, pluginB));
   }
 
   /**
@@ -353,10 +365,10 @@ public class PluginLoader {
    *
    * @param pluginA the plugin to check
    * @param pluginB the plugin to check as a possible requirement of plugin <code>A</code>
-   *
    * @return true if plugin <code>A</code> directly requires plugin <code>B</code>, false if not
    */
-  private static boolean isDirectRequirement(Class<? extends Plugin> pluginA, Class<? extends Plugin> pluginB) {
+  private static boolean isDirectRequirement(
+      Class<? extends Plugin> pluginA, Class<? extends Plugin> pluginB) {
     Description description = PluginLoaderHelper.getDescription(pluginB);
     return PluginLoaderHelper.getRequirements(pluginA).stream()
         .filter(d -> d.group().equals(description.group()))
@@ -366,30 +378,29 @@ public class PluginLoader {
   }
 
   /**
-   * Checks if the given plugin can be loaded. A plugin is considered to be <i>loadable</i> if all plugins specified in
-   * its requirements are loaded and have a version of at least the one specified in the dependency, with the same major
-   * version number. For example, a plugin that depends on {@code "com.acme:PerfectPlugin:4.2.0"} is loadable if a
-   * plugin {@code "com.acme:PerfectPlugin:4.3.1"} is loaded, but is not loadable if a plugin
-   * {@code "com.acme:PerfectPlugin:0.1.0"} or {@code "com.acme.PerfectPlugin:5.0.0} is loaded. Plugins with no
-   * requirements are always loadable.
+   * Checks if the given plugin can be loaded. A plugin is considered to be <i>loadable</i> if all
+   * plugins specified in its requirements are loaded and have a version of at least the one
+   * specified in the dependency, with the same major version number. For example, a plugin that
+   * depends on {@code "com.acme:PerfectPlugin:4.2.0"} is loadable if a plugin {@code
+   * "com.acme:PerfectPlugin:4.3.1"} is loaded, but is not loadable if a plugin {@code
+   * "com.acme:PerfectPlugin:0.1.0"} or {@code "com.acme.PerfectPlugin:5.0.0} is loaded. Plugins
+   * with no requirements are always loadable.
    *
    * @param plugin the plugin to check
-   *
    * @return true if the plugin can be loaded, false if not
    */
   public boolean canLoad(Plugin plugin) {
     return plugin != null
         && PluginLoaderHelper.getRequirements(plugin.getClass()).stream()
-        .allMatch(a ->
-            loadedPlugins.stream()
-                .filter(p -> p.getGroupId().equals(a.group()) && p.getName().equals(a.name()))
-                .anyMatch(p ->
-                    PluginLoaderHelper.isCompatible(
-                        p.getVersion(),
-                        Version.valueOf(a.minVersion())
-                    )
-                )
-        );
+            .allMatch(
+                a ->
+                    loadedPlugins.stream()
+                        .filter(
+                            p -> p.getGroupId().equals(a.group()) && p.getName().equals(a.name()))
+                        .anyMatch(
+                            p ->
+                                PluginLoaderHelper.isCompatible(
+                                    p.getVersion(), Version.valueOf(a.minVersion()))));
   }
 
   private void tryRestoreSource(Widget widget, DestroyedSource destroyedSource) {
@@ -398,18 +409,22 @@ public class PluginLoader {
       widget.addSource(restore);
       widget.removeSource(destroyedSource);
     } catch (IncompatibleSourceException | DataTypeChangedException e) {
-      log.log(Level.WARNING, "Could not set the restored source of " + widget
-          + ". The plugin defining its data type was probably unloaded.", e);
+      log.log(
+          Level.WARNING,
+          "Could not set the restored source of "
+              + widget
+              + ". The plugin defining its data type was probably unloaded.",
+          e);
     }
   }
 
   /**
-   * Unloads a plugin. Any plugins that require the one being unloaded will also be unloaded before unloading the given
-   * one.
+   * Unloads a plugin. Any plugins that require the one being unloaded will also be unloaded before
+   * unloading the given one.
    *
    * @param plugin the plugin to unload
-   *
-   * @return true if the plugin was unloaded, false if not. This can occur if the plugin was not loaded to begin with.
+   * @return true if the plugin was unloaded, false if not. This can occur if the plugin was not
+   *     loaded to begin with.
    */
   @SuppressWarnings("unchecked")
   public boolean unload(Plugin plugin) {
@@ -425,25 +440,31 @@ public class PluginLoader {
     log.info("Unloading plugin " + plugin.fullIdString());
     components.getActiveWidgets().stream()
         .filter(w -> w.getSources().stream().anyMatch(s -> !(s instanceof DestroyedSource)))
-        .filter(w -> {
-          return w.getSources().stream().anyMatch(s -> plugin.getDataTypes().contains(s.getDataType()))
-              || w.getSources().stream().anyMatch(s -> plugin.getSourceTypes().contains(s.getType()));
-        })
-        .forEach(w -> {
-          if (w instanceof SingleSourceWidget) {
-            SingleSourceWidget singleSource = (SingleSourceWidget) w;
-            singleSource.setSource(new DestroyedSource<>(singleSource.getSource()));
-          } else {
-            w.getSources().replaceAll(s -> {
-              if (!(s instanceof DestroyedSource)
-                  && (plugin.getDataTypes().contains(s.getDataType())
-                  || plugin.getSourceTypes().contains(s.getType()))) {
-                return new DestroyedSource<>(s);
+        .filter(
+            w -> {
+              return w.getSources().stream()
+                      .anyMatch(s -> plugin.getDataTypes().contains(s.getDataType()))
+                  || w.getSources().stream()
+                      .anyMatch(s -> plugin.getSourceTypes().contains(s.getType()));
+            })
+        .forEach(
+            w -> {
+              if (w instanceof SingleSourceWidget) {
+                SingleSourceWidget singleSource = (SingleSourceWidget) w;
+                singleSource.setSource(new DestroyedSource<>(singleSource.getSource()));
+              } else {
+                w.getSources()
+                    .replaceAll(
+                        s -> {
+                          if (!(s instanceof DestroyedSource)
+                              && (plugin.getDataTypes().contains(s.getDataType())
+                                  || plugin.getSourceTypes().contains(s.getType()))) {
+                            return new DestroyedSource<>(s);
+                          }
+                          return s;
+                        });
               }
-              return s;
             });
-          }
-        });
     components.unregisterAll(plugin.getComponents());
     sourceTypes.unregisterAll(plugin.getSourceTypes());
     plugin.getTypeAdapters().forEach(Serializers::remove);
@@ -460,9 +481,7 @@ public class PluginLoader {
     return true;
   }
 
-  /**
-   * Gets a list of all known plugins. These plugins may or not be loaded.
-   */
+  /** Gets a list of all known plugins. These plugins may or not be loaded. */
   public ObservableList<Plugin> getKnownPlugins() {
     return knownPlugins;
   }

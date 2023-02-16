@@ -1,20 +1,17 @@
 package edu.wpi.first.shuffleboard.app.sources;
 
+import com.google.common.collect.Iterables;
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
 import edu.wpi.first.shuffleboard.api.sources.Sources;
 import edu.wpi.first.shuffleboard.api.widget.Sourced;
-
-import com.google.common.collect.Iterables;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.WeakHashMap;
-
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.Property;
@@ -25,9 +22,10 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
 /**
- * A type of data source that represents the state of another source that has been destroyed or removed as a result
- * of its defining plugin being unloaded. The restored data source may depend on a data type no longer defined, in which
- * case a {@link DataTypeChangedException} will be thrown when it is attempted to be restored.
+ * A type of data source that represents the state of another source that has been destroyed or
+ * removed as a result of its defining plugin being unloaded. The restored data source may depend on
+ * a data type no longer defined, in which case a {@link DataTypeChangedException} will be thrown
+ * when it is attempted to be restored.
  */
 public class DestroyedSource<T> implements DataSource<T> {
 
@@ -39,11 +37,11 @@ public class DestroyedSource<T> implements DataSource<T> {
   private final Set<Sourced> clients = Collections.newSetFromMap(new WeakHashMap<>());
 
   /**
-   * Creates a new destroyed source for the given data types and URI. This should be used to represent a saved data
-   * source whose data or type is unknown at the time it is loaded.
+   * Creates a new destroyed source for the given data types and URI. This should be used to
+   * represent a saved data source whose data or type is unknown at the time it is loaded.
    *
    * @param allowableTypes the possible data types that a restored source may be able to provide
-   * @param uri            the URI of the real source corresponding to the created one
+   * @param uri the URI of the real source corresponding to the created one
    */
   public static DestroyedSource<?> forUnknownData(Collection<DataType> allowableTypes, String uri) {
     return new DestroyedSource<>(allowableTypes, uri, null);
@@ -53,9 +51,9 @@ public class DestroyedSource<T> implements DataSource<T> {
    * Creates a new instance that can restore a data source.
    *
    * @param possibleTypes the possible data types that can be restored
-   * @param id            the ID of the destroyed source
-   * @param data          the data of the source when it was destroyed, or {@code null} if no data was present or known
-   *
+   * @param id the ID of the destroyed source
+   * @param data the data of the source when it was destroyed, or {@code null} if no data was
+   *     present or known
    * @throws IllegalArgumentException if no possible types are specified
    */
   public DestroyedSource(Collection<DataType> possibleTypes, String id, T data) {
@@ -72,8 +70,9 @@ public class DestroyedSource<T> implements DataSource<T> {
    * Creates a new instance that can restore a data source.
    *
    * @param dataType the type of the data the destroyed source provides
-   * @param id       the ID of the destroyed source
-   * @param data     the data of the source when it was destroyed, or {@code null} if no data was present or known
+   * @param id the ID of the destroyed source
+   * @param data the data of the source when it was destroyed, or {@code null} if no data was
+   *     present or known
    */
   public DestroyedSource(DataType<T> dataType, String id, T data) {
     this(Collections.singleton(dataType), id, data);
@@ -96,8 +95,10 @@ public class DestroyedSource<T> implements DataSource<T> {
   /**
    * Creates a data source identical to the original.
    *
-   * @throws DataTypeChangedException if the data type of the restored source is different from the saved one
-   * @throws IllegalStateException    if the saved source type is not registered when this method is called
+   * @throws DataTypeChangedException if the data type of the restored source is different from the
+   *     saved one
+   * @throws IllegalStateException if the saved source type is not registered when this method is
+   *     called
    */
   @SuppressWarnings("unchecked")
   public DataSource<T> restore() throws DataTypeChangedException, IllegalStateException {
@@ -106,7 +107,9 @@ public class DestroyedSource<T> implements DataSource<T> {
       DataSource<T> restored = (DataSource<T>) sourceType.forUri(oldId);
       if (!possibleTypes.contains(restored.getDataType())) {
         throw new DataTypeChangedException(
-            "The new data type is " + restored.getDataType() + ", was expecting one of: "
+            "The new data type is "
+                + restored.getDataType()
+                + ", was expecting one of: "
                 + Iterables.toString(possibleTypes));
       }
       if (sourceType.getAvailableSourceUris().contains(oldId)) {
@@ -123,7 +126,8 @@ public class DestroyedSource<T> implements DataSource<T> {
       }
       return restored;
     } else {
-      throw new IllegalStateException("The source type " + sourceType.getName() + " is not registered");
+      throw new IllegalStateException(
+          "The source type " + sourceType.getName() + " is not registered");
     }
   }
 
@@ -196,5 +200,4 @@ public class DestroyedSource<T> implements DataSource<T> {
   public String toString() {
     return "DestroyedSource(id=" + oldId + ", possibleTypes=" + possibleTypes + ")";
   }
-
 }

@@ -1,9 +1,9 @@
 package edu.wpi.first.shuffleboard.api.sources.recording.serialization;
 
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import org.junit.jupiter.api.Test;
 
 public class ByteArrayAdapterTest {
 
@@ -47,5 +47,4 @@ public class ByteArrayAdapterTest {
     byte[] array = {1, 2, 3};
     assertEquals(7, adapter.getSerializedSize(array));
   }
-
 }

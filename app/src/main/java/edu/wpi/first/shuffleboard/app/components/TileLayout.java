@@ -1,16 +1,12 @@
 package edu.wpi.first.shuffleboard.app.components;
 
+import static java.util.Objects.requireNonNull;
 
 import edu.wpi.first.shuffleboard.api.util.GridPoint;
 import edu.wpi.first.shuffleboard.api.widget.TileSize;
-
 import java.util.Objects;
 
-import static java.util.Objects.requireNonNull;
-
-/**
- * Represents how a tile is laid out. Contains the origin point as well as the size of the tile.
- */
+/** Represents how a tile is laid out. Contains the origin point as well as the size of the tile. */
 public final class TileLayout {
 
   public final GridPoint origin;
@@ -40,8 +36,7 @@ public final class TileLayout {
 
     TileLayout that = (TileLayout) obj;
 
-    return this.origin.equals(that.origin)
-        && this.size.equals(that.size);
+    return this.origin.equals(that.origin) && this.size.equals(that.size);
   }
 
   @Override
@@ -53,5 +48,4 @@ public final class TileLayout {
   public String toString() {
     return String.format("TileLayout(origin=%s, size=%s)", origin, size);
   }
-
 }

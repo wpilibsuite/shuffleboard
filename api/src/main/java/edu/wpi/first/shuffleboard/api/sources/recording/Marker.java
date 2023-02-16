@@ -2,9 +2,7 @@ package edu.wpi.first.shuffleboard.api.sources.recording;
 
 import java.util.Objects;
 
-/**
- * Marks an event in a recording.
- */
+/** Marks an event in a recording. */
 public final class Marker implements RecordingEntry {
 
   private final String name;
@@ -15,10 +13,11 @@ public final class Marker implements RecordingEntry {
   /**
    * Creates a new event marker.
    *
-   * @param name        the name of the marked event
+   * @param name the name of the marked event
    * @param description a description of the marked event
-   * @param importance  the importance of the event
-   * @param timestamp   the time the event occurred, measured in milliseconds since the start of the recording
+   * @param importance the importance of the event
+   * @param timestamp the time the event occurred, measured in milliseconds since the start of the
+   *     recording
    */
   public Marker(String name, String description, MarkerImportance importance, long timestamp) {
     this.name = Objects.requireNonNull(name, "name");
@@ -30,38 +29,31 @@ public final class Marker implements RecordingEntry {
   /**
    * Creates a new event marker with no description.
    *
-   * @param name       the name of the marked event
+   * @param name the name of the marked event
    * @param importance the importance of the event
-   * @param timestamp  the time the event occurred, measured in milliseconds since the start of the recording
+   * @param timestamp the time the event occurred, measured in milliseconds since the start of the
+   *     recording
    */
   public Marker(String name, MarkerImportance importance, long timestamp) {
     this(name, "", importance, timestamp);
   }
 
-  /**
-   * Gets the name of the marked event.
-   */
+  /** Gets the name of the marked event. */
   public String getName() {
     return name;
   }
 
-  /**
-   * Gets the description of the marked event.
-   */
+  /** Gets the description of the marked event. */
   public String getDescription() {
     return description;
   }
 
-  /**
-   * Gets the importance of the marked event.
-   */
+  /** Gets the importance of the marked event. */
   public MarkerImportance getImportance() {
     return importance;
   }
 
-  /**
-   * Gets the timestamp of the marked event.
-   */
+  /** Gets the timestamp of the marked event. */
   @Override
   public long getTimestamp() {
     return timestamp;
@@ -69,7 +61,8 @@ public final class Marker implements RecordingEntry {
 
   @Override
   public String toString() {
-    return String.format("Marker(name=\"%s\", description=\"%s\", importance=%s, timestamp=%d)",
+    return String.format(
+        "Marker(name=\"%s\", description=\"%s\", importance=%s, timestamp=%d)",
         name, description, importance, timestamp);
   }
 

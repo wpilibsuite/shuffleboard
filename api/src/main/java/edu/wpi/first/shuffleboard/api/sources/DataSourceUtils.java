@@ -14,17 +14,20 @@ public final class DataSourceUtils {
   }
 
   /**
-   * Checks if the given source URI is metadata, eg matches the format "~METADATA~" or ".metadata", or has any parent
-   * that matches either of those formats.
+   * Checks if the given source URI is metadata, eg matches the format "~METADATA~" or ".metadata",
+   * or has any parent that matches either of those formats.
    */
   public static boolean isMetadata(String sourceUri) {
-    return newMetadataPattern.matcher(sourceUri).find() // Check new metadata first, since that's most likely
+    return newMetadataPattern
+            .matcher(sourceUri)
+            .find() // Check new metadata first, since that's most likely
         || oldMetadataPattern.matcher(sourceUri).find();
   }
 
   /**
-   * Checks if the given source URI is not metadata, eg does not match either "~METADATA~" or ".metadata".
-   * <br>Shorthand for {@code !isMetadata(sourceUri)}.
+   * Checks if the given source URI is not metadata, eg does not match either "~METADATA~" or
+   * ".metadata". <br>
+   * Shorthand for {@code !isMetadata(sourceUri)}.
    *
    * @see #isMetadata(String)
    */
@@ -37,7 +40,6 @@ public final class DataSourceUtils {
    * ["/", "/foo", "/foo/bar", "/foo/bar/baz"].
    *
    * @param sourcePath the source path to get the hierachy of
-   *
    * @return the hierarchy of a source path
    */
   public static List<String> getHierarchy(String sourcePath) {
@@ -63,7 +65,6 @@ public final class DataSourceUtils {
    * Gets the base name of a data source, eg "/foo/bar" -&gt; "bar".
    *
    * @param sourcePath the source path to get the base name for
-   *
    * @return the base name of a source path
    */
   public static String baseName(String sourcePath) {
@@ -73,5 +74,4 @@ public final class DataSourceUtils {
       return sourcePath;
     }
   }
-
 }

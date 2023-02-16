@@ -1,17 +1,11 @@
 package edu.wpi.first.shuffleboard.api;
 
 public enum TileTitleDisplayMode {
-  /**
-   * The default tile view type - large title ad header bar.
-   */
+  /** The default tile view type - large title ad header bar. */
   DEFAULT("Default"),
-  /**
-   * Minimal tiles with smaller header bars and titles.
-   */
+  /** Minimal tiles with smaller header bars and titles. */
   MINIMAL("Minimal"),
-  /**
-   * No header bars at all.
-   */
+  /** No header bars at all. */
   HIDDEN("Hidden");
 
   private final String humanReadable;

@@ -1,19 +1,17 @@
 package edu.wpi.first.shuffleboard.plugin.base.layout;
 
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
-import org.testfx.framework.junit5.ApplicationTest;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
 
 import java.io.IOException;
-
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.testfx.framework.junit5.ApplicationTest;
 
 @Tag("UI")
 public class ListLayoutTest extends ApplicationTest {
@@ -32,12 +30,12 @@ public class ListLayoutTest extends ApplicationTest {
 
   @Test
   public void testChildrenAdded() {
-    Platform.runLater(() -> {
-      layout.addChild(new MockWidget());
-      layout.addChild(new MockWidget());
-    });
+    Platform.runLater(
+        () -> {
+          layout.addChild(new MockWidget());
+          layout.addChild(new MockWidget());
+        });
     waitForFxEvents();
     assertEquals(2, ((VBox) layout.getView().lookup(".layout-container")).getChildren().size());
   }
-
 }

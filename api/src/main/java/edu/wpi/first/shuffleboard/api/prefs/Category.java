@@ -1,15 +1,15 @@
 package edu.wpi.first.shuffleboard.api.prefs;
 
 import com.google.common.collect.ImmutableList;
-
 import java.util.Collection;
 import java.util.Objects;
 
 /**
- * A category of settings. This is typically used to contain all the settings for a single configurable object, such
- * as a component, layout, or tab. Categories can have nested categories, like in the case of a layout containing
- * child components; the settings categories for the children can be nested under the settings category for the
- * parent layout. This lets components to be grouped together in a UI object.
+ * A category of settings. This is typically used to contain all the settings for a single
+ * configurable object, such as a component, layout, or tab. Categories can have nested categories,
+ * like in the case of a layout containing child components; the settings categories for the
+ * children can be nested under the settings category for the parent layout. This lets components to
+ * be grouped together in a UI object.
  */
 public final class Category {
 
@@ -20,9 +20,8 @@ public final class Category {
   /**
    * Creates a new category of settings.
    *
-   * @param name   the name of the category
+   * @param name the name of the category
    * @param groups the groups of settings in this category
-   *
    * @return a new category
    */
   public static Category of(String name, Group... groups) {
@@ -32,9 +31,8 @@ public final class Category {
   /**
    * Creates a new category of settings.
    *
-   * @param name   the name of the category
+   * @param name the name of the category
    * @param groups the groups of settings in this category
-   *
    * @return a new category
    */
   public static Category of(String name, Collection<Group> groups) {
@@ -44,17 +42,18 @@ public final class Category {
   /**
    * Creates a new category of settings, with optional subcategories.
    *
-   * @param name          the name of the category
+   * @param name the name of the category
    * @param subcategories the subcategories underneath this one
-   * @param groups        the groups of settings in this category
-   *
+   * @param groups the groups of settings in this category
    * @return a new category
    */
-  public static Category of(String name, Collection<Category> subcategories, Collection<Group> groups) {
+  public static Category of(
+      String name, Collection<Category> subcategories, Collection<Group> groups) {
     return new Category(name, ImmutableList.copyOf(subcategories), ImmutableList.copyOf(groups));
   }
 
-  private Category(String name, ImmutableList<Category> subcategories, ImmutableList<Group> groups) {
+  private Category(
+      String name, ImmutableList<Category> subcategories, ImmutableList<Group> groups) {
     Objects.requireNonNull(name, "A category name cannot be null");
     if (name.chars().allMatch(Character::isWhitespace)) {
       throw new IllegalArgumentException("A category name cannot be empty");
@@ -64,25 +63,18 @@ public final class Category {
     this.groups = groups;
   }
 
-  /**
-   * Gets the name of this category.
-   */
+  /** Gets the name of this category. */
   public String getName() {
     return name;
   }
 
-  /**
-   * Gets the subcategories below this one.
-   */
+  /** Gets the subcategories below this one. */
   public ImmutableList<Category> getSubcategories() {
     return subcategories;
   }
 
-  /**
-   * Gets the groups of settings in this category.
-   */
+  /** Gets the groups of settings in this category. */
   public ImmutableList<Group> getGroups() {
     return groups;
   }
-
 }

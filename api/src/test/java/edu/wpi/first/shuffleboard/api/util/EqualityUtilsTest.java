@@ -1,25 +1,24 @@
 package edu.wpi.first.shuffleboard.api.util;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import java.util.stream.Stream;
-
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 public class EqualityUtilsTest extends UtilityClassTest<EqualityUtils> {
 
   @Test
   public void isDifferentArrayTest() {
-    assertTrue(EqualityUtils.isDifferent(new Object[]{""}, new Object[]{"A"}));
+    assertTrue(EqualityUtils.isDifferent(new Object[] {""}, new Object[] {"A"}));
   }
 
   @Test
   public void isDifferentArrayFalseTest() {
-    assertFalse(EqualityUtils.isDifferent(new Object[]{""}, new Object[]{""}));
+    assertFalse(EqualityUtils.isDifferent(new Object[] {""}, new Object[] {""}));
   }
 
   @ParameterizedTest
@@ -44,16 +43,15 @@ public class EqualityUtilsTest extends UtilityClassTest<EqualityUtils> {
     return Stream.of(
         Arguments.of(null, null),
         Arguments.of("Test", "Test"),
-        Arguments.of(new int[]{1}, new int[]{1}),
-        Arguments.of(new long[]{1}, new long[]{1}),
-        Arguments.of(new double[]{1.1}, new double[]{1.1}),
-        Arguments.of(new byte[]{3}, new byte[]{3}),
-        Arguments.of(new short[]{4}, new short[]{4}),
-        Arguments.of(new char[]{'a'}, new char[]{'a'}),
-        Arguments.of(new boolean[]{true}, new boolean[]{true}),
-        Arguments.of(new float[]{2.2f}, new float[]{2.2f}),
-        Arguments.of(new Object[]{"Str"}, new Object[]{"Str"})
-    );
+        Arguments.of(new int[] {1}, new int[] {1}),
+        Arguments.of(new long[] {1}, new long[] {1}),
+        Arguments.of(new double[] {1.1}, new double[] {1.1}),
+        Arguments.of(new byte[] {3}, new byte[] {3}),
+        Arguments.of(new short[] {4}, new short[] {4}),
+        Arguments.of(new char[] {'a'}, new char[] {'a'}),
+        Arguments.of(new boolean[] {true}, new boolean[] {true}),
+        Arguments.of(new float[] {2.2f}, new float[] {2.2f}),
+        Arguments.of(new Object[] {"Str"}, new Object[] {"Str"}));
   }
 
   private static Stream<Arguments> isDifferentArguments() {
@@ -62,18 +60,16 @@ public class EqualityUtilsTest extends UtilityClassTest<EqualityUtils> {
         Arguments.of("null", null),
         Arguments.of("", "A"),
         Arguments.of(new int[0], ""),
-        Arguments.of(new int[]{1}, new int[]{2}),
+        Arguments.of(new int[] {1}, new int[] {2}),
         Arguments.of(new long[0], ""),
-        Arguments.of(new long[]{1}, new long[]{2}),
-        Arguments.of(new double[]{1.1}, new double[]{1.2}),
-        Arguments.of(new byte[]{3}, new byte[]{4}),
-        Arguments.of(new short[]{4}, new short[]{5}),
-        Arguments.of(new char[]{'a'}, new char[]{'b'}),
-        Arguments.of(new boolean[]{true}, new boolean[]{false}),
-        Arguments.of(new float[]{2.2f}, new float[]{2.3f}),
-        Arguments.of(new Object[]{"Test"}, new Object[]{"Tests"}),
-        Arguments.of(new int[0], new double[0])
-    );
+        Arguments.of(new long[] {1}, new long[] {2}),
+        Arguments.of(new double[] {1.1}, new double[] {1.2}),
+        Arguments.of(new byte[] {3}, new byte[] {4}),
+        Arguments.of(new short[] {4}, new short[] {5}),
+        Arguments.of(new char[] {'a'}, new char[] {'b'}),
+        Arguments.of(new boolean[] {true}, new boolean[] {false}),
+        Arguments.of(new float[] {2.2f}, new float[] {2.3f}),
+        Arguments.of(new Object[] {"Test"}, new Object[] {"Tests"}),
+        Arguments.of(new int[0], new double[0]));
   }
-
 }

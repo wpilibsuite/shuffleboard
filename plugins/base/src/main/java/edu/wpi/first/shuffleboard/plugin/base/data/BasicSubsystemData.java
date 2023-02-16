@@ -2,7 +2,6 @@ package edu.wpi.first.shuffleboard.plugin.base.data;
 
 import edu.wpi.first.shuffleboard.api.data.ComplexData;
 import edu.wpi.first.shuffleboard.api.util.Maps;
-
 import java.util.Map;
 import java.util.Objects;
 
@@ -16,26 +15,26 @@ public final class BasicSubsystemData extends ComplexData<BasicSubsystemData> {
   /**
    * Creates a new data object for basic subsystem data.
    *
-   * @param hasDefaultCommand  flag marking this subsystem as having a default command
+   * @param hasDefaultCommand flag marking this subsystem as having a default command
    * @param defaultCommandName the name of the default command
-   * @param hasCommand         true if a command is running that requires this subsystem, otherwise false
+   * @param hasCommand true if a command is running that requires this subsystem, otherwise false
    * @param currentCommandName the name of the current command running on this subsystem
    */
-  public BasicSubsystemData(boolean hasDefaultCommand,
-                            String defaultCommandName,
-                            boolean hasCommand,
-                            String currentCommandName) {
+  public BasicSubsystemData(
+      boolean hasDefaultCommand,
+      String defaultCommandName,
+      boolean hasCommand,
+      String currentCommandName) {
     this.hasDefaultCommand = hasDefaultCommand;
     this.defaultCommandName = hasDefaultCommand ? defaultCommandName : "";
     this.hasCommand = hasCommand;
     this.currentCommandName = hasCommand ? currentCommandName : "";
   }
 
-  /**
-   * Creates a new data object from a map.
-   */
+  /** Creates a new data object from a map. */
   public BasicSubsystemData(Map<String, Object> map) {
-    this((Boolean) map.getOrDefault(".hasDefault", false),
+    this(
+        (Boolean) map.getOrDefault(".hasDefault", false),
         (String) map.getOrDefault(".default", ""),
         (Boolean) map.getOrDefault(".hasCommand", false),
         (String) map.getOrDefault(".command", ""));
@@ -93,5 +92,4 @@ public final class BasicSubsystemData extends ComplexData<BasicSubsystemData> {
         "BasicSubsystemData(hasDefaultCommand=%s, defaultCommandName='%s', hasCommand=%s, currentCommandName='%s')",
         hasDefaultCommand, defaultCommandName, hasCommand, currentCommandName);
   }
-
 }
