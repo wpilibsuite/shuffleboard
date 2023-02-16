@@ -1,5 +1,12 @@
 package edu.wpi.first.shuffleboard.app.json;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+
+import com.google.common.collect.ImmutableList;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.data.types.AllType;
 import edu.wpi.first.shuffleboard.api.prefs.Group;
@@ -11,29 +18,18 @@ import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.api.widget.Description;
 import edu.wpi.first.shuffleboard.api.widget.SimpleAnnotatedWidget;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
-
-import com.google.common.collect.ImmutableList;
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
-import org.testfx.framework.junit5.ApplicationTest;
-
 import java.util.List;
-
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
-
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.testfx.framework.junit5.ApplicationTest;
 
 @Tag("UI")
 public class WidgetSaverTest extends ApplicationTest {
@@ -43,31 +39,30 @@ public class WidgetSaverTest extends ApplicationTest {
 
     private final SimpleDoubleProperty min = new SimpleDoubleProperty(this, "min", 0);
     private final SimpleDoubleProperty max = new SimpleDoubleProperty(this, "max", 0);
-    private final SimpleDoubleProperty blockIncrement = new SimpleDoubleProperty(this, "blockIncrement", 0);
+    private final SimpleDoubleProperty blockIncrement =
+        new SimpleDoubleProperty(this, "blockIncrement", 0);
 
     @Override
     public List<Group> getSettings() {
       return ImmutableList.of(
-          Group.of("Test",
+          Group.of(
+              "Test",
               Setting.of("min", min),
               Setting.of("max", max),
-              Setting.of("blockIncrement", blockIncrement)
-          )
-      );
+              Setting.of("blockIncrement", blockIncrement)));
     }
 
     @Override
     public Pane getView() {
       return new Pane();
     }
-
   }
 
   @Description(name = "WidgetWithSavedProperties", dataTypes = AllType.class)
   public static class WidgetWithSavedProperties extends SimpleAnnotatedWidget {
 
-    @SaveThisProperty
-    final DoubleProperty property = new SimpleDoubleProperty(this, "property", 0);
+    @SaveThisProperty final DoubleProperty property = new SimpleDoubleProperty(this, "property", 0);
+
     @SaveThisProperty(name = "mathematical constant")
     final DoubleProperty property2 = new SimpleDoubleProperty(this, "property2", 0);
 
@@ -113,9 +108,7 @@ public class WidgetSaverTest extends ApplicationTest {
   }
 
   private static Object getPropertyValue(Widget widget, String name) {
-    return widget.getSettings().get(0)
-        .getSettings()
-        .stream()
+    return widget.getSettings().get(0).getSettings().stream()
         .filter(p -> p.getName().equals(name))
         .findFirst()
         .orElseThrow(RuntimeException::new)
@@ -126,13 +119,14 @@ public class WidgetSaverTest extends ApplicationTest {
   @Test
   public void loadSimpleWidget() throws Exception {
     Components.getDefault().register(SimpleWidget.class);
-    String widgetJson = "{\n"
-        + "\"_type\": \"Simple Widget\",\n"
-        + "\"_source0\": \"example://All\",\n"
-        + "\"Test/min\": -1.0,\n"
-        + "\"Test/max\": 1.0,\n"
-        + "\"Test/blockIncrement\": 0.0625\n"
-        + "}";
+    String widgetJson =
+        "{\n"
+            + "\"_type\": \"Simple Widget\",\n"
+            + "\"_source0\": \"example://All\",\n"
+            + "\"Test/min\": -1.0,\n"
+            + "\"Test/max\": 1.0,\n"
+            + "\"Test/blockIncrement\": 0.0625\n"
+            + "}";
 
     Widget widget = JsonBuilder.forSaveFile().fromJson(widgetJson, Widget.class);
 
@@ -159,10 +153,16 @@ public class WidgetSaverTest extends ApplicationTest {
     JsonObject jsonObject = gson.toJsonTree(saveMe, Widget.class).getAsJsonObject();
 
     assertAll(
-        () -> assertEquals(property1Value, jsonObject.get("property").getAsDouble(), "property value not saved"),
-        () -> assertEquals(property2Value, jsonObject.get("mathematical constant").getAsDouble(),
-            "property2 value not saved")
-    );
+        () ->
+            assertEquals(
+                property1Value,
+                jsonObject.get("property").getAsDouble(),
+                "property value not saved"),
+        () ->
+            assertEquals(
+                property2Value,
+                jsonObject.get("mathematical constant").getAsDouble(),
+                "property2 value not saved"));
 
     // Test loading
     Widget read = gson.fromJson(jsonObject, Widget.class);
@@ -172,8 +172,7 @@ public class WidgetSaverTest extends ApplicationTest {
 
     assertAll(
         () -> assertEquals(property1Value, actualRead.property.get(), "property value not read"),
-        () -> assertEquals(property2Value, actualRead.property2.get(), "property2 value not read")
-    );
+        () -> assertEquals(property2Value, actualRead.property2.get(), "property2 value not read"));
   }
 
   @Test
@@ -193,8 +192,7 @@ public class WidgetSaverTest extends ApplicationTest {
         () -> assertEquals(0, jsonObject.get("minimum").getAsDouble()),
         () -> assertEquals(75, jsonObject.get("a property").getAsDouble()),
         () -> assertEquals(100, jsonObject.get("maximum").getAsDouble()),
-        () -> assertFalse(jsonObject.get("showSlider").getAsBoolean())
-    );
+        () -> assertFalse(jsonObject.get("showSlider").getAsBoolean()));
 
     // Test loading
     Widget read = gson.fromJson(jsonObject, Widget.class);
@@ -207,8 +205,6 @@ public class WidgetSaverTest extends ApplicationTest {
         () -> assertEquals(0, actualRead.slider.getMin()),
         () -> assertEquals(75, actualRead.slider.getValue()),
         () -> assertEquals(100, actualRead.slider.getMax()),
-        () -> assertFalse(actualRead.slider.isVisible())
-    );
+        () -> assertFalse(actualRead.slider.isVisible()));
   }
-
 }

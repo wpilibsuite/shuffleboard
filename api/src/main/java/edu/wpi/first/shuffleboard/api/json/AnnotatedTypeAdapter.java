@@ -12,8 +12,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface AnnotatedTypeAdapter {
-  /**
-   * The class to call GsonBuilder#registerTypeAdapter for.
-   */
+  /** The class to call GsonBuilder#registerTypeAdapter for. */
   Class<?> forType();
 }

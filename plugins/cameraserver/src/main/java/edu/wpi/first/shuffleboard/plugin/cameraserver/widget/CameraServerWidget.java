@@ -1,5 +1,7 @@
 package edu.wpi.first.shuffleboard.plugin.cameraserver.widget;
 
+import com.google.common.collect.ImmutableList;
+import com.jfoenix.controls.JFXSlider;
 import edu.wpi.first.shuffleboard.api.components.IntegerField;
 import edu.wpi.first.shuffleboard.api.prefs.Group;
 import edu.wpi.first.shuffleboard.api.prefs.Setting;
@@ -11,16 +13,7 @@ import edu.wpi.first.shuffleboard.plugin.cameraserver.data.CameraServerData;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.data.Resolution;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.recording.serialization.ImageConverter;
 import edu.wpi.first.shuffleboard.plugin.cameraserver.source.CameraServerSource;
-
-import com.google.common.collect.ImmutableList;
-import com.jfoenix.controls.JFXSlider;
-
-import org.fxmisc.easybind.EasyBind;
-import org.opencv.core.Core;
-import org.opencv.core.Mat;
-
 import java.util.List;
-
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -33,48 +26,52 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
+import org.fxmisc.easybind.EasyBind;
+import org.opencv.core.Core;
+import org.opencv.core.Mat;
 
 @Description(name = "Camera Stream", dataTypes = CameraServerData.class)
 @ParametrizedController("CameraServerWidget.fxml")
 @SuppressWarnings("PMD.TooManyFields")
 public class CameraServerWidget extends SimpleAnnotatedWidget<CameraServerData> {
 
-  @FXML
-  private Pane root;
-  @FXML
-  private Label fpsLabel;
-  @FXML
-  private Label bandwidthLabel;
-  @FXML
-  private Pane imageContainer;
-  @FXML
-  private ImageView imageView;
-  @FXML
-  private Image emptyImage;
-  @FXML
-  private Pane controls;
+  @FXML private Pane root;
+  @FXML private Label fpsLabel;
+  @FXML private Label bandwidthLabel;
+  @FXML private Pane imageContainer;
+  @FXML private ImageView imageView;
+  @FXML private Image emptyImage;
+  @FXML private Pane controls;
+
   @FXML
   @SavePropertyFrom(propertyName = "value", savedName = "compression")
   private JFXSlider compressionSlider;
+
   @FXML
   @SavePropertyFrom(propertyName = "number", savedName = "fps")
   private IntegerField frameRateField;
+
   @FXML
   @SavePropertyFrom(propertyName = "number", savedName = "imageWidth")
   private IntegerField width;
+
   @FXML
   @SavePropertyFrom(propertyName = "number", savedName = "imageHeight")
   private IntegerField height;
-  @FXML
-  private Node crosshairs;
+
+  @FXML private Node crosshairs;
 
   private final Mat displayMat = new Mat();
   private final ImageConverter converter = new ImageConverter();
 
-  private final BooleanProperty showControls = new SimpleBooleanProperty(this, "showControls", true);
-  private final BooleanProperty showCrosshair = new SimpleBooleanProperty(this, "showCrosshair", true);
-  private final Property<Color> crosshairColor = new SimpleObjectProperty<>(this, "crosshairColor", Color.WHITE);
-  private final Property<Rotation> rotation = new SimpleObjectProperty<>(this, "rotation", Rotation.NONE);
+  private final BooleanProperty showControls =
+      new SimpleBooleanProperty(this, "showControls", true);
+  private final BooleanProperty showCrosshair =
+      new SimpleBooleanProperty(this, "showCrosshair", true);
+  private final Property<Color> crosshairColor =
+      new SimpleObjectProperty<>(this, "crosshairColor", Color.WHITE);
+  private final Property<Rotation> rotation =
+      new SimpleObjectProperty<>(this, "rotation", Rotation.NONE);
   private final ChangeListener<Number> sourceCompressionListener =
       (__, old, compression) -> compressionSlider.setValue(compression.doubleValue());
   private final ChangeListener<Number> numberChangeListener =
@@ -87,69 +84,88 @@ public class CameraServerWidget extends SimpleAnnotatedWidget<CameraServerData> 
 
   @FXML
   private void initialize() {
-    imageView.imageProperty().bind(EasyBind.combine(dataOrDefault, rotation, (data, rotation) -> {
-      if (data.getImage() == null) {
-        return emptyImage;
-      } else {
-        data.getImage().copyTo(displayMat);
-        rotation.rotate(displayMat);
-        return converter.convert(displayMat);
-      }
-    }));
-    fpsLabel.textProperty().bind(dataOrDefault.map(CameraServerData::getFps).map(fps -> {
-      if (fps < 0) {
-        return "--- FPS";
-      } else {
-        return String.format("%.2f FPS", fps);
-      }
-    }));
-    bandwidthLabel.textProperty().bind(dataOrDefault.map(CameraServerData::getBandwidth).map(bandwidth -> {
-      if (bandwidth < 0) {
-        return "--- Mbps";
-      } else {
-        double mbps = bandwidth * 8 / 1e6;
-        return String.format("%.2f Mbps", mbps);
-      }
-    }));
+    imageView
+        .imageProperty()
+        .bind(
+            EasyBind.combine(
+                dataOrDefault,
+                rotation,
+                (data, rotation) -> {
+                  if (data.getImage() == null) {
+                    return emptyImage;
+                  } else {
+                    data.getImage().copyTo(displayMat);
+                    rotation.rotate(displayMat);
+                    return converter.convert(displayMat);
+                  }
+                }));
+    fpsLabel
+        .textProperty()
+        .bind(
+            dataOrDefault
+                .map(CameraServerData::getFps)
+                .map(
+                    fps -> {
+                      if (fps < 0) {
+                        return "--- FPS";
+                      } else {
+                        return String.format("%.2f FPS", fps);
+                      }
+                    }));
+    bandwidthLabel
+        .textProperty()
+        .bind(
+            dataOrDefault
+                .map(CameraServerData::getBandwidth)
+                .map(
+                    bandwidth -> {
+                      if (bandwidth < 0) {
+                        return "--- Mbps";
+                      } else {
+                        double mbps = bandwidth * 8 / 1e6;
+                        return String.format("%.2f Mbps", mbps);
+                      }
+                    }));
     width.setMaxValue(CameraServerSource.MAX_RESOLUTION.getWidth());
     height.setMaxValue(CameraServerSource.MAX_RESOLUTION.getHeight());
 
-    sourceProperty().addListener((__, old, source) -> {
-      if (source instanceof CameraServerSource) {
-        CameraServerSource newSource = (CameraServerSource) source;
-        if (source.hasClients()) {
-          compressionSlider.setValue(newSource.getTargetCompression());
-          frameRateField.setNumber(newSource.getTargetFps());
-          width.setNumber(newSource.getTargetResolution().getWidth());
-          height.setNumber(newSource.getTargetResolution().getHeight());
-        } else {
-          applySettings();
-        }
-        newSource.targetCompressionProperty().addListener(sourceCompressionListener);
-        newSource.targetFpsProperty().addListener(numberChangeListener);
-        newSource.targetResolutionProperty().addListener(resolutionChangeListener);
-      }
-      if (old instanceof CameraServerSource) {
-        CameraServerSource oldSource = (CameraServerSource) old;
-        oldSource.targetCompressionProperty().removeListener(sourceCompressionListener);
-        oldSource.targetFpsProperty().removeListener(numberChangeListener);
-        oldSource.targetResolutionProperty().removeListener(resolutionChangeListener);
-      }
-    });
+    sourceProperty()
+        .addListener(
+            (__, old, source) -> {
+              if (source instanceof CameraServerSource) {
+                CameraServerSource newSource = (CameraServerSource) source;
+                if (source.hasClients()) {
+                  compressionSlider.setValue(newSource.getTargetCompression());
+                  frameRateField.setNumber(newSource.getTargetFps());
+                  width.setNumber(newSource.getTargetResolution().getWidth());
+                  height.setNumber(newSource.getTargetResolution().getHeight());
+                } else {
+                  applySettings();
+                }
+                newSource.targetCompressionProperty().addListener(sourceCompressionListener);
+                newSource.targetFpsProperty().addListener(numberChangeListener);
+                newSource.targetResolutionProperty().addListener(resolutionChangeListener);
+              }
+              if (old instanceof CameraServerSource) {
+                CameraServerSource oldSource = (CameraServerSource) old;
+                oldSource.targetCompressionProperty().removeListener(sourceCompressionListener);
+                oldSource.targetFpsProperty().removeListener(numberChangeListener);
+                oldSource.targetResolutionProperty().removeListener(resolutionChangeListener);
+              }
+            });
   }
 
   @Override
   public List<Group> getSettings() {
     return ImmutableList.of(
-        Group.of("Crosshair",
+        Group.of(
+            "Crosshair",
             Setting.of("Show crosshair", showCrosshair, Boolean.class),
-            Setting.of("Crosshair color", crosshairColor, Color.class)
-        ),
-        Group.of("Controls",
+            Setting.of("Crosshair color", crosshairColor, Color.class)),
+        Group.of(
+            "Controls",
             Setting.of("Show controls", showControls, Boolean.class),
-            Setting.of("Rotation", rotation, Rotation.class)
-        )
-    );
+            Setting.of("Rotation", rotation, Rotation.class)));
   }
 
   @Override
@@ -165,9 +181,10 @@ public class CameraServerWidget extends SimpleAnnotatedWidget<CameraServerData> 
       int fps = frameRateField.getNumber();
       int width = this.width.getNumber();
       int height = this.height.getNumber();
-      boolean change = source.getTargetCompression() != compression
-          || source.getTargetFps() != fps
-          || source.getTargetResolution().isNotEqual(width, height);
+      boolean change =
+          source.getTargetCompression() != compression
+              || source.getTargetFps() != fps
+              || source.getTargetResolution().isNotEqual(width, height);
       if (!change) {
         return;
       }
@@ -183,8 +200,11 @@ public class CameraServerWidget extends SimpleAnnotatedWidget<CameraServerData> 
 
   public enum Rotation {
     NONE("None", image -> {}),
-    QUARTER_CW("90 degrees clockwise", image -> Core.rotate(image, image, Core.ROTATE_90_CLOCKWISE)),
-    QUARTER_CCW("90 degrees counter-clockwise", image -> Core.rotate(image, image, Core.ROTATE_90_COUNTERCLOCKWISE)),
+    QUARTER_CW(
+        "90 degrees clockwise", image -> Core.rotate(image, image, Core.ROTATE_90_CLOCKWISE)),
+    QUARTER_CCW(
+        "90 degrees counter-clockwise",
+        image -> Core.rotate(image, image, Core.ROTATE_90_COUNTERCLOCKWISE)),
     HALF("180 degrees", image -> Core.rotate(image, image, Core.ROTATE_180));
 
     private final String humanReadable;

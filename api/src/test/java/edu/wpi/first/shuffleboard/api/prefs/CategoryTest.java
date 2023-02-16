@@ -1,12 +1,11 @@
 package edu.wpi.first.shuffleboard.api.prefs;
 
-import com.google.common.collect.ImmutableList;
-
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import com.google.common.collect.ImmutableList;
+import org.junit.jupiter.api.Test;
 
 public class CategoryTest {
 
@@ -17,8 +16,7 @@ public class CategoryTest {
         () -> assertThrows(IllegalArgumentException.class, () -> Category.of("")),
         () -> assertThrows(IllegalArgumentException.class, () -> Category.of(" ")),
         () -> assertThrows(IllegalArgumentException.class, () -> Category.of("\n")),
-        () -> assertThrows(IllegalArgumentException.class, () -> Category.of("\t"))
-    );
+        () -> assertThrows(IllegalArgumentException.class, () -> Category.of("\t")));
   }
 
   @Test
@@ -27,16 +25,18 @@ public class CategoryTest {
     Category subB = Category.of("Sub B");
     Group groupA = Group.of("Group A");
     Group groupB = Group.of("Group B");
-    Category category = Category.of("Name",
-        ImmutableList.of(subA, subB),
-        ImmutableList.of(groupA, groupB)
-    );
+    Category category =
+        Category.of("Name", ImmutableList.of(subA, subB), ImmutableList.of(groupA, groupB));
 
     assertAll(
         () -> assertEquals("Name", category.getName(), "Name was different"),
-        () -> assertEquals(ImmutableList.of(subA, subB), category.getSubcategories(), "Subcategories were different"),
-        () -> assertEquals(ImmutableList.of(groupA, groupB), category.getGroups(), "Groups were different")
-    );
+        () ->
+            assertEquals(
+                ImmutableList.of(subA, subB),
+                category.getSubcategories(),
+                "Subcategories were different"),
+        () ->
+            assertEquals(
+                ImmutableList.of(groupA, groupB), category.getGroups(), "Groups were different"));
   }
-
 }

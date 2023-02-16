@@ -1,22 +1,19 @@
 package edu.wpi.first.shuffleboard.plugin.base.widget;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.DummySource;
 import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.plugin.base.data.SendableChooserData;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.SendableChooserType;
-
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.testfx.util.WaitForAsyncUtils;
-
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.testfx.util.WaitForAsyncUtils;
 
 public class ComboBoxChooserWidgetTest extends AbstractWidgetTest {
 
@@ -31,8 +28,9 @@ public class ComboBoxChooserWidgetTest extends AbstractWidgetTest {
   @Override
   public void start(Stage stage) throws Exception {
     source = DummySource.forType(SendableChooserType.Instance);
-    widget = (ComboBoxChooserWidget)
-        Components.getDefault().createWidget("ComboBox Chooser", source).get();
+    widget =
+        (ComboBoxChooserWidget)
+            Components.getDefault().createWidget("ComboBox Chooser", source).get();
 
     stage.setScene(new Scene(widget.getView()));
     stage.show();
@@ -79,5 +77,4 @@ public class ComboBoxChooserWidgetTest extends AbstractWidgetTest {
     WaitForAsyncUtils.waitForFxEvents();
     assertEquals("C", source.getData().getSelectedOption());
   }
-
 }

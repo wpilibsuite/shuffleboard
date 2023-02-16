@@ -2,7 +2,6 @@ package edu.wpi.first.shuffleboard.app;
 
 import java.util.Collection;
 import java.util.stream.Collectors;
-
 import javafx.scene.Group;
 import javafx.scene.shape.Polygon;
 
@@ -13,9 +12,9 @@ public class HexagonGrid extends Group {
   /**
    * Creates a new hexagon grid with the given number of rows and columns.
    *
-   * @param cols    the number of columns in the grid
-   * @param rows    the number of rows in the grid
-   * @param radius  the radius of the hexagons in the grid
+   * @param cols the number of columns in the grid
+   * @param rows the number of rows in the grid
+   * @param radius the radius of the hexagons in the grid
    * @param padding the padding between each hexagon
    */
   public HexagonGrid(int cols, int rows, double radius, double padding) {
@@ -35,8 +34,8 @@ public class HexagonGrid extends Group {
   }
 
   /**
-   * Gets the hexagons in the grid. Do not apply any transforms to the hexagons; they are already
-   * in the correct locations and orientations.
+   * Gets the hexagons in the grid. Do not apply any transforms to the hexagons; they are already in
+   * the correct locations and orientations.
    */
   public Collection<Polygon> hexagons() {
     return getChildren().stream()
@@ -50,14 +49,19 @@ public class HexagonGrid extends Group {
     private static final double ROOT_THREE_OVER_2 = Math.sqrt(3) / 2;
 
     public Hexagon(double radius) {
-      super(radius, 0,
-          radius / 2, ROOT_THREE_OVER_2 * radius,
-          -radius / 2, ROOT_THREE_OVER_2 * radius,
-          -radius, 0,
-          -radius / 2, -ROOT_THREE_OVER_2 * radius,
-          radius / 2, -ROOT_THREE_OVER_2 * radius);
+      super(
+          radius,
+          0,
+          radius / 2,
+          ROOT_THREE_OVER_2 * radius,
+          -radius / 2,
+          ROOT_THREE_OVER_2 * radius,
+          -radius,
+          0,
+          -radius / 2,
+          -ROOT_THREE_OVER_2 * radius,
+          radius / 2,
+          -ROOT_THREE_OVER_2 * radius);
     }
-
   }
-
 }

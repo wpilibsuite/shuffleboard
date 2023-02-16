@@ -1,18 +1,16 @@
 package edu.wpi.first.shuffleboard.api.widget;
 
-import edu.wpi.first.shuffleboard.api.components.EditableLabel;
-import edu.wpi.first.shuffleboard.api.widget.LayoutBase.ChildContainer;
-
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
-import org.testfx.framework.junit5.ApplicationTest;
-
-import javafx.scene.Node;
-import javafx.scene.layout.Pane;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+
+import edu.wpi.first.shuffleboard.api.components.EditableLabel;
+import edu.wpi.first.shuffleboard.api.widget.LayoutBase.ChildContainer;
+import javafx.scene.Node;
+import javafx.scene.layout.Pane;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.testfx.framework.junit5.ApplicationTest;
 
 @Tag("UI")
 public class ChildContainerTest extends ApplicationTest {
@@ -80,5 +78,4 @@ public class ChildContainerTest extends ApplicationTest {
     assertNull(container.getRight());
     assertNull(container.getBottom());
   }
-
 }

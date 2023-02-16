@@ -2,7 +2,6 @@ package edu.wpi.first.shuffleboard.app.tab;
 
 import edu.wpi.first.shuffleboard.api.tab.TabInfo;
 import edu.wpi.first.shuffleboard.api.util.Registry;
-
 import java.util.Objects;
 
 public final class TabInfoRegistry extends Registry<TabInfo> {
@@ -26,5 +25,4 @@ public final class TabInfoRegistry extends Registry<TabInfo> {
   public void unregister(TabInfo item) {
     removeItem(item);
   }
-
 }

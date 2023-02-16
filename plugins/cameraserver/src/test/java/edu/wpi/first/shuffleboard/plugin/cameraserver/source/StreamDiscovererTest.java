@@ -1,14 +1,13 @@
 package edu.wpi.first.shuffleboard.plugin.cameraserver.source;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StringArrayPublisher;
-
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.fail;
 
 public class StreamDiscovererTest {
 
@@ -19,7 +18,8 @@ public class StreamDiscovererTest {
   public void testArrayChanges() {
     String[] urls = {"foo", "bar"};
     try (final StreamDiscoverer discoverer = new StreamDiscoverer(rootTable, "Camera");
-         final StringArrayPublisher publisher = rootTable.getStringArrayTopic("Camera/streams").publish()) {
+        final StringArrayPublisher publisher =
+            rootTable.getStringArrayTopic("Camera/streams").publish()) {
       publisher.set(urls);
       waitForNtEvents();
       assertArrayEquals(urls, discoverer.getUrls());
@@ -36,7 +36,7 @@ public class StreamDiscovererTest {
   @Test
   public void testEmptyWhenIncorrectType() {
     try (final StreamDiscoverer discoverer = new StreamDiscoverer(rootTable, "Camera");
-         final DoublePublisher publisher = rootTable.getDoubleTopic("Camera/streams").publish()) {
+        final DoublePublisher publisher = rootTable.getDoubleTopic("Camera/streams").publish()) {
       publisher.set(12.34);
       waitForNtEvents();
       assertArrayEquals(new String[0], discoverer.getUrls());
@@ -48,13 +48,14 @@ public class StreamDiscovererTest {
     final StreamDiscoverer discoverer = new StreamDiscoverer(rootTable, "Camera");
 
     String[] urls = {"foo", "bar"};
-    try (final StringArrayPublisher publisher = rootTable.getStringArrayTopic("Camera/streams").publish()) {
+    try (final StringArrayPublisher publisher =
+        rootTable.getStringArrayTopic("Camera/streams").publish()) {
       publisher.set(urls);
       waitForNtEvents();
 
       discoverer.close();
 
-      publisher.set(new String[]{"bar", "foo"});
+      publisher.set(new String[] {"bar", "foo"});
       waitForNtEvents();
 
       assertArrayEquals(new String[0], discoverer.getUrls());
@@ -66,5 +67,4 @@ public class StreamDiscovererTest {
       fail("Timed out while waiting for entry listeners to fire");
     }
   }
-
 }

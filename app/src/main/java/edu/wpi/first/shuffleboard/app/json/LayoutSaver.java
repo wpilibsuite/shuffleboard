@@ -1,5 +1,11 @@
 package edu.wpi.first.shuffleboard.app.json;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonSerializationContext;
 import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
 import edu.wpi.first.shuffleboard.api.json.AnnotatedTypeAdapter;
 import edu.wpi.first.shuffleboard.api.json.ElementTypeAdapter;
@@ -11,20 +17,11 @@ import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.api.widget.Layout;
 import edu.wpi.first.shuffleboard.api.widget.Sourced;
-
-import com.google.gson.JsonArray;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonSerializationContext;
-
 import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import javafx.collections.ObservableList;
 import org.controlsfx.glyphfont.FontAwesome;
 
@@ -61,12 +58,16 @@ public class LayoutSaver implements ElementTypeAdapter<Layout> {
   }
 
   @Override
-  public Layout deserialize(JsonElement json, JsonDeserializationContext context) throws JsonParseException {
+  public Layout deserialize(JsonElement json, JsonDeserializationContext context)
+      throws JsonParseException {
     JsonObject obj = json.getAsJsonObject();
     String name = obj.get("_type").getAsString();
 
-    Layout layout = Components.getDefault().createComponent(name).flatMap(TypeUtils.optionalCast(Layout.class))
-        .orElseThrow(() -> new JsonParseException("Can't find layout name " + name));
+    Layout layout =
+        Components.getDefault()
+            .createComponent(name)
+            .flatMap(TypeUtils.optionalCast(Layout.class))
+            .orElseThrow(() -> new JsonParseException("Can't find layout name " + name));
 
     propertySaver.readAllProperties(layout, context, obj);
 
@@ -109,13 +110,15 @@ public class LayoutSaver implements ElementTypeAdapter<Layout> {
     }
 
     JsonArray children = obj.get("_children").getAsJsonArray();
-    children.forEach(child -> {
-      String childName = child.getAsJsonObject().get("_type").getAsString();
-      Optional<Type> childType = Components.getDefault().javaTypeFor(childName);
-      childType.map(t -> context.deserialize(child, t))
-          .flatMap(TypeUtils.optionalCast(Component.class))
-          .ifPresent(layout::addChild);
-    });
+    children.forEach(
+        child -> {
+          String childName = child.getAsJsonObject().get("_type").getAsString();
+          Optional<Type> childType = Components.getDefault().javaTypeFor(childName);
+          childType
+              .map(t -> context.deserialize(child, t))
+              .flatMap(TypeUtils.optionalCast(Component.class))
+              .ifPresent(layout::addChild);
+        });
 
     return layout;
   }

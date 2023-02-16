@@ -1,22 +1,18 @@
 package edu.wpi.first.shuffleboard.plugin.networktables;
 
-import edu.wpi.first.shuffleboard.api.DashboardMode;
-import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
-import edu.wpi.first.shuffleboard.plugin.networktables.util.NetworkTableUtils;
-
-import edu.wpi.first.networktables.NetworkTableInstance;
-
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-
-import java.util.logging.Logger;
-
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.shuffleboard.api.DashboardMode;
+import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
+import java.util.logging.Logger;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 @Disabled("hangs on Linux CI runner")
 public class RecorderControllerTest {
@@ -31,12 +27,12 @@ public class RecorderControllerTest {
   public void setup() {
     ntInstance = NetworkTableInstance.create();
     recorder = Recorder.createDummyInstance();
-    controller = new RecorderController(
-        ntInstance,
-        RecorderController.DEFAULT_START_STOP_KEY,
-        RecorderController.DEFAULT_FILE_NAME_FORMAT_KEY,
-        recorder
-    );
+    controller =
+        new RecorderController(
+            ntInstance,
+            RecorderController.DEFAULT_START_STOP_KEY,
+            RecorderController.DEFAULT_FILE_NAME_FORMAT_KEY,
+            recorder);
   }
 
   @AfterEach
@@ -54,8 +50,9 @@ public class RecorderControllerTest {
     ntInstance.waitForListenerQueue(-1);
     assertAll(
         () -> assertTrue(recorder.isRunning(), "Recorder should be running"),
-        () -> assertEquals(format, recorder.getFileNameFormat(), "File name format should have been set")
-    );
+        () ->
+            assertEquals(
+                format, recorder.getFileNameFormat(), "File name format should have been set"));
   }
 
   @Test

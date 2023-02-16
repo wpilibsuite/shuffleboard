@@ -1,9 +1,7 @@
 package edu.wpi.first.shuffleboard.plugin.base.data;
 
 import com.google.common.collect.ImmutableMap;
-
 import edu.wpi.first.shuffleboard.api.data.ComplexData;
-
 import java.util.Map;
 
 public class CommandData extends ComplexData<CommandData> {
@@ -15,8 +13,8 @@ public class CommandData extends ComplexData<CommandData> {
   /**
    * Creates a new CommandData object.
    *
-   * @param name       the name of the command
-   * @param running    if the command is currently running
+   * @param name the name of the command
+   * @param running if the command is currently running
    * @param isParented if the command has a parent (i.e. is part of a command group)
    */
   public CommandData(String name, boolean running, boolean isParented) {
@@ -34,8 +32,7 @@ public class CommandData extends ComplexData<CommandData> {
     this(
         (String) map.getOrDefault(".name", ""),
         (Boolean) map.getOrDefault("running", false),
-        (Boolean) map.getOrDefault("isParented", false)
-    );
+        (Boolean) map.getOrDefault("isParented", false));
   }
 
   public CommandData withRunning(boolean running) {
@@ -47,8 +44,7 @@ public class CommandData extends ComplexData<CommandData> {
     return ImmutableMap.of(
         "name", name,
         "running", running,
-        "isParented", isParented
-    );
+        "isParented", isParented);
   }
 
   public String getName() {

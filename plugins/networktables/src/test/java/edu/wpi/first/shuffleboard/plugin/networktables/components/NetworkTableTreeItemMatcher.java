@@ -1,19 +1,14 @@
 package edu.wpi.first.shuffleboard.plugin.networktables.components;
 
-
 import edu.wpi.first.shuffleboard.plugin.networktables.sources.NetworkTableSourceEntry;
-
+import java.util.function.Predicate;
+import javafx.scene.control.TreeItem;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
 
-import java.util.function.Predicate;
-
-import javafx.scene.control.TreeItem;
-
-/**
- * Matchers for tree items of network table entries.
- */
-public class NetworkTableTreeItemMatcher extends TypeSafeMatcher<TreeItem<NetworkTableSourceEntry>> {
+/** Matchers for tree items of network table entries. */
+public class NetworkTableTreeItemMatcher
+    extends TypeSafeMatcher<TreeItem<NetworkTableSourceEntry>> {
 
   private final Predicate<TreeItem<NetworkTableSourceEntry>> predicate;
   private final String description;
@@ -41,60 +36,35 @@ public class NetworkTableTreeItemMatcher extends TypeSafeMatcher<TreeItem<Networ
    */
   public NetworkTableTreeItemMatcher atIndex(int index) {
     return new NetworkTableTreeItemMatcher(
-        item -> item.getChildren().size() > index
-            && this.matchesSafely(item.getChildren().get(index)),
-        this.description + " at index " + index
-    );
+        item ->
+            item.getChildren().size() > index && this.matchesSafely(item.getChildren().get(index)),
+        this.description + " at index " + index);
   }
 
-  /**
-   * Creates a matcher for a tree item with an entry that has a specific key.
-   */
+  /** Creates a matcher for a tree item with an entry that has a specific key. */
   public static NetworkTableTreeItemMatcher hasKey(String key) {
-    return new NetworkTableTreeItemMatcher(
-        item -> item.getValue().getKey().equals(key),
-        "hasKey"
-    );
+    return new NetworkTableTreeItemMatcher(item -> item.getValue().getKey().equals(key), "hasKey");
   }
 
-  /**
-   * Creates a matcher for a tree item with an entry that has a specific simple key.
-   */
+  /** Creates a matcher for a tree item with an entry that has a specific simple key. */
   public static NetworkTableTreeItemMatcher hasSimpleKey(String simpleKey) {
     return new NetworkTableTreeItemMatcher(
-        item -> item.getValue().simpleKey().equals(simpleKey),
-        "hasSimpleKey"
-    );
+        item -> item.getValue().simpleKey().equals(simpleKey), "hasSimpleKey");
   }
 
-  /**
-   * Creates a matcher for a tree item with an entry that has a specific display string.
-   */
+  /** Creates a matcher for a tree item with an entry that has a specific display string. */
   public static NetworkTableTreeItemMatcher hasDisplayString(String displayString) {
     return new NetworkTableTreeItemMatcher(
-        item -> item.getValue().getDisplayString().equals(displayString),
-        "hasDisplayString"
-    );
+        item -> item.getValue().getDisplayString().equals(displayString), "hasDisplayString");
   }
 
-  /**
-   * Creates a matcher for leaf (childless) tree items.
-   */
+  /** Creates a matcher for leaf (childless) tree items. */
   public static NetworkTableTreeItemMatcher isLeaf() {
-    return new NetworkTableTreeItemMatcher(
-        TreeItem::isLeaf,
-        "isLeaf"
-    );
+    return new NetworkTableTreeItemMatcher(TreeItem::isLeaf, "isLeaf");
   }
 
-  /**
-   * Creates a matcher for expanded tree items.
-   */
+  /** Creates a matcher for expanded tree items. */
   public static NetworkTableTreeItemMatcher isExpanded() {
-    return new NetworkTableTreeItemMatcher(
-        TreeItem::isExpanded,
-        "isExpanded"
-    );
+    return new NetworkTableTreeItemMatcher(TreeItem::isExpanded, "isExpanded");
   }
-
 }

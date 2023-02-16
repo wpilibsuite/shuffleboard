@@ -6,9 +6,7 @@ import javafx.scene.control.Tab;
 public interface HandledTab {
   StringProperty titleProperty();
 
-  /**
-   * Tab isn't an interface, so we have to do this kinda clunky workaround.
-   */
+  /** Tab isn't an interface, so we have to do this kinda clunky workaround. */
   Tab getTab();
 
   default void onDragOver() {

@@ -34,5 +34,4 @@ public class CameraServerSourceEntry implements SourceEntry {
   public CameraServerSource get() {
     return CameraServerSourceType.INSTANCE.forName(name);
   }
-
 }

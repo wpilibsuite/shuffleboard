@@ -2,7 +2,6 @@ package edu.wpi.first.shuffleboard.plugin.base.data.types;
 
 import edu.wpi.first.shuffleboard.api.data.ComplexDataType;
 import edu.wpi.first.shuffleboard.plugin.base.data.SendableChooserData;
-
 import java.util.Collections;
 import java.util.Map;
 import java.util.function.Function;
@@ -24,5 +23,4 @@ public final class SendableChooserType extends ComplexDataType<SendableChooserDa
   public SendableChooserData getDefaultValue() {
     return new SendableChooserData(Collections.emptyMap());
   }
-
 }

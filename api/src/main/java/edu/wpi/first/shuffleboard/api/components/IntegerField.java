@@ -2,9 +2,7 @@ package edu.wpi.first.shuffleboard.api.components;
 
 import java.util.regex.Pattern;
 
-/**
- * A type of text field that only accepts valid integers.
- */
+/** A type of text field that only accepts valid integers. */
 public class IntegerField extends AbstractNumberField<Integer> {
 
   private static final Pattern startOfInteger = Pattern.compile("^[-+]?\\d*$");
@@ -32,5 +30,4 @@ public class IntegerField extends AbstractNumberField<Integer> {
   protected Integer getNumberFromText(String text) {
     return Integer.valueOf(text);
   }
-
 }

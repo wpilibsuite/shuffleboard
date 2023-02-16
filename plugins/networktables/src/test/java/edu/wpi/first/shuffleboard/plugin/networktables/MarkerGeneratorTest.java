@@ -1,23 +1,20 @@
 package edu.wpi.first.shuffleboard.plugin.networktables;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.shuffleboard.api.sources.recording.Marker;
 import edu.wpi.first.shuffleboard.api.sources.recording.MarkerImportance;
 import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
 import edu.wpi.first.shuffleboard.api.util.AsyncUtils;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
-import edu.wpi.first.shuffleboard.plugin.networktables.util.NetworkTableUtils;
-
-import edu.wpi.first.networktables.NetworkTableEntry;
-import edu.wpi.first.networktables.NetworkTableInstance;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
 
 @Disabled("hangs on Linux CI runner")
 public class MarkerGeneratorTest {
@@ -33,7 +30,9 @@ public class MarkerGeneratorTest {
   public void setup() {
     AsyncUtils.setAsyncRunner(Runnable::run);
     ntInstance = NetworkTableInstance.create();
-    entry = ntInstance.getEntry(MarkerGenerator.EVENT_TABLE_NAME + MARKER_NAME + MarkerGenerator.EVENT_INFO_KEY);
+    entry =
+        ntInstance.getEntry(
+            MarkerGenerator.EVENT_TABLE_NAME + MARKER_NAME + MarkerGenerator.EVENT_INFO_KEY);
     recorder = Recorder.createDummyInstance();
     generator = new MarkerGenerator(ntInstance, recorder);
   }
@@ -64,7 +63,8 @@ public class MarkerGeneratorTest {
 
   private void assertNoMarkersAdded() {
     waitForEntry();
-    assertEquals(0, recorder.getRecording().getMarkers().size(), "No markers should have been added");
+    assertEquals(
+        0, recorder.getRecording().getMarkers().size(), "No markers should have been added");
   }
 
   private void waitForEntry() {
@@ -79,32 +79,42 @@ public class MarkerGeneratorTest {
   public void testMarkerAdded() {
     String description = "description";
     String importance = "trivial";
-    entry.setStringArray(new String[]{description, importance});
+    entry.setStringArray(new String[] {description, importance});
     Marker expected = new Marker(MARKER_NAME, description, MarkerImportance.TRIVIAL, 0);
     waitForEntry();
     assertAll(
-        () -> assertEquals(1, recorder.getRecording().getMarkers().size(), "One marker should have been added"),
-        () -> assertEqualsIgnoreTimestamp(expected, recorder.getRecording().getMarkers().get(0))
-    );
+        () ->
+            assertEquals(
+                1,
+                recorder.getRecording().getMarkers().size(),
+                "One marker should have been added"),
+        () -> assertEqualsIgnoreTimestamp(expected, recorder.getRecording().getMarkers().get(0)));
   }
 
   @Test
   public void testNoDescription() {
     String importance = "critical";
-    entry.setStringArray(new String[]{"", importance});
+    entry.setStringArray(new String[] {"", importance});
     Marker expected = new Marker(MARKER_NAME, "", MarkerImportance.CRITICAL, 0);
     waitForEntry();
     assertAll(
-        () -> assertEquals(1, recorder.getRecording().getMarkers().size(), "One marker should have been added"),
-        () -> assertEqualsIgnoreTimestamp(expected, recorder.getRecording().getMarkers().get(0))
-    );
+        () ->
+            assertEquals(
+                1,
+                recorder.getRecording().getMarkers().size(),
+                "One marker should have been added"),
+        () -> assertEqualsIgnoreTimestamp(expected, recorder.getRecording().getMarkers().get(0)));
   }
 
   private void assertEqualsIgnoreTimestamp(Marker expected, Marker actual) {
-    assertAll("Marker did not match",
+    assertAll(
+        "Marker did not match",
         () -> assertEquals(expected.getName(), actual.getName(), "Names did not match"),
-        () -> assertEquals(expected.getDescription(), actual.getDescription(), "Descriptions did not match"),
-        () -> assertEquals(expected.getImportance(), actual.getImportance(), "Importance did not match")
-    );
+        () ->
+            assertEquals(
+                expected.getDescription(), actual.getDescription(), "Descriptions did not match"),
+        () ->
+            assertEquals(
+                expected.getImportance(), actual.getImportance(), "Importance did not match"));
   }
 }

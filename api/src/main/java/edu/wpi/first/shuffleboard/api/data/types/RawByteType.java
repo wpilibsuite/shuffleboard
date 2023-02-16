@@ -14,5 +14,4 @@ public final class RawByteType extends SimpleDataType<byte[]> {
   public byte[] getDefaultValue() {
     return new byte[0];
   }
-
 }

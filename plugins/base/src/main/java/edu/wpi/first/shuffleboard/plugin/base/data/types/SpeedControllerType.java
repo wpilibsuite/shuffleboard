@@ -2,7 +2,6 @@ package edu.wpi.first.shuffleboard.plugin.base.data.types;
 
 import edu.wpi.first.shuffleboard.api.data.ComplexDataType;
 import edu.wpi.first.shuffleboard.plugin.base.data.SpeedControllerData;
-
 import java.util.Map;
 import java.util.function.Function;
 
@@ -23,5 +22,4 @@ public final class SpeedControllerType extends ComplexDataType<SpeedControllerDa
   public SpeedControllerData getDefaultValue() {
     return new SpeedControllerData("Example", 0.0, false);
   }
-
 }

@@ -1,6 +1,7 @@
 package edu.wpi.first.shuffleboard.api.util;
 
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -8,9 +9,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
 
 public class PropertyUtilsTest extends UtilityClassTest<PropertyUtils> {
 
@@ -26,8 +25,7 @@ public class PropertyUtilsTest extends UtilityClassTest<PropertyUtils> {
     // then
     assertAll(
         () -> assertEquals("0.0", str.getValue(), "String was not set correctly"),
-        () -> assertEquals(0.0, num.getValue().doubleValue(), "Number should not have changed")
-    );
+        () -> assertEquals(0.0, num.getValue().doubleValue(), "Number should not have changed"));
   }
 
   @Test
@@ -42,8 +40,7 @@ public class PropertyUtilsTest extends UtilityClassTest<PropertyUtils> {
     // then
     assertAll(
         () -> assertEquals(null, str.getValue(), "String should not have changed"),
-        () -> assertEquals(null, num.getValue(), "Binding target should not have changed")
-    );
+        () -> assertEquals(null, num.getValue(), "Binding target should not have changed"));
   }
 
   @Test
@@ -58,8 +55,9 @@ public class PropertyUtilsTest extends UtilityClassTest<PropertyUtils> {
     // then (initial conditions)
     assertAll(
         () -> assertEquals("1.23", str.getValue(), "String was not set correctly"),
-        () -> assertEquals(1.23, num.getValue().doubleValue(), "Binding target should not have changed")
-    );
+        () ->
+            assertEquals(
+                1.23, num.getValue().doubleValue(), "Binding target should not have changed"));
 
     // when changing one value
     str.setValue("89");
@@ -101,5 +99,4 @@ public class PropertyUtilsTest extends UtilityClassTest<PropertyUtils> {
     b.clear();
     assertEquals(0, combine.size());
   }
-
 }

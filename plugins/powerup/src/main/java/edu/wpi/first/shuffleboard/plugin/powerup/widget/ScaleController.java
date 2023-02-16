@@ -2,29 +2,24 @@ package edu.wpi.first.shuffleboard.plugin.powerup.widget;
 
 import edu.wpi.first.shuffleboard.api.util.PseudoClassProperty;
 import edu.wpi.first.shuffleboard.plugin.base.data.fms.Alliance;
-
-import org.fxmisc.easybind.EasyBind;
-
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.fxml.FXML;
 import javafx.scene.layout.Pane;
+import org.fxmisc.easybind.EasyBind;
 
 public final class ScaleController extends ElementController {
 
-  @FXML
-  private Pane root;
-  @FXML
-  private Pane nearPlatform;
-  @FXML
-  private Pane farPlatform;
+  @FXML private Pane root;
+  @FXML private Pane nearPlatform;
+  @FXML private Pane farPlatform;
 
   private final Property<Alliance> alliance = new SimpleObjectProperty<>(this, "alliance", null);
-  private BooleanProperty nearRed;  // NOPMD - field avoids GC
+  private BooleanProperty nearRed; // NOPMD - field avoids GC
   private BooleanProperty nearBlue; // NOPMD - field avoids GC
-  private BooleanProperty farRed;   // NOPMD - field avoids GC
-  private BooleanProperty farBlue;  // NOPMD - field avoids GC
+  private BooleanProperty farRed; // NOPMD - field avoids GC
+  private BooleanProperty farBlue; // NOPMD - field avoids GC
 
   @FXML
   @Override

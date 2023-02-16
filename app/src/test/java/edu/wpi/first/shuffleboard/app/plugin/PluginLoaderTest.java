@@ -1,5 +1,16 @@
 package edu.wpi.first.shuffleboard.app.plugin;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
+
+import com.github.zafarkhaja.semver.Version;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import edu.wpi.first.shuffleboard.api.PropertyParsers;
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
@@ -18,14 +29,6 @@ import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.app.tab.TabInfoRegistry;
 import edu.wpi.first.shuffleboard.testplugins.BasicPlugin;
 import edu.wpi.first.shuffleboard.testplugins.DependentOnUnknownPlugin;
-
-import com.github.zafarkhaja.semver.Version;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -33,14 +36,8 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("PMD.AvoidDuplicateLiterals")
 public class PluginLoaderTest {
@@ -61,7 +58,15 @@ public class PluginLoaderTest {
     tabInfoRegistry = new TabInfoRegistry();
     var converters = new Converters();
     var propertyParsers = new PropertyParsers();
-    loader = new PluginLoader(dataTypes, sourceTypes, components, themes, tabInfoRegistry, converters, propertyParsers);
+    loader =
+        new PluginLoader(
+            dataTypes,
+            sourceTypes,
+            components,
+            themes,
+            tabInfoRegistry,
+            converters,
+            propertyParsers);
   }
 
   @Test
@@ -91,7 +96,6 @@ public class PluginLoaderTest {
     assertTrue(sourceTypes.isRegistered(MockPlugin.sourceType));
     assertTrue(components.isRegistered(MockPlugin.component));
     assertTrue(themes.isRegistered(MockPlugin.theme));
-
   }
 
   @Test
@@ -107,28 +111,25 @@ public class PluginLoaderTest {
     // then
     assertEquals(3, loader.getKnownPlugins().size(), "All 3 plugins should have been discovered");
     assertEquals(2, loader.getLoadedPlugins().size(), "Only 2 plugins should have been loaded");
-    assertAll(loader.getLoadedPlugins()
-        .stream()
-        .map(p ->
-            () -> assertInstanceOf(
-                p,
-                BasicPlugin.class,
-                edu.wpi.first.shuffleboard.testplugins.DependentPlugin.class
-            )
-        )
-    );
-    assertAll(loader.getKnownPlugins()
-        .stream()
-        .map(p ->
-            () -> assertInstanceOf(
-                p,
-                BasicPlugin.class,
-                edu.wpi.first.shuffleboard.testplugins.DependentPlugin.class,
-                DependentOnUnknownPlugin.class
-            )
-        )
-    );
-
+    assertAll(
+        loader.getLoadedPlugins().stream()
+            .map(
+                p ->
+                    () ->
+                        assertInstanceOf(
+                            p,
+                            BasicPlugin.class,
+                            edu.wpi.first.shuffleboard.testplugins.DependentPlugin.class)));
+    assertAll(
+        loader.getKnownPlugins().stream()
+            .map(
+                p ->
+                    () ->
+                        assertInstanceOf(
+                            p,
+                            BasicPlugin.class,
+                            edu.wpi.first.shuffleboard.testplugins.DependentPlugin.class,
+                            DependentOnUnknownPlugin.class)));
   }
 
   @Test
@@ -189,13 +190,15 @@ public class PluginLoaderTest {
     loader.load(plugin);
 
     // then
-    assertTrue(tabInfoRegistry.isRegistered(DefaultTabsPlugin.tabInfo), "Tab info was not registered");
+    assertTrue(
+        tabInfoRegistry.isRegistered(DefaultTabsPlugin.tabInfo), "Tab info was not registered");
   }
 
   @Test
   public void testLoadDependentAlone() {
     boolean loaded = loader.load(new DependentPlugin());
-    assertFalse(loaded, "The plugin should not have been loaded without having its dependents loaded");
+    assertFalse(
+        loaded, "The plugin should not have been loaded without having its dependents loaded");
   }
 
   @Test
@@ -206,32 +209,41 @@ public class PluginLoaderTest {
 
   @Test
   public void testOrderPluginsNoDependencies() {
-    assertEquals(0, loader.comparePluginsByDependencyGraph(MockPlugin.class, NewerVersionPlugin.class));
-    assertEquals(0, loader.comparePluginsByDependencyGraph(NewerVersionPlugin.class, MockPlugin.class));
+    assertEquals(
+        0, loader.comparePluginsByDependencyGraph(MockPlugin.class, NewerVersionPlugin.class));
+    assertEquals(
+        0, loader.comparePluginsByDependencyGraph(NewerVersionPlugin.class, MockPlugin.class));
   }
 
   @Test
   public void testOrderPluginsByDependencies() {
-    assertEquals(1, loader.comparePluginsByDependencyGraph(DependentPlugin.class, MockPlugin.class));
-    assertEquals(-1, loader.comparePluginsByDependencyGraph(MockPlugin.class, DependentPlugin.class));
+    assertEquals(
+        1, loader.comparePluginsByDependencyGraph(DependentPlugin.class, MockPlugin.class));
+    assertEquals(
+        -1, loader.comparePluginsByDependencyGraph(MockPlugin.class, DependentPlugin.class));
   }
 
   @Test
   public void testCyclicalDependencyThrows() {
-    assertThrows(IllegalStateException.class,
+    assertThrows(
+        IllegalStateException.class,
         () -> loader.comparePluginsByDependencyGraph(CyclicalPluginA.class, CyclicalPluginB.class));
   }
 
   @Test
   public void testSelfDependencyThrows() {
-    assertThrows(IllegalStateException.class,
-        () -> loader.comparePluginsByDependencyGraph(SelfDependentPlugin.class, SelfDependentPlugin.class));
+    assertThrows(
+        IllegalStateException.class,
+        () ->
+            loader.comparePluginsByDependencyGraph(
+                SelfDependentPlugin.class, SelfDependentPlugin.class));
   }
 
   @Test
   public void testSelfDependentCannotBeLoaded() {
     Plugin plugin = new SelfDependentPlugin();
-    assertFalse(loader.canLoad(plugin), "A self-dependent plugin should never be able to be loaded");
+    assertFalse(
+        loader.canLoad(plugin), "A self-dependent plugin should never be able to be loaded");
   }
 
   @Test
@@ -244,44 +256,44 @@ public class PluginLoaderTest {
   public void testVersionCompatibilitySameMajor() {
     Version lower = Version.forIntegers(1, 0, 0);
     Version higher = Version.forIntegers(1, 1, 0);
-    assertAll(() ->
-        assertTrue(
-            PluginLoaderHelper.isCompatible(higher, lower),
-            "Version " + higher + " should be backward compatible with version " + lower
-        ), () ->
-        assertFalse(
-            PluginLoaderHelper.isCompatible(lower, higher),
-            "Version " + lower + " should not be backward compatible with version " + higher
-        ));
+    assertAll(
+        () ->
+            assertTrue(
+                PluginLoaderHelper.isCompatible(higher, lower),
+                "Version " + higher + " should be backward compatible with version " + lower),
+        () ->
+            assertFalse(
+                PluginLoaderHelper.isCompatible(lower, higher),
+                "Version " + lower + " should not be backward compatible with version " + higher));
   }
 
   @Test
   public void testVersionCompatibilityDifferentMajor() {
     Version lower = Version.forIntegers(1, 1, 0);
     Version higher = Version.forIntegers(lower.getMajorVersion() + 1, 1, 0);
-    assertAll(() ->
-        assertFalse(
-            PluginLoaderHelper.isCompatible(higher, lower),
-            "Version " + higher + " should not be backward compatible with version " + lower
-        ), () ->
-        assertFalse(
-            PluginLoaderHelper.isCompatible(lower, higher),
-            "Version " + lower + " should not be backward compatible with version " + higher
-        ));
+    assertAll(
+        () ->
+            assertFalse(
+                PluginLoaderHelper.isCompatible(higher, lower),
+                "Version " + higher + " should not be backward compatible with version " + lower),
+        () ->
+            assertFalse(
+                PluginLoaderHelper.isCompatible(lower, higher),
+                "Version " + lower + " should not be backward compatible with version " + higher));
   }
 
   @Test
   public void testVersionCompatibilitySameVersion() {
     Version version = Version.forIntegers(1, 0, 0);
-    Version same = Version.forIntegers(version.getMajorVersion(), version.getMinorVersion(), version.getPatchVersion());
+    Version same =
+        Version.forIntegers(
+            version.getMajorVersion(), version.getMinorVersion(), version.getPatchVersion());
     assertTrue(
         PluginLoaderHelper.isCompatible(version, same),
-        "Identical versions should always be compatible"
-    );
+        "Identical versions should always be compatible");
     assertTrue(
         PluginLoaderHelper.isCompatible(same, version),
-        "Identical versions should always be compatible"
-    );
+        "Identical versions should always be compatible");
   }
 
   @Test
@@ -301,52 +313,58 @@ public class PluginLoaderTest {
         return;
       }
     }
-    throw new AssertionError("Object " + obj + " is not a instance of any of: " + Arrays.toString(possibleTypes));
+    throw new AssertionError(
+        "Object " + obj + " is not a instance of any of: " + Arrays.toString(possibleTypes));
   }
 
-  /**
-   * A mock plugin for testing.
-   */
-  @Description(group = "test", name = "MockPlugin", version = "0.0.0", summary = "A plugin for testing")
+  /** A mock plugin for testing. */
+  @Description(
+      group = "test",
+      name = "MockPlugin",
+      version = "0.0.0",
+      summary = "A plugin for testing")
   public static final class MockPlugin extends Plugin {
 
-    private static final DataType<Object> dataType = new DataType<Object>("Mock Data", Object.class) {
-      @Override
-      public Object getDefaultValue() {
-        return new Object();
-      }
+    private static final DataType<Object> dataType =
+        new DataType<Object>("Mock Data", Object.class) {
+          @Override
+          public Object getDefaultValue() {
+            return new Object();
+          }
 
-      @Override
-      public boolean isComplex() {
-        return false;
-      }
-    };
+          @Override
+          public boolean isComplex() {
+            return false;
+          }
+        };
 
-    private static final ComponentType<Component> component = new ComponentType<Component>() {
+    private static final ComponentType<Component> component =
+        new ComponentType<Component>() {
 
-      @Override
-      public Class<Component> getType() {
-        return Component.class;
-      }
+          @Override
+          public Class<Component> getType() {
+            return Component.class;
+          }
 
-      @Override
-      public String getName() {
-        return "Mock Component";
-      }
+          @Override
+          public String getName() {
+            return "Mock Component";
+          }
 
-      @Override
-      public Component get() {
-        return null;
-      }
-    };
+          @Override
+          public Component get() {
+            return null;
+          }
+        };
 
     private static final Theme theme = new Theme("Mock Theme");
-    private static final SourceType sourceType = new SourceType("Mock Source", false, "mock://", null) {
-      @Override
-      public DataType<?> dataTypeForSource(DataTypes registry, String sourceUri) {
-        return DataTypes.None;
-      }
-    };
+    private static final SourceType sourceType =
+        new SourceType("Mock Source", false, "mock://", null) {
+          @Override
+          public DataType<?> dataTypeForSource(DataTypes registry, String sourceUri) {
+            return DataTypes.None;
+          }
+        };
 
     @Override
     public List<Theme> getThemes() {
@@ -374,40 +392,37 @@ public class PluginLoaderTest {
     }
   }
 
-  @Description(group = "test", name = "MockPlugin", version = "9.9.9", summary = "A newer version of the mock plugin")
-  public static final class NewerVersionPlugin extends Plugin {
-  }
+  @Description(
+      group = "test",
+      name = "MockPlugin",
+      version = "9.9.9",
+      summary = "A newer version of the mock plugin")
+  public static final class NewerVersionPlugin extends Plugin {}
 
-  /**
-   * A plugin that depends on another plugin.
-   */
+  /** A plugin that depends on another plugin. */
   @Description(group = "test", name = "Dependent Plugin", version = "0.0.0", summary = "")
   @Requires(group = "test", name = "MockPlugin", minVersion = "0.0.0")
-  public static final class DependentPlugin extends Plugin {
-  }
+  public static final class DependentPlugin extends Plugin {}
 
   /**
-   * A plugin that depends on another plugin, but requires a higher version than the one that gets loaded.
+   * A plugin that depends on another plugin, but requires a higher version than the one that gets
+   * loaded.
    */
   @Description(group = "test", name = "DependentOnHigherVersion", version = "0.0.0", summary = "")
   @Requires(group = "test", name = "MockPlugin", minVersion = "999999.999999.999999")
-  public static class DependentOnHigherVersion extends Plugin {
-  }
+  public static class DependentOnHigherVersion extends Plugin {}
 
   @Description(group = "test", name = "CyclicalPluginA", version = "0.0.0", summary = "")
   @Requires(group = "test", name = "CyclicalPluginB", minVersion = "0.0.0")
-  private static class CyclicalPluginA extends Plugin {
-  }
+  private static class CyclicalPluginA extends Plugin {}
 
   @Description(group = "test", name = "CyclicalPluginB", version = "0.0.0", summary = "")
   @Requires(group = "test", name = "CyclicalPluginA", minVersion = "0.0.0")
-  private static final class CyclicalPluginB extends Plugin {
-  }
+  private static final class CyclicalPluginB extends Plugin {}
 
   @Description(group = "test", name = "SelfDependentPlugin", version = "0.0.0", summary = "")
   @Requires(group = "test", name = "SelfDependentPlugin", minVersion = "0.0.0")
-  private static final class SelfDependentPlugin extends Plugin {
-  }
+  private static final class SelfDependentPlugin extends Plugin {}
 
   @Description(group = "test", name = "DefaultTabsPlugin", version = "0.0.0", summary = "")
   private static final class DefaultTabsPlugin extends Plugin {
@@ -416,11 +431,7 @@ public class PluginLoaderTest {
 
     @Override
     public List<TabInfo> getDefaultTabInfo() {
-      return ImmutableList.of(
-          tabInfo
-      );
+      return ImmutableList.of(tabInfo);
     }
   }
-
-
 }

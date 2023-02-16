@@ -14,9 +14,11 @@ public class IncompatibleSourceException extends RuntimeException {
    * @param found the source types that were passed
    */
   public IncompatibleSourceException(Set<DataType> expected, DataType found) {
-    super(String.format("Expected one of (%s), but found type %s instead",
-            String.join(",",
-                    expected.stream().map(DataType::toString).collect(Collectors.toList())),
+    super(
+        String.format(
+            "Expected one of (%s), but found type %s instead",
+            String.join(
+                ",", expected.stream().map(DataType::toString).collect(Collectors.toList())),
             found));
     this.expected = expected;
     this.found = found;

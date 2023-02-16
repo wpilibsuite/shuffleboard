@@ -2,31 +2,25 @@ package edu.wpi.first.shuffleboard.plugin.powerup.widget;
 
 import edu.wpi.first.shuffleboard.api.util.PseudoClassProperty;
 import edu.wpi.first.shuffleboard.plugin.powerup.Configuration;
-
-import org.fxmisc.easybind.EasyBind;
-
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
 import javafx.scene.layout.Pane;
+import org.fxmisc.easybind.EasyBind;
 
-/**
- * Superclass for field element view controllers.
- */
+/** Superclass for field element view controllers. */
 public class ElementController {
 
-  @FXML
-  private Pane leftPlate;
-  @FXML
-  private Pane rightPlate;
+  @FXML private Pane leftPlate;
+  @FXML private Pane rightPlate;
 
   private final Property<Configuration> configuration =
       new SimpleObjectProperty<>(this, "configuration", Configuration.UNKNOWN);
-  private BooleanProperty leftBlue;  // NOPMD - field avoids GC
-  private BooleanProperty leftRed;   // NOPMD - field avoids GC
-  private BooleanProperty rightRed;  // NOPMD - field avoids GC
+  private BooleanProperty leftBlue; // NOPMD - field avoids GC
+  private BooleanProperty leftRed; // NOPMD - field avoids GC
+  private BooleanProperty rightRed; // NOPMD - field avoids GC
   private BooleanProperty rightBlue; // NOPMD - field avoids GC
 
   @FXML
@@ -58,5 +52,4 @@ public class ElementController {
   public final void setConfiguration(Configuration configuration) {
     this.configuration.setValue(configuration);
   }
-
 }

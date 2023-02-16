@@ -1,12 +1,11 @@
 package edu.wpi.first.shuffleboard.api.util;
 
-import org.junit.jupiter.api.Test;
-
-import java.util.Map;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.Map;
+import org.junit.jupiter.api.Test;
 
 public class MapsTest extends UtilityClassTest<Maps> {
 
@@ -31,5 +30,4 @@ public class MapsTest extends UtilityClassTest<Maps> {
 
     assertThrows(IllegalStateException.class, () -> mapBuilder.put("", ""));
   }
-
 }

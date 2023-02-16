@@ -1,14 +1,11 @@
 package edu.wpi.first.shuffleboard.app;
 
+import com.google.common.collect.ImmutableList;
 import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
 import edu.wpi.first.shuffleboard.api.prefs.Group;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
-
-import com.google.common.collect.ImmutableList;
-
 import java.util.List;
-
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -52,7 +49,7 @@ public final class MockWidget implements Widget {
 
   @Override
   public void addSource(DataSource source) throws IncompatibleSourceException {
-    //NOP
+    // NOP
   }
 
   @Override

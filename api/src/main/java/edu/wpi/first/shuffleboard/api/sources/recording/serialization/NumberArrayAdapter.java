@@ -39,7 +39,6 @@ public class NumberArrayAdapter extends TypeAdapter<double[]> {
       cursor += Serialization.SIZE_OF_DOUBLE;
     }
     return doubleArray;
-
   }
 
   @Override

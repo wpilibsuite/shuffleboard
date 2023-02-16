@@ -1,17 +1,15 @@
 package edu.wpi.first.shuffleboard.plugin.base.data;
 
+import com.google.common.collect.ImmutableMap;
 import edu.wpi.first.shuffleboard.api.data.ComplexData;
 import edu.wpi.first.shuffleboard.api.util.AlphanumComparator;
-
-import com.google.common.collect.ImmutableMap;
-
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Map;
 
 /**
- * A complex data object that contains the current draw of every PDP channel, as well as the voltage and total current
- * draw being sourced by the PDP to all connected components.
+ * A complex data object that contains the current draw of every PDP channel, as well as the voltage
+ * and total current draw being sourced by the PDP to all connected components.
  */
 public class PowerDistributionData extends ComplexData<PowerDistributionData> {
 
@@ -22,8 +20,8 @@ public class PowerDistributionData extends ComplexData<PowerDistributionData> {
   /**
    * Creates a new data object for PDP data.
    *
-   * @param currents     an array of the currents. This <i>must</i> have a maximum of 24 entries
-   * @param voltage      the current voltage of the PDP
+   * @param currents an array of the currents. This <i>must</i> have a maximum of 24 entries
+   * @param voltage the current voltage of the PDP
    * @param totalCurrent the total current sourced by the PDP
    */
   public PowerDistributionData(double[] currents, double voltage, double totalCurrent) {
@@ -32,15 +30,12 @@ public class PowerDistributionData extends ComplexData<PowerDistributionData> {
     this.totalCurrent = totalCurrent;
   }
 
-  /**
-   * Creates a new data object for PDP data.
-   */
+  /** Creates a new data object for PDP data. */
   public PowerDistributionData(Map<String, Object> map) {
     this(
         extractChannels(map),
         (Double) map.getOrDefault("Voltage", 0.0),
-        (Double) map.getOrDefault("TotalCurrent", 0.0)
-    );
+        (Double) map.getOrDefault("TotalCurrent", 0.0));
   }
 
   private static double[] extractChannels(Map<String, Object> map) {
@@ -53,23 +48,20 @@ public class PowerDistributionData extends ComplexData<PowerDistributionData> {
   }
 
   /**
-   * Gets an array of all the currents of the PDP. The array index of a specific channels current is the same as that
-   * channels number; channel 0 current is at array index 0, channel 1 current is at array index 1, and so on.
+   * Gets an array of all the currents of the PDP. The array index of a specific channels current is
+   * the same as that channels number; channel 0 current is at array index 0, channel 1 current is
+   * at array index 1, and so on.
    */
   public double[] getCurrents() {
     return currents.clone(); // defensive copy
   }
 
-  /**
-   * Gets the current voltage being sourced by the PDP.
-   */
+  /** Gets the current voltage being sourced by the PDP. */
   public double getVoltage() {
     return voltage;
   }
 
-  /**
-   * Gets the total current draw of the PDP.
-   */
+  /** Gets the total current draw of the PDP. */
   public double getTotalCurrent() {
     return totalCurrent;
   }
@@ -87,10 +79,8 @@ public class PowerDistributionData extends ComplexData<PowerDistributionData> {
 
   @Override
   public String toHumanReadableString() {
-    return String.format("voltage=%.3f Volts, currents=%s, totalCurrent=%.3f Amps",
-        voltage,
-        Arrays.toString(currents),
-        totalCurrent
-    );
+    return String.format(
+        "voltage=%.3f Volts, currents=%s, totalCurrent=%.3f Amps",
+        voltage, Arrays.toString(currents), totalCurrent);
   }
 }

@@ -14,13 +14,15 @@ final class LayoutModelImpl extends ComponentModelImpl implements LayoutModel {
     this(path, parent, displayType, Collections.emptyMap());
   }
 
-  LayoutModelImpl(String path, ParentModel parent, String displayType, Map<String, Object> properties) {
+  LayoutModelImpl(
+      String path, ParentModel parent, String displayType, Map<String, Object> properties) {
     super(path, parent, displayType, properties);
   }
 
   @Override
   public LayoutModel getLayout(String path, String layoutType) {
-    LayoutModel layout = layouts.computeIfAbsent(path, p -> new LayoutModelImpl(p, this, layoutType));
+    LayoutModel layout =
+        layouts.computeIfAbsent(path, p -> new LayoutModelImpl(p, this, layoutType));
     children.put(path, layout);
     return layout;
   }
@@ -46,5 +48,4 @@ final class LayoutModelImpl extends ComponentModelImpl implements LayoutModel {
   public Map<String, ComponentModel> getChildren() {
     return children;
   }
-
 }

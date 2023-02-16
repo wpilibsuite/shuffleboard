@@ -2,9 +2,7 @@ package edu.wpi.first.shuffleboard.api.tab;
 
 import java.util.Objects;
 
-/**
- * Represents a tab in the dashboard.
- */
+/** Represents a tab in the dashboard. */
 public final class TabInfo {
 
   private final String name;
@@ -14,7 +12,7 @@ public final class TabInfo {
   /**
    * Creates a new TabInfo object.
    *
-   * @param name         the name of the tab
+   * @param name the name of the tab
    * @param autoPopulate whether or not the tab should autopopulate
    * @param sourcePrefix the source prefix to use when autopopulating
    */
@@ -24,23 +22,17 @@ public final class TabInfo {
     this.sourcePrefix = Objects.requireNonNull(sourcePrefix, "sourcePrefix");
   }
 
-  /**
-   * Gets the name of the tab this represents.
-   */
+  /** Gets the name of the tab this represents. */
   public String getName() {
     return name;
   }
 
-  /**
-   * Checks if the tab should autopopulate.
-   */
+  /** Checks if the tab should autopopulate. */
   public boolean isAutoPopulate() {
     return autoPopulate;
   }
 
-  /**
-   * The source prefix the tab should use when autopopulating.
-   */
+  /** The source prefix the tab should use when autopopulating. */
   public String getSourcePrefix() {
     return sourcePrefix;
   }
@@ -70,7 +62,8 @@ public final class TabInfo {
 
   @Override
   public String toString() {
-    return String.format("TabInfo(name='%s', autoPopulate=%s, sourcePrefix='%s')", name, autoPopulate, sourcePrefix);
+    return String.format(
+        "TabInfo(name='%s', autoPopulate=%s, sourcePrefix='%s')", name, autoPopulate, sourcePrefix);
   }
 
   public static final class TabInfoBuilder {
@@ -79,25 +72,22 @@ public final class TabInfo {
     private boolean autoPopulate = false;
     private String sourcePrefix = "";
 
-    /**
-     * Sets the name of the built tab.
-     */
+    /** Sets the name of the built tab. */
     public TabInfoBuilder name(String name) {
       this.name = Objects.requireNonNull(name, "name");
       return this;
     }
 
     /**
-     * Sets the built tab to autopopulate. Autopopulation is {@code false} by default; use this method to enable it.
+     * Sets the built tab to autopopulate. Autopopulation is {@code false} by default; use this
+     * method to enable it.
      */
     public TabInfoBuilder autoPopulate() {
       this.autoPopulate = true;
       return this;
     }
 
-    /**
-     * Sets the source prefix the built tab should use during autopopulation.
-     */
+    /** Sets the source prefix the built tab should use during autopopulation. */
     public TabInfoBuilder sourcePrefix(String sourcePrefix) {
       this.sourcePrefix = Objects.requireNonNull(sourcePrefix, "sourcePrefix");
       return this;
@@ -107,7 +97,8 @@ public final class TabInfo {
      * Creates a new TabInfo object from this builder.
      *
      * @throws IllegalStateException if the tab name was not set with {@link #name}
-     * @throws IllegalStateException if the tab was set to autopopulate but no source prefix was provided
+     * @throws IllegalStateException if the tab was set to autopopulate but no source prefix was
+     *     provided
      */
     public TabInfo build() {
       if (name == null) {
@@ -118,8 +109,5 @@ public final class TabInfo {
       }
       return new TabInfo(name, autoPopulate, sourcePrefix);
     }
-
   }
-
-
 }

@@ -1,12 +1,10 @@
 package edu.wpi.first.shuffleboard.plugin.networktables;
 
-import edu.wpi.first.shuffleboard.api.sources.recording.MarkerImportance;
-import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
-
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEvent;
 import edu.wpi.first.networktables.NetworkTableInstance;
-
+import edu.wpi.first.shuffleboard.api.sources.recording.MarkerImportance;
+import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
@@ -14,18 +12,17 @@ import java.util.Locale;
 import java.util.logging.Logger;
 
 /**
- * Generates event markers from NetworkTables. Markers are expected in this format:
- * <br>
+ * Generates event markers from NetworkTables. Markers are expected in this format: <br>
  * {@code /Shuffleboard/.recording/events/<name>/Info=["description", "importance"]}
  *
- * <p>The entry is expected to contain a string array with two elements: the event description as the first element, and
- * the event importance as the second. The description is allowed to be an empty string. The event importance
- * <i>must</i> be the name of one of the importance levels declared in {@link MarkerImportance}, ignoring
- * capitalization.
+ * <p>The entry is expected to contain a string array with two elements: the event description as
+ * the first element, and the event importance as the second. The description is allowed to be an
+ * empty string. The event importance <i>must</i> be the name of one of the importance levels
+ * declared in {@link MarkerImportance}, ignoring capitalization.
  *
- * <p>For example, /Shuffleboard/.recording/events/MyEvent/Info=["Something happened", "TRIVIAL"] will generate an event
- * marker with the name {@code "MyEvent"}, a description of {@code "Something happened"}, with an importance level of
- * {@link MarkerImportance#TRIVIAL}.
+ * <p>For example, /Shuffleboard/.recording/events/MyEvent/Info=["Something happened", "TRIVIAL"]
+ * will generate an event marker with the name {@code "MyEvent"}, a description of {@code "Something
+ * happened"}, with an importance level of {@link MarkerImportance#TRIVIAL}.
  */
 final class MarkerGenerator {
 
@@ -50,8 +47,11 @@ final class MarkerGenerator {
   }
 
   public void start() {
-    listenerHandle = inst.addListener(new String[] {EVENT_TABLE_NAME},
-        EnumSet.of(NetworkTableEvent.Kind.kValueAll, NetworkTableEvent.Kind.kImmediate), this::handleMarkerEvent);
+    listenerHandle =
+        inst.addListener(
+            new String[] {EVENT_TABLE_NAME},
+            EnumSet.of(NetworkTableEvent.Kind.kValueAll, NetworkTableEvent.Kind.kImmediate),
+            this::handleMarkerEvent);
   }
 
   public void stop() {
@@ -76,7 +76,8 @@ final class MarkerGenerator {
     String description = markerInfo[0];
     String importanceName = markerInfo[1];
     try {
-      recorder.addMarker(markerName, description, MarkerImportance.valueOf(importanceName.toUpperCase(Locale.US)));
+      recorder.addMarker(
+          markerName, description, MarkerImportance.valueOf(importanceName.toUpperCase(Locale.US)));
     } catch (IllegalArgumentException e) {
       log.warning("Invalid importance name '" + importanceName + "'");
     }

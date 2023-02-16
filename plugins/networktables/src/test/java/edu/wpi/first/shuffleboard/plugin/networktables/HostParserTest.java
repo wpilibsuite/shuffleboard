@@ -1,9 +1,9 @@
 package edu.wpi.first.shuffleboard.plugin.networktables;
 
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.Test;
 
 public class HostParserTest {
 
@@ -56,5 +56,4 @@ public class HostParserTest {
     assertEquals("some-host", hostInfo.getHost());
     assertEquals(54321, hostInfo.getPort());
   }
-
 }

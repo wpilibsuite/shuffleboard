@@ -1,14 +1,12 @@
 package edu.wpi.first.shuffleboard.api.util;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import edu.wpi.first.shuffleboard.api.testutil.MockPreferences;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.prefs.Preferences;
-
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
@@ -21,9 +19,8 @@ import javafx.beans.property.SimpleLongProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class PreferencesUtilsTest {
 
@@ -39,7 +36,9 @@ public class PreferencesUtilsTest {
     Constructor<PreferencesUtils> constructor = PreferencesUtils.class.getDeclaredConstructor();
     constructor.setAccessible(true);
 
-    assertThrows(InvocationTargetException.class, constructor::newInstance,
+    assertThrows(
+        InvocationTargetException.class,
+        constructor::newInstance,
         "Invoking the constructor should throw an exception");
   }
 
@@ -49,7 +48,8 @@ public class PreferencesUtilsTest {
   public void testSaveThrowsWithNullValue() {
     Property<?> property = new SimpleObjectProperty<>(null);
 
-    assertThrows(IllegalArgumentException.class, () -> PreferencesUtils.save(property, preferences, null));
+    assertThrows(
+        IllegalArgumentException.class, () -> PreferencesUtils.save(property, preferences, null));
   }
 
   @Test
@@ -230,5 +230,4 @@ public class PreferencesUtilsTest {
     // then
     assertEquals(initialValue, property.getValue().doubleValue());
   }
-
 }

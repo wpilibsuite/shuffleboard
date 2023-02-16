@@ -1,12 +1,13 @@
 package edu.wpi.first.shuffleboard.plugin.base.data.fms;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import static edu.wpi.first.shuffleboard.api.util.BitUtils.flagMatches;
 import static edu.wpi.first.shuffleboard.api.util.BitUtils.toFlag;
 
+import com.google.common.annotations.VisibleForTesting;
+
 /**
- * Holds miscellaneous information about the state of the robot program and its connections to the FMS.
+ * Holds miscellaneous information about the state of the robot program and its connections to the
+ * FMS.
  */
 public final class ControlWord {
 
@@ -25,15 +26,16 @@ public final class ControlWord {
   /**
    * Creates a new ControlWord object.
    *
-   * @param controlState     the state of the robot
+   * @param controlState the state of the robot
    * @param emergencyStopped if the robot is E-stopped
-   * @param fmsAttached      if the robot has a connection to the FMS
-   * @param dsAttached       if the robot has a connection to the FRC DriverStation
+   * @param fmsAttached if the robot has a connection to the FMS
+   * @param dsAttached if the robot has a connection to the FRC DriverStation
    */
-  public ControlWord(RobotControlState controlState,
-                     boolean emergencyStopped,
-                     boolean fmsAttached,
-                     boolean dsAttached) {
+  public ControlWord(
+      RobotControlState controlState,
+      boolean emergencyStopped,
+      boolean fmsAttached,
+      boolean dsAttached) {
     this.controlState = controlState;
     this.emergencyStopped = emergencyStopped;
     this.fmsAttached = fmsAttached;
@@ -58,16 +60,14 @@ public final class ControlWord {
     } else {
       state = RobotControlState.Disabled;
     }
-    return new ControlWord(state,
+    return new ControlWord(
+        state,
         flagMatches(word, EMERGENCY_STOP_FLAG),
         flagMatches(word, FMS_ATTACHED_FLAG),
-        flagMatches(word, DS_ATTACHED_FLAG)
-    );
+        flagMatches(word, DS_ATTACHED_FLAG));
   }
 
-  /**
-   * Converts this ControlWord to bits that WPILib can understand.
-   */
+  /** Converts this ControlWord to bits that WPILib can understand. */
   public int toBits() {
     return toFlag(controlState != RobotControlState.Disabled, ENABLED_FLAG)
         | toFlag(controlState == RobotControlState.Autonomous, AUTO_FLAG)
@@ -77,30 +77,22 @@ public final class ControlWord {
         | toFlag(dsAttached, DS_ATTACHED_FLAG);
   }
 
-  /**
-   * Gets the control state of the robot.
-   */
+  /** Gets the control state of the robot. */
   public RobotControlState getControlState() {
     return controlState;
   }
 
-  /**
-   * Checks if the robot is E-stopped.
-   */
+  /** Checks if the robot is E-stopped. */
   public boolean isEmergencyStopped() {
     return emergencyStopped;
   }
 
-  /**
-   * Checks if the robot has a connection to the FMS.
-   */
+  /** Checks if the robot has a connection to the FMS. */
   public boolean isFmsAttached() {
     return fmsAttached;
   }
 
-  /**
-   * Checks if the robot has a connection to the FRC DriverStation.
-   */
+  /** Checks if the robot has a connection to the FRC DriverStation. */
   public boolean isDsAttached() {
     return dsAttached;
   }

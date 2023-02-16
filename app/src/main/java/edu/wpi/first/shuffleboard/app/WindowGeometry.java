@@ -2,9 +2,7 @@ package edu.wpi.first.shuffleboard.app;
 
 import javafx.stage.Window;
 
-/**
- * An immutable data object that contains the position and size of a window.
- */
+/** An immutable data object that contains the position and size of a window. */
 public final class WindowGeometry {
 
   private final double x;

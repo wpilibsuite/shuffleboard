@@ -1,5 +1,9 @@
 package edu.wpi.first.shuffleboard.app.sources.recording;
 
+import static java.util.function.Predicate.not;
+
+import com.google.common.annotations.VisibleForTesting;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import edu.wpi.first.shuffleboard.api.data.ComplexData;
 import edu.wpi.first.shuffleboard.api.prefs.Group;
 import edu.wpi.first.shuffleboard.api.prefs.Setting;
@@ -12,14 +16,6 @@ import edu.wpi.first.shuffleboard.api.sources.recording.TimestampedData;
 import edu.wpi.first.shuffleboard.api.util.AlphanumComparator;
 import edu.wpi.first.shuffleboard.api.util.PreferencesUtils;
 import edu.wpi.first.shuffleboard.api.util.StringUtils;
-
-import com.google.common.annotations.VisibleForTesting;
-
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
-
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -34,17 +30,17 @@ import java.util.Objects;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
-
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
-
-import static java.util.function.Predicate.not;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
 
 public final class CsvConverter implements Converter {
 
-  public static final CsvConverter Instance = new CsvConverter(Preferences.userNodeForPackage(CsvConverter.class));
+  public static final CsvConverter Instance =
+      new CsvConverter(Preferences.userNodeForPackage(CsvConverter.class));
 
   private static final Logger log = Logger.getLogger(CsvConverter.class.getName());
   private static final String invariantViolatedMessageFormat =
@@ -61,8 +57,8 @@ public final class CsvConverter implements Converter {
   private final IntegerProperty windowSize = new SimpleIntegerProperty(7);
 
   /**
-   * Creates a new CSV converter. This constructor is package-private for testing only; use {@link #Instance} to get
-   * a app-wide converter object.
+   * Creates a new CSV converter. This constructor is package-private for testing only; use {@link
+   * #Instance} to get a app-wide converter object.
    *
    * @param prefs the preferences object with which to save the converter settings
    */
@@ -90,7 +86,7 @@ public final class CsvConverter implements Converter {
   @Override
   public void export(Recording recording, Path destination) throws IOException {
     try (var outputStream = new FileOutputStream(destination.toFile());
-         var writer = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8)) {
+        var writer = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8)) {
       writer.append(convertToCsv(recording));
     }
   }
@@ -98,52 +94,50 @@ public final class CsvConverter implements Converter {
   @Override
   public List<Group> getSettings() {
     return List.of(
-        Group.of("Behavior",
+        Group.of(
+            "Behavior",
             Setting.of(
                 "Include metadata",
                 "Include metadata in the converted CSV",
                 includeMetadata,
-                Boolean.class
-            ),
+                Boolean.class),
             Setting.of(
                 "Fill empty cells",
                 "Fill empty cells with the most recent data point",
                 fillEmpty,
-                Boolean.class
-            ),
+                Boolean.class),
             Setting.of(
                 "Merge window",
                 "How far apart data points should be (in milliseconds) to merge into a single row",
                 windowSize,
-                Integer.class
-            )
-        )
-    );
+                Integer.class)));
   }
 
   /**
    * Converts recorded data to CSV text.
    *
    * @param recording the recording to convert
-   *
    * @return a CSV-formatted text string of the data in the recording
    */
-  @SuppressFBWarnings(value = "UC_USELESS_OBJECT", justification = "False positive with List.forEach")
+  @SuppressFBWarnings(
+      value = "UC_USELESS_OBJECT",
+      justification = "False positive with List.forEach")
   public String convertToCsv(Recording recording) {
     List<String> header = makeHeader(recording);
     int headerSize = header.size();
     CSVFormat csvFormat = CSVFormat.DEFAULT.withHeader(header.toArray(new String[headerSize]));
 
     try (var writer = new StringWriter();
-         var csvPrinter = new CSVPrinter(writer, csvFormat)) {
-      var flattenedData = Converter.flatten(recording, not(Converter::isMetadata), windowSize.get());
+        var csvPrinter = new CSVPrinter(writer, csvFormat)) {
+      var flattenedData =
+          Converter.flatten(recording, not(Converter::isMetadata), windowSize.get());
 
-      var rows = flattenedData.entrySet()
-          .stream()
-          .sorted(Comparator.comparingLong(Map.Entry::getKey))
-          .map(e -> toRow(header, headerSize, e))
-          .filter(Objects::nonNull)
-          .collect(Collectors.toList());
+      var rows =
+          flattenedData.entrySet().stream()
+              .sorted(Comparator.comparingLong(Map.Entry::getKey))
+              .map(e -> toRow(header, headerSize, e))
+              .filter(Objects::nonNull)
+              .collect(Collectors.toList());
 
       if (fillEmpty.get()) {
         fillEmptyCells(rows);
@@ -182,7 +176,8 @@ public final class CsvConverter implements Converter {
     }
   }
 
-  private Object[] toRow(List<String> header, int headerSize, Map.Entry<Long, List<RecordingEntry>> entry) {
+  private Object[] toRow(
+      List<String> header, int headerSize, Map.Entry<Long, List<RecordingEntry>> entry) {
     final var entries = entry.getValue();
     if (entries.isEmpty()) {
       return null;
@@ -210,9 +205,7 @@ public final class CsvConverter implements Converter {
                 entries.get(i),
                 i + 1,
                 entries.size(),
-                entry.getKey()
-            )
-        );
+                entry.getKey()));
         continue;
       }
       var point = (TimestampedData) entries.get(i);
@@ -237,5 +230,4 @@ public final class CsvConverter implements Converter {
     header.addAll(0, List.of("Timestamp", "Event", "Event Description", "Event Severity"));
     return header;
   }
-
 }

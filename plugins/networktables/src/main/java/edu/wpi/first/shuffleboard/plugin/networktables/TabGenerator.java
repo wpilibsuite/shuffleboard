@@ -1,5 +1,12 @@
 package edu.wpi.first.shuffleboard.plugin.networktables;
 
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableEvent;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.NetworkTableType;
+import edu.wpi.first.networktables.NetworkTableValue;
+import edu.wpi.first.networktables.StringArraySubscriber;
+import edu.wpi.first.networktables.Topic;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
 import edu.wpi.first.shuffleboard.api.tab.model.ComponentModel;
@@ -13,15 +20,6 @@ import edu.wpi.first.shuffleboard.api.util.function.MappableSupplier;
 import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.api.widget.TileSize;
 import edu.wpi.first.shuffleboard.plugin.networktables.sources.NetworkTableSource;
-
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableEvent;
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.NetworkTableType;
-import edu.wpi.first.networktables.NetworkTableValue;
-import edu.wpi.first.networktables.StringArraySubscriber;
-import edu.wpi.first.networktables.Topic;
-
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -32,9 +30,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-/**
- * Helper class for generating tabs in the UI from data in NetworkTables.
- */
+/** Helper class for generating tabs in the UI from data in NetworkTables. */
 @SuppressWarnings("PMD.GodClass")
 final class TabGenerator {
 
@@ -64,34 +60,35 @@ final class TabGenerator {
     this.componentRegistry = componentRegistry;
   }
 
-  /**
-   * Starts the generator.
-   */
+  /** Starts the generator. */
   public void start() {
     // Make sure all tabs exist if they're defined, even if they're empty
     NetworkTable rootMetaTable = inst.getTable(METADATA_TABLE_NAME);
     tabsSubscriber = rootMetaTable.getStringArrayTopic(TABS_ENTRY_KEY).subscribe(new String[] {});
-    tabsListener = inst.addListener(tabsSubscriber,
-      EnumSet.of(NetworkTableEvent.Kind.kValueAll, NetworkTableEvent.Kind.kImmediate), event -> {
-        for (String tabName : event.valueData.value.getStringArray()) {
-          tabs.getTab(tabName);
-        }
-        tabs.dirty();
-      });
+    tabsListener =
+        inst.addListener(
+            tabsSubscriber,
+            EnumSet.of(NetworkTableEvent.Kind.kValueAll, NetworkTableEvent.Kind.kImmediate),
+            event -> {
+              for (String tabName : event.valueData.value.getStringArray()) {
+                tabs.getTab(tabName);
+              }
+              tabs.dirty();
+            });
 
-    metadataListener = inst.addListener(
-        new String[] {METADATA_TABLE_NAME + "/"},
-        EnumSet.of(NetworkTableEvent.Kind.kValueAll, NetworkTableEvent.Kind.kImmediate),
-        this::metadataChanged);
-    dataListener = inst.addListener(
-        new String[] {ROOT_TABLE_NAME + "/"},
-        EnumSet.of(NetworkTableEvent.Kind.kValueAll, NetworkTableEvent.Kind.kImmediate),
-        this::dataChanged);
+    metadataListener =
+        inst.addListener(
+            new String[] {METADATA_TABLE_NAME + "/"},
+            EnumSet.of(NetworkTableEvent.Kind.kValueAll, NetworkTableEvent.Kind.kImmediate),
+            this::metadataChanged);
+    dataListener =
+        inst.addListener(
+            new String[] {ROOT_TABLE_NAME + "/"},
+            EnumSet.of(NetworkTableEvent.Kind.kValueAll, NetworkTableEvent.Kind.kImmediate),
+            this::dataChanged);
   }
 
-  /**
-   * Stops the generator.
-   */
+  /** Stops the generator. */
   public void stop() {
     tabsSubscriber.close();
     inst.removeListener(tabsListener);
@@ -99,9 +96,7 @@ final class TabGenerator {
     inst.removeListener(dataListener);
   }
 
-  /**
-   * Gets the tab structure.
-   */
+  /** Gets the tab structure. */
   public TabStructure getStructure() {
     return tabs;
   }
@@ -111,7 +106,8 @@ final class TabGenerator {
 
     // Special case for global metadata, not tab or widget data
     if (name.equals("/Shuffleboard/.metadata/Selected")) {
-      // If the value can be parsed as an int, assume it's the tab index, otherwise assume tab title.
+      // If the value can be parsed as an int, assume it's the tab index, otherwise assume tab
+      // title.
       String str = event.valueData.value.getString();
       try {
         tabs.setSelectedTab(Integer.parseInt(str));
@@ -169,9 +165,9 @@ final class TabGenerator {
       String real = realHierarchy.get(realHierarchy.size() - 3);
       String propsTableName = metaHierarchy.get(metaHierarchy.size() - 2);
       NetworkTable propsTable = inst.getTable(propsTableName);
-      Map<String, Object> properties = propsTable.getKeys()
-          .stream()
-          .collect(Collectors.toMap(t -> t, k -> propsTable.getEntry(k).getValue().getValue()));
+      Map<String, Object> properties =
+          propsTable.getKeys().stream()
+              .collect(Collectors.toMap(t -> t, k -> propsTable.getEntry(k).getValue().getValue()));
       if (NetworkTable.basenameKey(real).equals(tab.getTitle())) {
         tab.setProperties(properties);
       } else {
@@ -201,10 +197,10 @@ final class TabGenerator {
       return;
     }
     if (name.contains("/.")) {
-      // The entry is metadata, but may be the only entry in a table, so make sure it's updated correctly
-      var tables = hierarchy.stream()
-          .takeWhile(s -> !s.contains("/."))
-          .collect(Collectors.toList());
+      // The entry is metadata, but may be the only entry in a table, so make sure it's updated
+      // correctly
+      var tables =
+          hierarchy.stream().takeWhile(s -> !s.contains("/.")).collect(Collectors.toList());
       if (tables.size() >= 3) {
         updateFrom(tables);
       }
@@ -240,7 +236,8 @@ final class TabGenerator {
           case LAYOUT_TYPE:
             String layoutType = preferredComponent(path, () -> null);
             if (layoutType == null) {
-              // No component specified for this layout - its children will be placed in its parent container
+              // No component specified for this layout - its children will be placed in its parent
+              // container
               continue;
             }
             LayoutModel layout = parent.getLayout(path, layoutType);
@@ -273,11 +270,12 @@ final class TabGenerator {
    */
   private MappableSupplier<? extends DataSource<?>> sourceForPath(String path) {
     Topic[] topics = inst.getTopics("/", NetworkTableType.kString.getValue());
-    Optional<String> customUri = Stream.of(topics)
-        .filter(t -> t.getName().equals(path + "/.ShuffleboardURI"))
-        .map(t -> inst.getEntry(t.getName()).getString(null))
-        .filter(Objects::nonNull)
-        .findFirst();
+    Optional<String> customUri =
+        Stream.of(topics)
+            .filter(t -> t.getName().equals(path + "/.ShuffleboardURI"))
+            .map(t -> inst.getEntry(t.getName()).getString(null))
+            .filter(Objects::nonNull)
+            .findFirst();
     if (customUri.isPresent()) {
       return () -> SourceTypes.getDefault().forUri(customUri.get());
     } else {
@@ -288,7 +286,8 @@ final class TabGenerator {
   /**
    * Gets the table containing the metadata for a component.
    *
-   * @param realPath the full path to the value to get the data for, eg "/Shuffleboard/Tab/LayoutX/FooData"
+   * @param realPath the full path to the value to get the data for, eg
+   *     "/Shuffleboard/Tab/LayoutX/FooData"
    */
   private NetworkTable metaTable(String realPath) {
     return inst.getTable(realPath.replaceFirst("^/Shuffleboard/", "/Shuffleboard/.metadata/"));
@@ -307,7 +306,8 @@ final class TabGenerator {
    * Gets the preferred component for a component.
    *
    * @param realPath the path to the component
-   * @param fallback the fallback component type if no preferred component is specified in the metadata table
+   * @param fallback the fallback component type if no preferred component is specified in the
+   *     metadata table
    */
   private String preferredComponent(String realPath, Supplier<String> fallback) {
     NetworkTableValue value = metaTable(realPath).getEntry(PREF_COMPONENT_ENTRY_NAME).getValue();
@@ -319,7 +319,8 @@ final class TabGenerator {
   }
 
   /**
-   * Gets the properties of a component, or an empty map if no properties are specified in the metadata table.
+   * Gets the properties of a component, or an empty map if no properties are specified in the
+   * metadata table.
    *
    * @param realPath the path to the component
    */
@@ -336,24 +337,25 @@ final class TabGenerator {
   }
 
   /**
-   * Updates the widget for the given path. If no such widget exists, one is created and added to the given parent.
+   * Updates the widget for the given path. If no such widget exists, one is created and added to
+   * the given parent.
    *
    * @param parent the parent to add a newly created widget to
-   * @param path   the path to the widget
+   * @param path the path to the widget
    */
   private void updateWidget(ParentModel parent, String path) {
     var sourceSupplier = sourceForPath(path);
-    WidgetModel widget = parent.getOrCreate(
-        path,
-        sourceSupplier,
-        preferredComponent(
+    WidgetModel widget =
+        parent.getOrCreate(
             path,
-            sourceSupplier
-                .map(DataSource::getDataType)
-                .map(componentRegistry::defaultComponentNameFor)
-                .map(Optional::orElseThrow)
-        ),
-        properties(path));
+            sourceSupplier,
+            preferredComponent(
+                path,
+                sourceSupplier
+                    .map(DataSource::getDataType)
+                    .map(componentRegistry::defaultComponentNameFor)
+                    .map(Optional::orElseThrow)),
+            properties(path));
     setSizeAndPosition(path, widget);
   }
 

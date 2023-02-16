@@ -1,5 +1,7 @@
 package edu.wpi.first.shuffleboard.app;
 
+import static java.util.stream.Collectors.toSet;
+
 import edu.wpi.first.shuffleboard.api.components.ActionList;
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.dnd.DataFormats;
@@ -30,16 +32,6 @@ import edu.wpi.first.shuffleboard.app.json.SourcedRestorer;
 import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
 import edu.wpi.first.shuffleboard.app.prefs.SettingsDialog;
 import edu.wpi.first.shuffleboard.app.sources.DestroyedSource;
-
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonBar;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.Label;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.SeparatorMenuItem;
-import org.fxmisc.easybind.EasyBind;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -56,13 +48,19 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 import javafx.beans.binding.Binding;
 import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
 import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import javafx.scene.SnapshotParameters;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Label;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.ContextMenuEvent;
@@ -72,8 +70,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
-
-import static java.util.stream.Collectors.toSet;
+import org.fxmisc.easybind.EasyBind;
 
 // needs refactoring to split out per-widget interaction
 @SuppressWarnings("PMD.GodClass")
@@ -81,8 +78,7 @@ public class WidgetPaneController {
 
   private static final Logger log = Logger.getLogger(WidgetPaneController.class.getName());
 
-  @FXML
-  private WidgetPane pane;
+  @FXML private WidgetPane pane;
 
   private final Set<Node> tilesAlreadySetup = Collections.newSetFromMap(new WeakHashMap<>());
 
@@ -94,11 +90,14 @@ public class WidgetPaneController {
     selector = TileSelector.forPane(pane);
     tileMover = new TileMover(pane);
 
-    pane.getTiles().addListener((ListChangeListener<Tile>) changes -> {
-      while (changes.next()) {
-        changes.getAddedSubList().forEach(this::setupTile);
-      }
-    });
+    pane.getTiles()
+        .addListener(
+            (ListChangeListener<Tile>)
+                changes -> {
+                  while (changes.next()) {
+                    changes.getAddedSubList().forEach(this::setupTile);
+                  }
+                });
 
     // Add a context menu for pane-related actions
     pane.setOnContextMenuRequested(this::createPaneContextMenu);
@@ -109,79 +108,107 @@ public class WidgetPaneController {
     pane.setOnDragExited(paneDragHandler);
     pane.setOnDragDropped(paneDragHandler);
 
-    pane.parentProperty().addListener((__, old, parent) -> {
-      if (parent instanceof Region) {
-        Region region = (Region) parent;
-        Binding<Integer> colBinding =
-            EasyBind.combine(region.widthProperty(), pane.hgapProperty(), pane.tileSizeProperty(),
-                (width, gap, size) -> pane.roundWidthToNearestTile(width.doubleValue(), RoundingMode.DOWN))
-                .map(numCols -> Math.max(1, numCols));
-        Binding<Integer> rowBinding =
-            EasyBind.combine(region.heightProperty(), pane.vgapProperty(), pane.tileSizeProperty(),
-                (height, gap, size) -> pane.roundHeightToNearestTile(height.doubleValue(), RoundingMode.DOWN))
-                .map(numRows -> Math.max(1, numRows));
+    pane.parentProperty()
+        .addListener(
+            (__, old, parent) -> {
+              if (parent instanceof Region) {
+                Region region = (Region) parent;
+                Binding<Integer> colBinding =
+                    EasyBind.combine(
+                            region.widthProperty(),
+                            pane.hgapProperty(),
+                            pane.tileSizeProperty(),
+                            (width, gap, size) ->
+                                pane.roundWidthToNearestTile(
+                                    width.doubleValue(), RoundingMode.DOWN))
+                        .map(numCols -> Math.max(1, numCols));
+                Binding<Integer> rowBinding =
+                    EasyBind.combine(
+                            region.heightProperty(),
+                            pane.vgapProperty(),
+                            pane.tileSizeProperty(),
+                            (height, gap, size) ->
+                                pane.roundHeightToNearestTile(
+                                    height.doubleValue(), RoundingMode.DOWN))
+                        .map(numRows -> Math.max(1, numRows));
 
+                pane.numColumnsProperty().bind(colBinding);
+                pane.numRowsProperty().bind(rowBinding);
+              }
+            });
 
-        pane.numColumnsProperty().bind(colBinding);
-        pane.numRowsProperty().bind(rowBinding);
-      }
-    });
+    pane.numColumnsProperty()
+        .addListener(
+            (__, oldCount, newCount) -> {
+              if (pane.getTiles().isEmpty()) {
+                // No tiles, bail
+                return;
+              }
+              if (newCount < oldCount) {
+                // shift and shrink tiles to the left
+                pane.getTiles().stream()
+                    .filter(
+                        tile -> {
+                          final TileLayout layout = pane.getTileLayout(tile);
+                          return layout.origin.col + layout.size.getWidth() > newCount;
+                        })
+                    .forEach(
+                        tile ->
+                            tileMover.collapseTile(
+                                tile, oldCount - newCount, TileMover.Direction.HORIZONTAL));
+              }
+            });
+    pane.numRowsProperty()
+        .addListener(
+            (__, oldCount, newCount) -> {
+              if (pane.getTiles().isEmpty()) {
+                return;
+              }
+              if (newCount < oldCount) {
+                // shift and shrink tiles up
+                pane.getTiles().stream()
+                    .filter(
+                        tile -> {
+                          final TileLayout layout = pane.getTileLayout(tile);
+                          return layout.origin.row + layout.size.getHeight() > newCount;
+                        })
+                    .forEach(
+                        tile ->
+                            tileMover.collapseTile(
+                                tile, oldCount - newCount, TileMover.Direction.VERTICAL));
+              }
+            });
 
-    pane.numColumnsProperty().addListener((__, oldCount, newCount) -> {
-      if (pane.getTiles().isEmpty()) {
-        // No tiles, bail
-        return;
-      }
-      if (newCount < oldCount) {
-        // shift and shrink tiles to the left
-        pane.getTiles().stream()
-            .filter(tile -> {
-              final TileLayout layout = pane.getTileLayout(tile);
-              return layout.origin.col + layout.size.getWidth() > newCount;
-            })
-            .forEach(tile -> tileMover.collapseTile(tile, oldCount - newCount, TileMover.Direction.HORIZONTAL));
-      }
-    });
-    pane.numRowsProperty().addListener((__, oldCount, newCount) -> {
-      if (pane.getTiles().isEmpty()) {
-        return;
-      }
-      if (newCount < oldCount) {
-        // shift and shrink tiles up
-        pane.getTiles().stream()
-            .filter(tile -> {
-              final TileLayout layout = pane.getTileLayout(tile);
-              return layout.origin.row + layout.size.getHeight() > newCount;
-            })
-            .forEach(tile -> tileMover.collapseTile(tile, oldCount - newCount, TileMover.Direction.VERTICAL));
-      }
-    });
-
-    // Handle restoring data sources after a widget is added from a save file before its source(s) are available
-    SourceTypes.getDefault().allAvailableSourceUris().addListener((ListChangeListener<String>) c -> {
-      while (c.next()) {
-        if (c.wasAdded()) {
-          // Restore sources for top-level Sourced objects
-          SourcedRestorer restorer = new SourcedRestorer();
-          List<? extends String> addedUris = c.getAddedSubList();
-          restoreSources(restorer, addedUris);
-        } else if (c.wasRemoved()) {
-          List<? extends String> removedUris = c.getRemoved();
-          // Replace all removed sources with DestroyedSources
-          removeSources(removedUris);
-        }
-      }
-    });
+    // Handle restoring data sources after a widget is added from a save file before its source(s)
+    // are available
+    SourceTypes.getDefault()
+        .allAvailableSourceUris()
+        .addListener(
+            (ListChangeListener<String>)
+                c -> {
+                  while (c.next()) {
+                    if (c.wasAdded()) {
+                      // Restore sources for top-level Sourced objects
+                      SourcedRestorer restorer = new SourcedRestorer();
+                      List<? extends String> addedUris = c.getAddedSubList();
+                      restoreSources(restorer, addedUris);
+                    } else if (c.wasRemoved()) {
+                      List<? extends String> removedUris = c.getRemoved();
+                      // Replace all removed sources with DestroyedSources
+                      removeSources(removedUris);
+                    }
+                  }
+                });
   }
 
   private void restoreSources(SourcedRestorer restorer, List<? extends String> addedUris) {
     pane.getTiles().stream()
         .map(Tile::getContent)
         .flatMap(TypeUtils.castStream(Sourced.class))
-        .forEach(sourced -> restorer.restoreSourcesFor(
-            sourced,
-            addedUris,
-            WidgetPaneController::destroyedSourceCouldNotBeRestored));
+        .forEach(
+            sourced ->
+                restorer.restoreSourcesFor(
+                    sourced, addedUris, WidgetPaneController::destroyedSourceCouldNotBeRestored));
 
     // Restore sources for all nested Sourced objects
     pane.getTiles().stream()
@@ -189,10 +216,10 @@ public class WidgetPaneController {
         .flatMap(TypeUtils.castStream(ComponentContainer.class))
         .flatMap(ComponentContainer::allComponents)
         .flatMap(TypeUtils.castStream(Sourced.class))
-        .forEach(sourced -> restorer.restoreSourcesFor(
-            sourced,
-            addedUris,
-            WidgetPaneController::destroyedSourceCouldNotBeRestored));
+        .forEach(
+            sourced ->
+                restorer.restoreSourcesFor(
+                    sourced, addedUris, WidgetPaneController::destroyedSourceCouldNotBeRestored));
   }
 
   private void removeSources(List<? extends String> removedUris) {
@@ -208,31 +235,42 @@ public class WidgetPaneController {
     // As an alternative to adding a component, then having to add that to a new layout
     // This reduces the complexity of creating new layouts
     Menu addLayouts = new Menu("Add layout...");
-    Components.getDefault().allComponents()
+    Components.getDefault()
+        .allComponents()
         .flatMap(TypeUtils.castStream(LayoutType.class))
         .map(ComponentType::getName)
         .sorted()
-        .map(c -> FxUtils.menuItem(c, __ -> pane.addComponent(Components.getDefault().createComponent(c).get())))
+        .map(
+            c ->
+                FxUtils.menuItem(
+                    c, __ -> pane.addComponent(Components.getDefault().createComponent(c).get())))
         .forEach(addLayouts.getItems()::add);
 
     // Removes all the tiles from the pane. Destructive operation!
-    MenuItem clear = FxUtils.menuItem("Clear", __ -> {
-      Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-      alert.setTitle("Confirm Tab Clear");
-      alert.setHeaderText("Do you want to clear this tab?");
-      alert.getDialogPane().getScene().getStylesheets()
-              .setAll(AppPreferences.getInstance().getTheme().getStyleSheets());
-      if (alert.showAndWait()
-              .map(b -> b.getButtonData() == ButtonBar.ButtonData.OK_DONE)
-              .orElse(false)) {
-        List<Tile> tiles = new ArrayList<>(pane.getTiles());
-        tiles.stream()
-                .map((Function<Tile, Component>) pane::removeTile)
-                .flatMap(Component::allComponents)
-                .flatMap(TypeUtils.castStream(Sourced.class))
-                .forEach(Sourced::removeAllSources);
-      }
-    });
+    MenuItem clear =
+        FxUtils.menuItem(
+            "Clear",
+            __ -> {
+              Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+              alert.setTitle("Confirm Tab Clear");
+              alert.setHeaderText("Do you want to clear this tab?");
+              alert
+                  .getDialogPane()
+                  .getScene()
+                  .getStylesheets()
+                  .setAll(AppPreferences.getInstance().getTheme().getStyleSheets());
+              if (alert
+                  .showAndWait()
+                  .map(b -> b.getButtonData() == ButtonBar.ButtonData.OK_DONE)
+                  .orElse(false)) {
+                List<Tile> tiles = new ArrayList<>(pane.getTiles());
+                tiles.stream()
+                    .map((Function<Tile, Component>) pane::removeTile)
+                    .flatMap(Component::allComponents)
+                    .flatMap(TypeUtils.castStream(Sourced.class))
+                    .forEach(Sourced::removeAllSources);
+              }
+            });
     ContextMenu contextMenu = new ContextMenu(addLayouts, new SeparatorMenuItem(), clear);
     contextMenu.show(pane.getScene().getWindow(), e.getScreenX(), e.getScreenY());
   }
@@ -243,41 +281,39 @@ public class WidgetPaneController {
    *
    * @param removedUris the URIs of the sources that were removed and should be replaced
    */
-  private void replaceWithDestroyedSource(Sourced sourced, Collection<? extends String> removedUris) {
-    sourced.getSources().replaceAll(source -> {
-      if (source instanceof DestroyedSource) {
-        return source;
-      } else {
-        if (removedUris.contains(source.getId())) {
-          // Source is no longer available, replace with a destroyed source
-          return DestroyedSource.forUnknownData(sourced.getDataTypes(), source.getId());
-        } else {
-          return source;
-        }
-      }
-    });
+  private void replaceWithDestroyedSource(
+      Sourced sourced, Collection<? extends String> removedUris) {
+    sourced
+        .getSources()
+        .replaceAll(
+            source -> {
+              if (source instanceof DestroyedSource) {
+                return source;
+              } else {
+                if (removedUris.contains(source.getId())) {
+                  // Source is no longer available, replace with a destroyed source
+                  return DestroyedSource.forUnknownData(sourced.getDataTypes(), source.getId());
+                } else {
+                  return source;
+                }
+              }
+            });
   }
 
   private void dragMultipleTiles(Set<Tile<?>> tiles, GridPoint initialPoint) {
     Dragboard dragboard = pane.startDragAndDrop(TransferMode.MOVE);
     ClipboardContent content = new ClipboardContent();
-    Set<String> tileIds = tiles.stream()
-        .map(Tile::getId)
-        .collect(toSet());
+    Set<String> tileIds = tiles.stream().map(Tile::getId).collect(toSet());
     content.put(DataFormats.multipleTiles, new DataFormats.MultipleTileData(tileIds, initialPoint));
     dragboard.setContent(content);
   }
 
-  /**
-   * Starts the drag of the given widget tile.
-   */
+  /** Starts the drag of the given widget tile. */
   private void dragSingleTile(Tile<?> tile, GridPoint point) {
     Dragboard dragboard = tile.startDragAndDrop(TransferMode.MOVE);
     WritableImage preview =
         new WritableImage(
-            (int) tile.getBoundsInParent().getWidth(),
-            (int) tile.getBoundsInParent().getHeight()
-        );
+            (int) tile.getBoundsInParent().getWidth(), (int) tile.getBoundsInParent().getHeight());
     SnapshotParameters parameters = new SnapshotParameters();
     parameters.setFill(Color.TRANSPARENT);
     tile.snapshot(parameters, preview);
@@ -301,8 +337,10 @@ public class WidgetPaneController {
     } else {
       selector.deselectAll();
       // Drag point is a point on the tile
-      GridPoint dragPoint = new GridPoint(pane.roundWidthToNearestTile(event.getX()) - 1,
-          pane.roundHeightToNearestTile(event.getY()) - 1);
+      GridPoint dragPoint =
+          new GridPoint(
+              pane.roundWidthToNearestTile(event.getX()) - 1,
+              pane.roundHeightToNearestTile(event.getY()) - 1);
       dragSingleTile(tile, dragPoint);
     }
     event.consume();
@@ -320,9 +358,7 @@ public class WidgetPaneController {
     }
   }
 
-  /**
-   * Sets up a tile with a context menu and lets it be dragged around.
-   */
+  /** Sets up a tile with a context menu and lets it be dragged around. */
   private void setupTile(Tile tile) {
     if (tilesAlreadySetup.contains(tile)) {
       return;
@@ -330,69 +366,81 @@ public class WidgetPaneController {
     tilesAlreadySetup.add(tile);
     TileDragResizer.makeResizable(pane, tile);
 
-    tile.setOnContextMenuRequested(event -> {
-      ContextMenu contextMenu = createContextMenu(event);
-      contextMenu.show(pane.getScene().getWindow(), event.getScreenX(), event.getScreenY());
-      event.consume();
-    });
+    tile.setOnContextMenuRequested(
+        event -> {
+          ContextMenu contextMenu = createContextMenu(event);
+          contextMenu.show(pane.getScene().getWindow(), event.getScreenX(), event.getScreenY());
+          event.consume();
+        });
 
     // Allow users to double-click on a tile to select it.
-    tile.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
-      if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2) {
-        selector.selectOnly(tile);
-      }
-    });
-
-    ActionList.registerSupplier(tile, () -> {
-      ActionList widgetPaneActions = ActionList
-          .withName(tile.getContent().getTitle())
-          .addAction("Remove", () -> {
-            if (selector.isSelected(tile)) {
-              selector.getSelectedTiles().forEach(this::removeTile);
-            } else {
-              removeTile(tile);
-            }
-            selector.deselectAll();
-          })
-          .addNested(createLayoutMenus(tile));
-
-      if (tile instanceof WidgetTile) {
-        WidgetTile widgetTile = (WidgetTile) tile;
-        ActionList changeMenus = createChangeMenusForWidget(widgetTile);
-        if (changeMenus.hasItems()) {
-          widgetPaneActions.addNested(changeMenus);
-        }
-      }
-      widgetPaneActions.addAction("Edit Properties",
-          () -> {
-            Set<Tile<?>> tiles = new LinkedHashSet<>();
-            tiles.add(tile);
-            tiles.addAll(selector.getSelectedTiles());
-            if (tiles.size() == 1) {
-              showSettingsDialog(createSettingsCategoriesForComponent(tile.getContent()));
-            } else {
-              List<Category> categories = tiles.stream()
-                  .map(t -> t.getContent())
-                  .map(c -> createSettingsCategoriesForComponent(c))
-                  .collect(Collectors.toList());
-              showSettingsDialog(categories);
-            }
-          });
-
-      // Layout unwrapping
-      if (tile instanceof LayoutTile) {
-        widgetPaneActions.addAction("Unwrap", () -> {
-          if (selector.areTilesSelected()
-              && selector.getSelectedTiles().stream().allMatch(t -> t instanceof LayoutTile)) {
-            selector.getSelectedTiles().forEach(t -> unwrapLayout((LayoutTile) t));
-          } else {
-            unwrapLayout(tile);
+    tile.addEventHandler(
+        MouseEvent.MOUSE_CLICKED,
+        event -> {
+          if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2) {
+            selector.selectOnly(tile);
           }
-          selector.deselectAll();
         });
-      }
-      return widgetPaneActions;
-    });
+
+    ActionList.registerSupplier(
+        tile,
+        () -> {
+          ActionList widgetPaneActions =
+              ActionList.withName(tile.getContent().getTitle())
+                  .addAction(
+                      "Remove",
+                      () -> {
+                        if (selector.isSelected(tile)) {
+                          selector.getSelectedTiles().forEach(this::removeTile);
+                        } else {
+                          removeTile(tile);
+                        }
+                        selector.deselectAll();
+                      })
+                  .addNested(createLayoutMenus(tile));
+
+          if (tile instanceof WidgetTile) {
+            WidgetTile widgetTile = (WidgetTile) tile;
+            ActionList changeMenus = createChangeMenusForWidget(widgetTile);
+            if (changeMenus.hasItems()) {
+              widgetPaneActions.addNested(changeMenus);
+            }
+          }
+          widgetPaneActions.addAction(
+              "Edit Properties",
+              () -> {
+                Set<Tile<?>> tiles = new LinkedHashSet<>();
+                tiles.add(tile);
+                tiles.addAll(selector.getSelectedTiles());
+                if (tiles.size() == 1) {
+                  showSettingsDialog(createSettingsCategoriesForComponent(tile.getContent()));
+                } else {
+                  List<Category> categories =
+                      tiles.stream()
+                          .map(t -> t.getContent())
+                          .map(c -> createSettingsCategoriesForComponent(c))
+                          .collect(Collectors.toList());
+                  showSettingsDialog(categories);
+                }
+              });
+
+          // Layout unwrapping
+          if (tile instanceof LayoutTile) {
+            widgetPaneActions.addAction(
+                "Unwrap",
+                () -> {
+                  if (selector.areTilesSelected()
+                      && selector.getSelectedTiles().stream()
+                          .allMatch(t -> t instanceof LayoutTile)) {
+                    selector.getSelectedTiles().forEach(t -> unwrapLayout((LayoutTile) t));
+                  } else {
+                    unwrapLayout(tile);
+                  }
+                  selector.deselectAll();
+                });
+          }
+          return widgetPaneActions;
+        });
 
     tile.setOnDragDetected(event -> startTileDrag(tile, event));
 
@@ -404,7 +452,8 @@ public class WidgetPaneController {
   private void removeTile(Tile<?> tile) {
     if (pane.getTiles().contains(tile)) {
       Component removed = pane.removeTile(tile);
-      removed.allComponents()
+      removed
+          .allComponents()
           .flatMap(TypeUtils.castStream(Sourced.class))
           .forEach(Sourced::removeAllSources);
     }
@@ -412,47 +461,52 @@ public class WidgetPaneController {
 
   private void unwrapLayout(Tile<? extends Layout> tile) {
     Layout layout = tile.getContent();
-    layout.components()
-        .collect(Collectors.toList()) // Collect into temporary list to prevent ConcurrentModificationExceptions
+    layout
+        .components()
+        .collect(Collectors.toList()) // Collect into temporary list to prevent
+        // ConcurrentModificationExceptions
         .stream()
         .filter(pane::canAdd)
-        .forEach(component -> {
-          layout.removeComponent(component);
-          pane.addComponent(component);
-        });
+        .forEach(
+            component -> {
+              layout.removeComponent(component);
+              pane.addComponent(component);
+            });
     if (layout.components().count() == 0) {
       // No point in keeping the empty layout around, remove it
       pane.removeTile(tile);
     }
   }
 
-  /**
-   * Creates the context menu for a given tile.
-   */
+  /** Creates the context menu for a given tile. */
   private ContextMenu createContextMenu(ContextMenuEvent event) {
     ContextMenu menu = new ContextMenu();
 
     LinkedHashMap<String, List<MenuItem>> actions = new LinkedHashMap<>();
     if (event.getTarget() instanceof Node) {
       Node leaf = (Node) event.getTarget();
-      Stream
-          .iterate(leaf, Node::getParent)
+      Stream.iterate(leaf, Node::getParent)
           // non-functional ugliness necessary due to the lack of takeWhile in java 8
-          .peek(node -> ActionList.actionsForNode(node).ifPresent(al -> {
-            if (actions.containsKey(al.getName())) {
-              actions.get(al.getName()).addAll(al.toMenuItems());
-            } else {
-              actions.put(al.getName(), al.toMenuItems());
-            }
-          }))
+          .peek(
+              node ->
+                  ActionList.actionsForNode(node)
+                      .ifPresent(
+                          al -> {
+                            if (actions.containsKey(al.getName())) {
+                              actions.get(al.getName()).addAll(al.toMenuItems());
+                            } else {
+                              actions.put(al.getName(), al.toMenuItems());
+                            }
+                          }))
           .allMatch(n -> n.getParent() != null); // terminates infinite Stream#iterate
     }
 
-    actions.forEach((key, menuItems) -> {
-      menu.getItems().add(new SeparatorMenuItem());
-      menu.getItems().add(FxUtils.menuLabel(key));
-      menu.getItems().addAll(menuItems);
-    });
+    actions.forEach(
+        (key, menuItems) -> {
+          menu.getItems().add(new SeparatorMenuItem());
+          menu.getItems().add(FxUtils.menuLabel(key));
+          menu.getItems().addAll(menuItems);
+        });
 
     // remove leading separator.
     menu.getItems().remove(0);
@@ -472,24 +526,27 @@ public class WidgetPaneController {
         .allComponents()
         .flatMap(TypeUtils.castStream(LayoutType.class))
         .map(ComponentType::getName)
-        .forEach(name -> {
-          list.addAction(name, () -> {
-            TileLayout was = pane.getTileLayout(tile);
-            Component content = pane.removeTile(tile);
-            Layout layout = (Layout) Components.getDefault().createComponent(name).get();
-            layout.addChild(content);
-            if (selector.getSelectedTiles().size() > 1) {
-              for (Tile<?> t : selector.getSelectedTiles()) {
-                if (tile.equals(t)) {
-                  continue;
-                }
-                layout.addChild(pane.removeTile(t));
-              }
-            }
-            pane.addComponent(layout, was.origin, was.size);
-            selector.deselectAll();
-          });
-        });
+        .forEach(
+            name -> {
+              list.addAction(
+                  name,
+                  () -> {
+                    TileLayout was = pane.getTileLayout(tile);
+                    Component content = pane.removeTile(tile);
+                    Layout layout = (Layout) Components.getDefault().createComponent(name).get();
+                    layout.addChild(content);
+                    if (selector.getSelectedTiles().size() > 1) {
+                      for (Tile<?> t : selector.getSelectedTiles()) {
+                        if (tile.equals(t)) {
+                          continue;
+                        }
+                        layout.addChild(pane.removeTile(t));
+                      }
+                    }
+                    pane.addComponent(layout, was.origin, was.size);
+                    selector.deselectAll();
+                  });
+            });
 
     return list;
   }
@@ -498,12 +555,12 @@ public class WidgetPaneController {
    * Returns the set of items that are shared between the source collection and all the tests.
    *
    * @param source the source collection containing the items to check
-   * @param tests  the collections to check
-   * @param <T>    the type of the items to check.
-   *
+   * @param tests the collections to check
+   * @param <T> the type of the items to check.
    * @return the set of items that are shared between all the provided collections
    */
-  private static <T> Set<T> allContain(Collection<T> source, Collection<? extends Collection<T>> tests) {
+  private static <T> Set<T> allContain(
+      Collection<T> source, Collection<? extends Collection<T>> tests) {
     Set<T> items = new HashSet<>();
     for (T item : source) {
       if (tests.stream().allMatch(c -> c.contains(item))) {
@@ -514,23 +571,22 @@ public class WidgetPaneController {
   }
 
   private static Set<DataType> getDataTypes(Sourced sourced) {
-    return sourced.getSources().stream()
-        .map(DataSource::getDataType)
-        .collect(toSet());
+    return sourced.getSources().stream().map(DataSource::getDataType).collect(toSet());
   }
 
   private void changeAllWidgetTiles(String newWidgetName) {
-    selector.getSelectedTiles()
-        .stream()
+    selector.getSelectedTiles().stream()
         .map(t -> (WidgetTile) t)
-        .forEach(t -> {
-          Components.getDefault()
-              .createWidget(newWidgetName, t.getContent().getSources())
-              .ifPresent(newWidget -> {
-                newWidget.setTitle(t.getContent().getTitle());
-                t.setContent(newWidget);
-              });
-        });
+        .forEach(
+            t -> {
+              Components.getDefault()
+                  .createWidget(newWidgetName, t.getContent().getSources())
+                  .ifPresent(
+                      newWidget -> {
+                        newWidget.setTitle(t.getContent().getTitle());
+                        t.setContent(newWidget);
+                      });
+            });
     selector.deselectAll();
   }
 
@@ -544,13 +600,15 @@ public class WidgetPaneController {
     ActionList list = ActionList.withName("Show as...");
 
     if (selector.areTilesSelected() && selector.isSelected(tile)) {
-      boolean allWidgets = selector.getSelectedTiles().stream().allMatch(t -> t.getContent() instanceof Widget);
+      boolean allWidgets =
+          selector.getSelectedTiles().stream().allMatch(t -> t.getContent() instanceof Widget);
       if (allWidgets) {
-        List<Set<DataType>> collect = selector.getSelectedTiles().stream()
-            .map(Tile::getContent)
-            .flatMap(TypeUtils.castStream(Widget.class))
-            .map(w -> getDataTypes(w))
-            .collect(Collectors.toList());
+        List<Set<DataType>> collect =
+            selector.getSelectedTiles().stream()
+                .map(Tile::getContent)
+                .flatMap(TypeUtils.castStream(Widget.class))
+                .map(w -> getDataTypes(w))
+                .collect(Collectors.toList());
         Set<DataType> commonDataTypes = allContain(tile.getContent().getDataTypes(), collect);
         if (commonDataTypes.isEmpty()) {
           return ActionList.withName(null);
@@ -560,11 +618,12 @@ public class WidgetPaneController {
             .flatMap(List::stream)
             .distinct()
             .sorted()
-            .forEach(name -> list.addAction(
-                name,
-                name.equals(widget.getName()) ? new Label("✓") : null,
-                () -> changeAllWidgetTiles(name)
-            ));
+            .forEach(
+                name ->
+                    list.addAction(
+                        name,
+                        name.equals(widget.getName()) ? new Label("✓") : null,
+                        () -> changeAllWidgetTiles(name)));
         return list;
       } else {
         return ActionList.withName(null);
@@ -575,20 +634,23 @@ public class WidgetPaneController {
           .flatMap(List::stream)
           .sorted()
           .distinct()
-          .forEach(name -> list.addAction(
-              name,
-              name.equals(widget.getName()) ? new Label("✓") : null,
-              () -> {
-                // no need to change it if it's already the same type
-                if (!name.equals(widget.getName())) {
-                  Components.getDefault()
-                      .createWidget(name, widget.getSources())
-                      .ifPresent(newWidget -> {
-                        newWidget.setTitle(widget.getTitle());
-                        tile.setContent(newWidget);
-                      });
-                }
-              }));
+          .forEach(
+              name ->
+                  list.addAction(
+                      name,
+                      name.equals(widget.getName()) ? new Label("✓") : null,
+                      () -> {
+                        // no need to change it if it's already the same type
+                        if (!name.equals(widget.getName())) {
+                          Components.getDefault()
+                              .createWidget(name, widget.getSources())
+                              .ifPresent(
+                                  newWidget -> {
+                                    newWidget.setTitle(widget.getTitle());
+                                    tile.setContent(newWidget);
+                                  });
+                        }
+                      }));
     }
     return list;
   }
@@ -602,7 +664,10 @@ public class WidgetPaneController {
     SettingsDialog dialog = new SettingsDialog(categories);
 
     dialog.setTitle("Edit Properties");
-    dialog.getDialogPane().getStylesheets().setAll(AppPreferences.getInstance().getTheme().getStyleSheets());
+    dialog
+        .getDialogPane()
+        .getStylesheets()
+        .setAll(AppPreferences.getInstance().getTheme().getStyleSheets());
 
     dialog.showAndWait();
   }
@@ -617,20 +682,23 @@ public class WidgetPaneController {
   }
 
   /**
-   * Creates a category for a component, setting subcategories as necessary if it contains other components.
+   * Creates a category for a component, setting subcategories as necessary if it contains other
+   * components.
    *
    * @param component the component to create a settings category for
-   *
    * @return a new settings category
    */
   private Category createSettingsCategoriesForComponent(Component component) {
     List<Group> groups = new ArrayList<>(component.getSettings());
     groups.add(titleGroup(component));
-    String categoryName = component.getTitle().isEmpty() ? "Unnamed " + component.getName() : component.getTitle();
+    String categoryName =
+        component.getTitle().isEmpty() ? "Unnamed " + component.getName() : component.getTitle();
     if (component instanceof ComponentContainer) {
-      List<Category> subCategories = ((ComponentContainer) component).components()
-          .map(this::createSettingsCategoriesForComponent)
-          .collect(Collectors.toList());
+      List<Category> subCategories =
+          ((ComponentContainer) component)
+              .components()
+              .map(this::createSettingsCategoriesForComponent)
+              .collect(Collectors.toList());
       return Category.of(categoryName, subCategories, groups);
     } else {
       return Category.of(categoryName, groups);
@@ -641,31 +709,26 @@ public class WidgetPaneController {
    * Creates a settings group for the title property of a component.
    *
    * @param component the component to create the settings group for
-   *
    * @return a new settings group
    */
   private Group titleGroup(Component component) {
-    return Group.of("Miscellaneous",
+    return Group.of(
+        "Miscellaneous",
         Setting.of(
             "Title",
             "The title of this " + component.getName().toLowerCase(Locale.US),
-            component.titleProperty()
-        ),
+            component.titleProperty()),
         Setting.of(
-                "Show Glyph",
-                "Show the glyph for this " + component.getName().toLowerCase(Locale.US),
-                component.showGlyphProperty()
-        ),
+            "Show Glyph",
+            "Show the glyph for this " + component.getName().toLowerCase(Locale.US),
+            component.showGlyphProperty()),
         Setting.of(
-          "Glyph",
-          "The glyph of this " + component.getName().toLowerCase(Locale.US),
-          component.glyphProperty()
-        )
-    );
+            "Glyph",
+            "The glyph of this " + component.getName().toLowerCase(Locale.US),
+            component.glyphProperty()));
   }
 
   private static void destroyedSourceCouldNotBeRestored(DestroyedSource source, Throwable error) {
     log.log(Level.WARNING, "Could not restore source: " + source.getId(), error);
   }
-
 }

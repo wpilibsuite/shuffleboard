@@ -2,9 +2,7 @@ package edu.wpi.first.shuffleboard.api.util;
 
 import java.util.Objects;
 
-/**
- * A vector in 2-dimensional Cartesian space.
- */
+/** A vector in 2-dimensional Cartesian space. */
 public final class Vector2D {
 
   public final double x;
@@ -21,30 +19,22 @@ public final class Vector2D {
     this.y = y;
   }
 
-  /**
-   * Gets the X-coordinate of this vector.
-   */
+  /** Gets the X-coordinate of this vector. */
   public double getX() {
     return x;
   }
 
-  /**
-   * Gets the Y-coordinate of this vector.
-   */
+  /** Gets the Y-coordinate of this vector. */
   public double getY() {
     return y;
   }
 
-  /**
-   * Gets the magnitude of this vector.
-   */
+  /** Gets the magnitude of this vector. */
   public double getMagnitude() {
     return Math.sqrt(x * x + y * y);
   }
 
-  /**
-   * Gets the angle of this vector, in radians in the range <code>(-pi, pi)</code>.
-   */
+  /** Gets the angle of this vector, in radians in the range <code>(-pi, pi)</code>. */
   public double getAngle() {
     return Math.atan2(y, x);
   }
@@ -58,8 +48,7 @@ public final class Vector2D {
       return false;
     }
     Vector2D that = (Vector2D) o;
-    return this.x == that.x
-        && this.y == that.y;
+    return this.x == that.x && this.y == that.y;
   }
 
   @Override
@@ -71,5 +60,4 @@ public final class Vector2D {
   public String toString() {
     return "Vector2D(" + x + "," + y + ")";
   }
-
 }

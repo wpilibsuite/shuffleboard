@@ -2,7 +2,6 @@ package edu.wpi.first.shuffleboard.plugin.base.data.types;
 
 import edu.wpi.first.shuffleboard.api.data.ComplexDataType;
 import edu.wpi.first.shuffleboard.plugin.base.data.BasicSubsystemData;
-
 import java.util.Map;
 import java.util.function.Function;
 
@@ -26,5 +25,4 @@ public final class BasicSubsystemType extends ComplexDataType<BasicSubsystemData
   public BasicSubsystemData getDefaultValue() {
     return new BasicSubsystemData(false, "", false, "");
   }
-
 }

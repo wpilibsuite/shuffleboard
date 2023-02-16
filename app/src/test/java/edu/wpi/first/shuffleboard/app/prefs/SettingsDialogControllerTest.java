@@ -1,22 +1,18 @@
 package edu.wpi.first.shuffleboard.app.prefs;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import edu.wpi.first.shuffleboard.api.prefs.Category;
 import edu.wpi.first.shuffleboard.api.prefs.Group;
 import edu.wpi.first.shuffleboard.api.prefs.Setting;
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
-
-import org.controlsfx.control.PropertySheet;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
-import org.testfx.framework.junit5.ApplicationTest;
-import org.testfx.matcher.control.TextMatchers;
-
 import java.util.Collections;
 import java.util.Set;
-
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.collections.ObservableList;
@@ -27,11 +23,11 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
-
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
+import org.controlsfx.control.PropertySheet;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.testfx.framework.junit5.ApplicationTest;
+import org.testfx.matcher.control.TextMatchers;
 
 @Tag("UI")
 public class SettingsDialogControllerTest extends ApplicationTest {
@@ -50,16 +46,17 @@ public class SettingsDialogControllerTest extends ApplicationTest {
 
   @Test
   public void testSingleCategory() {
-    Category category = Category.of("Category",
-        Group.of("Group 1",
-            Setting.of("Setting 1", new SimpleBooleanProperty()),
-            Setting.of("Setting 2", new SimpleBooleanProperty())
-        ),
-        Group.of("Group 2",
-            Setting.of("Setting 3", new SimpleDoubleProperty()),
-            Setting.of("Setting 4", new SimpleDoubleProperty())
-        )
-    );
+    Category category =
+        Category.of(
+            "Category",
+            Group.of(
+                "Group 1",
+                Setting.of("Setting 1", new SimpleBooleanProperty()),
+                Setting.of("Setting 2", new SimpleBooleanProperty())),
+            Group.of(
+                "Group 2",
+                Setting.of("Setting 3", new SimpleDoubleProperty()),
+                Setting.of("Setting 4", new SimpleDoubleProperty())));
 
     FxUtils.runOnFxThread(() -> controller.setRootCategories(Collections.singleton(category)));
 
@@ -77,18 +74,22 @@ public class SettingsDialogControllerTest extends ApplicationTest {
 
     // Check group headers
     Set<Label> headers = lookup(".h5").queryAll();
-    assertAll("Check header text",
-        () -> assertEquals("Group 1", Iterables.get(headers, 0).getText(), "Different first header text"),
-        () -> assertEquals("Group 2", Iterables.get(headers, 1).getText(), "Different second header text")
-    );
+    assertAll(
+        "Check header text",
+        () ->
+            assertEquals(
+                "Group 1", Iterables.get(headers, 0).getText(), "Different first header text"),
+        () ->
+            assertEquals(
+                "Group 2", Iterables.get(headers, 1).getText(), "Different second header text"));
 
     // Check settings editors are present
-    assertAll("Check presence of editors for the settings",
+    assertAll(
+        "Check presence of editors for the settings",
         () -> assertNotNull(lookup(TextMatchers.hasText("Setting 1")).query()),
         () -> assertNotNull(lookup(TextMatchers.hasText("Setting 2")).query()),
         () -> assertNotNull(lookup(TextMatchers.hasText("Setting 3")).query()),
-        () -> assertNotNull(lookup(TextMatchers.hasText("Setting 4")).query())
-    );
+        () -> assertNotNull(lookup(TextMatchers.hasText("Setting 4")).query()));
   }
 
   @Test
@@ -97,7 +98,8 @@ public class SettingsDialogControllerTest extends ApplicationTest {
     Category categoryB = Category.of("B");
     Category categoryC = Category.of("C");
 
-    FxUtils.runOnFxThread(() -> controller.setRootCategories(ImmutableList.of(categoryA, categoryB, categoryC)));
+    FxUtils.runOnFxThread(
+        () -> controller.setRootCategories(ImmutableList.of(categoryA, categoryB, categoryC)));
 
     waitForFxEvents();
 
@@ -109,7 +111,10 @@ public class SettingsDialogControllerTest extends ApplicationTest {
     assertEquals(categoryB, children.get(1).getValue());
     assertEquals(categoryC, children.get(2).getValue());
 
-    assertEquals(children.get(0), tree.getSelectionModel().getSelectedItem(), "The first child should be selected");
+    assertEquals(
+        children.get(0),
+        tree.getSelectionModel().getSelectedItem(),
+        "The first child should be selected");
   }
 
   @Test
@@ -124,7 +129,7 @@ public class SettingsDialogControllerTest extends ApplicationTest {
     waitForFxEvents();
 
     // Category Hierarchy
-    //-------------------
+    // -------------------
     // Root A
     //  - Sub A2
     //    - Sub A1
@@ -151,5 +156,4 @@ public class SettingsDialogControllerTest extends ApplicationTest {
     assertEquals(1, rootBItem.getChildren().size());
     assertEquals(subA1, rootBItem.getChildren().get(0).getValue());
   }
-
 }

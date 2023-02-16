@@ -1,10 +1,9 @@
 package edu.wpi.first.shuffleboard.api.sources.recording.serialization;
 
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import org.junit.jupiter.api.Test;
 
 public class BooleanArrayAdapterTest extends AbstractAdapterTest<boolean[]> {
 
@@ -30,8 +29,8 @@ public class BooleanArrayAdapterTest extends AbstractAdapterTest<boolean[]> {
   public void testEncode() {
     final boolean[] array = {true, false, true, false};
     final byte[] expected = {
-        0, 0, 0, 4,
-        1, 0, 1, 0
+      0, 0, 0, 4,
+      1, 0, 1, 0
     };
     final byte[] serialized = adapter.serialize(array);
     assertArrayEquals(expected, serialized);
@@ -43,5 +42,4 @@ public class BooleanArrayAdapterTest extends AbstractAdapterTest<boolean[]> {
     final boolean[] expected = {true, false, true, false};
     assertArrayEquals(expected, adapter.deserialize(buffer, 0));
   }
-
 }

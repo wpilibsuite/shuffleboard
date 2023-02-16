@@ -133,6 +133,13 @@ allprojects {
             indentWithSpaces()
             endWithNewline()
         }
+        java {
+            toggleOffOn()
+            googleJavaFormat()
+            removeUnusedImports()
+            trimTrailingWhitespace()
+            endWithNewline()
+        }
         format("extraneous") {
             target("*.sh", "*.yml")
             trimTrailingWhitespace()

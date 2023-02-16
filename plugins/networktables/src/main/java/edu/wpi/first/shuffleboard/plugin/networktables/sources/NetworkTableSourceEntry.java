@@ -1,18 +1,13 @@
 package edu.wpi.first.shuffleboard.plugin.networktables.sources;
 
-
+import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceEntry;
-
-import edu.wpi.first.networktables.NetworkTable;
-
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.StringJoiner;
 
-/**
- * A simple value class for information about an entry in NetworkTables.
- */
+/** A simple value class for information about an entry in NetworkTables. */
 public final class NetworkTableSourceEntry implements SourceEntry {
 
   private final String key;
@@ -23,7 +18,7 @@ public final class NetworkTableSourceEntry implements SourceEntry {
   /**
    * Creates a new network table source entry.
    *
-   * @param key   the network table key the source would be for
+   * @param key the network table key the source would be for
    * @param value the value that the source would contain
    */
   public NetworkTableSourceEntry(String key, Object value) {
@@ -113,7 +108,8 @@ public final class NetworkTableSourceEntry implements SourceEntry {
 
   @Override
   public String toString() {
-    return String.format("NetworkTableSourceEntry(key='%s', displayString='%s')", key, displayString);
+    return String.format(
+        "NetworkTableSourceEntry(key='%s', displayString='%s')", key, displayString);
   }
 
   @Override

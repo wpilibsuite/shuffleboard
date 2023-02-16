@@ -3,25 +3,30 @@ package edu.wpi.first.shuffleboard.api.sources.recording.serialization;
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.sources.recording.Serialization;
-
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-/**
- * Keeps track of data serializers to use for saving and loading data recording files.
- */
+/** Keeps track of data serializers to use for saving and loading data recording files. */
 public final class Serializers {
 
   private static final Map<DataType, TypeAdapter> serializers = new HashMap<>();
 
   static {
-    add(new SimpleAdapter<>(DataTypes.Number,
-        n -> Serialization.toByteArray(n.doubleValue()), Serialization::readDouble, Serialization.SIZE_OF_DOUBLE));
-    add(new SimpleAdapter<>(DataTypes.Boolean,
-        Serialization::toByteArray, Serialization::readBoolean, Serialization.SIZE_OF_BOOL));
+    add(
+        new SimpleAdapter<>(
+            DataTypes.Number,
+            n -> Serialization.toByteArray(n.doubleValue()),
+            Serialization::readDouble,
+            Serialization.SIZE_OF_DOUBLE));
+    add(
+        new SimpleAdapter<>(
+            DataTypes.Boolean,
+            Serialization::toByteArray,
+            Serialization::readBoolean,
+            Serialization.SIZE_OF_BOOL));
     add(new BooleanArrayAdapter());
     add(new NumberArrayAdapter());
     add(new StringAdapter());
@@ -29,8 +34,7 @@ public final class Serializers {
     add(new ByteArrayAdapter());
   }
 
-  private Serializers() {
-  }
+  private Serializers() {}
 
   /**
    * Adds the given type adapter.
@@ -62,15 +66,14 @@ public final class Serializers {
     return serializers.get(type);
   }
 
-  /**
-   * Checks if there is an adapter for the given data type.
-   */
+  /** Checks if there is an adapter for the given data type. */
   public static boolean hasSerializer(DataType<?> type) {
     return serializers.containsKey(type);
   }
 
   /**
-   * Gets an optional containing the adapter for the given data type, or an empty optional if there is no such adapter.
+   * Gets an optional containing the adapter for the given data type, or an empty optional if there
+   * is no such adapter.
    */
   public static <T> Optional<TypeAdapter<T>> getOptional(DataType<T> type) {
     return Optional.ofNullable(get(type));
@@ -83,5 +86,4 @@ public final class Serializers {
   public static Collection<TypeAdapter> getAdapters() {
     return serializers.values();
   }
-
 }

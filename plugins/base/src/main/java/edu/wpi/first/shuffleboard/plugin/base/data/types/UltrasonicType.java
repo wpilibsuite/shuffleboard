@@ -3,7 +3,6 @@ package edu.wpi.first.shuffleboard.plugin.base.data.types;
 import edu.wpi.first.shuffleboard.api.data.ComplexDataType;
 import edu.wpi.first.shuffleboard.api.util.Maps;
 import edu.wpi.first.shuffleboard.plugin.base.data.UltrasonicData;
-
 import java.util.Map;
 import java.util.function.Function;
 
@@ -17,9 +16,7 @@ public final class UltrasonicType extends ComplexDataType<UltrasonicData> {
 
   @Override
   public Function<Map<String, Object>, UltrasonicData> fromMap() {
-    return map -> new UltrasonicData(
-        Maps.getOrDefault(map, "Value", 0.0)
-    );
+    return map -> new UltrasonicData(Maps.getOrDefault(map, "Value", 0.0));
   }
 
   @Override

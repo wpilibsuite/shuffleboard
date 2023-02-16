@@ -5,17 +5,15 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/**
- * Describes a widget.
- */
+/** Describes a widget. */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Description {
 
   /**
    * The name of the widget. This must be unique among all widgets. If a widget is already
-   * registered with the same name, an exception will be thrown when attempting to register
-   * the widget.
+   * registered with the same name, an exception will be thrown when attempting to register the
+   * widget.
    */
   String name();
 
@@ -24,9 +22,6 @@ public @interface Description {
    */
   String summary() default "";
 
-  /**
-   * The types for the sources the widget can handle.
-   */
+  /** The types for the sources the widget can handle. */
   Class<?>[] dataTypes();
-
 }

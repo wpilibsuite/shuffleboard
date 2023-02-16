@@ -2,16 +2,9 @@ package edu.wpi.first.shuffleboard.api.components;
 
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
-
-import org.controlsfx.control.PropertySheet;
-import org.controlsfx.control.ToggleSwitch;
-import org.controlsfx.property.editor.AbstractPropertyEditor;
-import org.controlsfx.property.editor.PropertyEditor;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
-
 import javafx.beans.InvalidationListener;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Insets;
@@ -28,10 +21,15 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import org.controlsfx.control.PropertySheet;
+import org.controlsfx.control.ToggleSwitch;
+import org.controlsfx.property.editor.AbstractPropertyEditor;
+import org.controlsfx.property.editor.PropertyEditor;
 
 /**
- * Custom skin for {@link ExtendedPropertySheet}. This is very similar to the default skin, but has a different display
- * for {@link PropertySheet.Mode#CATEGORY} that displays categories with static headings instead of an accordion pane.
+ * Custom skin for {@link ExtendedPropertySheet}. This is very similar to the default skin, but has
+ * a different display for {@link PropertySheet.Mode#CATEGORY} that displays categories with static
+ * headings instead of an accordion pane.
  */
 @SuppressWarnings("PMD.DefaultPackage")
 class ExtendedPropertySheetSkin extends SkinBase<ExtendedPropertySheet> {
@@ -75,19 +73,22 @@ class ExtendedPropertySheetSkin extends SkinBase<ExtendedPropertySheet> {
         }
         int[] row = {0};
         PropertyPane pane = new PropertyPane(Collections.emptyList());
-        categories.asMap().forEach((group, items) -> {
-          Label label = new Label(group);
-          label.getStyleClass().add("h5");
-          VBox box = new VBox(label, new Separator());
-          GridPane.setMargin(box, new Insets(15, 0, 0, 0));
-          box.setFillWidth(true);
-          pane.add(box, 0, row[0], 2, 1);
-          row[0]++;
-          for (PropertySheet.Item item : items) {
-            addEditorForItem(pane, row[0], item);
-            row[0]++;
-          }
-        });
+        categories
+            .asMap()
+            .forEach(
+                (group, items) -> {
+                  Label label = new Label(group);
+                  label.getStyleClass().add("h5");
+                  VBox box = new VBox(label, new Separator());
+                  GridPane.setMargin(box, new Insets(15, 0, 0, 0));
+                  box.setFillWidth(true);
+                  pane.add(box, 0, row[0], 2, 1);
+                  row[0]++;
+                  for (PropertySheet.Item item : items) {
+                    addEditorForItem(pane, row[0], item);
+                    row[0]++;
+                  }
+                });
         container.getChildren().add(pane);
         return container;
       case NAME:
@@ -122,7 +123,8 @@ class ExtendedPropertySheetSkin extends SkinBase<ExtendedPropertySheet> {
     propertyPane.add(editor, 1, row);
 
     if (!(editor instanceof ToggleSwitch)) {
-      // Toggle switches with HGrow set are placed to the far right of the pane, putting them very far
+      // Toggle switches with HGrow set are placed to the far right of the pane, putting them very
+      // far
       // away from the name of the item they edit.
       GridPane.setHgrow(editor, Priority.ALWAYS);
     }
@@ -140,10 +142,10 @@ class ExtendedPropertySheetSkin extends SkinBase<ExtendedPropertySheet> {
       setPadding(new Insets(5, 15, 5, 15 + nestingLevel * 10));
       getStyleClass().add("property-pane");
       setItems(properties);
-      getColumnConstraints().addAll(
-          new ColumnConstraints(MIN_COLUMN_WIDTH, MIN_COLUMN_WIDTH * 1.5, Double.MAX_VALUE),
-          new ColumnConstraints(MIN_COLUMN_WIDTH, MIN_COLUMN_WIDTH, Double.MAX_VALUE)
-      );
+      getColumnConstraints()
+          .addAll(
+              new ColumnConstraints(MIN_COLUMN_WIDTH, MIN_COLUMN_WIDTH * 1.5, Double.MAX_VALUE),
+              new ColumnConstraints(MIN_COLUMN_WIDTH, MIN_COLUMN_WIDTH, Double.MAX_VALUE));
       setMinWidth(MIN_COLUMN_WIDTH * 2.1);
       setPrefWidth(MIN_COLUMN_WIDTH * 2.6);
     }
@@ -169,7 +171,6 @@ class ExtendedPropertySheetSkin extends SkinBase<ExtendedPropertySheet> {
 
         row++;
       }
-
     }
 
     @SuppressWarnings("unchecked")
@@ -185,8 +186,9 @@ class ExtendedPropertySheetSkin extends SkinBase<ExtendedPropertySheet> {
     }
 
     /**
-     * The default editor for properties whose types do not have an editor provided by the property sheet's
-     * {@link PropertySheet#propertyEditorFactory() editor factory}. This editor is read-only.
+     * The default editor for properties whose types do not have an editor provided by the property
+     * sheet's {@link PropertySheet#propertyEditorFactory() editor factory}. This editor is
+     * read-only.
      */
     private class DefaultEditor extends AbstractPropertyEditor<Object, TextField> {
 
@@ -196,20 +198,16 @@ class ExtendedPropertySheetSkin extends SkinBase<ExtendedPropertySheet> {
         getEditor().setDisable(true);
       }
 
-      /**
-       * {@inheritDoc}
-       */
+      /** {@inheritDoc} */
       @Override
       protected ObservableValue<Object> getObservableValue() {
         return (ObservableValue<Object>) (Object) getEditor().textProperty();
       }
 
-      /**
-       * {@inheritDoc}
-       */
+      /** {@inheritDoc} */
       @Override
       public void setValue(Object value) {
-        getEditor().setText(value == null ? "" : value.toString()); //$NON-NLS-1$
+        getEditor().setText(value == null ? "" : value.toString()); // $NON-NLS-1$
       }
     }
   }

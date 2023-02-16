@@ -1,13 +1,9 @@
 package edu.wpi.first.shuffleboard.api.sources.recording;
 
-
 import edu.wpi.first.shuffleboard.api.data.DataType;
-
 import java.util.Objects;
 
-/**
- * Represents an immutable view of the value of a data source at a specific instant.
- */
+/** Represents an immutable view of the value of a data source at a specific instant. */
 public final class TimestampedData implements RecordingEntry, Comparable<TimestampedData> {
 
   private final String sourceId;
@@ -18,9 +14,9 @@ public final class TimestampedData implements RecordingEntry, Comparable<Timesta
   /**
    * Creates a new time stamped data object.
    *
-   * @param sourceId  the ID of the source corresponding to this data
-   * @param dataType  the type of this data
-   * @param data      the actual data
+   * @param sourceId the ID of the source corresponding to this data
+   * @param dataType the type of this data
+   * @param data the actual data
    * @param timestamp the timestamp for when the data was recorded
    */
   public TimestampedData(String sourceId, DataType dataType, Object data, long timestamp) {
@@ -68,10 +64,10 @@ public final class TimestampedData implements RecordingEntry, Comparable<Timesta
     return Objects.hash(sourceId, dataType, data, timestamp);
   }
 
-
   @Override
   public String toString() {
-    return String.format("TimeStampedData(sourceId=%s, dataType=%s, data=%s, timestamp=%s)",
+    return String.format(
+        "TimeStampedData(sourceId=%s, dataType=%s, data=%s, timestamp=%s)",
         sourceId, dataType, data, timestamp);
   }
 
@@ -83,5 +79,4 @@ public final class TimestampedData implements RecordingEntry, Comparable<Timesta
       return this.timestamp > other.timestamp ? 1 : -1;
     }
   }
-
 }

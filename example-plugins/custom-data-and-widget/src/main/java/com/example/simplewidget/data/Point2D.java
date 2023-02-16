@@ -1,12 +1,9 @@
 package com.example.simplewidget.data;
 
 import edu.wpi.first.shuffleboard.api.data.ComplexData;
-
 import java.util.Map;
 
-/**
- * Represents a single point in two-dimensional space.
- */
+/** Represents a single point in two-dimensional space. */
 public final class Point2D extends ComplexData<Point2D> {
 
   private final double x;
@@ -23,23 +20,20 @@ public final class Point2D extends ComplexData<Point2D> {
     this.y = y;
   }
 
-  /**
-   * Gets the X-coordinate of this point.
-   */
+  /** Gets the X-coordinate of this point. */
   public double getX() {
     return x;
   }
 
-  /**
-   * Gets the Y-coordinate of this point.
-   */
+  /** Gets the Y-coordinate of this point. */
   public double getY() {
     return y;
   }
 
   @Override
   public String toHumanReadableString() {
-    // Generates a string formatted like: (x, y) for data recordings converted to a human-readable format
+    // Generates a string formatted like: (x, y) for data recordings converted to a human-readable
+    // format
     return "(" + x + ", " + y + ")";
   }
 

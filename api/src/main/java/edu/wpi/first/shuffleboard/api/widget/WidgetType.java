@@ -1,21 +1,17 @@
 package edu.wpi.first.shuffleboard.api.widget;
 
 import edu.wpi.first.shuffleboard.api.data.DataType;
-
 import java.util.Set;
 
-/**
- * WidgetType extends ComponentType with Widget-specific metadata.
- */
+/** WidgetType extends ComponentType with Widget-specific metadata. */
 public interface WidgetType<W extends Widget> extends ComponentType<W> {
-  /**
-   * Get data types the widget should be suggested for.
-   */
+  /** Get data types the widget should be suggested for. */
   @Override
   Set<DataType> getDataTypes();
 
   /**
-   * Creates a widget type for a widget class that has a {@link Description @Description} annotation.
+   * Creates a widget type for a widget class that has a {@link Description @Description}
+   * annotation.
    *
    * @param widgetClass the widget class
    */
@@ -24,13 +20,15 @@ public interface WidgetType<W extends Widget> extends ComponentType<W> {
     return new AbstractWidgetType<T>(widgetClass.getAnnotation(Description.class)) {
       @Override
       public T get() {
-        return Components.viewFor(widgetClass).orElseGet(() -> {
-          try {
-            return widgetClass.newInstance();
-          } catch (Exception e) {
-            throw new RuntimeException("The widget class could not be instantiated", e);
-          }
-        });
+        return Components.viewFor(widgetClass)
+            .orElseGet(
+                () -> {
+                  try {
+                    return widgetClass.newInstance();
+                  } catch (Exception e) {
+                    throw new RuntimeException("The widget class could not be instantiated", e);
+                  }
+                });
       }
 
       @Override
@@ -39,5 +37,4 @@ public interface WidgetType<W extends Widget> extends ComponentType<W> {
       }
     };
   }
-
 }

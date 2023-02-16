@@ -2,15 +2,12 @@ package edu.wpi.first.shuffleboard.app;
 
 import java.util.Map;
 import java.util.WeakHashMap;
-
 import javafx.scene.Cursor;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Region;
 
-/**
- * Helper class for resizing the left drawer.
- */
+/** Helper class for resizing the left drawer. */
 final class DrawerResizer {
 
   private final Region drawer;
@@ -60,7 +57,6 @@ final class DrawerResizer {
     }
   }
 
-
   private void mouseDragged(MouseEvent event) {
     if (!dragging) {
       return;
@@ -71,7 +67,6 @@ final class DrawerResizer {
     drawer.setMinWidth(newWidth);
     drawer.setMaxWidth(newWidth);
   }
-
 
   private void mouseReleased(MouseEvent event) { // NOPMD unused parameter
     if (!dragging) {

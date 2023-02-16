@@ -1,5 +1,15 @@
 package edu.wpi.first.shuffleboard.api.util;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.time.Duration;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.stream.Stream;
 import javafx.application.Platform;
 import javafx.scene.control.MenuItem;
 import javafx.scene.paint.Color;
@@ -11,17 +21,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.testfx.framework.junit5.ApplicationTest;
-
-import java.time.Duration;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.stream.Stream;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class FxUtilsTest extends UtilityClassTest<FxUtils> {
 
@@ -35,7 +34,8 @@ public class FxUtilsTest extends UtilityClassTest<FxUtils> {
     }
 
     @Test
-    public void runOnFxThreadTest() throws InterruptedException, ExecutionException, TimeoutException {
+    public void runOnFxThreadTest()
+        throws InterruptedException, ExecutionException, TimeoutException {
       CompletableFuture<Boolean> isOnFxThread = new CompletableFuture<>();
       FxUtils.runOnFxThread(() -> isOnFxThread.complete(Platform.isFxApplicationThread()));
 
@@ -43,13 +43,15 @@ public class FxUtilsTest extends UtilityClassTest<FxUtils> {
     }
 
     @Test
-    public void runOnFxThreadAlreadyOnTest() throws InterruptedException, ExecutionException, TimeoutException {
+    public void runOnFxThreadAlreadyOnTest()
+        throws InterruptedException, ExecutionException, TimeoutException {
       CompletableFuture<Boolean> isOnFxThread = new CompletableFuture<>();
-      Platform.runLater(() -> FxUtils.runOnFxThread(() -> isOnFxThread.complete(Platform.isFxApplicationThread())));
+      Platform.runLater(
+          () ->
+              FxUtils.runOnFxThread(() -> isOnFxThread.complete(Platform.isFxApplicationThread())));
 
       assertTrue(isOnFxThread.get(5, TimeUnit.SECONDS));
     }
-
   }
 
   @Test
@@ -68,8 +70,7 @@ public class FxUtilsTest extends UtilityClassTest<FxUtils> {
         Arguments.of("#00FF00FF", Color.LIME),
         Arguments.of("#0000FFFF", Color.BLUE),
         Arguments.of("#FFFFFFFF", Color.WHITE),
-        Arguments.of("#FFFFFF00", new Color(1.0, 1.0, 1.0, 0.0))
-    );
+        Arguments.of("#FFFFFF00", new Color(1.0, 1.0, 1.0, 0.0)));
   }
 
   @ParameterizedTest
@@ -77,5 +78,4 @@ public class FxUtilsTest extends UtilityClassTest<FxUtils> {
   public void toHexStringTest(String expectedResult, Color color) {
     assertEquals(expectedResult, FxUtils.toHexString(color));
   }
-
 }

@@ -4,10 +4,12 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
 /**
- * An implementation of {@code ImageView} that has proper resizing code. The default implementation tends to not
- * respect the fitWidth/fitHeight properties if those properties are bound to the size of a parent container.
+ * An implementation of {@code ImageView} that has proper resizing code. The default implementation
+ * tends to not respect the fitWidth/fitHeight properties if those properties are bound to the size
+ * of a parent container.
  *
- * <p>This code is taken from <a href="https://stackoverflow.com/a/35202191">https://stackoverflow.com/a/35202191</a>
+ * <p>This code is taken from <a
+ * href="https://stackoverflow.com/a/35202191">https://stackoverflow.com/a/35202191</a>
  */
 public class ResizableImageView extends ImageView {
 
@@ -63,5 +65,4 @@ public class ResizableImageView extends ImageView {
     setFitWidth(width);
     setFitHeight(height);
   }
-
 }

@@ -1,20 +1,18 @@
 package edu.wpi.first.shuffleboard.app;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
+
 import edu.wpi.first.shuffleboard.api.util.GridPoint;
 import edu.wpi.first.shuffleboard.api.widget.TileSize;
 import edu.wpi.first.shuffleboard.app.components.Tile;
 import edu.wpi.first.shuffleboard.app.components.WidgetPane;
 import edu.wpi.first.shuffleboard.app.components.WidgetTile;
-
+import javafx.stage.Stage;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.testfx.framework.junit5.ApplicationTest;
-
-import javafx.stage.Stage;
-
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
 
 @Tag("UI")
 public class TileMoverTest extends ApplicationTest {
@@ -50,8 +48,7 @@ public class TileMoverTest extends ApplicationTest {
     assertAll(
         () -> assertEquals(new GridPoint(0, 0), pane.getTileLayout(first).origin),
         () -> assertEquals(new GridPoint(1, 0), pane.getTileLayout(second).origin),
-        () -> assertEquals(new GridPoint(2, 0), pane.getTileLayout(third).origin)
-    );
+        () -> assertEquals(new GridPoint(2, 0), pane.getTileLayout(third).origin));
   }
 
   @Test
@@ -74,8 +71,7 @@ public class TileMoverTest extends ApplicationTest {
     assertAll(
         () -> assertEquals(new GridPoint(0, 0), pane.getTileLayout(first).origin),
         () -> assertEquals(new GridPoint(0, 1), pane.getTileLayout(second).origin),
-        () -> assertEquals(new GridPoint(0, 2), pane.getTileLayout(third).origin)
-    );
+        () -> assertEquals(new GridPoint(0, 2), pane.getTileLayout(third).origin));
   }
 
   @Test
@@ -98,8 +94,7 @@ public class TileMoverTest extends ApplicationTest {
         () -> assertEquals(new GridPoint(0, 0), pane.getTileLayout(first).origin),
         () -> assertEquals(ONE_BY_ONE, pane.getTileLayout(first).size),
         () -> assertEquals(new GridPoint(1, 0), pane.getTileLayout(second).origin),
-        () -> assertEquals(ONE_BY_ONE, pane.getTileLayout(second).size)
-    );
+        () -> assertEquals(ONE_BY_ONE, pane.getTileLayout(second).size));
   }
 
   @Test
@@ -121,8 +116,7 @@ public class TileMoverTest extends ApplicationTest {
         () -> assertEquals(new GridPoint(0, 0), pane.getTileLayout(first).origin),
         () -> assertEquals(ONE_BY_ONE, pane.getTileLayout(first).size),
         () -> assertEquals(new GridPoint(0, 1), pane.getTileLayout(second).origin),
-        () -> assertEquals(ONE_BY_ONE, pane.getTileLayout(second).size)
-    );
+        () -> assertEquals(ONE_BY_ONE, pane.getTileLayout(second).size));
   }
 
   @Test
@@ -145,8 +139,7 @@ public class TileMoverTest extends ApplicationTest {
         () -> assertEquals(new GridPoint(0, 0), pane.getTileLayout(first).origin),
         () -> assertEquals(TWO_BY_ONE, pane.getTileLayout(first).size),
         () -> assertEquals(new GridPoint(2, 0), pane.getTileLayout(second).origin),
-        () -> assertEquals(ONE_BY_ONE, pane.getTileLayout(second).size)
-    );
+        () -> assertEquals(ONE_BY_ONE, pane.getTileLayout(second).size));
   }
 
   @Test
@@ -168,8 +161,6 @@ public class TileMoverTest extends ApplicationTest {
         () -> assertEquals(new GridPoint(0, 0), pane.getTileLayout(first).origin),
         () -> assertEquals(ONE_BY_TWO, pane.getTileLayout(first).size),
         () -> assertEquals(new GridPoint(0, 2), pane.getTileLayout(second).origin),
-        () -> assertEquals(ONE_BY_ONE, pane.getTileLayout(second).size)
-    );
+        () -> assertEquals(ONE_BY_ONE, pane.getTileLayout(second).size));
   }
-
 }

@@ -14,5 +14,4 @@ public final class NumberType extends SimpleDataType<Number> {
   public Double getDefaultValue() {
     return 0.0;
   }
-
 }

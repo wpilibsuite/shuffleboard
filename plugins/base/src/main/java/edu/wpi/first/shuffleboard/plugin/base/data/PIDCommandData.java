@@ -2,7 +2,6 @@ package edu.wpi.first.shuffleboard.plugin.base.data;
 
 import edu.wpi.first.shuffleboard.api.data.ComplexData;
 import edu.wpi.first.shuffleboard.api.util.Maps;
-
 import java.util.Map;
 
 public final class PIDCommandData extends ComplexData<PIDCommandData> {
@@ -10,13 +9,14 @@ public final class PIDCommandData extends ComplexData<PIDCommandData> {
   private final CommandData commandData;
   private final PIDControllerData pidControllerData;
 
-  public PIDCommandData(String name,
-                        boolean running,
-                        boolean isParented,
-                        double p,
-                        double i,
-                        double d,
-                        double setpoint) {
+  public PIDCommandData(
+      String name,
+      boolean running,
+      boolean isParented,
+      double p,
+      double i,
+      double d,
+      double setpoint) {
     commandData = new CommandData(name, running, isParented);
     pidControllerData = new PIDControllerData(p, i, d, setpoint);
   }
@@ -85,6 +85,10 @@ public final class PIDCommandData extends ComplexData<PIDCommandData> {
 
   @Override
   public String toHumanReadableString() {
-    return "running=" + isRunning() + ", controller=(" + getPidControllerData().toHumanReadableString() + ")";
+    return "running="
+        + isRunning()
+        + ", controller=("
+        + getPidControllerData().toHumanReadableString()
+        + ")";
   }
 }

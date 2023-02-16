@@ -1,28 +1,42 @@
 package edu.wpi.first.shuffleboard.api.sources.recording;
 
-import edu.wpi.first.shuffleboard.api.data.DataTypes;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import edu.wpi.first.shuffleboard.api.data.DataTypes;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junitpioneer.jupiter.TempDirectory;
 import org.junitpioneer.jupiter.TempDirectory.TempDir;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 public class SerializationTest {
 
-  private static final byte[] fooBarBytes = new byte[]{
-      0, 0, 0, 2,                // array length
-      0, 0, 0, 3, 'f', 'o', 'o', // "foo", encoded with length
-      0, 0, 0, 3, 'b', 'a', 'r'  // "bar", encoded with length
-  };
+  private static final byte[] fooBarBytes =
+      new byte[] {
+        0,
+        0,
+        0,
+        2, // array length
+        0,
+        0,
+        0,
+        3,
+        'f',
+        'o',
+        'o', // "foo", encoded with length
+        0,
+        0,
+        0,
+        3,
+        'b',
+        'a',
+        'r' // "bar", encoded with length
+      };
 
   // Grinning emoji, four bytes
   private static final String grinningEmoji = "😁";
@@ -31,7 +45,7 @@ public class SerializationTest {
   public void testIntToBytes() {
     final int val = 0x007F10FF;
     byte[] bytes = Serialization.toByteArray(val);
-    assertArrayEquals(new byte[]{0x00, 0x7F, 0x10, (byte) 0xFF}, bytes);
+    assertArrayEquals(new byte[] {0x00, 0x7F, 0x10, (byte) 0xFF}, bytes);
   }
 
   @Test
@@ -46,7 +60,16 @@ public class SerializationTest {
     final long val = Long.MAX_VALUE;
     byte[] bytes = Serialization.toByteArray(val);
     assertArrayEquals(
-        new byte[]{0x7F, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF},
+        new byte[] {
+          0x7F,
+          (byte) 0xFF,
+          (byte) 0xFF,
+          (byte) 0xFF,
+          (byte) 0xFF,
+          (byte) 0xFF,
+          (byte) 0xFF,
+          (byte) 0xFF
+        },
         bytes);
   }
 
@@ -60,8 +83,8 @@ public class SerializationTest {
 
   @Test
   public void testBooleanToBytes() {
-    assertArrayEquals(new byte[]{1}, Serialization.toByteArray(true));
-    assertArrayEquals(new byte[]{0}, Serialization.toByteArray(false));
+    assertArrayEquals(new byte[] {1}, Serialization.toByteArray(true));
+    assertArrayEquals(new byte[] {0}, Serialization.toByteArray(false));
   }
 
   @Test
@@ -124,7 +147,8 @@ public class SerializationTest {
     final Recording loadedUpdate = Serialization.loadRecording(file);
     assertEquals(data, loadedUpdate.getData(), "First update was wrong");
 
-    // Second update: add two more booleans. Makes sure there's no constant pool duplication/overwriting
+    // Second update: add two more booleans. Makes sure there's no constant pool
+    // duplication/overwriting
     TimestampedData newBoolean = new TimestampedData("x", DataTypes.Boolean, false, 3);
     TimestampedData anotherBool = new TimestampedData("y", DataTypes.Boolean, true, 4);
     data.add(newBoolean);
@@ -149,8 +173,7 @@ public class SerializationTest {
     Recording loaded = Serialization.loadRecording(file);
     assertAll(
         () -> assertEquals(originalData, loaded.getData(), "Data was wrong"),
-        () -> assertEquals(originalMarkers, loaded.getMarkers(), "Markers were wrong")
-    );
+        () -> assertEquals(originalMarkers, loaded.getMarkers(), "Markers were wrong"));
   }
 
   @Test
@@ -166,8 +189,7 @@ public class SerializationTest {
     Recording loaded = Serialization.loadRecording(file);
     assertAll(
         () -> assertEquals(snapshot.getData(), loaded.getData(), "Data was wrong"),
-        () -> assertEquals(snapshot.getMarkers(), loaded.getMarkers(), "Markers were wrong")
-    );
+        () -> assertEquals(snapshot.getMarkers(), loaded.getMarkers(), "Markers were wrong"));
   }
 
   @Test
@@ -192,8 +214,9 @@ public class SerializationTest {
     Recording loaded = Serialization.loadRecording(file);
     assertAll(
         () -> assertEquals(List.of(data), loaded.getData(), "Data was wrong"),
-        () -> assertEquals(List.of(marker1, marker2, marker3), loaded.getMarkers(), "Markers were wrong")
-    );
+        () ->
+            assertEquals(
+                List.of(marker1, marker2, marker3), loaded.getMarkers(), "Markers were wrong"));
   }
 
   @Test
@@ -207,15 +230,10 @@ public class SerializationTest {
 
   @Test
   public void testMultiByteCharsInStringArray() {
-    String[] strings = {
-        "®",
-        "©",
-        grinningEmoji
-    };
+    String[] strings = {"®", "©", grinningEmoji};
     byte[] bytes = Serialization.toByteArray(strings);
     assertEquals(24, bytes.length);
     String[] read = Serialization.readStringArray(bytes, 0);
     assertArrayEquals(strings, read);
   }
-
 }

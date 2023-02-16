@@ -1,21 +1,20 @@
 package edu.wpi.first.shuffleboard.api;
 
 /**
- * Parses arbitrary input and returns the result. This is used to set the values of
- * {@link edu.wpi.first.shuffleboard.api.widget.Component Component} settings provided by a remote definition (such as
- * a FRC robot program).
+ * Parses arbitrary input and returns the result. This is used to set the values of {@link
+ * edu.wpi.first.shuffleboard.api.widget.Component Component} settings provided by a remote
+ * definition (such as a FRC robot program).
  *
  * @param <T> the type of values this parser provides
  */
 public interface PropertyParser<T> {
 
   /**
-   * Creates a new property parser for an enum type. Valid inputs are {@code E}, {@code String} (matching the enum
-   * constant name), and {@code Integer} (enum ordinal).
+   * Creates a new property parser for an enum type. Valid inputs are {@code E}, {@code String}
+   * (matching the enum constant name), and {@code Integer} (enum ordinal).
    *
    * @param type the enum type to create a parser for
-   * @param <E>  the type of the enum class
-   *
+   * @param <E> the type of the enum class
    * @return a parser that outputs constants from the given enum type
    */
   static <E extends Enum<E>> PropertyParser<E> forEnum(Class<E> type) {
@@ -30,9 +29,7 @@ public interface PropertyParser<T> {
 
       @Override
       public boolean canParse(Object input) {
-        return type.isInstance(input)
-            || input instanceof String
-            || input instanceof Integer;
+        return type.isInstance(input) || input instanceof String || input instanceof Integer;
       }
 
       @Override
@@ -55,16 +52,13 @@ public interface PropertyParser<T> {
     };
   }
 
-  /**
-   * Gets the type of the output of the parser.
-   */
+  /** Gets the type of the output of the parser. */
   Class<T> outputType();
 
   /**
    * Checks if the given input is supported by this parser.
    *
    * @param input the input to check
-   *
    * @return true if the input can be {@link #parse(Object) parsed}, false if not
    */
   boolean canParse(Object input);
@@ -73,7 +67,6 @@ public interface PropertyParser<T> {
    * Parses the given input and returns the result.
    *
    * @param input the value to parse
-   *
    * @return the parsed value
    */
   T parse(Object input);

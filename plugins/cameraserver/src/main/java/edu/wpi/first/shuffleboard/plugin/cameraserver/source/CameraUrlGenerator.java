@@ -1,23 +1,19 @@
 package edu.wpi.first.shuffleboard.plugin.cameraserver.source;
 
-import edu.wpi.first.shuffleboard.plugin.cameraserver.data.Resolution;
-
 import com.google.common.annotations.VisibleForTesting;
-
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
+import edu.wpi.first.shuffleboard.plugin.cameraserver.data.Resolution;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
-/**
- * Generates parameterized URLs for an HTTP camera.
- */
+/** Generates parameterized URLs for an HTTP camera. */
 public final class CameraUrlGenerator {
 
   private final CameraServerSource source;
@@ -97,19 +93,20 @@ public final class CameraUrlGenerator {
         if (commandSplit.length != 2) {
           continue;
         }
-        commands.put(URLDecoder.decode(commandSplit[0], StandardCharsets.UTF_8),
-                     URLDecoder.decode(commandSplit[1], StandardCharsets.UTF_8));
+        commands.put(
+            URLDecoder.decode(commandSplit[0], StandardCharsets.UTF_8),
+            URLDecoder.decode(commandSplit[1], StandardCharsets.UTF_8));
       }
       if (niName != null) {
         commands.put("name", niName);
       }
     }
 
-    var queryStr = commands.entrySet().stream()
-        .map(CameraUrlGenerator::httpUrlEncode)
-        .collect(Collectors.joining("&"));
+    var queryStr =
+        commands.entrySet().stream()
+            .map(CameraUrlGenerator::httpUrlEncode)
+            .collect(Collectors.joining("&"));
     return encodeUri(uri, queryStr);
-
   }
 
   private static String encodeUri(URI uri, String queryStr) {
@@ -129,7 +126,8 @@ public final class CameraUrlGenerator {
   }
 
   private static String httpUrlEncode(Map.Entry<String, String> rawCommand) {
-    return URLEncoder.encode(rawCommand.getKey(), StandardCharsets.UTF_8).replace("+", "%20") + "="
-        + URLEncoder.encode(rawCommand.getValue(), StandardCharsets.UTF_8).replace("+", "%20") ;
+    return URLEncoder.encode(rawCommand.getKey(), StandardCharsets.UTF_8).replace("+", "%20")
+        + "="
+        + URLEncoder.encode(rawCommand.getValue(), StandardCharsets.UTF_8).replace("+", "%20");
   }
 }

@@ -1,15 +1,13 @@
 package edu.wpi.first.shuffleboard.api.tab.model;
 
-import edu.wpi.first.shuffleboard.api.sources.DataSource;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import java.util.Collections;
-
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+
+import edu.wpi.first.shuffleboard.api.sources.DataSource;
+import java.util.Collections;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class LayoutModelImplTest {
 
@@ -33,8 +31,7 @@ public class LayoutModelImplTest {
     LayoutModel nested = layout.getLayout(path, "List Layout");
     assertAll(
         () -> assertSame(nested, layout.getChild(path)),
-        () -> assertSame(nested, layout.getChildren().get(path))
-    );
+        () -> assertSame(nested, layout.getChildren().get(path)));
   }
 
   @Test
@@ -49,7 +46,8 @@ public class LayoutModelImplTest {
   public void testAddChild() {
     LayoutModel layout = new LayoutModelImpl("Layout", parent, "List");
     String path = "/Shuffleboard/Tab/Foo";
-    ComponentModel child = new WidgetModelImpl(path, layout, () -> null, "", Collections.emptyMap());
+    ComponentModel child =
+        new WidgetModelImpl(path, layout, () -> null, "", Collections.emptyMap());
     layout.addChild(child);
     assertSame(child, layout.getChild(path));
   }
@@ -57,7 +55,8 @@ public class LayoutModelImplTest {
   @Test
   public void testGetOrCreate() {
     LayoutModel layout = new LayoutModelImpl("Layout", parent, "List");
-    WidgetModel widget = layout.getOrCreate("/Shuffleboard/Tab/Foo", DataSource::none, "", Collections.emptyMap());
+    WidgetModel widget =
+        layout.getOrCreate("/Shuffleboard/Tab/Foo", DataSource::none, "", Collections.emptyMap());
     assertSame(widget, layout.getChild("/Shuffleboard/Tab/Foo"));
   }
 }

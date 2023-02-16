@@ -1,27 +1,25 @@
 package edu.wpi.first.shuffleboard.app;
 
-import edu.wpi.first.shuffleboard.api.widget.Components;
-import edu.wpi.first.shuffleboard.api.widget.LayoutClass;
-import edu.wpi.first.shuffleboard.app.components.LayoutTile;
-import edu.wpi.first.shuffleboard.app.components.Tile;
-import edu.wpi.first.shuffleboard.app.components.WidgetPane;
-import edu.wpi.first.shuffleboard.app.components.WidgetTile;
-
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
-import org.testfx.framework.junit5.ApplicationTest;
-
-import javafx.scene.Scene;
-import javafx.stage.Stage;
-
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.testfx.matcher.control.LabeledMatchers.hasText;
 import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
+
+import edu.wpi.first.shuffleboard.api.widget.Components;
+import edu.wpi.first.shuffleboard.api.widget.LayoutClass;
+import edu.wpi.first.shuffleboard.app.components.LayoutTile;
+import edu.wpi.first.shuffleboard.app.components.Tile;
+import edu.wpi.first.shuffleboard.app.components.WidgetPane;
+import edu.wpi.first.shuffleboard.app.components.WidgetTile;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.testfx.framework.junit5.ApplicationTest;
 
 @Tag("UI")
 public class WidgetPaneControllerTest extends ApplicationTest {
@@ -58,9 +56,7 @@ public class WidgetPaneControllerTest extends ApplicationTest {
   @Test
   @Tag("NonHeadlessTests")
   public void testAddMultipleTilesToLayout() {
-    drag(pane.localToScreen(150, 150))
-        .drag()
-        .dropBy(-30, -30);
+    drag(pane.localToScreen(150, 150)).drag().dropBy(-30, -30);
     rightClickOn(firstTile);
     moveTo(hasText("Add to new layout..."));
     clickOn("Mock Layout");
@@ -72,11 +68,8 @@ public class WidgetPaneControllerTest extends ApplicationTest {
     assertEquals(LayoutTile.class, layoutTile.getClass(), "Not  layout tile");
     MockLayout layout = (MockLayout) layoutTile.getContent();
     assertEquals(2, layout.getChildren().size(), "Should have been two children in the layout");
-    assertAll("All children should be mock widgets",
-        layout.getChildren()
-            .stream()
-            .map(c -> () -> assertEquals(MockWidget.class, c.getClass()))
-    );
+    assertAll(
+        "All children should be mock widgets",
+        layout.getChildren().stream().map(c -> () -> assertEquals(MockWidget.class, c.getClass())));
   }
-
 }

@@ -4,10 +4,8 @@ import edu.wpi.first.shuffleboard.api.sources.DummySource;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 import edu.wpi.first.shuffleboard.api.widget.WidgetType;
-
 import java.io.IOException;
 import java.util.Collection;
-
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.fxml.FXMLLoader;
@@ -19,9 +17,7 @@ import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
 
 public class WidgetGallery extends TilePane {
-  /**
-   * Creates a new WidgetGallery. This loads WidgetGallery.fxml and set up the constructor
-   */
+  /** Creates a new WidgetGallery. This loads WidgetGallery.fxml and set up the constructor */
   public WidgetGallery() {
     FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("WidgetGallery.fxml"));
     fxmlLoader.setRoot(this);
@@ -33,19 +29,14 @@ public class WidgetGallery extends TilePane {
     }
   }
 
-  /**
-   * Add the given widget types to the gallery.
-   */
+  /** Add the given widget types to the gallery. */
   public void setWidgets(Collection<WidgetType> widgets) {
     clear();
     widgets.stream()
-            .map(WidgetType::get)
-            .flatMap(TypeUtils.castStream(Widget.class))
-            .peek(widget ->
-              DummySource.forTypes(widget.getDataTypes())
-                         .ifPresent(widget::addSource)
-            )
-            .forEach(this::addWidget);
+        .map(WidgetType::get)
+        .flatMap(TypeUtils.castStream(Widget.class))
+        .peek(widget -> DummySource.forTypes(widget.getDataTypes()).ifPresent(widget::addSource))
+        .forEach(this::addWidget);
   }
 
   private void addWidget(Widget widget) {
@@ -64,20 +55,21 @@ public class WidgetGallery extends TilePane {
 
     private WidgetGalleryItem() {
       this.getStyleClass().add("item");
-      this.widget.addListener((property, oldValue, newWidget) -> {
-        this.getChildren().clear();
-        if (newWidget != null) {
-          StackPane dragTarget = new StackPane();
-          dragTarget.getStyleClass().add("tile");
-          dragTarget.getChildren().add(newWidget.getView());
-          dragTarget.getChildren().add(new Pane());
-          dragTarget.setMaxSize(128, 128);
+      this.widget.addListener(
+          (property, oldValue, newWidget) -> {
+            this.getChildren().clear();
+            if (newWidget != null) {
+              StackPane dragTarget = new StackPane();
+              dragTarget.getStyleClass().add("tile");
+              dragTarget.getChildren().add(newWidget.getView());
+              dragTarget.getChildren().add(new Pane());
+              dragTarget.setMaxSize(128, 128);
 
-          this.getChildren().add(dragTarget);
-          setVgrow(dragTarget, Priority.ALWAYS);
-          this.getChildren().add(new Label(newWidget.getName()));
-        }
-      });
+              this.getChildren().add(dragTarget);
+              setVgrow(dragTarget, Priority.ALWAYS);
+              this.getChildren().add(new Label(newWidget.getName()));
+            }
+          });
     }
 
     public void setWidget(Widget widget) {
@@ -91,6 +83,5 @@ public class WidgetGallery extends TilePane {
     public Widget getWidget() {
       return this.widget.getValue();
     }
-
   }
 }

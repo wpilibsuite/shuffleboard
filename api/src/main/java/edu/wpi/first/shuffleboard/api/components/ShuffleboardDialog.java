@@ -1,11 +1,7 @@
 package edu.wpi.first.shuffleboard.api.components;
 
-import org.fxmisc.easybind.EasyBind;
-import org.fxmisc.easybind.monadic.MonadicBinding;
-
 import java.io.IOException;
 import java.net.URL;
-
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -25,37 +21,42 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
+import org.fxmisc.easybind.EasyBind;
+import org.fxmisc.easybind.monadic.MonadicBinding;
 
 /**
- * A type of dialog that defaults to be undecorated and non-modal. It will automatically close if the user
- * presses the ESC key or (optionally) when it loses focus. A dialog closed in this manner will always have a result of
- * {@link ButtonType#CLOSE}.
+ * A type of dialog that defaults to be undecorated and non-modal. It will automatically close if
+ * the user presses the ESC key or (optionally) when it loses focus. A dialog closed in this manner
+ * will always have a result of {@link ButtonType#CLOSE}.
  *
- * <p>This type of dialog also supports subheader text, which is usually shown in a slightly darker color and default
- * font size.
+ * <p>This type of dialog also supports subheader text, which is usually shown in a slightly darker
+ * color and default font size.
  */
 public class ShuffleboardDialog extends Dialog<ButtonType> {
 
-  private final BooleanProperty closeOnFocusLost = new SimpleBooleanProperty(this, "closeOnFocusLost", false);
-  private final ChangeListener<Boolean> close = (__, was, is) -> {
-    if (!is) {
-      closeAndCancel();
-    }
-  };
+  private final BooleanProperty closeOnFocusLost =
+      new SimpleBooleanProperty(this, "closeOnFocusLost", false);
+  private final ChangeListener<Boolean> close =
+      (__, was, is) -> {
+        if (!is) {
+          closeAndCancel();
+        }
+      };
 
-  private final StringProperty subheaderText = new SimpleStringProperty(this, "subheaderText", null);
+  private final StringProperty subheaderText =
+      new SimpleStringProperty(this, "subheaderText", null);
 
-  private final MonadicBinding<Boolean> focus = EasyBind.monadic(dialogPaneProperty())
-      .map(Node::getScene)
-      .map(Scene::getWindow)
-      .flatMap(Window::focusedProperty)
-      .orElse(false);
+  private final MonadicBinding<Boolean> focus =
+      EasyBind.monadic(dialogPaneProperty())
+          .map(Node::getScene)
+          .map(Scene::getWindow)
+          .flatMap(Window::focusedProperty)
+          .orElse(false);
 
   /**
    * Creates a new shuffleboard dialog with its content set to the contents of the given FXML file.
    *
    * @param fxmlLocation the location of the FXML to load and set the content to
-   *
    * @throws IllegalArgumentException if the FXML could not be loaded
    */
   public static ShuffleboardDialog createForFxml(URL fxmlLocation) throws IllegalArgumentException {
@@ -78,15 +79,16 @@ public class ShuffleboardDialog extends Dialog<ButtonType> {
     getDialogPane().setExpandableContent(null);
     getDialogPane().setContent(content);
     getDialogPane().addEventHandler(KeyEvent.KEY_PRESSED, this::closeIfEscapePressed);
-    closeOnFocusLost.addListener((__, was, is) -> {
-      if (is) {
-        focus.addListener(close);
-        initModality(Modality.NONE);
-      } else {
-        focus.removeListener(close);
-        initModality(Modality.APPLICATION_MODAL);
-      }
-    });
+    closeOnFocusLost.addListener(
+        (__, was, is) -> {
+          if (is) {
+            focus.addListener(close);
+            initModality(Modality.NONE);
+          } else {
+            focus.removeListener(close);
+            initModality(Modality.APPLICATION_MODAL);
+          }
+        });
   }
 
   public ShuffleboardDialog(Node content, boolean closeOnFocusLost) {
@@ -112,11 +114,10 @@ public class ShuffleboardDialog extends Dialog<ButtonType> {
     }
   }
 
-  /**
-   * Closes this dialog and sets the result to {@link ButtonType#CLOSE}.
-   */
+  /** Closes this dialog and sets the result to {@link ButtonType#CLOSE}. */
   public void closeAndCancel() {
-    // Need to check this to avoid macOS's weird window handling behavior, which will trigger a focusLost event when
+    // Need to check this to avoid macOS's weird window handling behavior, which will trigger a
+    // focusLost event when
     // the dialog closes due to a user selection of a button in the dialog.
     // Linux and Windows don't seem to have this problem.
     if (isShowing()) {
@@ -142,14 +143,15 @@ public class ShuffleboardDialog extends Dialog<ButtonType> {
     private final Label title = new Label();
     private final Label subtitle = new Label();
 
-    private final ChangeListener<String> removeIfNullText = (property, oldText, newText) -> {
-      Node bean = (Node) ((Property) property).getBean();
-      if (newText == null) {
-        getChildren().remove(bean);
-      } else {
-        getChildren().add(bean);
-      }
-    };
+    private final ChangeListener<String> removeIfNullText =
+        (property, oldText, newText) -> {
+          Node bean = (Node) ((Property) property).getBean();
+          if (newText == null) {
+            getChildren().remove(bean);
+          } else {
+            getChildren().add(bean);
+          }
+        };
 
     public Header() {
       setMaxWidth(Region.USE_COMPUTED_SIZE);
@@ -163,8 +165,5 @@ public class ShuffleboardDialog extends Dialog<ButtonType> {
       subtitle.getStyleClass().add("shuffleboard-dialog-header-subtitle");
       getStyleClass().addAll("header-panel", "shuffleboard-dialog-header");
     }
-
   }
-
-
 }

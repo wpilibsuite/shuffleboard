@@ -1,7 +1,6 @@
 package edu.wpi.first.shuffleboard.app;
 
 import edu.wpi.first.shuffleboard.api.util.FxUtils;
-
 import javafx.application.Preloader;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -10,8 +9,8 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
 /**
- * The preloader for shuffleboard. This will display the progress of various startup routines until the main window
- * appears.
+ * The preloader for shuffleboard. This will display the progress of various startup routines until
+ * the main window appears.
  */
 public class ShuffleboardPreloader extends Preloader {
 
@@ -49,9 +48,7 @@ public class ShuffleboardPreloader extends Preloader {
     }
   }
 
-  /**
-   * A notification for the progress of a state in the preloader.
-   */
+  /** A notification for the progress of a state in the preloader. */
   public static final class StateNotification implements PreloaderNotification {
 
     private final String state;
@@ -60,7 +57,7 @@ public class ShuffleboardPreloader extends Preloader {
     /**
      * Creates a new state notification.
      *
-     * @param state    the state
+     * @param state the state
      * @param progress the progress of the state, in the range [0, 1]
      */
     public StateNotification(String state, double progress) {
@@ -68,16 +65,12 @@ public class ShuffleboardPreloader extends Preloader {
       this.progress = progress;
     }
 
-    /**
-     * Gets the state.
-     */
+    /** Gets the state. */
     public String getState() {
       return state;
     }
 
-    /**
-     * Gets the progress.
-     */
+    /** Gets the progress. */
     public double getProgress() {
       return progress;
     }
@@ -87,5 +80,4 @@ public class ShuffleboardPreloader extends Preloader {
       return String.format("StateNotification(state='%s', progress=%s)", state, progress);
     }
   }
-
 }

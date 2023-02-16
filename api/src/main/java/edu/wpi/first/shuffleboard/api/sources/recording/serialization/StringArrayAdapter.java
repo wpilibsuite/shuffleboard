@@ -48,5 +48,4 @@ public class StringArrayAdapter extends TypeAdapter<String[]> {
   public int getSerializedSize(String[] value) {
     return serialize(value).length;
   }
-
 }

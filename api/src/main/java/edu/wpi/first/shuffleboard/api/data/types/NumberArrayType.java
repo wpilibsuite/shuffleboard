@@ -14,5 +14,4 @@ public final class NumberArrayType extends SimpleDataType<double[]> {
   public double[] getDefaultValue() {
     return new double[0];
   }
-
 }

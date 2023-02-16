@@ -3,8 +3,8 @@ package edu.wpi.first.shuffleboard.api.data.types;
 import edu.wpi.first.shuffleboard.api.data.SimpleDataType;
 
 /**
- * A catchall data type that represents all data. This should only be used by widgets that can truly show <i>any</i>
- * data.
+ * A catchall data type that represents all data. This should only be used by widgets that can truly
+ * show <i>any</i> data.
  */
 public final class AllType extends SimpleDataType<Object> {
 
@@ -19,5 +19,4 @@ public final class AllType extends SimpleDataType<Object> {
   public Object getDefaultValue() {
     return defaultValue;
   }
-
 }

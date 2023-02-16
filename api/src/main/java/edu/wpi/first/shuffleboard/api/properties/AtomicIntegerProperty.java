@@ -1,15 +1,12 @@
 package edu.wpi.first.shuffleboard.api.properties;
 
 import java.util.concurrent.atomic.AtomicInteger;
-
 import javafx.beans.InvalidationListener;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 
-/**
- * An implementation of {@link IntegerProperty} that makes all reads and writes atomic.
- */
+/** An implementation of {@link IntegerProperty} that makes all reads and writes atomic. */
 @SuppressWarnings("OverloadMethodsDeclarationOrder")
 public class AtomicIntegerProperty extends IntegerProperty implements AtomicProperty<Number> {
 
@@ -110,5 +107,4 @@ public class AtomicIntegerProperty extends IntegerProperty implements AtomicProp
   public void removeListener(InvalidationListener listener) {
     listenerDelegate.removeInvalidationListener(listener);
   }
-
 }

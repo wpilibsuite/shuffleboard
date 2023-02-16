@@ -1,15 +1,14 @@
 package edu.wpi.first.shuffleboard.api.util;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.ArrayList;
+import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class ShutdownHooksTest extends UtilityClassTest<ShutdownHooks> {
 
@@ -51,7 +50,8 @@ public class ShutdownHooksTest extends UtilityClassTest<ShutdownHooks> {
 
   @Test
   public void testHookException() {
-    final Thread.UncaughtExceptionHandler oldHandler = Thread.currentThread().getUncaughtExceptionHandler();
+    final Thread.UncaughtExceptionHandler oldHandler =
+        Thread.currentThread().getUncaughtExceptionHandler();
 
     try {
       final List<Throwable> errors = new ArrayList<>();
@@ -60,9 +60,10 @@ public class ShutdownHooksTest extends UtilityClassTest<ShutdownHooks> {
 
       // given
       final Exception toThrow = new Exception("Expected");
-      ShutdownHooks.Hook throwing = () -> {
-        throw toThrow;
-      };
+      ShutdownHooks.Hook throwing =
+          () -> {
+            throw toThrow;
+          };
       boolean[] ran = {false};
       ShutdownHooks.Hook hook = () -> ran[0] = true;
 
@@ -73,7 +74,9 @@ public class ShutdownHooksTest extends UtilityClassTest<ShutdownHooks> {
 
       // then
       assertAll(
-          () -> assertEquals(1, errors.size(), "Only one error should have been thrown, but was: " + errors),
+          () ->
+              assertEquals(
+                  1, errors.size(), "Only one error should have been thrown, but was: " + errors),
           () -> assertEquals(toThrow, errors.get(0), "An unexpected error was thrown"));
       assertTrue(ran[0], "Normal hook did not run");
     } finally {
@@ -111,5 +114,4 @@ public class ShutdownHooksTest extends UtilityClassTest<ShutdownHooks> {
     // then
     assertFalse(ran[0], "The hook should not have run");
   }
-
 }

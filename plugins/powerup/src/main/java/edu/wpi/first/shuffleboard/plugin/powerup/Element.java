@@ -1,23 +1,14 @@
 package edu.wpi.first.shuffleboard.plugin.powerup;
 
-/**
- * Enumerates the field elements.
- */
+/** Enumerates the field elements. */
 public enum Element {
 
-  /**
-   * The switch nearest the driver station.
-   */
+  /** The switch nearest the driver station. */
   NEAR_SWITCH,
 
-  /**
-   * The scale.
-   */
+  /** The scale. */
   SCALE,
 
-  /**
-   * The switch farthest from the driver station.
-   */
+  /** The switch farthest from the driver station. */
   FAR_SWITCH
-
 }

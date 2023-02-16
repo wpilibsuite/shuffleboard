@@ -1,22 +1,19 @@
 package edu.wpi.first.shuffleboard.app.json;
 
-import edu.wpi.first.shuffleboard.api.json.AnnotatedTypeAdapter;
-import edu.wpi.first.shuffleboard.api.json.ElementTypeAdapter;
-import edu.wpi.first.shuffleboard.app.components.DashboardTab;
-import edu.wpi.first.shuffleboard.app.components.DashboardTabPane;
-import edu.wpi.first.shuffleboard.app.components.ProcedurallyDefinedTab;
-import edu.wpi.first.shuffleboard.app.components.WidgetPane;
-
 import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonSerializationContext;
-
+import edu.wpi.first.shuffleboard.api.json.AnnotatedTypeAdapter;
+import edu.wpi.first.shuffleboard.api.json.ElementTypeAdapter;
+import edu.wpi.first.shuffleboard.app.components.DashboardTab;
+import edu.wpi.first.shuffleboard.app.components.DashboardTabPane;
+import edu.wpi.first.shuffleboard.app.components.ProcedurallyDefinedTab;
+import edu.wpi.first.shuffleboard.app.components.WidgetPane;
 import java.util.ArrayList;
 import java.util.List;
-
 import javafx.scene.control.Tab;
 
 @AnnotatedTypeAdapter(forType = DashboardTabPane.class)
@@ -44,7 +41,8 @@ public class DashboardTabPaneSaver implements ElementTypeAdapter<DashboardTabPan
   }
 
   @Override
-  public DashboardTabPane deserialize(JsonElement json, JsonDeserializationContext context) throws JsonParseException {
+  public DashboardTabPane deserialize(JsonElement json, JsonDeserializationContext context)
+      throws JsonParseException {
     JsonArray jsonTabs = json.getAsJsonArray();
     List<Tab> tabs = new ArrayList<>(jsonTabs.size());
 
@@ -58,6 +56,6 @@ public class DashboardTabPaneSaver implements ElementTypeAdapter<DashboardTabPan
       tabs.add(tab);
     }
 
-    return new DashboardTabPane(tabs.toArray(new Tab[]{}));
+    return new DashboardTabPane(tabs.toArray(new Tab[] {}));
   }
 }

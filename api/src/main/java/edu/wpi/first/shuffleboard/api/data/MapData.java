@@ -1,7 +1,6 @@
 package edu.wpi.first.shuffleboard.api.data;
 
 import com.google.common.collect.ImmutableMap;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,11 +34,11 @@ public class MapData extends ComplexData<MapData> {
   }
 
   /**
-   * Creates a new MapData instance that is identical to this one, but with a new value for the given key.
+   * Creates a new MapData instance that is identical to this one, but with a new value for the
+   * given key.
    *
-   * @param key   the key to set
+   * @param key the key to set
    * @param value the new value to put
-   *
    * @return a new MapData instance containing the change
    */
   public MapData put(String key, Object value) {
@@ -52,5 +51,4 @@ public class MapData extends ComplexData<MapData> {
   public String toString() {
     return map.toString();
   }
-
 }

@@ -1,22 +1,20 @@
 package edu.wpi.first.shuffleboard.plugin.cameraserver.recording.serialization;
 
-import org.opencv.core.Mat;
-import org.opencv.imgproc.Imgproc;
-
-import java.nio.ByteBuffer;
-
-import javafx.scene.image.Image;
-import javafx.scene.image.PixelFormat;
-import javafx.scene.image.WritableImage;
-
 import static org.opencv.core.CvType.CV_8S;
 import static org.opencv.core.CvType.CV_8U;
 import static org.opencv.imgproc.Imgproc.COLOR_BGR2RGB;
 import static org.opencv.imgproc.Imgproc.COLOR_GRAY2RGB;
 
+import java.nio.ByteBuffer;
+import javafx.scene.image.Image;
+import javafx.scene.image.PixelFormat;
+import javafx.scene.image.WritableImage;
+import org.opencv.core.Mat;
+import org.opencv.imgproc.Imgproc;
+
 /**
- * Utility class for creating a JavaFX image from an OpenCV image.  This used by the preview views
- * to render an image in the GUI.
+ * Utility class for creating a JavaFX image from an OpenCV image. This used by the preview views to
+ * render an image in the GUI.
  */
 public final class ImageConverter {
 
@@ -31,18 +29,17 @@ public final class ImageConverter {
    * Mat into an int array of pixels.
    *
    * @param mat An 8-bit OpenCV Mat containing an image with either 1 or 3 channels
-   *
    * @return A JavaFX image, or null for empty
    */
   public Image convert(Mat mat) {
 
     final int channels = mat.channels();
 
-    assert channels == 3 || channels == 1 :
-        "Only 3-channel BGR images or single-channel grayscale images can be converted";
+    assert channels == 3 || channels == 1
+        : "Only 3-channel BGR images or single-channel grayscale images can be converted";
 
-    assert mat.depth() == CV_8U || mat.depth() == CV_8S :
-        "Only images with 8 bits per channel can be converted";
+    assert mat.depth() == CV_8U || mat.depth() == CV_8S
+        : "Only images with 8 bits per channel can be converted";
 
     // Don't try to render empty images.
     if (mat.empty()) {
@@ -75,9 +72,10 @@ public final class ImageConverter {
     // Grab the image data
     converted.get(0, 0, data);
 
-    image.getPixelWriter().setPixels(0, 0, width, height, PixelFormat.getByteRgbInstance(), buffer, width * channels);
+    image
+        .getPixelWriter()
+        .setPixels(0, 0, width, height, PixelFormat.getByteRgbInstance(), buffer, width * channels);
 
     return image;
   }
-
 }

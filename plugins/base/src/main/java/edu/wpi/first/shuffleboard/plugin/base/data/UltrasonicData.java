@@ -1,7 +1,6 @@
 package edu.wpi.first.shuffleboard.plugin.base.data;
 
 import edu.wpi.first.shuffleboard.api.data.ComplexData;
-
 import java.util.Map;
 import java.util.Objects;
 

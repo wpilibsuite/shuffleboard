@@ -1,16 +1,13 @@
 package edu.wpi.first.shuffleboard.api.util;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.io.Serializable;
 import java.util.Objects;
-
 import javafx.scene.Node;
 import javafx.scene.layout.GridPane;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
-/**
- * Represents a point in a grid.
- */
+/** Represents a point in a grid. */
 public class GridPoint implements Serializable {
 
   public final int col;
@@ -29,11 +26,10 @@ public class GridPoint implements Serializable {
   }
 
   /**
-   * Creates a new point from a node. The node must have both {@link GridPane#setColumnIndex GridPane.columnIndex}
-   * and {@link GridPane#setRowIndex GridPane.rowIndex} set.
+   * Creates a new point from a node. The node must have both {@link GridPane#setColumnIndex
+   * GridPane.columnIndex} and {@link GridPane#setRowIndex GridPane.rowIndex} set.
    *
    * @param node the node to get the grid point of
-   *
    * @throws IllegalArgumentException if either columnIndex or rowIndex has not been set
    */
   public static GridPoint fromNode(Node node) {
@@ -57,8 +53,8 @@ public class GridPoint implements Serializable {
   }
 
   /**
-   * Subtracts another grid point from this one. If either the resulting {@code row} or {@code col} would be negative,
-   * it is set to zero.
+   * Subtracts another grid point from this one. If either the resulting {@code row} or {@code col}
+   * would be negative, it is set to zero.
    *
    * @param other the point to subtract from this one
    */
@@ -79,7 +75,7 @@ public class GridPoint implements Serializable {
    * Adds a column and a row delta to this point and returns the result.
    *
    * @param columnDelta the change in the column index
-   * @param rowDelta    the change in the row index
+   * @param rowDelta the change in the row index
    */
   public GridPoint add(int columnDelta, int rowDelta) {
     return new GridPoint(this.col + columnDelta, this.row + rowDelta);
@@ -108,8 +104,7 @@ public class GridPoint implements Serializable {
     }
 
     GridPoint that = (GridPoint) obj;
-    return this.col == that.col
-        && this.row == that.row;
+    return this.col == that.col && this.row == that.row;
   }
 
   @Override

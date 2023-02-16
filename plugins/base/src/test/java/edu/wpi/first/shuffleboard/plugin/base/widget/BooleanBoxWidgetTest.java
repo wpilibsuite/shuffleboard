@@ -1,21 +1,18 @@
 package edu.wpi.first.shuffleboard.plugin.base.widget;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import edu.wpi.first.shuffleboard.api.data.types.BooleanType;
 import edu.wpi.first.shuffleboard.api.sources.DummySource;
 import edu.wpi.first.shuffleboard.api.widget.Components;
-
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-import org.testfx.util.WaitForAsyncUtils;
-
 import javafx.scene.Scene;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.stage.Stage;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.testfx.util.WaitForAsyncUtils;
 
 public class BooleanBoxWidgetTest extends AbstractWidgetTest {
 
@@ -28,8 +25,11 @@ public class BooleanBoxWidgetTest extends AbstractWidgetTest {
 
   @Override
   public void start(Stage stage) throws Exception {
-    widget = (BooleanBoxWidget) Components.getDefault().createWidget("Boolean Box",
-        DummySource.forTypes(BooleanType.Instance).get()).get();
+    widget =
+        (BooleanBoxWidget)
+            Components.getDefault()
+                .createWidget("Boolean Box", DummySource.forTypes(BooleanType.Instance).get())
+                .get();
     stage.setScene(new Scene(widget.getView()));
     stage.show();
   }
@@ -70,5 +70,4 @@ public class BooleanBoxWidgetTest extends AbstractWidgetTest {
   private Paint getBackground() {
     return widget.getView().getBackground().getFills().get(0).getFill();
   }
-
 }

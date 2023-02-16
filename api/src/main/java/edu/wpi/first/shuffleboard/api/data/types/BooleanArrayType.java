@@ -14,5 +14,4 @@ public final class BooleanArrayType extends SimpleDataType<boolean[]> {
   public boolean[] getDefaultValue() {
     return new boolean[0];
   }
-
 }

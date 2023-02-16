@@ -5,9 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Locale;
 
-/**
- * Utility class for detecting the current operating system.
- */
+/** Utility class for detecting the current operating system. */
 public final class OsDetector {
 
   private static final OperatingSystemType operatingSystemType;
@@ -42,8 +40,10 @@ public final class OsDetector {
     }
     try {
       Process lsbRelease = new ProcessBuilder("lsb_release", "-a").start();
-      try (BufferedReader reader = new BufferedReader(new InputStreamReader(lsbRelease.getInputStream(), "UTF8"))) {
-        return reader.lines()
+      try (BufferedReader reader =
+          new BufferedReader(new InputStreamReader(lsbRelease.getInputStream(), "UTF8"))) {
+        return reader
+            .lines()
             .filter(line -> line.startsWith("Description:"))
             .findFirst()
             .map(line -> line.substring("Description:\t".length()))
@@ -55,27 +55,17 @@ public final class OsDetector {
   }
 
   public enum OperatingSystemType {
-    /**
-     * A windows operating system.
-     */
+    /** A windows operating system. */
     WINDOWS,
-    /**
-     * OS X or Mac OS.
-     */
+    /** OS X or Mac OS. */
     MAC,
-    /**
-     * Generic linux-based operating system.
-     */
+    /** Generic linux-based operating system. */
     LINUX,
-    /**
-     * An unknown operating system.
-     */
+    /** An unknown operating system. */
     UNKNOWN
   }
 
-  /**
-   * Gets the type of the operating system.
-   */
+  /** Gets the type of the operating system. */
   public static OperatingSystemType getOperatingSystemType() {
     return operatingSystemType;
   }
@@ -95,5 +85,4 @@ public final class OsDetector {
   public static boolean isUnknown() {
     return operatingSystemType == OperatingSystemType.UNKNOWN;
   }
-
 }

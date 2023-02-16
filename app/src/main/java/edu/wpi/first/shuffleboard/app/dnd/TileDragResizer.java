@@ -6,10 +6,8 @@ import edu.wpi.first.shuffleboard.app.components.Tile;
 import edu.wpi.first.shuffleboard.app.components.TileLayout;
 import edu.wpi.first.shuffleboard.app.components.WidgetPane;
 import edu.wpi.first.shuffleboard.app.components.WidgetTile;
-
 import java.util.Map;
 import java.util.WeakHashMap;
-
 import javafx.scene.Cursor;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.MouseEvent;
@@ -22,14 +20,10 @@ import javafx.scene.layout.Pane;
  */
 public final class TileDragResizer {
 
-  /**
-   * Keep track of resizers to avoid creating more than one for the same tile.
-   */
+  /** Keep track of resizers to avoid creating more than one for the same tile. */
   private static final Map<Tile, TileDragResizer> resizers = new WeakHashMap<>();
 
-  /**
-   * The margin around the control that a user can click in to start resizing the tile.
-   */
+  /** The margin around the control that a user can click in to start resizing the tile. */
   private static final int RESIZE_MARGIN = 10;
 
   private final WidgetPane tilePane;
@@ -53,17 +47,11 @@ public final class TileDragResizer {
     WEST(Cursor.W_RESIZE, false, true),
     NORTH_WEST(Cursor.NW_RESIZE, true, true);
 
-    /**
-     * The cursor to use when resizing in this location.
-     */
+    /** The cursor to use when resizing in this location. */
     public final Cursor cursor;
-    /**
-     * Whether or not this location allows a tile to be resized vertically.
-     */
+    /** Whether or not this location allows a tile to be resized vertically. */
     public final boolean isVertical;
-    /**
-     * Whether or not this location allows a tile to be resized horizontally.
-     */
+    /** Whether or not this location allows a tile to be resized horizontally. */
     public final boolean isHorizontal;
 
     ResizeLocation(Cursor cursor, boolean isVertical, boolean isHorizontal) {
@@ -87,7 +75,7 @@ public final class TileDragResizer {
    * Makes the given tile resizable.
    *
    * @param tilePane the pane containing the tile to make resizable
-   * @param tile     the tile to make resizable
+   * @param tile the tile to make resizable
    */
   public static TileDragResizer makeResizable(WidgetPane tilePane, Tile tile) {
     return resizers.computeIfAbsent(tile, __ -> new TileDragResizer(tilePane, tile));
@@ -120,20 +108,23 @@ public final class TileDragResizer {
   }
 
   /**
-   * Gets the final size of the tile if resizing were to be completed at the instant this method is called.
+   * Gets the final size of the tile if resizing were to be completed at the instant this method is
+   * called.
    */
   private TileSize finalSize() {
     // round size to nearest tile size
     final int tileWidth = tilePane.roundWidthToNearestTile(tile.getWidth());
     final int tileHeight = tilePane.roundHeightToNearestTile(tile.getHeight());
 
-    // Make sure the tile never gets smaller than it's content minimum size, otherwise weird clipping occurs
+    // Make sure the tile never gets smaller than it's content minimum size, otherwise weird
+    // clipping occurs
     Pane view = tile.getContent().getView();
     int minWidth = tilePane.roundWidthToNearestTile(view.getMinWidth(), RoundingMode.UP);
     int minHeight = tilePane.roundHeightToNearestTile(view.getMinHeight(), RoundingMode.UP);
 
     // limit size to prevent exceeding the bounds of the grid
-    int boundedWidth = Math.min(tilePane.getNumColumns() - GridPane.getColumnIndex(tile), tileWidth);
+    int boundedWidth =
+        Math.min(tilePane.getNumColumns() - GridPane.getColumnIndex(tile), tileWidth);
     int boundedHeight = Math.min(tilePane.getNumRows() - GridPane.getRowIndex(tile), tileHeight);
 
     // limit size to never be less than the minimum size of the content
@@ -151,9 +142,7 @@ public final class TileDragResizer {
     }
   }
 
-  /**
-   * Gets the most appropriate resize location for a mouse event.
-   */
+  /** Gets the most appropriate resize location for a mouse event. */
   private ResizeLocation getResizeLocation(MouseEvent event) {
     final double mouseX = event.getX();
     final double mouseY = event.getY();
@@ -261,5 +250,4 @@ public final class TileDragResizer {
   public boolean isDragging() {
     return dragging;
   }
-
 }

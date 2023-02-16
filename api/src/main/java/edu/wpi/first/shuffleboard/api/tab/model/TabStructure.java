@@ -5,9 +5,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Contains the structure of the tabs in Shuffleboard.
- */
+/** Contains the structure of the tabs in Shuffleboard. */
 public final class TabStructure {
 
   private final Map<String, TabModel> tabs = new LinkedHashMap<>();
@@ -20,7 +18,6 @@ public final class TabStructure {
    * Gets the tab with the given title, creating it if it does not already exist.
    *
    * @param title the title of the tab
-   *
    * @return the tab with the given title
    */
   public TabModel getTab(String title) {
@@ -32,9 +29,7 @@ public final class TabStructure {
     return tabs.get(title);
   }
 
-  /**
-   * Gets the tabs in the tab model. Tabs are mapped to their titles.
-   */
+  /** Gets the tabs in the tab model. Tabs are mapped to their titles. */
   public Map<String, TabModel> getTabs() {
     return tabs;
   }
@@ -67,7 +62,6 @@ public final class TabStructure {
    * Gets the currently selected tab, or -1 if no tab is currently selected by index.
    *
    * @return the index of the currently selected tab
-   *
    * @see #getSelectedTabTitle()
    */
   public int getSelectedTabIndex() {
@@ -75,10 +69,10 @@ public final class TabStructure {
   }
 
   /**
-   * Gets the currently selected tab title, or {@code null} if no tab is currently selected by title.
+   * Gets the currently selected tab title, or {@code null} if no tab is currently selected by
+   * title.
    *
    * @return the title of the currently selected tab
-   *
    * @see #getSelectedTabIndex()
    */
   public String getSelectedTabTitle() {
@@ -108,7 +102,8 @@ public final class TabStructure {
   }
 
   /**
-   * Marks the structure as having changed. This will fire all registered structure change listeners.
+   * Marks the structure as having changed. This will fire all registered structure change
+   * listeners.
    */
   public void dirty() {
     synchronized (structureChangeListeners) {

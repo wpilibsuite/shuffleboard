@@ -15,5 +15,4 @@ public abstract class SimpleDataType<T> extends DataType<T> {
   public final boolean isComplex() {
     return false;
   }
-
 }

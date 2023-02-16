@@ -11,5 +11,4 @@ package edu.wpi.first.shuffleboard.api.util;
 public interface ThrowingFunction<I, O, X extends Throwable> {
 
   O apply(I input) throws X;
-
 }

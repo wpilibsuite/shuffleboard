@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.plugin.base.layout;
 
+import com.google.common.collect.ImmutableList;
 import edu.wpi.first.shuffleboard.api.components.ActionList;
 import edu.wpi.first.shuffleboard.api.prefs.Group;
 import edu.wpi.first.shuffleboard.api.prefs.Setting;
@@ -13,9 +14,6 @@ import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.api.widget.LayoutBase;
 import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 import edu.wpi.first.shuffleboard.api.widget.Sourced;
-
-import com.google.common.collect.ImmutableList;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -25,7 +23,6 @@ import java.util.function.Predicate;
 import java.util.function.ToDoubleFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 import javafx.beans.binding.DoubleBinding;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -40,10 +37,8 @@ import javafx.scene.layout.Priority;
 @ParametrizedController("GridLayout.fxml")
 public final class GridLayout extends LayoutBase {
 
-  @FXML
-  private Pane root;
-  @FXML
-  private GridPane grid;
+  @FXML private Pane root;
+  @FXML private GridPane grid;
 
   @SuppressWarnings("PMD.LinguisticNaming") // Predicates prefixed with "is" makes PMD mad
   private static final Predicate<Node> isPlaceholder = n -> n instanceof Placeholder;
@@ -61,24 +56,26 @@ public final class GridLayout extends LayoutBase {
     placeholderWidth = grid.widthProperty().divide(numColumns);
     placeholderHeight = grid.heightProperty().divide(numRows);
     addPlaceholders(0, numColumns.get(), 0, numRows.get());
-    numColumns.addListener((__, prev, cur) -> {
-      int oldNum = prev.intValue();
-      int newNum = cur.intValue();
-      if (newNum > oldNum) {
-        addPlaceholders(oldNum, newNum, 0, numRows.get());
-      } else {
-        removePlaceholders(GridPane::getColumnIndex, newNum - 1);
-      }
-    });
-    numRows.addListener((__, prev, cur) -> {
-      int oldNum = prev.intValue();
-      int newNum = cur.intValue();
-      if (newNum > oldNum) {
-        addPlaceholders(0, numColumns.get(), oldNum, newNum);
-      } else {
-        removePlaceholders(GridPane::getRowIndex, newNum - 1);
-      }
-    });
+    numColumns.addListener(
+        (__, prev, cur) -> {
+          int oldNum = prev.intValue();
+          int newNum = cur.intValue();
+          if (newNum > oldNum) {
+            addPlaceholders(oldNum, newNum, 0, numRows.get());
+          } else {
+            removePlaceholders(GridPane::getColumnIndex, newNum - 1);
+          }
+        });
+    numRows.addListener(
+        (__, prev, cur) -> {
+          int oldNum = prev.intValue();
+          int newNum = cur.intValue();
+          if (newNum > oldNum) {
+            addPlaceholders(0, numColumns.get(), oldNum, newNum);
+          } else {
+            removePlaceholders(GridPane::getRowIndex, newNum - 1);
+          }
+        });
     setupDropHighlight();
   }
 
@@ -121,7 +118,7 @@ public final class GridLayout extends LayoutBase {
    * Removes all placeholders whose position (column or row index) is greater than the maximum.
    *
    * @param positionGetter the getter for the index to compare
-   * @param max            the maximum allowable index
+   * @param max the maximum allowable index
    */
   private void removePlaceholders(ToDoubleFunction<Node> positionGetter, int max) {
     grid.getChildren().stream()
@@ -131,24 +128,24 @@ public final class GridLayout extends LayoutBase {
         .forEach(grid.getChildren()::remove);
   }
 
-  /**
-   * Sets up the highlight pane used to preview the positions of dropping components.
-   */
+  /** Sets up the highlight pane used to preview the positions of dropping components. */
   private void setupDropHighlight() {
-    grid.setOnDragEntered(e -> {
-      ListUtils.addIfNotPresent(grid.getChildren(), highlight);
-      pointAt(e.getX(), e.getY()).applyTo(highlight);
-    });
+    grid.setOnDragEntered(
+        e -> {
+          ListUtils.addIfNotPresent(grid.getChildren(), highlight);
+          pointAt(e.getX(), e.getY()).applyTo(highlight);
+        });
 
-    grid.setOnDragOver(event -> {
-      GridPoint point = pointAt(event.getX(), event.getY());
-      if (point == null) {
-        grid.getChildren().remove(highlight);
-      } else {
-        ListUtils.addIfNotPresent(grid.getChildren(), highlight);
-        point.applyTo(highlight);
-      }
-    });
+    grid.setOnDragOver(
+        event -> {
+          GridPoint point = pointAt(event.getX(), event.getY());
+          if (point == null) {
+            grid.getChildren().remove(highlight);
+          } else {
+            ListUtils.addIfNotPresent(grid.getChildren(), highlight);
+            point.applyTo(highlight);
+          }
+        });
 
     grid.setOnDragExited(e -> grid.getChildren().remove(highlight));
   }
@@ -159,22 +156,23 @@ public final class GridLayout extends LayoutBase {
   }
 
   /**
-   * Adds a child component to a specific point in the grid. If the point is already occupied, the component will be
-   * placed in the first open spot. If no spots are open, a new row will be created. The component will be added to
-   * the leftmost column in the new row.
+   * Adds a child component to a specific point in the grid. If the point is already occupied, the
+   * component will be placed in the first open spot. If no spots are open, a new row will be
+   * created. The component will be added to the leftmost column in the new row.
    *
    * @param component the component to add
-   * @param point     the point to add the component at
+   * @param point the point to add the component at
    */
   public void addChild(Component component, GridPoint point) {
     grid.getChildren().remove(highlight);
 
     // Try to place the component in the requested spot, if it's available
     // Otherwise, place it in the first open spot, creating a new row to contain it if necessary
-    boolean isPointOpen = grid.getChildren().stream()
-        .filter(n -> !(n instanceof Placeholder))
-        .map(GridPoint::fromNode)
-        .noneMatch(p -> Objects.equals(point, p));
+    boolean isPointOpen =
+        grid.getChildren().stream()
+            .filter(n -> !(n instanceof Placeholder))
+            .map(GridPoint::fromNode)
+            .noneMatch(p -> Objects.equals(point, p));
 
     // If the component has been moved via drag-and-drop, make sure to remove it from the grid
     // before re-adding it in the new location
@@ -191,23 +189,25 @@ public final class GridLayout extends LayoutBase {
   }
 
   /**
-   * Converts local coordinates to a point in the grid. If the coordinates are outside the grid bounds, returns null.
+   * Converts local coordinates to a point in the grid. If the coordinates are outside the grid
+   * bounds, returns null.
    *
    * @param x the x-coordinate
    * @param y the y-coordinate
    */
   private GridPoint pointAt(double x, double y) {
-    Optional<Node> over = grid.getChildren().stream()
-        .filter(c -> c instanceof Placeholder)
-        .filter(c -> c.contains(c.parentToLocal(x, y)))
-        .findFirst();
-    boolean overChild = grid.getChildren().stream()
-        .filter(c -> c != highlight)
-        .filter(c -> !(c instanceof Placeholder))
-        .anyMatch(c -> c.contains(c.parentToLocal(x, y)));
+    Optional<Node> over =
+        grid.getChildren().stream()
+            .filter(c -> c instanceof Placeholder)
+            .filter(c -> c.contains(c.parentToLocal(x, y)))
+            .findFirst();
+    boolean overChild =
+        grid.getChildren().stream()
+            .filter(c -> c != highlight)
+            .filter(c -> !(c instanceof Placeholder))
+            .anyMatch(c -> c.contains(c.parentToLocal(x, y)));
     highlight.pseudoClassStateChanged(PseudoClass.getPseudoClass("colliding"), overChild);
-    return over.map(GridPoint::fromNode)
-        .orElse(null);
+    return over.map(GridPoint::fromNode).orElse(null);
   }
 
   private boolean isManaged(Node node) {
@@ -233,8 +233,7 @@ public final class GridLayout extends LayoutBase {
    * @param row the row to get the nodes in
    */
   private Stream<Node> nodesInRow(int row) {
-    return grid.getChildren()
-        .stream()
+    return grid.getChildren().stream()
         .filter(this::isManaged)
         .filter(n -> GridPane.getRowIndex(n) == row);
   }
@@ -244,7 +243,6 @@ public final class GridLayout extends LayoutBase {
    *
    * @param col the column to check
    * @param row the row to check
-   *
    * @return true if the point does not contain a child component, false if it does
    */
   private boolean isOpen(int col, int row) {
@@ -342,7 +340,8 @@ public final class GridLayout extends LayoutBase {
     ChildContainer container = panes.remove(existing);
     container.setChild(replacement);
 
-    // Update the actions for the pane - otherwise, it'll still have the same actions as the original component!
+    // Update the actions for the pane - otherwise, it'll still have the same actions as the
+    // original component!
     ActionList.registerSupplier(container, () -> actionsForComponent(replacement));
     panes.put(replacement, container);
   }
@@ -355,12 +354,11 @@ public final class GridLayout extends LayoutBase {
   @Override
   public List<Group> getSettings() {
     return ImmutableList.of(
-        Group.of("Layout",
+        Group.of(
+            "Layout",
             Setting.of("Number of columns", numColumns, Integer.class),
             Setting.of("Number of rows", numRows, Integer.class),
-            Setting.of("Label position", labelPositionProperty(), LabelPosition.class)
-        )
-    );
+            Setting.of("Label position", labelPositionProperty(), LabelPosition.class)));
   }
 
   @Override
@@ -368,9 +366,7 @@ public final class GridLayout extends LayoutBase {
     return "Grid Layout";
   }
 
-  /**
-   * Gets a list of the component containers in this layout.
-   */
+  /** Gets a list of the component containers in this layout. */
   public ImmutableList<ChildContainer> getContainers() {
     return grid.getChildren().stream()
         .flatMap(TypeUtils.castStream(ChildContainer.class))
@@ -402,10 +398,11 @@ public final class GridLayout extends LayoutBase {
   }
 
   /**
-   * A placeholder for use in the grid. Placeholders are invisible and are behind all other components, and therefore
-   * do not modify the UI or UX. These are used to simplify the computations for mapping drag points to grid coordinates
-   * and for forcing empty columns and rows to have size (without placeholders, they would have zero width or height
-   * until child components are added).
+   * A placeholder for use in the grid. Placeholders are invisible and are behind all other
+   * components, and therefore do not modify the UI or UX. These are used to simplify the
+   * computations for mapping drag points to grid coordinates and for forcing empty columns and rows
+   * to have size (without placeholders, they would have zero width or height until child components
+   * are added).
    */
   static final class Placeholder extends Pane {
 
@@ -432,5 +429,4 @@ public final class GridLayout extends LayoutBase {
       return Objects.hash(col, row);
     }
   }
-
 }

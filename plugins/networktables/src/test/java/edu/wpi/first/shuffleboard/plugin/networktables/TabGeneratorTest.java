@@ -1,5 +1,14 @@
 package edu.wpi.first.shuffleboard.plugin.networktables;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.tab.model.ComponentModel;
@@ -12,28 +21,13 @@ import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.api.widget.TileSize;
 import edu.wpi.first.shuffleboard.api.widget.WidgetType;
 import edu.wpi.first.shuffleboard.plugin.networktables.sources.NetworkTableSourceType;
-
-import com.google.common.collect.Iterables;
-
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableInstance;
-
+import java.util.Map;
+import java.util.Set;
+import javafx.scene.layout.Pane;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-
-import java.util.Map;
-import java.util.Set;
-
-import javafx.scene.layout.Pane;
-
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 
 @Disabled("fails on Linux CI runner")
 public class TabGeneratorTest {
@@ -52,8 +46,11 @@ public class TabGeneratorTest {
     components = new Components();
     generator = new TabGenerator(ntInstance, components);
     Components.setDefault(components);
-    NetworkTableSourceType.setInstance(new NetworkTableSourceType(new NetworkTablesPlugin(ntInstance)));
-    DataTypes.getDefault().getItems().forEach(t -> components.setDefaultComponent(t, new MockWidgetType()));
+    NetworkTableSourceType.setInstance(
+        new NetworkTableSourceType(new NetworkTablesPlugin(ntInstance)));
+    DataTypes.getDefault()
+        .getItems()
+        .forEach(t -> components.setDefaultComponent(t, new MockWidgetType()));
   }
 
   @AfterEach
@@ -71,36 +68,32 @@ public class TabGeneratorTest {
   @Test
   public void testGenerateTabs() {
     generator.start();
-    rootMetaTable.getEntry(TabGenerator.TABS_ENTRY_KEY).setStringArray(new String[]{"Foo", "Bar", "Baz"});
+    rootMetaTable
+        .getEntry(TabGenerator.TABS_ENTRY_KEY)
+        .setStringArray(new String[] {"Foo", "Bar", "Baz"});
     waitForNtUpdate();
     Map<String, TabModel> tabs = generator.getStructure().getTabs();
     assertAll(
         () -> assertEquals(3, tabs.size(), "Wrong number of tabs generated"),
         () -> assertTrue(tabs.containsKey("Foo"), "No 'Foo' tab"),
         () -> assertTrue(tabs.containsKey("Bar"), "No 'Bar' tab"),
-        () -> assertTrue(tabs.containsKey("Baz"), "No 'Baz' tab")
-    );
+        () -> assertTrue(tabs.containsKey("Baz"), "No 'Baz' tab"));
   }
 
   @Test
   public void testSimpleWidgetInTab() {
     String tabName = "Tab";
     String widgetName = "Widget";
-    rootMetaTable.getEntry(TabGenerator.TABS_ENTRY_KEY).setStringArray(new String[]{tabName});
-    rootTable.getSubTable(tabName)
-        .getEntry(".type")
-        .setString(TabGenerator.TAB_TYPE);
-    rootTable.getSubTable(tabName)
-        .getEntry(widgetName)
-        .setDouble(Math.PI);
+    rootMetaTable.getEntry(TabGenerator.TABS_ENTRY_KEY).setStringArray(new String[] {tabName});
+    rootTable.getSubTable(tabName).getEntry(".type").setString(TabGenerator.TAB_TYPE);
+    rootTable.getSubTable(tabName).getEntry(widgetName).setDouble(Math.PI);
     generator.start();
     waitForNtUpdate();
 
     TabStructure tabs = generator.getStructure();
     assertAll(
         () -> assertEquals(1, tabs.getTabs().size(), "Wrong number of tabs generated"),
-        () -> assertNotNull(tabs.getTab(tabName).getChild(path(tabName, widgetName)))
-    );
+        () -> assertNotNull(tabs.getTab(tabName).getChild(path(tabName, widgetName))));
   }
 
   @Test
@@ -111,19 +104,16 @@ public class TabGeneratorTest {
     final String widgetName = "Widget";
 
     components.register(new MockComponentType(layoutType));
-    rootMetaTable.getEntry(TabGenerator.TABS_ENTRY_KEY).setStringArray(new String[]{tabName});
-    rootTable.getSubTable(tabName)
-        .getEntry(".type")
-        .setString(TabGenerator.TAB_TYPE);
-    rootTable.getSubTable(tabName)
-        .getSubTable(layoutName)
-        .getEntry(widgetName)
-        .setDouble(12.34);
-    rootTable.getSubTable(tabName)
+    rootMetaTable.getEntry(TabGenerator.TABS_ENTRY_KEY).setStringArray(new String[] {tabName});
+    rootTable.getSubTable(tabName).getEntry(".type").setString(TabGenerator.TAB_TYPE);
+    rootTable.getSubTable(tabName).getSubTable(layoutName).getEntry(widgetName).setDouble(12.34);
+    rootTable
+        .getSubTable(tabName)
         .getSubTable(layoutName)
         .getEntry(".type")
         .setString(TabGenerator.LAYOUT_TYPE);
-    rootMetaTable.getSubTable(tabName)
+    rootMetaTable
+        .getSubTable(tabName)
         .getSubTable(layoutName)
         .getEntry(TabGenerator.PREF_COMPONENT_ENTRY_NAME)
         .setString(layoutType);
@@ -136,8 +126,7 @@ public class TabGeneratorTest {
     assertAll(
         () -> assertNotNull(layout, "Layout not generated"),
         () -> assertEquals(layoutType, layout.getDisplayType()),
-        () -> assertNotNull(widget, "Widget not generated")
-    );
+        () -> assertNotNull(widget, "Widget not generated"));
   }
 
   @Test
@@ -155,19 +144,19 @@ public class TabGeneratorTest {
     NetworkTable layoutTable = tabTable.getSubTable(layoutName);
     NetworkTable widgetTable = layoutTable.getSubTable(widgetName);
 
-    rootMetaTable.getEntry(TabGenerator.TABS_ENTRY_KEY).setStringArray(new String[]{tabName});
+    rootMetaTable.getEntry(TabGenerator.TABS_ENTRY_KEY).setStringArray(new String[] {tabName});
     tabTable.getEntry(".type").setString(TabGenerator.TAB_TYPE);
     layoutTable.getEntry(".type").setString(TabGenerator.LAYOUT_TYPE);
-    rootMetaTable.getSubTable(tabName).getSubTable(layoutName)
+    rootMetaTable
+        .getSubTable(tabName)
+        .getSubTable(layoutName)
         .getEntry(TabGenerator.PREF_COMPONENT_ENTRY_NAME)
         .setString(layoutType);
     widgetTable.getEntry(".type").setString(widgetType);
     widgetTable.getEntry("Value").setDouble(Math.E);
-    NetworkTable widgetMetaTable = rootMetaTable.getSubTable(tabName)
-        .getSubTable(layoutName)
-        .getSubTable(widgetName);
-    widgetMetaTable.getEntry(TabGenerator.PREF_COMPONENT_ENTRY_NAME)
-        .setString(widgetType);
+    NetworkTable widgetMetaTable =
+        rootMetaTable.getSubTable(tabName).getSubTable(layoutName).getSubTable(widgetName);
+    widgetMetaTable.getEntry(TabGenerator.PREF_COMPONENT_ENTRY_NAME).setString(widgetType);
 
     generator.start();
     waitForNtUpdate();
@@ -177,7 +166,9 @@ public class TabGeneratorTest {
     assertEquals(widgetType, widget.getDisplayType(), "Wrong display type");
 
     // ... and update
-    widgetMetaTable.getEntry(TabGenerator.PREF_COMPONENT_ENTRY_NAME).setString("A Different Widget");
+    widgetMetaTable
+        .getEntry(TabGenerator.PREF_COMPONENT_ENTRY_NAME)
+        .setString("A Different Widget");
     waitForNtUpdate();
     assertEquals("A Different Widget", widget.getDisplayType(), "Widget type did not update");
   }
@@ -191,44 +182,48 @@ public class TabGeneratorTest {
     final int width = 4;
     final int height = 1;
 
-    rootMetaTable.getEntry(TabGenerator.TABS_ENTRY_KEY).setStringArray(new String[]{tabName});
+    rootMetaTable.getEntry(TabGenerator.TABS_ENTRY_KEY).setStringArray(new String[] {tabName});
     NetworkTable widgetMetaTable = rootMetaTable.getSubTable(tabName).getSubTable(widgetName);
-    widgetMetaTable.getEntry(TabGenerator.SIZE_ENTRY_NAME)
-        .setDoubleArray(new double[]{width, height});
-    widgetMetaTable.getEntry(TabGenerator.POSITION_ENTRY_NAME)
-        .setDoubleArray(new double[]{col, row});
-    rootTable.getSubTable(tabName)
-        .getEntry(".type")
-        .setString(TabGenerator.TAB_TYPE);
-    rootTable.getSubTable(tabName)
-        .getEntry(widgetName)
-        .setString("foo");
+    widgetMetaTable
+        .getEntry(TabGenerator.SIZE_ENTRY_NAME)
+        .setDoubleArray(new double[] {width, height});
+    widgetMetaTable
+        .getEntry(TabGenerator.POSITION_ENTRY_NAME)
+        .setDoubleArray(new double[] {col, row});
+    rootTable.getSubTable(tabName).getEntry(".type").setString(TabGenerator.TAB_TYPE);
+    rootTable.getSubTable(tabName).getEntry(widgetName).setString("foo");
 
     generator.start();
     waitForNtUpdate();
 
-    ComponentModel widget = generator.getStructure().getTab(tabName).getChild(path(tabName, widgetName));
-    assertAll("Size and position",
+    ComponentModel widget =
+        generator.getStructure().getTab(tabName).getChild(path(tabName, widgetName));
+    assertAll(
+        "Size and position",
         () -> assertEquals(new TileSize(width, height), widget.getPreferredSize()),
-        () -> assertEquals(new GridPoint(col, row), widget.getPreferredPosition())
-    );
+        () -> assertEquals(new GridPoint(col, row), widget.getPreferredPosition()));
 
     // .. and update
-    widgetMetaTable.getEntry(TabGenerator.SIZE_ENTRY_NAME).setDoubleArray(new double[]{width + 1, height + 1});
-    widgetMetaTable.getEntry(TabGenerator.POSITION_ENTRY_NAME).setDoubleArray(new double[]{col + 1, row + 1});
+    widgetMetaTable
+        .getEntry(TabGenerator.SIZE_ENTRY_NAME)
+        .setDoubleArray(new double[] {width + 1, height + 1});
+    widgetMetaTable
+        .getEntry(TabGenerator.POSITION_ENTRY_NAME)
+        .setDoubleArray(new double[] {col + 1, row + 1});
     waitForNtUpdate();
-    assertAll("Updated size and position",
+    assertAll(
+        "Updated size and position",
         () -> assertEquals(new TileSize(width + 1, height + 1), widget.getPreferredSize()),
-        () -> assertEquals(new GridPoint(col + 1, row + 1), widget.getPreferredPosition())
-    );
+        () -> assertEquals(new GridPoint(col + 1, row + 1), widget.getPreferredPosition()));
   }
 
   @Test
   public void testTabProperties() {
     final String tabName = "TabWithProperties";
 
-    rootMetaTable.getEntry(TabGenerator.TABS_ENTRY_KEY).setStringArray(new String[]{tabName});
-    NetworkTable propsTable = rootMetaTable.getSubTable(tabName).getSubTable(TabGenerator.PROPERTIES_TABLE_NAME);
+    rootMetaTable.getEntry(TabGenerator.TABS_ENTRY_KEY).setStringArray(new String[] {tabName});
+    NetworkTable propsTable =
+        rootMetaTable.getSubTable(tabName).getSubTable(TabGenerator.PROPERTIES_TABLE_NAME);
     propsTable.getEntry("Foo").setDouble(12.34);
     propsTable.getEntry("Bar").setString("Baz");
 
@@ -236,11 +231,11 @@ public class TabGeneratorTest {
     waitForNtUpdate();
 
     TabStructure tabs = generator.getStructure();
-    assertAll("Tab Properties",
+    assertAll(
+        "Tab Properties",
         () -> assertFalse(tabs.getTabs().isEmpty(), "No tabs generated"),
         () -> assertEquals(12.34, tabs.getTab(tabName).getProperties().get("Foo")),
-        () -> assertEquals("Baz", tabs.getTab(tabName).getProperties().get("Bar"))
-    );
+        () -> assertEquals("Baz", tabs.getTab(tabName).getProperties().get("Bar")));
   }
 
   @Test
@@ -249,30 +244,30 @@ public class TabGeneratorTest {
     final String layoutName = "Layout";
     final String widgetName = "Data";
 
-    rootMetaTable.getEntry(TabGenerator.TABS_ENTRY_KEY).setStringArray(new String[]{tabName});
+    rootMetaTable.getEntry(TabGenerator.TABS_ENTRY_KEY).setStringArray(new String[] {tabName});
 
-    rootMetaTable.getSubTable(tabName)
+    rootMetaTable
+        .getSubTable(tabName)
         .getSubTable(layoutName)
         .getEntry(TabGenerator.PREF_COMPONENT_ENTRY_NAME)
         .setString("Layout");
 
-    NetworkTable propsTable = rootMetaTable.getSubTable(tabName)
-        .getSubTable(layoutName)
-        .getSubTable(widgetName)
-        .getSubTable(TabGenerator.PROPERTIES_TABLE_NAME);
+    NetworkTable propsTable =
+        rootMetaTable
+            .getSubTable(tabName)
+            .getSubTable(layoutName)
+            .getSubTable(widgetName)
+            .getSubTable(TabGenerator.PROPERTIES_TABLE_NAME);
 
     propsTable.getEntry("foo").setString("bar");
 
-    rootTable.getSubTable(tabName)
-        .getEntry(".type")
-        .setString(TabGenerator.TAB_TYPE);
-    rootTable.getSubTable(tabName)
-        .getSubTable(layoutName).getEntry(".type")
-        .setString(TabGenerator.LAYOUT_TYPE);
-    rootTable.getSubTable(tabName)
+    rootTable.getSubTable(tabName).getEntry(".type").setString(TabGenerator.TAB_TYPE);
+    rootTable
+        .getSubTable(tabName)
         .getSubTable(layoutName)
-        .getEntry(widgetName)
-        .setDouble(123456);
+        .getEntry(".type")
+        .setString(TabGenerator.LAYOUT_TYPE);
+    rootTable.getSubTable(tabName).getSubTable(layoutName).getEntry(widgetName).setDouble(123456);
 
     generator.start();
     waitForNtUpdate();
@@ -284,37 +279,35 @@ public class TabGeneratorTest {
     // update
     propsTable.getEntry("bar").setDouble(100);
     waitForNtUpdate();
-    assertAll("Updated properties",
+    assertAll(
+        "Updated properties",
         () -> assertEquals("bar", widget.getProperties().get("foo")),
-        () -> assertEquals(100.0, widget.getProperties().get("bar"))
-    );
+        () -> assertEquals(100.0, widget.getProperties().get("bar")));
   }
 
   @Test
   public void testStop() {
     generator.start();
-    rootMetaTable.getEntry(TabGenerator.TABS_ENTRY_KEY).setStringArray(new String[]{"Foo"});
+    rootMetaTable.getEntry(TabGenerator.TABS_ENTRY_KEY).setStringArray(new String[] {"Foo"});
     waitForNtUpdate();
     TabStructure tabs = generator.getStructure();
     assertAll(
         () -> assertEquals(1, tabs.getTabs().size()),
-        () -> assertTrue(tabs.getTabs().containsKey("Foo"))
-    );
+        () -> assertTrue(tabs.getTabs().containsKey("Foo")));
 
     generator.stop();
-    rootMetaTable.getEntry(TabGenerator.TABS_ENTRY_KEY).setStringArray(new String[]{"Foo", "Bar"});
+    rootMetaTable.getEntry(TabGenerator.TABS_ENTRY_KEY).setStringArray(new String[] {"Foo", "Bar"});
     waitForNtUpdate();
     assertAll(
         () -> assertEquals(1, tabs.getTabs().size()),
-        () -> assertTrue(tabs.getTabs().containsKey("Foo"))
-    );
+        () -> assertTrue(tabs.getTabs().containsKey("Foo")));
   }
 
   @Test
   public void testSelectTabByIndex() {
     int index = 1;
     generator.start();
-    rootMetaTable.getEntry(TabGenerator.TABS_ENTRY_KEY).setStringArray(new String[]{"Foo", "Bar"});
+    rootMetaTable.getEntry(TabGenerator.TABS_ENTRY_KEY).setStringArray(new String[] {"Foo", "Bar"});
     rootMetaTable.getEntry(TabGenerator.SELECTED_ENTRY_NAME).setDouble(index);
     waitForNtUpdate();
 
@@ -322,30 +315,27 @@ public class TabGeneratorTest {
     assertAll(
         () -> assertEquals(2, tabs.getTabs().size(), "Two tabs should have been created"),
         () -> assertEquals(index, tabs.getSelectedTabIndex(), "Tab was not selected"),
-        () -> assertEquals(null, tabs.getSelectedTabTitle(), "Tab should not be selected by title")
-    );
+        () ->
+            assertEquals(null, tabs.getSelectedTabTitle(), "Tab should not be selected by title"));
   }
 
   @Test
   public void testSelectTabByName() {
     String name = "Bar";
     generator.start();
-    rootMetaTable.getEntry(TabGenerator.TABS_ENTRY_KEY).setStringArray(new String[]{"Foo", name});
+    rootMetaTable.getEntry(TabGenerator.TABS_ENTRY_KEY).setStringArray(new String[] {"Foo", name});
     rootMetaTable.getEntry(TabGenerator.SELECTED_ENTRY_NAME).setString(name);
     waitForNtUpdate();
 
     TabStructure tabs = generator.getStructure();
     assertAll(
         () -> assertEquals(2, tabs.getTabs().size(), "Two tabs should have been created"),
-        () -> assertEquals(-1, tabs.getSelectedTabIndex(),"Tab should not be selected by index"),
-        () -> assertEquals(name, tabs.getSelectedTabTitle(), "Tab was not selected")
-    );
+        () -> assertEquals(-1, tabs.getSelectedTabIndex(), "Tab should not be selected by index"),
+        () -> assertEquals(name, tabs.getSelectedTabTitle(), "Tab was not selected"));
   }
 
   private static String path(String tabName, String... children) {
-    StringBuilder sb = new StringBuilder(TabGenerator.ROOT_TABLE_NAME)
-        .append('/')
-        .append(tabName);
+    StringBuilder sb = new StringBuilder(TabGenerator.ROOT_TABLE_NAME).append('/').append(tabName);
     for (String child : children) {
       sb.append('/').append(child);
     }

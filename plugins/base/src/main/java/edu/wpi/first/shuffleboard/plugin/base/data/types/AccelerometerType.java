@@ -2,7 +2,6 @@ package edu.wpi.first.shuffleboard.plugin.base.data.types;
 
 import edu.wpi.first.shuffleboard.api.data.ComplexDataType;
 import edu.wpi.first.shuffleboard.plugin.base.data.AccelerometerData;
-
 import java.util.Map;
 import java.util.function.Function;
 
@@ -23,5 +22,4 @@ public final class AccelerometerType extends ComplexDataType<AccelerometerData> 
   public AccelerometerData getDefaultValue() {
     return new AccelerometerData(0);
   }
-
 }

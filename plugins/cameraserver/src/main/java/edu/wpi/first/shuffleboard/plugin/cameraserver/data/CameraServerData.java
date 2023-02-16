@@ -1,12 +1,9 @@
 package edu.wpi.first.shuffleboard.plugin.cameraserver.data;
 
-import edu.wpi.first.shuffleboard.api.data.ComplexData;
-
 import com.google.common.collect.ImmutableMap;
-
-import org.opencv.core.Mat;
-
+import edu.wpi.first.shuffleboard.api.data.ComplexData;
 import java.util.Map;
+import org.opencv.core.Mat;
 
 public class CameraServerData extends ComplexData<CameraServerData> {
 
@@ -18,11 +15,12 @@ public class CameraServerData extends ComplexData<CameraServerData> {
   /**
    * Creates a new data object.
    *
-   * @param name      the name of the camera
-   * @param image     the images being supplied by the stream, or <code>null</code> if the stream is not
-   *                      providing an image
-   * @param fps       the current FPS of the stream. If the FPS is unknown, set to -1
-   * @param bandwidth the current bandwidth of the stream, in bytes per second. If the bandwidth is unknown, set to -1
+   * @param name the name of the camera
+   * @param image the images being supplied by the stream, or <code>null</code> if the stream is not
+   *     providing an image
+   * @param fps the current FPS of the stream. If the FPS is unknown, set to -1
+   * @param bandwidth the current bandwidth of the stream, in bytes per second. If the bandwidth is
+   *     unknown, set to -1
    */
   public CameraServerData(String name, Mat image, double fps, double bandwidth) {
     this.name = name;
@@ -39,16 +37,12 @@ public class CameraServerData extends ComplexData<CameraServerData> {
     return image;
   }
 
-  /**
-   * Gets the current framerate of the stream in frames per second.
-   */
+  /** Gets the current framerate of the stream in frames per second. */
   public double getFps() {
     return fps;
   }
 
-  /**
-   * Gets the current bandwidth use of the stream in bytes per second.
-   */
+  /** Gets the current bandwidth use of the stream in bytes per second. */
   public double getBandwidth() {
     return bandwidth;
   }
@@ -59,8 +53,7 @@ public class CameraServerData extends ComplexData<CameraServerData> {
         "name", name,
         "image", image,
         "fps", fps,
-        "bandwidth", bandwidth
-    );
+        "bandwidth", bandwidth);
   }
 
   /**
@@ -71,5 +64,4 @@ public class CameraServerData extends ComplexData<CameraServerData> {
   public CameraServerData withImage(Mat image) {
     return new CameraServerData(name, image, fps, bandwidth);
   }
-
 }

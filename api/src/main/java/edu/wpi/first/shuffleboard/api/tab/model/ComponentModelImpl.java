@@ -2,7 +2,6 @@ package edu.wpi.first.shuffleboard.api.tab.model;
 
 import edu.wpi.first.shuffleboard.api.util.GridPoint;
 import edu.wpi.first.shuffleboard.api.widget.TileSize;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,7 +14,8 @@ class ComponentModelImpl implements ComponentModel {
   private GridPoint preferredPosition;
   private TileSize preferredSize;
 
-  ComponentModelImpl(String path, ParentModel parent, String displayType, Map<String, Object> properties) {
+  ComponentModelImpl(
+      String path, ParentModel parent, String displayType, Map<String, Object> properties) {
     this.path = path;
     this.parent = parent;
     this.displayType = displayType;

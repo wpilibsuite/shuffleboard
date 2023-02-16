@@ -10,10 +10,6 @@ import edu.wpi.first.shuffleboard.api.util.PreferencesUtils;
 import edu.wpi.first.shuffleboard.api.util.Storage;
 import edu.wpi.first.shuffleboard.api.util.ThreadUtils;
 import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
-
-import org.controlsfx.control.ToggleSwitch;
-import org.fxmisc.easybind.EasyBind;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -27,7 +23,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
-
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.Property;
@@ -47,34 +42,32 @@ import javafx.scene.layout.Pane;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.util.StringConverter;
+import org.controlsfx.control.ToggleSwitch;
+import org.fxmisc.easybind.EasyBind;
 
 @ParametrizedController("ConvertRecordingPane.fxml")
 public final class ConvertRecordingPaneController {
 
-  private static final Logger log = Logger.getLogger(ConvertRecordingPaneController.class.getName());
+  private static final Logger log =
+      Logger.getLogger(ConvertRecordingPaneController.class.getName());
 
-  @FXML
-  private Pane root;
-  @FXML
-  private ListView<File> fileList;
-  @FXML
-  private ComboBox<Converter> formatDropdown;
-  @FXML
-  private ToggleSwitch includeMetadata;
-  @FXML
-  private ExtendedPropertySheet propertySheet;
-  @FXML
-  private TextField destinationDirField;
-  @FXML
-  private Label changeDestinationLabel;
-  @FXML
-  private Button convertButton;
+  @FXML private Pane root;
+  @FXML private ListView<File> fileList;
+  @FXML private ComboBox<Converter> formatDropdown;
+  @FXML private ToggleSwitch includeMetadata;
+  @FXML private ExtendedPropertySheet propertySheet;
+  @FXML private TextField destinationDirField;
+  @FXML private Label changeDestinationLabel;
+  @FXML private Button convertButton;
 
-  private final ExecutorService conversionExecutor = Executors.newSingleThreadExecutor(ThreadUtils::makeDaemonThread);
+  private final ExecutorService conversionExecutor =
+      Executors.newSingleThreadExecutor(ThreadUtils::makeDaemonThread);
 
-  private final Preferences prefs = Preferences.userNodeForPackage(ConvertRecordingPaneController.class);
+  private final Preferences prefs =
+      Preferences.userNodeForPackage(ConvertRecordingPaneController.class);
 
-  private final Property<File> sourceFileDir = new SimpleObjectProperty<>(this, "sourceFileDir", null);
+  private final Property<File> sourceFileDir =
+      new SimpleObjectProperty<>(this, "sourceFileDir", null);
   private final Property<File> outputDir = new SimpleObjectProperty<>(this, "outputDir", null);
   private final ObservableList<File> sourceFiles = FXCollections.observableArrayList();
   private final BooleanProperty exportable = new SimpleBooleanProperty(this, "exportable", false);
@@ -91,50 +84,62 @@ public final class ConvertRecordingPaneController {
     if (outputDir.getValue() == null) {
       outputDir.setValue(Storage.getRecordingDir());
     }
-    sourceFileDir.addListener(__ -> PreferencesUtils.save(sourceFileDir, prefs, File::getAbsolutePath));
+    sourceFileDir.addListener(
+        __ -> PreferencesUtils.save(sourceFileDir, prefs, File::getAbsolutePath));
     outputDir.addListener(__ -> PreferencesUtils.save(outputDir, prefs, File::getAbsolutePath));
 
     exportable.bind(Bindings.createBooleanBinding(this::calcExportability, sourceFiles, outputDir));
 
     fileList.setItems(sourceFiles);
 
-    fileList.setCellFactory(view -> {
-      ListCell<File> cell = new ListCell<>();
-      cell.textProperty().bind(EasyBind.monadic(cell.itemProperty()).map(File::getName));
-      return cell;
-    });
+    fileList.setCellFactory(
+        view -> {
+          ListCell<File> cell = new ListCell<>();
+          cell.textProperty().bind(EasyBind.monadic(cell.itemProperty()).map(File::getName));
+          return cell;
+        });
 
-    formatDropdown.setConverter(new StringConverter<Converter>() {
-      @Override
-      public String toString(Converter converter) {
-        return converter.formatName();
-      }
+    formatDropdown.setConverter(
+        new StringConverter<Converter>() {
+          @Override
+          public String toString(Converter converter) {
+            return converter.formatName();
+          }
 
-      @Override
-      public Converter fromString(String formatName) {
-        return Converters.getDefault().getItems()
-            .stream()
-            .filter(e -> e.formatName().equals(formatName))
-            .findFirst()
-            .orElseThrow(() -> new IllegalArgumentException("No converter for format '" + formatName + "'"));
-      }
-    });
+          @Override
+          public Converter fromString(String formatName) {
+            return Converters.getDefault().getItems().stream()
+                .filter(e -> e.formatName().equals(formatName))
+                .findFirst()
+                .orElseThrow(
+                    () ->
+                        new IllegalArgumentException(
+                            "No converter for format '" + formatName + "'"));
+          }
+        });
 
-    formatDropdown.getSelectionModel().selectedItemProperty().addListener((__, old, selected) -> {
-      if (selected.getSettings().isEmpty()) {
-        propertySheet.setVisible(false);
-        propertySheet.setManaged(false);
-      } else {
-        propertySheet.setVisible(true);
-        propertySheet.setManaged(true);
-      }
-      propertySheet.getItems().setAll(
-          selected.getSettings()
-              .stream()
-              .flatMap(g -> g.getSettings().stream().map(s -> new ExtendedPropertySheet.SettingsItem(g, s)))
-              .collect(Collectors.toList())
-      );
-    });
+    formatDropdown
+        .getSelectionModel()
+        .selectedItemProperty()
+        .addListener(
+            (__, old, selected) -> {
+              if (selected.getSettings().isEmpty()) {
+                propertySheet.setVisible(false);
+                propertySheet.setManaged(false);
+              } else {
+                propertySheet.setVisible(true);
+                propertySheet.setManaged(true);
+              }
+              propertySheet
+                  .getItems()
+                  .setAll(
+                      selected.getSettings().stream()
+                          .flatMap(
+                              g ->
+                                  g.getSettings().stream()
+                                      .map(s -> new ExtendedPropertySheet.SettingsItem(g, s)))
+                          .collect(Collectors.toList()));
+            });
 
     EasyBind.listBind(formatDropdown.getItems(), Converters.getDefault().getItems());
     formatDropdown.getItems().sort(Comparator.comparing(Converter::formatName));
@@ -150,20 +155,16 @@ public final class ConvertRecordingPaneController {
   private void addFiles() throws IOException {
     FileChooser chooser = new FileChooser();
     chooser.setTitle("Choose recording files");
-    chooser.getExtensionFilters().setAll(
-        new FileChooser.ExtensionFilter("Shuffleboard Data Recording", "*.sbr"));
+    chooser
+        .getExtensionFilters()
+        .setAll(new FileChooser.ExtensionFilter("Shuffleboard Data Recording", "*.sbr"));
     chooser.setInitialDirectory(
-        EasyBind.monadic(sourceFileDir)
-            .orElse(Storage.getRecordingDir())
-            .get());
+        EasyBind.monadic(sourceFileDir).orElse(Storage.getRecordingDir()).get());
     List<File> selected = chooser.showOpenMultipleDialog(null);
     if (selected == null || selected.isEmpty()) {
       return;
     }
-    long numDirs = selected.stream()
-        .map(File::getParentFile)
-        .distinct()
-        .count();
+    long numDirs = selected.stream().map(File::getParentFile).distinct().count();
     if (numDirs == 1) {
       sourceFileDir.setValue(selected.get(0).getParentFile());
     }
@@ -175,9 +176,7 @@ public final class ConvertRecordingPaneController {
     DirectoryChooser chooser = new DirectoryChooser();
     chooser.setTitle("Choose directory");
     chooser.setInitialDirectory(
-        EasyBind.monadic(sourceFileDir)
-            .orElse(Storage.getRecordingDir())
-            .get());
+        EasyBind.monadic(sourceFileDir).orElse(Storage.getRecordingDir()).get());
     File dir = chooser.showDialog(null);
     if (dir == null) {
       return;
@@ -213,21 +212,27 @@ public final class ConvertRecordingPaneController {
   @FXML
   private void convert() {
     Converter converter = formatDropdown.getSelectionModel().getSelectedItem();
-    conversionExecutor.submit(() -> {
-      for (File file : sourceFiles) {
-        try {
-          Recording recording = Serialization.loadRecording(file.toPath());
-          String dstFileName = file.getName().replace(".sbr", converter.fileExtension());
-          Path dst = Paths.get(outputDir.getValue().getAbsolutePath(), dstFileName);
-          log.info("Exporting " + file + " to " + dst);
-          converter.export(recording, dst);
-        } catch (IOException | RuntimeException e) {
-          log.log(Level.WARNING,
-              "Could not export recording file " + file + " with converter " + converter.formatName(), e);
-        }
-      }
-      FxUtils.runOnFxThread(sourceFiles::clear);
-    });
+    conversionExecutor.submit(
+        () -> {
+          for (File file : sourceFiles) {
+            try {
+              Recording recording = Serialization.loadRecording(file.toPath());
+              String dstFileName = file.getName().replace(".sbr", converter.fileExtension());
+              Path dst = Paths.get(outputDir.getValue().getAbsolutePath(), dstFileName);
+              log.info("Exporting " + file + " to " + dst);
+              converter.export(recording, dst);
+            } catch (IOException | RuntimeException e) {
+              log.log(
+                  Level.WARNING,
+                  "Could not export recording file "
+                      + file
+                      + " with converter "
+                      + converter.formatName(),
+                  e);
+            }
+          }
+          FxUtils.runOnFxThread(sourceFiles::clear);
+        });
   }
 
   public boolean isExportable() {
@@ -237,5 +242,4 @@ public final class ConvertRecordingPaneController {
   public ReadOnlyBooleanProperty exportableProperty() {
     return exportable;
   }
-
 }

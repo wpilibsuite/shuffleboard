@@ -1,11 +1,10 @@
 package edu.wpi.first.shuffleboard.plugin.networktables;
 
-import org.junit.jupiter.api.extension.BeforeAllCallback;
-import org.junit.jupiter.api.extension.ExtensionContext;
-
 import edu.wpi.first.networktables.NetworkTablesJNI;
 import edu.wpi.first.util.CombinedRuntimeLoader;
 import edu.wpi.first.util.WPIUtilJNI;
+import org.junit.jupiter.api.extension.BeforeAllCallback;
+import org.junit.jupiter.api.extension.ExtensionContext;
 
 public class NativeInitializer implements BeforeAllCallback {
 
@@ -16,5 +15,4 @@ public class NativeInitializer implements BeforeAllCallback {
 
     CombinedRuntimeLoader.loadLibraries(NativeInitializer.class, "ntcorejni", "wpiutiljni");
   }
-
 }

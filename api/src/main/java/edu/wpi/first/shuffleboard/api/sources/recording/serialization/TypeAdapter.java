@@ -1,7 +1,6 @@
 package edu.wpi.first.shuffleboard.api.sources.recording.serialization;
 
 import edu.wpi.first.shuffleboard.api.data.DataType;
-
 import java.io.File;
 
 /**
@@ -28,27 +27,25 @@ public abstract class TypeAdapter<T> implements Serializer<T>, Deserializer<T> {
     return dataType;
   }
 
-  /**
-   * Resets the state of this type adapter (if it has state) before a new recording starts.
-   */
-  public void cleanUp() { //NOPMD empty abstract method body
+  /** Resets the state of this type adapter (if it has state) before a new recording starts. */
+  public void cleanUp() { // NOPMD empty abstract method body
     // Default to NOP
   }
 
   /**
-   * Gets the current recording file being loaded. This is useful for adapters that record extra data in separate files
-   * (e.g. a camera stream may save a video file alongside the .sbr recording file).
+   * Gets the current recording file being loaded. This is useful for adapters that record extra
+   * data in separate files (e.g. a camera stream may save a video file alongside the .sbr recording
+   * file).
    */
   public final File getCurrentFile() {
     return currentFile;
   }
 
   /**
-   * Sets the current recording file. This is used by the playback mechanism to allow type adapters to know what
-   * recording file is being loaded.
+   * Sets the current recording file. This is used by the playback mechanism to allow type adapters
+   * to know what recording file is being loaded.
    */
   public final void setCurrentFile(File currentFile) {
     this.currentFile = currentFile;
   }
-
 }

@@ -1,30 +1,28 @@
 package edu.wpi.first.shuffleboard.api.components;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceEntry;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
-
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
-import org.testfx.framework.junit5.ApplicationTest;
-
 import javafx.collections.ObservableList;
 import javafx.scene.Scene;
 import javafx.scene.control.TreeItem;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
-
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.testfx.framework.junit5.ApplicationTest;
 
 @Tag("UI")
 public class SourceTreeTableTest extends ApplicationTest {
 
   private final SourceType sourceType = new MockSourceType();
-  private final TreeItem<SourceEntry> root = new FilterableTreeItem<>(sourceType.createRootSourceEntry());
+  private final TreeItem<SourceEntry> root =
+      new FilterableTreeItem<>(sourceType.createRootSourceEntry());
   private SourceTreeTable<SourceEntry, ?> tree;
 
   @Override
@@ -44,9 +42,11 @@ public class SourceTreeTableTest extends ApplicationTest {
     ObservableList<TreeItem<SourceEntry>> children = root.getChildren();
     assertEquals(1, children.size(), "Should be 1 child");
     TreeItem<SourceEntry> child = children.get(0);
-    assertAll("", () -> {
-      assertEquals("firstLevel", child.getValue().getName());
-    });
+    assertAll(
+        "",
+        () -> {
+          assertEquals("firstLevel", child.getValue().getName());
+        });
   }
 
   private static class MockSourceType extends SourceType {
@@ -64,7 +64,6 @@ public class SourceTreeTableTest extends ApplicationTest {
     public SourceEntry createSourceEntryForUri(String uri) {
       return new MockSourceEntry(uri);
     }
-
   }
 
   private static class MockSourceEntry implements SourceEntry {
@@ -94,7 +93,5 @@ public class SourceTreeTableTest extends ApplicationTest {
     public DataSource get() {
       return null;
     }
-
   }
-
 }

@@ -1,14 +1,10 @@
 package edu.wpi.first.shuffleboard.api.util;
 
-/**
- * Specifies a <i>rounding behavior</i> for mathematical operations.
- */
+/** Specifies a <i>rounding behavior</i> for mathematical operations. */
 @FunctionalInterface
 public interface RoundingMode {
 
-  /**
-   * Rounds a fractional value to the nearest integer.
-   */
+  /** Rounds a fractional value to the nearest integer. */
   RoundingMode NEAREST = value -> (int) Math.round(value);
   /**
    * Rounds a fractional value down to the nearest integer less than or equal to the given value.
@@ -25,6 +21,4 @@ public interface RoundingMode {
    * @param value the value to round
    */
   int round(double value);
-
-
 }

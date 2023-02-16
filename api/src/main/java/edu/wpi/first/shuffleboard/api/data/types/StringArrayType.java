@@ -14,5 +14,4 @@ public final class StringArrayType extends SimpleDataType<String[]> {
   public String[] getDefaultValue() {
     return new String[0];
   }
-
 }

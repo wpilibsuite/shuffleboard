@@ -1,8 +1,8 @@
 package edu.wpi.first.shuffleboard.api.sources.recording.serialization;
 
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+
+import org.junit.jupiter.api.Test;
 
 public class NumberArrayAdapterTest extends AbstractAdapterTest<double[]> {
 
@@ -27,15 +27,14 @@ public class NumberArrayAdapterTest extends AbstractAdapterTest<double[]> {
   @Test
   public void testEncode() {
     double[] array = {
-        Double.MAX_VALUE,
-        Double.MIN_VALUE,
-        0,
-        -Double.MAX_VALUE,
-        Double.NaN,
-        Double.NEGATIVE_INFINITY,
-        Double.POSITIVE_INFINITY
+      Double.MAX_VALUE,
+      Double.MIN_VALUE,
+      0,
+      -Double.MAX_VALUE,
+      Double.NaN,
+      Double.NEGATIVE_INFINITY,
+      Double.POSITIVE_INFINITY
     };
     assertArrayEquals(array, adapter.deserialize(adapter.serialize(array), 0));
   }
-
 }

@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.plugin.base.layout;
 
+import com.google.common.collect.ImmutableSet;
 import edu.wpi.first.shuffleboard.api.Populatable;
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
@@ -13,12 +14,8 @@ import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 import edu.wpi.first.shuffleboard.api.widget.Sourced;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.SubsystemType;
-
-import com.google.common.collect.ImmutableSet;
-
 import java.util.List;
 import java.util.Set;
-
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
@@ -34,9 +31,10 @@ public class SubsystemLayout extends ListLayout implements Populatable, Sourced 
 
   @Override
   public boolean supports(String sourceId) {
-    DataType<?> dataType = SourceTypes.getDefault()
-        .typeForUri(sourceId)
-        .dataTypeForSource(DataTypes.getDefault(), sourceId);
+    DataType<?> dataType =
+        SourceTypes.getDefault()
+            .typeForUri(sourceId)
+            .dataTypeForSource(DataTypes.getDefault(), sourceId);
     return getSource() != null
         && !getSource().getId().equals(sourceId)
         && sourceId.startsWith(getSource().getId())
@@ -56,7 +54,8 @@ public class SubsystemLayout extends ListLayout implements Populatable, Sourced 
 
   @Override
   public void addComponentFor(DataSource<?> source) {
-    Components.getDefault().defaultComponentNameFor(source.getDataType())
+    Components.getDefault()
+        .defaultComponentNameFor(source.getDataType())
         .flatMap(name -> Components.getDefault().createComponent(name, source))
         .ifPresent(this::addChild);
   }
@@ -65,7 +64,8 @@ public class SubsystemLayout extends ListLayout implements Populatable, Sourced 
   public void addChild(Component child) {
     super.addChild(child);
     // Remove redundant source name information. If a subsystem is named "Elevator", anything
-    // underneath named "Elevator/Foo" would show the "Elevator" bit again, even though it's redundant.
+    // underneath named "Elevator/Foo" would show the "Elevator" bit again, even though it's
+    // redundant.
     if (getSource() != null) {
       String sourceName = getSource().getName();
       String prefix = sourceName.endsWith("/") ? sourceName : sourceName + "/";
@@ -93,15 +93,13 @@ public class SubsystemLayout extends ListLayout implements Populatable, Sourced 
         setTitle(source.getName());
       }
     } else {
-      throw new IncompatibleSourceException(ImmutableSet.of(SubsystemType.Instance), source.getDataType());
+      throw new IncompatibleSourceException(
+          ImmutableSet.of(SubsystemType.Instance), source.getDataType());
     }
   }
 
   @Override
   public Set<DataType> getDataTypes() {
-    return ImmutableSet.of(
-        SubsystemType.Instance
-    );
+    return ImmutableSet.of(SubsystemType.Instance);
   }
-
 }

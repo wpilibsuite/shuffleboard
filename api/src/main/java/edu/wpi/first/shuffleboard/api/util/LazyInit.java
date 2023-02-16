@@ -7,33 +7,34 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 
 /**
- * A holder class for lazily initialized values. This is useful for variables that may be constructed after its owner,
- * or when they may not necessarily be used at all during its owners lifecycle, and when it is expensive to instantiate.
+ * A holder class for lazily initialized values. This is useful for variables that may be
+ * constructed after its owner, or when they may not necessarily be used at all during its owners
+ * lifecycle, and when it is expensive to instantiate.
  *
  * <p>Example use:
- * <pre>
- * {@code
+ *
+ * <pre>{@code
  * private final LazyInit<Foo> foo = LazyInit.of(() -> expensiveFooConstruction());
  *
  * void useFoo() {
  *   Foo foo = this.foo.get();
  *   // Do thing with foo
  * }
- * }
- * </pre>
+ * }</pre>
  *
- * <p>If the contained value uses a lot of memory or locks a system resource, or is otherwise expensive to keep around,
- * and is currently unused (and may not be used again for a while), the value can be cleaned up with
- * <pre>
- * {@code
+ * <p>If the contained value uses a lot of memory or locks a system resource, or is otherwise
+ * expensive to keep around, and is currently unused (and may not be used again for a while), the
+ * value can be cleaned up with
+ *
+ * <pre>{@code
  * if (lazyInit.hasValue()) {
  *   cleanUp(lazyInit.get()); // application-specific clean up
  *   lazyInit.clear();
  * }
- * }
- * </pre>
+ * }</pre>
  *
- * <p>After calling {@link #clear()}, successive calls to {@link #get()} will re-initialize the value.</p>
+ * <p>After calling {@link #clear()}, successive calls to {@link #get()} will re-initialize the
+ * value.
  *
  * @param <T> the type of the value to be initialized
  */
@@ -58,8 +59,7 @@ public final class LazyInit<T> implements Supplier<T> {
    * Creates a new lazy initializer.
    *
    * @param initializer the function to use to initialize the value when it is first accessed
-   * @param <T>         the type of the value to be initialized
-   *
+   * @param <T> the type of the value to be initialized
    * @return a new lazy initializer
    */
   public static <T> LazyInit<T> of(Callable<? extends T> initializer) {
@@ -67,11 +67,10 @@ public final class LazyInit<T> implements Supplier<T> {
   }
 
   /**
-   * Gets the value, initializing it if necessary. If the initializer throws an exception, further calls to this method
-   * will attempt to initialize.
+   * Gets the value, initializing it if necessary. If the initializer throws an exception, further
+   * calls to this method will attempt to initialize.
    *
    * @return the value
-   *
    * @throws RuntimeException if initialization failed
    */
   @Override
@@ -107,7 +106,8 @@ public final class LazyInit<T> implements Supplier<T> {
   }
 
   /**
-   * Clears the data in this container. The next call to {@link #get()} will re-initialize the value.
+   * Clears the data in this container. The next call to {@link #get()} will re-initialize the
+   * value.
    */
   public void clear() {
     try {
@@ -118,5 +118,4 @@ public final class LazyInit<T> implements Supplier<T> {
       lock.unlock();
     }
   }
-
 }

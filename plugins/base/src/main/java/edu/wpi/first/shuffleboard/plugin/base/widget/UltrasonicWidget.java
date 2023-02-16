@@ -6,9 +6,7 @@ import edu.wpi.first.shuffleboard.api.widget.Description;
 import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 import edu.wpi.first.shuffleboard.api.widget.SimpleAnnotatedWidget;
 import edu.wpi.first.shuffleboard.plugin.base.data.UltrasonicData;
-
 import java.util.List;
-
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.fxml.FXML;
@@ -19,10 +17,8 @@ import javafx.scene.layout.Pane;
 @ParametrizedController("UltrasonicWidget.fxml")
 public final class UltrasonicWidget extends SimpleAnnotatedWidget<UltrasonicData> {
 
-  @FXML
-  private Pane root;
-  @FXML
-  private TextField data;
+  @FXML private Pane root;
+  @FXML private TextField data;
 
   private final Property<Unit> unit = new SimpleObjectProperty<>(this, "unit", Unit.INCH);
 
@@ -30,10 +26,12 @@ public final class UltrasonicWidget extends SimpleAnnotatedWidget<UltrasonicData
 
   @FXML
   private void initialize() {
-    data.textProperty().bind(
-        dataOrDefault.map(UltrasonicData::getRangeInches)
-            .map(d -> Unit.INCH.as(d, getUnit()))
-            .map(v -> String.format(FORMAT, v, getUnit().abbreviation)));
+    data.textProperty()
+        .bind(
+            dataOrDefault
+                .map(UltrasonicData::getRangeInches)
+                .map(d -> Unit.INCH.as(d, getUnit()))
+                .map(v -> String.format(FORMAT, v, getUnit().abbreviation)));
   }
 
   public Unit getUnit() {
@@ -45,9 +43,7 @@ public final class UltrasonicWidget extends SimpleAnnotatedWidget<UltrasonicData
     return List.of(
         Group.of(
             "Unit",
-            Setting.of("Unit", "The unit to display the measured distance as", unit, Unit.class)
-        )
-    );
+            Setting.of("Unit", "The unit to display the measured distance as", unit, Unit.class)));
   }
 
   @Override
@@ -74,5 +70,4 @@ public final class UltrasonicWidget extends SimpleAnnotatedWidget<UltrasonicData
       return value * (unit.baseUnitEquivalent / this.baseUnitEquivalent);
     }
   }
-
 }
