@@ -55,6 +55,8 @@ public final class NetworkTableUtils {
       var ntValue = rootTable.getEntry(normalKey).getValue();
       if (ntValue.isValid()) {
         return DataTypes.getDefault().forJavaType(ntValue.getValue().getClass()).get();
+      } else {
+        return null;
       }
     }
     if (rootTable.containsSubTable(normalKey)) {
