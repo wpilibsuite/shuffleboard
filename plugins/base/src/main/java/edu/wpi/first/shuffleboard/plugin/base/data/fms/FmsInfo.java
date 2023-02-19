@@ -64,14 +64,14 @@ public final class FmsInfo extends ComplexData<FmsInfo> {
    */
   public FmsInfo(Map<String, Object> map) {
     this(
-        Maps.get(map, GAME_SPECIFIC_MESSAGE),
-        Maps.get(map, EVENT_NAME),
-        Maps.<String, Number>get(map, MATCH_NUMBER).intValue(),
-        Maps.<String, Number>get(map, REPLAY_NUMBER).intValue(),
-        MatchType.fromOrdinal(Maps.<String, Number>get(map, MATCH_TYPE).intValue()),
-        Maps.<String, Boolean>get(map, IS_RED_ALLIANCE) ? Alliance.RED : Alliance.BLUE,
-        Maps.<String, Number>get(map, STATION_NUMBER).intValue(),
-        ControlWord.fromBits(Maps.<String, Number>get(map, FMS_CONTROL_DATA).intValue())
+        Maps.getOrDefault(map, GAME_SPECIFIC_MESSAGE, ""),
+        Maps.getOrDefault(map, EVENT_NAME, ""),
+        Maps.<String, Object, Number>getOrDefault(map, MATCH_NUMBER, 0).intValue(),
+        Maps.<String, Object, Number>getOrDefault(map, REPLAY_NUMBER, 0).intValue(),
+        MatchType.fromOrdinal(Maps.<String, Object, Number>getOrDefault(map, MATCH_TYPE, MatchType.NONE.ordinal()).intValue()),
+        Maps.<String, Object, Boolean>getOrDefault(map, IS_RED_ALLIANCE, true) ? Alliance.RED : Alliance.BLUE,
+        Maps.<String, Object, Number>getOrDefault(map, STATION_NUMBER, 1).intValue(),
+        ControlWord.fromBits(Maps.<String, Object, Number>getOrDefault(map, FMS_CONTROL_DATA, 0).intValue())
     );
   }
 
