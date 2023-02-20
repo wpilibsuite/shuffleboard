@@ -207,7 +207,7 @@ final class TabGenerator {
       var tables = hierarchy.stream()
           .takeWhile(s -> !s.contains("/."))
           .collect(Collectors.toList());
-      if (tables.size() >= (isShuffleboard? 3 : 2)) {
+      if (tables.size() >= (isShuffleboard ? 3 : 2)) {
         updateFrom(tables);
       }
       return;
@@ -224,7 +224,7 @@ final class TabGenerator {
 
   private void updateStructure(List<String> hierarchy) {
     // 0='/', 1='/Shuffleboard', 2='/Shuffleboard/<Tab>'
-    String tabName = NetworkTable.basenameKey(hierarchy.get(isShuffleboard(hierarchy)? 2 : 1));
+    String tabName = NetworkTable.basenameKey(hierarchy.get(isShuffleboard(hierarchy) ? 2 : 1));
     TabModel tab = tabs.getTab(tabName);
     ParentModel parent = tab;
     int index = 0;
