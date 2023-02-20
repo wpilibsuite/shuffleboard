@@ -68,7 +68,8 @@ public final class FmsInfo extends ComplexData<FmsInfo> {
         Maps.getOrDefault(map, EVENT_NAME, ""),
         Maps.<String, Object, Number>getOrDefault(map, MATCH_NUMBER, 0).intValue(),
         Maps.<String, Object, Number>getOrDefault(map, REPLAY_NUMBER, 0).intValue(),
-        MatchType.fromOrdinal(Maps.<String, Object, Number>getOrDefault(map, MATCH_TYPE, MatchType.NONE.ordinal()).intValue()),
+        MatchType.fromOrdinal(Maps.<String, Object, Number>getOrDefault(map, MATCH_TYPE,
+                        MatchType.NONE.ordinal()).intValue()),
         Maps.<String, Object, Boolean>getOrDefault(map, IS_RED_ALLIANCE, true) ? Alliance.RED : Alliance.BLUE,
         Maps.<String, Object, Number>getOrDefault(map, STATION_NUMBER, 1).intValue(),
         ControlWord.fromBits(Maps.<String, Object, Number>getOrDefault(map, FMS_CONTROL_DATA, 0).intValue())
