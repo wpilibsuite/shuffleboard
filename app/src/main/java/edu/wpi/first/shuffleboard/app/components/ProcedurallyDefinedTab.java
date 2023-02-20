@@ -108,7 +108,7 @@ public class ProcedurallyDefinedTab extends DashboardTab {
           continue;
         }
         component.setTitle(componentModel.getTitle());
-        if (componentModel instanceof WidgetModel) {
+        if (component instanceof Widget && componentModel instanceof WidgetModel) {
           ((Widget) component).addSource(((WidgetModel) componentModel).getDataSource());
         }
         proceduralComponents.put(componentModel, component);
