@@ -81,7 +81,7 @@ import java.util.prefs.Preferences;
 @Description(
     group = "edu.wpi.first.shuffleboard",
     name = "Base",
-    version = "1.3.6",
+    version = "1.3.7",
     summary = "Defines all the WPILib data types and stock widgets"
 )
 @SuppressWarnings("PMD.CouplingBetweenObjects")
@@ -221,10 +221,7 @@ public class BasePlugin extends Plugin {
 
   @Override
   public List<TabInfo> getDefaultTabInfo() {
-    return ImmutableList.of(
-        TabInfo.builder().name("SmartDashboard").autoPopulate().sourcePrefix("SmartDashboard/").build(),
-        TabInfo.builder().name("LiveWindow").autoPopulate().sourcePrefix("LiveWindow/").build()
-    );
+    return ImmutableList.of();
   }
 
   @Override

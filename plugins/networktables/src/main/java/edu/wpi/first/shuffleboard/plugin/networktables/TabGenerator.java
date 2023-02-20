@@ -8,6 +8,7 @@ import edu.wpi.first.shuffleboard.api.tab.model.ParentModel;
 import edu.wpi.first.shuffleboard.api.tab.model.TabModel;
 import edu.wpi.first.shuffleboard.api.tab.model.TabStructure;
 import edu.wpi.first.shuffleboard.api.tab.model.WidgetModel;
+import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.api.util.GridPoint;
 import edu.wpi.first.shuffleboard.api.util.function.MappableSupplier;
 import edu.wpi.first.shuffleboard.api.widget.Components;
@@ -38,8 +39,8 @@ import java.util.stream.Stream;
 @SuppressWarnings("PMD.GodClass")
 final class TabGenerator {
 
-  public static final String ROOT_TABLE_NAME = "/Shuffleboard";
-  public static final String METADATA_TABLE_NAME = ROOT_TABLE_NAME + "/.metadata";
+  public static final String ROOT_TABLE_NAME = "";
+  public static final String METADATA_TABLE_NAME = ROOT_TABLE_NAME + "/Shuffleboard/.metadata";
   public static final String PREF_COMPONENT_ENTRY_NAME = "PreferredComponent";
   public static final String PROPERTIES_TABLE_NAME = "Properties";
   public static final String TABS_ENTRY_KEY = "Tabs";
@@ -196,7 +197,8 @@ final class TabGenerator {
       return;
     }
     List<String> hierarchy = NetworkTable.getHierarchy(name);
-    if (hierarchy.size() < 3) {
+    boolean isShuffleboard = isShuffleboard(hierarchy);
+    if (hierarchy.size() < (isShuffleboard ? 3 : 2)) {
       // Not enough data
       return;
     }
@@ -205,7 +207,7 @@ final class TabGenerator {
       var tables = hierarchy.stream()
           .takeWhile(s -> !s.contains("/."))
           .collect(Collectors.toList());
-      if (tables.size() >= 3) {
+      if (tables.size() >= (isShuffleboard? 3 : 2)) {
         updateFrom(tables);
       }
       return;
@@ -214,13 +216,16 @@ final class TabGenerator {
   }
 
   private void updateFrom(List<String> tables) {
-    updateStructure(tables);
-    tabs.dirty();
+    FxUtils.runOnFxThread(() -> {
+      updateStructure(tables);
+      tabs.dirty();
+    });
   }
 
   private void updateStructure(List<String> hierarchy) {
     // 0='/', 1='/Shuffleboard', 2='/Shuffleboard/<Tab>'
-    TabModel tab = tabs.getTab(NetworkTable.basenameKey(hierarchy.get(2)));
+    String tabName = NetworkTable.basenameKey(hierarchy.get(isShuffleboard(hierarchy)? 2 : 1));
+    TabModel tab = tabs.getTab(tabName);
     ParentModel parent = tab;
     int index = 0;
     boolean end = false;
@@ -371,5 +376,12 @@ final class TabGenerator {
         component.setPreferredPosition(new GridPoint((int) pos[0], (int) pos[1]));
       }
     }
+  }
+
+  /**
+   * Check if topic or table is under the `/Shuffleboard` root table.
+   */
+  private boolean isShuffleboard(List<String> hierarchy) {
+    return hierarchy.get(1).equals("/Shuffleboard");
   }
 }
