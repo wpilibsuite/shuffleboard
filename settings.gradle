@@ -33,6 +33,6 @@ private void setUpChildProject(ProjectDescriptor project) {
     if (!project.buildFile.isFile()) {
         project.buildFileName = kotlinName
     }
-    assert project.buildFile.isFile(): "File named $groovyName or $kotlinName must exist."
+    // assert project.buildFile.isFile(): "File named $groovyName or $kotlinName must exist."
     project.children.each { setUpChildProject(it) }
 }

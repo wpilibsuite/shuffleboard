@@ -1,6 +1,7 @@
 package edu.wpi.first.shuffleboard.app;
 
 import edu.wpi.first.shuffleboard.api.prefs.Group;
+import edu.wpi.first.shuffleboard.api.tab.model.ComponentModel;
 import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.Layout;
 
@@ -23,6 +24,8 @@ public final class MockLayout implements Layout {
 
   private final List<Component> children = new ArrayList<>();
   private final Pane view = new VBox();
+
+  protected ComponentModel model = null;
 
   @Override
   public Collection<Component> getChildren() {
@@ -68,5 +71,20 @@ public final class MockLayout implements Layout {
   @Override
   public List<Group> getSettings() {
     return Collections.emptyList();
+  }
+
+  @Override
+  public boolean hasModel() {
+    return model != null;
+  }
+
+  @Override
+  public ComponentModel getModel() {
+    return model;
+  }
+
+  @Override
+  public void setModel(ComponentModel model) {
+    this.model = model;
   }
 }

@@ -226,6 +226,7 @@ public class WidgetPane extends TilePane implements ComponentContainer {
    */
   public WidgetTile addWidget(Widget widget, TileSize size) {
     WidgetTile tile = new WidgetTile(widget, size);
+    tile.setVisible(widget.isVisible());
     tile.sizeProperty().addListener(__ -> setSize(tile, tile.getSize()));
     if (addTile(tile, size) != null) {
       // can't set the size if it wasn't actually added
@@ -254,7 +255,7 @@ public class WidgetPane extends TilePane implements ComponentContainer {
   @Override
   public void addComponent(Component component) {
     if (component instanceof Widget) {
-      addWidget((Widget) component);
+      addWidget((Widget) component).setVisible(component.isVisible());;
     } else {
       addComponent(component, sizeOfWidget(component));
     }
@@ -276,6 +277,7 @@ public class WidgetPane extends TilePane implements ComponentContainer {
         return;
       }
       Tile<?> tile = addComponent(component, location, size);
+      tile.setVisible(component.isVisible());
       if (getChildren().contains(tile)) {
         // Can only set the size if the tile was actually added
         TileDragResizer.makeResizable(this, tile);
@@ -292,8 +294,14 @@ public class WidgetPane extends TilePane implements ComponentContainer {
       return null;
     }
     var component = optionalComponent.get();
+    component.setModel(componentModel);
     GridPoint position = componentModel.getPreferredPosition();
     TileSize size = componentModel.getPreferredSize();
+    if (componentModel.getVisibility()) {
+      component.show();
+    } else {
+      component.hide();
+    }
     if (position == null) {
       if (size == null) {
         addComponent(component);
@@ -320,6 +328,7 @@ public class WidgetPane extends TilePane implements ComponentContainer {
    */
   public <C extends Component> Tile<C> addComponent(C component, GridPoint location, TileSize size) {
     Tile<C> tile = Tile.tileFor(component, size);
+    tile.setVisible(component.isVisible());
     TileDragResizer.makeResizable(this, tile);
     tile.sizeProperty().addListener(__ -> setSize(tile, tile.getSize()));
     addTile(tile, location, size);

@@ -3,6 +3,7 @@ package edu.wpi.first.shuffleboard.app;
 import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
 import edu.wpi.first.shuffleboard.api.prefs.Group;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
+import edu.wpi.first.shuffleboard.api.tab.model.ComponentModel;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 
 import com.google.common.collect.ImmutableList;
@@ -19,6 +20,8 @@ import javafx.scene.layout.Pane;
 import org.controlsfx.glyphfont.FontAwesome;
 
 public final class MockWidget implements Widget {
+
+  protected ComponentModel model = null;
 
   @Override
   public List<Group> getSettings() {
@@ -58,5 +61,20 @@ public final class MockWidget implements Widget {
   @Override
   public ObservableList<DataSource> getSources() {
     return FXCollections.emptyObservableList();
+  }
+
+  @Override
+  public boolean hasModel() {
+    return model != null;
+  }
+
+  @Override
+  public ComponentModel getModel() {
+    return model;
+  }
+
+  @Override
+  public void setModel(ComponentModel model) {
+    this.model = model;
   }
 }

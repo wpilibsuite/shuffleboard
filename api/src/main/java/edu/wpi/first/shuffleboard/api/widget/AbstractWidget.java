@@ -3,6 +3,7 @@ package edu.wpi.first.shuffleboard.api.widget;
 import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
 import edu.wpi.first.shuffleboard.api.prefs.Group;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
+import edu.wpi.first.shuffleboard.api.tab.model.ComponentModel;
 
 import com.google.common.collect.ImmutableList;
 
@@ -28,6 +29,8 @@ public abstract class AbstractWidget implements Widget {
 
   protected final ObservableList<DataSource> sources = FXCollections.observableArrayList();
 
+  protected ComponentModel model = null;
+
   private final StringProperty title = new SimpleStringProperty(this, "title", "");
   private final Property<FontAwesome.Glyph> glyph = new SimpleObjectProperty<>(this, "glyph", FontAwesome.Glyph.CUBE);
   private final BooleanProperty showGlyph = new SimpleBooleanProperty(this, "showGlyph", false);
@@ -46,6 +49,7 @@ public abstract class AbstractWidget implements Widget {
   private boolean useGeneratedTitle = true;
 
   protected AbstractWidget() {
+    this.model = null;
     sources.addListener((InvalidationListener) __ -> {
       if (getTitle().isEmpty()) {
         useGeneratedTitle = true;
@@ -111,4 +115,18 @@ public abstract class AbstractWidget implements Widget {
     source.addClient(this);
   }
 
+  @Override
+  public boolean hasModel() {
+    return model != null;
+  }
+
+  @Override
+  public ComponentModel getModel() {
+    return model;
+  }
+
+  @Override
+  public void setModel(ComponentModel model) {
+    this.model = model;
+  }
 }
