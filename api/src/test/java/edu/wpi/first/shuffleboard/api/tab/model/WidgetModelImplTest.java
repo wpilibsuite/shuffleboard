@@ -13,7 +13,7 @@ public class WidgetModelImplTest {
   @Test
   public void getGetSource() {
     DataSource<?> source = DataSource.none();
-    WidgetModel widget = new WidgetModelImpl("", null, () -> source, "", Collections.emptyMap());
+    WidgetModel widget = new WidgetModelImpl("", null, () -> source, "", Collections.emptyMap(), true);
     assertSame(source, widget.getDataSource(), "Wrong source returned by getDataSource()");
   }
 

@@ -54,7 +54,7 @@ public interface ParentModel {
                                   Map<String, Object> properties) {
     ComponentModel existingChild = getChild(path);
     if (existingChild == null) {
-      WidgetModel widget = new WidgetModelImpl(path, this, sourceSupplier, displayType, properties);
+      WidgetModel widget = new WidgetModelImpl(path, this, sourceSupplier, displayType, properties, true);
       addChild(widget);
       return widget;
     } else {

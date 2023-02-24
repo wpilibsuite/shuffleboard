@@ -49,7 +49,7 @@ public class LayoutModelImplTest {
   public void testAddChild() {
     LayoutModel layout = new LayoutModelImpl("Layout", parent, "List");
     String path = "/Shuffleboard/Tab/Foo";
-    ComponentModel child = new WidgetModelImpl(path, layout, () -> null, "", Collections.emptyMap());
+    ComponentModel child = new WidgetModelImpl(path, layout, () -> null, "", Collections.emptyMap(), true);
     layout.addChild(child);
     assertSame(child, layout.getChild(path));
   }

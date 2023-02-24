@@ -47,6 +47,8 @@ final class TabGenerator {
   public static final String POSITION_ENTRY_NAME = "Position";
   public static final String SIZE_ENTRY_NAME = "Size";
   public static final String SELECTED_ENTRY_NAME = "Selected";
+  public static final String VISIBILE_ENTRY_NAME = "Visible";
+
 
   public static final String TAB_TYPE = "ShuffleboardTab";
   public static final String LAYOUT_TYPE = "ShuffleboardLayout";
@@ -123,7 +125,7 @@ final class TabGenerator {
 
     List<String> metaHierarchy = NetworkTable.getHierarchy(name);
     if (metaHierarchy.size() < 5) {
-      // Not metadata for a component or a tab, bail
+      // Data not nested deep enough, not metadata for a component or a tab, bail
       return;
     }
     List<String> realHierarchy = NetworkTable.getHierarchy(realPath(name));
@@ -162,6 +164,16 @@ final class TabGenerator {
       if (pos.length == 2) {
         tab.getChild(real).setPreferredPosition(new GridPoint((int) pos[0], (int) pos[1]));
       }
+    }
+
+    // Component visibility
+    if (name.endsWith("/" + VISIBILE_ENTRY_NAME)) {
+      String real = realHierarchy.get(realHierarchy.size() - 2);
+      if (tab.getChild(real) == null) {
+        // No component yet
+        return;
+      }
+      tab.getChild(real).setVisibility(event.valueData.value.getBoolean());
     }
 
     // Component (or tab) properties
