@@ -4,6 +4,7 @@ import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
+import edu.wpi.first.shuffleboard.api.tab.model.ComponentModel;
 import edu.wpi.first.shuffleboard.api.util.Registry;
 import edu.wpi.first.shuffleboard.api.util.TestUtils;
 import edu.wpi.first.shuffleboard.api.util.TypeUtils;
@@ -338,6 +339,14 @@ public class Components extends Registry<ComponentType> {
    */
   public List<String> componentNamesForSource(DataSource<?> source) {
     return componentNamesForType(source.getDataType());
+  }
+
+  public Optional<Widget> getWidget(ComponentModel model) {
+    return this.getActiveWidgets()
+        .stream()
+        .filter(widget -> widget.hasModel())
+        .filter(widget -> widget.getModel().equals(model))
+        .findFirst();
   }
 
   /**

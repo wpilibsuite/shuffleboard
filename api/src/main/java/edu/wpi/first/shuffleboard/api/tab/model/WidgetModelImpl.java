@@ -24,4 +24,21 @@ class WidgetModelImpl extends ComponentModelImpl implements WidgetModel {
     return sourceSupplier.get();
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof WidgetModelImpl)) {
+      return false;
+    }
+    if (!super.equals(o)) {
+      return false;
+    }
+
+    WidgetModelImpl that = (WidgetModelImpl) o;
+
+    return sourceSupplier != null ? sourceSupplier.equals(that.sourceSupplier) : that.sourceSupplier == null;
+  }
+
 }

@@ -11,7 +11,9 @@ import edu.wpi.first.shuffleboard.api.tab.model.WidgetModel;
 import edu.wpi.first.shuffleboard.api.util.GridPoint;
 import edu.wpi.first.shuffleboard.api.util.function.MappableSupplier;
 import edu.wpi.first.shuffleboard.api.widget.Components;
+import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.TileSize;
+import edu.wpi.first.shuffleboard.api.widget.Widget;
 import edu.wpi.first.shuffleboard.plugin.networktables.sources.NetworkTableSource;
 
 import edu.wpi.first.networktables.NetworkTable;
@@ -149,7 +151,14 @@ final class TabGenerator {
       }
       double[] size = event.valueData.value.getDoubleArray();
       if (size.length == 2) {
-        tab.getChild(real).setPreferredSize(new TileSize((int) size[0], (int) size[1]));
+        // tab.getChild(real).setPreferredSize(new TileSize((int) size[0], (int) size[1]));
+        ComponentModel model = tab.getChild(real);
+        model.setPreferredSize(new TileSize((int) size[0], (int) size[1]));
+        Optional<Widget> widget = componentRegistry.getWidget(model);
+        if (widget.isPresent()) {
+          var tile = widget.get().getView().getParent().getParent();
+          // tile.setSize(new TileSize((int) size[0], (int) size[1]));
+        }
       }
     }
 
@@ -173,7 +182,18 @@ final class TabGenerator {
         // No component yet
         return;
       }
-      tab.getChild(real).setVisibility(event.valueData.value.getBoolean());
+      ComponentModel model = tab.getChild(real);
+      boolean visible = event.valueData.value.getBoolean();
+      model.setVisibility(visible);
+      Optional<Widget> widget = componentRegistry.getWidget(model);
+      if (widget.isPresent()) {
+        widget.get().getView().getParent().getParent().setVisible(visible);
+        // if (visible) {
+        //   widget.get().show();
+        // } else {
+        //   widget.get().hide();
+        // }
+      }
     }
 
     // Component (or tab) properties
