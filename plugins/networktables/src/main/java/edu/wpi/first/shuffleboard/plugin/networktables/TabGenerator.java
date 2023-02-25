@@ -200,7 +200,7 @@ final class TabGenerator {
       }
       ComponentModel model = tab.getChild(real);
       double opacity = event.valueData.value.getDouble();
-      // model.setVisibility(visible);
+      model.setOpacity(opacity);
       Optional<Widget> widget = componentRegistry.getWidget(model);
       if (widget.isPresent()) {
         var tile = widget.get().getView().getParent().getParent();

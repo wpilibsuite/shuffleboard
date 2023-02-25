@@ -68,8 +68,6 @@ public class appPlatter {
     }
 
     public void notifyListeners(Node obj, String data) {
-        // System.out.println("notifyListeners: " + obj.getId());
-        // System.out.println("listeners: " + tileCompListeners.keySet());
         var lambda = tileCompListeners.get(obj.getId());
         if (lambda != null) {
             lambda.accept(data);
@@ -77,7 +75,6 @@ public class appPlatter {
     }
 
     public void notifyListeners(Node obj, double data) {
-        System.out.println("notifyListeners: " + obj.getId());
         var lambda = tileOpacListeners.get(obj.getId());
         if (lambda != null) {
             lambda.accept(data);
