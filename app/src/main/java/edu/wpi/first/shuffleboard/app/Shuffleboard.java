@@ -1,10 +1,15 @@
 package edu.wpi.first.shuffleboard.app;
 
+import edu.wpi.first.shuffleboard.api.appPlatter;
 import edu.wpi.first.shuffleboard.api.sources.recording.Converters;
 import edu.wpi.first.shuffleboard.api.theme.Themes;
 import edu.wpi.first.shuffleboard.api.util.ShutdownHooks;
 import edu.wpi.first.shuffleboard.api.util.Storage;
 import edu.wpi.first.shuffleboard.api.util.Time;
+import edu.wpi.first.shuffleboard.api.widget.Components;
+import edu.wpi.first.shuffleboard.api.widget.Widget;
+import edu.wpi.first.shuffleboard.app.components.Tile;
+import edu.wpi.first.shuffleboard.app.components.WidgetTile;
 import edu.wpi.first.shuffleboard.app.plugin.PluginCache;
 import edu.wpi.first.shuffleboard.app.plugin.PluginLoader;
 import edu.wpi.first.shuffleboard.app.prefs.AppPreferences;
@@ -162,6 +167,22 @@ public class Shuffleboard extends Application {
     Time.setStartTime(Time.now());
     long startupTime = startupTimer.elapsed(TimeUnit.MILLISECONDS);
     logger.log(startupTime > 5000 ? Level.WARNING : Level.INFO, "Took " + startupTime + "ms to start Shuffleboard");
+
+    Platform.setImplicitExit(false);
+
+    appPlatter.getInstance().setReQueueTiles(() -> {
+      Components.getDefault().getActiveWidgets()
+          .stream()
+          .forEach((comp) -> {
+            if (comp.getView().getParent() == null) {
+            }
+            else if (comp.getView().getParent().getParent() instanceof WidgetTile) {
+              ((WidgetTile) comp.getView().getParent().getParent()).setupApiListeners();
+              // System.out.println("ReQueued " + comp.getTitle());
+            }
+          }
+        );
+    });
   }
 
   @Override

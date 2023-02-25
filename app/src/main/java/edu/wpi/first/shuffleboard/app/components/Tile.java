@@ -144,7 +144,10 @@ public class Tile<T extends Component> extends BorderPane {
 
   public void setupApiListeners() {
     appPlatter platter = appPlatter.getInstance();
-    platter.addSizeListener(this, (size) -> setSize(size));
+    platter.addSizeListener(this, (size) -> {
+      setSize(size);
+      ((WidgetPane) this.getParent()).setSize(this, size);
+    });
     platter.addPoseListener(this, (pose) -> {
       var pane = ((WidgetPane) this.getParent());
       pane.moveNode(this, pose);

@@ -18,7 +18,7 @@ public class appPlatter {
     private final Map<String, Consumer<String>> tileCompListeners = new HashMap<>();
     private final Map<String, Consumer<Double>> tileOpacListeners = new HashMap<>();
 
-
+    private Runnable reQueueTiles = () -> {};
 
     public static appPlatter getInstance() {
         if (instance == null) {
@@ -50,36 +50,51 @@ public class appPlatter {
     }
 
     public void notifyListeners(Node obj, TileSize data) {
+        System.out.println("notifySizeListeners: " + obj.getId());
         var lambda = tileSizeListeners.get(obj.getId());
         if (lambda != null) {
             lambda.accept(data);
-            //when resized a new tile is actually constructed
-            tileSizeListeners.remove(obj.getId());
         }
+        refresh();
     }
 
     public void notifyListeners(Node obj, GridPoint data) {
+        System.out.println("notifyPoseListeners: " + obj.getId());
         var lambda = tilePosListeners.get(obj.getId());
         if (lambda != null) {
             lambda.accept(data);
-            //when moved a new tile is actually constructed
-            tilePosListeners.remove(obj.getId());
         }
+        refresh();
     }
 
     public void notifyListeners(Node obj, String data) {
-        System.out.println("notifyListeners: " + obj.getId());
-        // System.out.println("listeners: " + tileCompListeners.keySet());
+        System.out.println("notifyCompListeners: " + obj.getId());
         var lambda = tileCompListeners.get(obj.getId());
         if (lambda != null) {
             lambda.accept(data);
         }
+        refresh();
     }
 
     public void notifyListeners(Node obj, double data) {
+        System.out.println("notifyOpacityListeners: " + obj.getId());
+        System.out.println("listeners: " + tileCompListeners.keySet());
         var lambda = tileOpacListeners.get(obj.getId());
         if (lambda != null) {
             lambda.accept(data);
         }
+        refresh();
+    }
+
+    public void setReQueueTiles(Runnable reQueueTiles) {
+        this.reQueueTiles = reQueueTiles;
+    }
+
+    private void refresh() {
+        tileSizeListeners.clear();
+        tilePosListeners.clear();
+        tileCompListeners.clear();
+        tileOpacListeners.clear();
+        reQueueTiles.run();
     }
 }
