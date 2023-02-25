@@ -68,6 +68,8 @@ public class appPlatter {
     }
 
     public void notifyListeners(Node obj, String data) {
+        System.out.println("notifyListeners: " + obj.getId());
+        // System.out.println("listeners: " + tileCompListeners.keySet());
         var lambda = tileCompListeners.get(obj.getId());
         if (lambda != null) {
             lambda.accept(data);

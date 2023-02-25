@@ -585,6 +585,8 @@ public class WidgetPaneController {
                       .createWidget(name, widget.getSources())
                       .ifPresent(newWidget -> {
                         newWidget.setTitle(widget.getTitle());
+                        newWidget.setModel(widget.getModel());
+                        widget.setModel(null);
                         tile.setContent(newWidget);
                       });
                 }

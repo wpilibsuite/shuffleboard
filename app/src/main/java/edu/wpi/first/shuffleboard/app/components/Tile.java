@@ -157,7 +157,12 @@ public class Tile<T extends Component> extends BorderPane {
           widget.get().setTitle(oldWidget.getTitle());
           widget.get().setModel(oldWidget.getModel());
           oldWidget.setModel(null);
-          Platform.runLater(() -> setContent((T) widget.get()));
+          Platform.runLater(() -> {
+            //sometimes just gets lost in the ether 🤷‍♀️
+            //TODO: make this more reliable if it will be included in release
+            setContent((T) widget.get());
+            System.out.println("Setting widget to " + widget.get());
+          });
         }
       }
     });

@@ -156,6 +156,8 @@ public abstract class LayoutBase implements Layout {
           .createWidget(name, widget.getSources())
           .ifPresent(replacement -> {
             replacement.setTitle(widget.getTitle());
+            replacement.setModel(widget.getModel());
+            widget.setModel(null);
             replaceInPlace(widget, replacement);
             getChildren().set(getChildren().indexOf(widget), replacement); // NOPMD - there's no enclosing class!
           });
