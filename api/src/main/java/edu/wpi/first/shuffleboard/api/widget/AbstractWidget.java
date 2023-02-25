@@ -30,6 +30,7 @@ public abstract class AbstractWidget implements Widget {
   protected final ObservableList<DataSource> sources = FXCollections.observableArrayList();
 
   protected ComponentModel model = null;
+  protected double opacity = 1.0;
 
   private final StringProperty title = new SimpleStringProperty(this, "title", "");
   private final Property<FontAwesome.Glyph> glyph = new SimpleObjectProperty<>(this, "glyph", FontAwesome.Glyph.CUBE);
@@ -128,5 +129,15 @@ public abstract class AbstractWidget implements Widget {
   @Override
   public void setModel(ComponentModel model) {
     this.model = model;
+  }
+
+  @Override
+  public double getOpacity() {
+    return opacity;
+  }
+
+  @Override
+  public void setOpacity(double value) {
+    this.opacity = value;
   }
 }

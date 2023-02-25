@@ -47,7 +47,7 @@ public interface ComponentModel extends PropertyHolder, Titled {
   /**
    * Sets the visibility of this component. If no visibilty is set it will default to shown
    */
-  void setVisibility(boolean visible);
+  void setOpacity(double value);
 
   /**
    * Gets the preferred position of this component, as specified by {@link #setPreferredPosition}.
@@ -66,7 +66,7 @@ public interface ComponentModel extends PropertyHolder, Titled {
   TileSize getPreferredSize();
 
   /**
-   * Gets the visibility of this component, as specified by {@link #setVisibility}.
+   * Gets the visibility of this component, as specified by {@link #setOpacity}.
    */
-  boolean getVisibility();
+  double getOpacity();
 }

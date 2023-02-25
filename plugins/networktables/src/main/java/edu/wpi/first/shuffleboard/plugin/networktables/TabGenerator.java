@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.plugin.networktables;
 
+import edu.wpi.first.shuffleboard.api.appPlatter;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
 import edu.wpi.first.shuffleboard.api.tab.model.ComponentModel;
@@ -49,7 +50,8 @@ final class TabGenerator {
   public static final String POSITION_ENTRY_NAME = "Position";
   public static final String SIZE_ENTRY_NAME = "Size";
   public static final String SELECTED_ENTRY_NAME = "Selected";
-  public static final String VISIBILE_ENTRY_NAME = "Visible";
+  // public static final String VISIBILE_ENTRY_NAME = "Visible";
+  public static final String OPACITY_ENTRY_NAME = "Opacity";
 
 
   public static final String TAB_TYPE = "ShuffleboardTab";
@@ -139,7 +141,14 @@ final class TabGenerator {
       if (tab.getChild(real) == null) {
         return;
       }
-      tab.getChild(real).setDisplayType(event.valueData.value.getString());
+      // tab.getChild(real).setDisplayType(event.valueData.value.getString());
+      ComponentModel model = tab.getChild(real);
+      model.setDisplayType(event.valueData.value.getString());
+      Optional<Widget> widget = componentRegistry.getWidget(model);
+      if (widget.isPresent()) {
+        var tile = widget.get().getView().getParent().getParent();
+        appPlatter.getInstance().notifyListeners(tile, event.valueData.value.getString());
+      }
     }
 
     // Component size
@@ -157,7 +166,7 @@ final class TabGenerator {
         Optional<Widget> widget = componentRegistry.getWidget(model);
         if (widget.isPresent()) {
           var tile = widget.get().getView().getParent().getParent();
-          // tile.setSize(new TileSize((int) size[0], (int) size[1]));
+          appPlatter.getInstance().notifyListeners(tile, new TileSize((int) size[0], (int) size[1]));
         }
       }
     }
@@ -171,30 +180,54 @@ final class TabGenerator {
       }
       double[] pos = event.valueData.value.getDoubleArray();
       if (pos.length == 2) {
-        tab.getChild(real).setPreferredPosition(new GridPoint((int) pos[0], (int) pos[1]));
+        // tab.getChild(real).setPreferredPosition(new GridPoint((int) pos[0], (int) pos[1]));
+        ComponentModel model = tab.getChild(real);
+        model.setPreferredPosition(new GridPoint((int) pos[0], (int) pos[1]));
+        Optional<Widget> widget = componentRegistry.getWidget(model);
+        if (widget.isPresent()) {
+          var tile = widget.get().getView().getParent().getParent();
+          appPlatter.getInstance().notifyListeners(tile, new GridPoint((int) pos[0], (int) pos[1]));
+        }
       }
     }
 
     // Component visibility
-    if (name.endsWith("/" + VISIBILE_ENTRY_NAME)) {
+    if (name.endsWith("/" + OPACITY_ENTRY_NAME)) {
       String real = realHierarchy.get(realHierarchy.size() - 2);
       if (tab.getChild(real) == null) {
         // No component yet
         return;
       }
       ComponentModel model = tab.getChild(real);
-      boolean visible = event.valueData.value.getBoolean();
-      model.setVisibility(visible);
+      double opacity = event.valueData.value.getDouble();
+      // model.setVisibility(visible);
       Optional<Widget> widget = componentRegistry.getWidget(model);
       if (widget.isPresent()) {
-        widget.get().getView().getParent().getParent().setVisible(visible);
-        // if (visible) {
-        //   widget.get().show();
-        // } else {
-        //   widget.get().hide();
-        // }
+        var tile = widget.get().getView().getParent().getParent();
+        appPlatter.getInstance().notifyListeners(tile, opacity);
       }
     }
+
+    // // Component visibility
+    // if (name.endsWith("/" + VISIBILE_ENTRY_NAME)) {
+    //   String real = realHierarchy.get(realHierarchy.size() - 2);
+    //   if (tab.getChild(real) == null) {
+    //     // No component yet
+    //     return;
+    //   }
+    //   ComponentModel model = tab.getChild(real);
+    //   boolean visible = event.valueData.value.getBoolean();
+    //   model.setVisibility(visible);
+    //   Optional<Widget> widget = componentRegistry.getWidget(model);
+    //   if (widget.isPresent()) {
+    //     widget.get().getView().getParent().setVisible(visible);
+    //     // if (visible) {
+    //     //   widget.get().show();
+    //     // } else {
+    //     //   widget.get().hide();
+    //     // }
+    //   }
+    // }
 
     // Component (or tab) properties
     if (name.matches("^.+/Properties/[^/]+$")) {

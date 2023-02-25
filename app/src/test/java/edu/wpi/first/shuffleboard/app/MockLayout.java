@@ -26,6 +26,7 @@ public final class MockLayout implements Layout {
   private final Pane view = new VBox();
 
   protected ComponentModel model = null;
+  protected double opacity = 1.0;
 
   @Override
   public Collection<Component> getChildren() {
@@ -86,5 +87,15 @@ public final class MockLayout implements Layout {
   @Override
   public void setModel(ComponentModel model) {
     this.model = model;
+  }
+
+  @Override
+  public void setOpacity(double value) {
+    this.opacity = value;
+  }
+
+  @Override
+  public double getOpacity() {
+    return opacity;
   }
 }

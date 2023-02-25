@@ -1,9 +1,11 @@
 package edu.wpi.first.shuffleboard.app.components;
 
+import edu.wpi.first.shuffleboard.api.appPlatter;
 import edu.wpi.first.shuffleboard.api.components.EditableLabel;
 import edu.wpi.first.shuffleboard.api.util.PropertyUtils;
 import edu.wpi.first.shuffleboard.api.util.PseudoClassProperty;
 import edu.wpi.first.shuffleboard.api.widget.Component;
+import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.api.widget.Layout;
 import edu.wpi.first.shuffleboard.api.widget.TileSize;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
@@ -17,6 +19,7 @@ import org.fxmisc.easybind.monadic.PropertyBinding;
 import java.io.IOException;
 import java.util.Optional;
 
+import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleObjectProperty;
@@ -27,7 +30,8 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 
 /**
- * Contains any component directly embedded in a WidgetPane. Has a size, content, and title.
+ * Contains any component directly embedded in a WidgetPane. Has a size,
+ * content, and title.
  */
 public class Tile<T extends Component> extends BorderPane {
 
@@ -41,14 +45,15 @@ public class Tile<T extends Component> extends BorderPane {
       EasyBind.monadic(content)
           .selectProperty(Component::titleProperty);
 
-  private final PropertyBinding<FontAwesome.Glyph> contentGlyph =
-          EasyBind.monadic(content).selectProperty(Component::glyphProperty);
+  private final PropertyBinding<FontAwesome.Glyph> contentGlyph = EasyBind.monadic(content)
+      .selectProperty(Component::glyphProperty);
 
-  private final PropertyBinding<Boolean> contentShowGlyph =
-          EasyBind.monadic(content).selectProperty(Component::showGlyphProperty);
+  private final PropertyBinding<Boolean> contentShowGlyph = EasyBind.monadic(content)
+      .selectProperty(Component::showGlyphProperty);
 
   /**
-   * Creates an empty tile. The content and size must be set with {@link #setContent(Component)} and
+   * Creates an empty tile. The content and size must be set with
+   * {@link #setContent(Component)} and
    * {@link #setSize(TileSize)}.
    */
   protected Tile() {
@@ -59,6 +64,8 @@ public class Tile<T extends Component> extends BorderPane {
     } catch (IOException e) {
       throw new RuntimeException("Could not load the widget tile FXML", e);
     }
+
+    setupApiListeners();
 
     getStyleClass().addAll("tile", "card");
     PropertyUtils.bindWithConverter(idProperty(), contentProperty(), w -> "tile[" + w + "]");
@@ -97,7 +104,8 @@ public class Tile<T extends Component> extends BorderPane {
   }
 
   /**
-   * Sets the content for this tile. This tile will update to show the view for the given content;
+   * Sets the content for this tile. This tile will update to show the view for
+   * the given content;
    * however, the tile will not change size. The size must be set separately with
    * {@link #setSize(TileSize)}.
    */
@@ -114,7 +122,8 @@ public class Tile<T extends Component> extends BorderPane {
   }
 
   /**
-   * Sets the size of this tile. This does not directly change the size of the tile; it is up to
+   * Sets the size of this tile. This does not directly change the size of the
+   * tile; it is up to
    * the parent pane to actually resize this tile.
    */
   public final void setSize(TileSize size) {
@@ -131,6 +140,28 @@ public class Tile<T extends Component> extends BorderPane {
 
   public BooleanProperty selectedProperty() {
     return selected;
+  }
+
+  public void setupApiListeners() {
+    appPlatter platter = appPlatter.getInstance();
+    platter.addSizeListener(this, (size) -> setSize(size));
+    platter.addPoseListener(this, (pose) -> {
+      var pane = ((WidgetPane) this.getParent());
+      pane.moveNode(this, pose);
+    });
+    platter.addCompListener(this, (compName) -> {
+      if (getContent() instanceof Widget) {
+        Widget oldWidget = ((Widget) getContent());
+        Optional<Widget> widget = Components.getDefault().createWidget(compName, oldWidget.getSources());
+        if (widget.isPresent()) {
+          widget.get().setTitle(oldWidget.getTitle());
+          widget.get().setModel(oldWidget.getModel());
+          oldWidget.setModel(null);
+          Platform.runLater(() -> setContent((T) widget.get()));
+        }
+      }
+    });
+    platter.addOpacityListener(this, (opacity) -> this.setOpacity(opacity));
   }
 
   /**

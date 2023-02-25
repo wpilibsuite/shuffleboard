@@ -102,6 +102,7 @@ public class DashboardTabPaneSaverTest extends ApplicationTest {
   private static class DummyBooleanBox implements Widget {
 
     protected ComponentModel model = null;
+    protected double opacity = 1.0;
 
     @Override
     public List<Group> getSettings() {
@@ -158,6 +159,15 @@ public class DashboardTabPaneSaverTest extends ApplicationTest {
       this.model = model;
     }
 
+    @Override
+    public void setOpacity(double value) {
+      this.opacity = value;
+    }
+
+    @Override
+    public double getOpacity() {
+      return opacity;
+    }
   }
 
 }

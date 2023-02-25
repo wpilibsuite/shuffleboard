@@ -41,6 +41,7 @@ public abstract class LayoutBase implements Layout {
       new SimpleObjectProperty<>(this, "labelPosition", LabelPosition.BOTTOM);
 
   protected ComponentModel model = null;
+  protected double opacity = 1.0;
 
   /**
    * Adds a component to this layout's view.
@@ -354,5 +355,15 @@ public abstract class LayoutBase implements Layout {
   @Override
   public void setModel(ComponentModel model) {
     this.model = model;
+  }
+
+  @Override
+  public void setOpacity(double value) {
+    this.opacity = value;
+  }
+
+  @Override
+  public double getOpacity() {
+    return opacity;
   }
 }

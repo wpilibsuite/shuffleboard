@@ -22,6 +22,7 @@ import org.controlsfx.glyphfont.FontAwesome;
 public final class MockWidget implements Widget {
 
   protected ComponentModel model = null;
+  protected double opacity = 1.0;
 
   @Override
   public List<Group> getSettings() {
@@ -76,5 +77,15 @@ public final class MockWidget implements Widget {
   @Override
   public void setModel(ComponentModel model) {
     this.model = model;
+  }
+
+  @Override
+  public void setOpacity(double value) {
+    this.opacity = value;
+  }
+
+  @Override
+  public double getOpacity() {
+    return opacity;
   }
 }

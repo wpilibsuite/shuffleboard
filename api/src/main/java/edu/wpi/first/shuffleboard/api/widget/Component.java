@@ -26,13 +26,6 @@ public interface Component extends SettingsHolder {
   Pane getView();
 
   /**
-   * Gets whether this component is visible to the user.
-   */
-  default boolean isVisible() {
-    return getView().isVisible();
-  }
-
-  /**
    * Gets the label for this component.
    */
   Property<String> titleProperty();
@@ -68,18 +61,14 @@ public interface Component extends SettingsHolder {
   String getName();
 
   /**
-   * hides this component from the user.
+   * The opacity of this component, from 0 to 1.
    */
-  default void hide() {
-    getView().setVisible(false);
-  };
+  void setOpacity(double value);
 
   /**
-   * shows this component to the user.
+   * Gets the opacity of this component, from 0 to 1.
    */
-  default void show() {
-    getView().setVisible(true);
-  };
+  double getOpacity();
 
   /**
    * Checks if this component has a model.

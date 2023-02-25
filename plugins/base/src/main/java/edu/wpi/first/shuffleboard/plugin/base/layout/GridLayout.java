@@ -54,6 +54,7 @@ public final class GridLayout extends LayoutBase {
   private final Pane highlight = new Pane();
   private DoubleBinding placeholderWidth;
   private DoubleBinding placeholderHeight;
+  private double opacity = 1.0;
 
   @FXML
   private void initialize() {
@@ -366,6 +367,16 @@ public final class GridLayout extends LayoutBase {
   @Override
   public String getName() {
     return "Grid Layout";
+  }
+
+  @Override
+  public void setOpacity(double value) {
+    this.opacity = value;
+  }
+
+  @Override
+  public double getOpacity() {
+    return opacity;
   }
 
   /**
