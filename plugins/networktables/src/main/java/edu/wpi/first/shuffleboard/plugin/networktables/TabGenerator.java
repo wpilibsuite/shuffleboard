@@ -16,7 +16,8 @@ import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.TileSize;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
 import edu.wpi.first.shuffleboard.plugin.networktables.sources.NetworkTableSource;
-
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEvent;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -63,10 +64,18 @@ final class TabGenerator {
   private int metadataListener;
   private int dataListener;
   private final Components componentRegistry;
+  private final BooleanProperty isDynamic;
+
+  TabGenerator(NetworkTableInstance inst, Components componentRegistry, BooleanProperty isDynamic) {
+    this.inst = inst;
+    this.componentRegistry = componentRegistry;
+    this.isDynamic = isDynamic;
+  }
 
   TabGenerator(NetworkTableInstance inst, Components componentRegistry) {
     this.inst = inst;
     this.componentRegistry = componentRegistry;
+    this.isDynamic = new SimpleBooleanProperty(false);
   }
 
   /**
@@ -143,11 +152,12 @@ final class TabGenerator {
       }
       ComponentModel model = tab.getChild(real);
       model.setDisplayType(event.valueData.value.getString());
-      componentRegistry.getWidgets(model)
+      if (isDynamic.get()) {componentRegistry.getWidgets(model)
           .forEach(widget -> {
             var tile = widget.getView().getParent().getParent();
             appPlatter.getInstance().notifyComponentListeners(tile, event.valueData.value.getString());
           });
+        }
     }
 
     // Component size
@@ -161,11 +171,12 @@ final class TabGenerator {
       if (size.length == 2) {
         ComponentModel model = tab.getChild(real);
         model.setPreferredSize(new TileSize((int) size[0], (int) size[1]));
-        componentRegistry.getWidgets(model)
+        if (isDynamic.get()) {componentRegistry.getWidgets(model)
             .forEach(widget -> {
               var tile = widget.getView().getParent().getParent();
               appPlatter.getInstance().notifySizeListeners(tile, new TileSize((int) size[0], (int) size[1]));
             });
+          }
       }
     }
 
@@ -180,11 +191,12 @@ final class TabGenerator {
       if (pos.length == 2) {
         ComponentModel model = tab.getChild(real);
         model.setPreferredPosition(new GridPoint((int) pos[0], (int) pos[1]));
-        componentRegistry.getWidgets(model)
+        if (isDynamic.get()) {componentRegistry.getWidgets(model)
             .forEach(widget -> {
               var tile = widget.getView().getParent().getParent();
               appPlatter.getInstance().notifyPositionListeners(tile, new GridPoint((int) pos[0], (int) pos[1]));
             });
+          }
       }
     }
 
@@ -198,11 +210,12 @@ final class TabGenerator {
       ComponentModel model = tab.getChild(real);
       double opacity = event.valueData.value.getDouble();
       model.setOpacity(opacity);
-      componentRegistry.getWidgets(model)
+      if (isDynamic.get()) {componentRegistry.getWidgets(model)
           .forEach(widget -> {
             var tile = widget.getView().getParent().getParent();
             appPlatter.getInstance().notifyOpacityListeners(tile, opacity);
           });
+        }
     }
 
     // Component visibility
@@ -215,11 +228,12 @@ final class TabGenerator {
       ComponentModel model = tab.getChild(real);
       boolean visible = event.valueData.value.getBoolean();
       model.setContentVisibility(visible);
-      componentRegistry.getWidgets(model)
+      if (isDynamic.get())  {componentRegistry.getWidgets(model)
           .forEach(widget -> {
             var tile = widget.getView().getParent().getParent();
             appPlatter.getInstance().notifyVisibilityListeners(tile, visible);
           });
+        }
     }
 
     // Component (or tab) properties

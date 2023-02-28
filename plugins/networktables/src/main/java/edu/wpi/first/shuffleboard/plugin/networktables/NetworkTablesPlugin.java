@@ -35,6 +35,8 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 
 import javafx.beans.InvalidationListener;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
@@ -53,6 +55,7 @@ public class NetworkTablesPlugin extends Plugin {
   private final Preferences preferences = Preferences.userNodeForPackage(getClass());
 
   private final StringProperty serverId = new SimpleStringProperty(this, "server", "localhost");
+  private final BooleanProperty dynamicMetadata = new SimpleBooleanProperty(this, "dynamic NT widgets", true);
   private final InvalidationListener serverSaver = __ -> PreferencesUtils.save(serverId, preferences);
 
   private final TabGenerator tabGenerator;
@@ -89,7 +92,7 @@ public class NetworkTablesPlugin extends Plugin {
    */
   public NetworkTablesPlugin(NetworkTableInstance inst) {
     this.inst = inst;
-    tabGenerator = new TabGenerator(inst, Components.getDefault());
+    tabGenerator = new TabGenerator(inst, Components.getDefault(), dynamicMetadata);
     recorderController = RecorderController.createWithDefaultEntries(inst);
 
     NetworkTableSourceType.setInstance(new NetworkTableSourceType(this));
@@ -197,6 +200,12 @@ public class NetworkTablesPlugin extends Plugin {
             Setting.of("Server",
                 "The NetworkTables server to connect to. This can be a team number, IP address, or mDNS URL",
                 new FlushableProperty<>(serverId)
+            )
+        ),
+        Group.of("Widget settings",
+            Setting.of("Dynamic metadata",
+                "Whether to automatically change the appearance of widgets based on the current metadata isntead of at initialization",
+                new FlushableProperty<>(dynamicMetadata)
             )
         )
     );

@@ -391,6 +391,17 @@ public class WidgetPaneController {
           selector.deselectAll();
         });
       }
+
+      if (tile instanceof WidgetTile) {
+        String name = tile.isLocked() ? "Unlock" : "Lock";
+        widgetPaneActions.addAction(name, () -> {
+          if (tile.isLocked()) {
+            tile.unlockApiListeners();
+          } else {
+            tile.lockApiListeners();
+          }
+        });
+      }
       return widgetPaneActions;
     });
 

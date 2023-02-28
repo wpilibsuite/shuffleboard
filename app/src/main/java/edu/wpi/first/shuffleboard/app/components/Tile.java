@@ -23,6 +23,7 @@ import java.util.Optional;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.Property;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Label;
@@ -40,6 +41,7 @@ public class Tile<T extends Component> extends BorderPane {
   private final MonadicBinding<Pane> contentView = EasyBind.monadic(content).map(Component::getView); // NOPMD
 
   private final Property<TileSize> size = new SimpleObjectProperty<>(this, "size", null);
+  private final BooleanProperty ignoreApiListeners = new SimpleBooleanProperty(this, "listen to platter", false);
   private final BooleanProperty selected = new PseudoClassProperty(this, "selected");
 
   private final PropertyBinding<String> contentTitle = // NOPMD local variable
@@ -144,6 +146,9 @@ public class Tile<T extends Component> extends BorderPane {
   }
 
   public void setupApiListeners() {
+    if (ignoreApiListeners.get()) {
+      return;
+    }
     appPlatter platter = appPlatter.getInstance();
     platter.addSizeListener(this, (size) -> {
       setSize(size);
@@ -169,6 +174,20 @@ public class Tile<T extends Component> extends BorderPane {
     });
     platter.addOpacityListener(this, (opacity) -> this.setOpacity(opacity));
     platter.addVisibilityListener(this, (visibility) -> this.getContent().getView().setVisible(visibility));
+  }
+
+  public void lockApiListeners() {
+    ignoreApiListeners.set(true);
+    appPlatter.getInstance().removeListener(this);;
+  }
+
+  public void unlockApiListeners() {
+    ignoreApiListeners.set(false);
+    setupApiListeners();
+  }
+
+  public boolean isLocked() {
+    return ignoreApiListeners.get();
   }
 
   /**
