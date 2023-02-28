@@ -369,16 +369,6 @@ public final class GridLayout extends LayoutBase {
     return "Grid Layout";
   }
 
-  @Override
-  public void setOpacity(double value) {
-    this.opacity = value;
-  }
-
-  @Override
-  public double getOpacity() {
-    return opacity;
-  }
-
   /**
    * Gets a list of the component containers in this layout.
    */

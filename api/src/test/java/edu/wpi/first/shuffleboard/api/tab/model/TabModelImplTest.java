@@ -64,7 +64,7 @@ public class TabModelImplTest {
   public void testAddChild() {
     TabModel tab = new TabModelImpl("Tab");
     String path = "/Shuffleboard/Tab/Foo";
-    ComponentModel child = new WidgetModelImpl(path, tab, () -> null, "", Collections.emptyMap(), 1.0);
+    ComponentModel child = new WidgetModelImpl(path, tab, () -> null, "", Collections.emptyMap(), 1.0, true);
     tab.addChild(child);
     assertSame(child, tab.getChild(path));
   }

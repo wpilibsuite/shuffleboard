@@ -11,11 +11,12 @@ final class LayoutModelImpl extends ComponentModelImpl implements LayoutModel {
   private final Map<String, ComponentModel> children = new HashMap<>();
 
   LayoutModelImpl(String path, ParentModel parent, String displayType) {
-    this(path, parent, displayType, Collections.emptyMap(), 1.0);
+    this(path, parent, displayType, Collections.emptyMap(), 1.0, true);
   }
 
-  LayoutModelImpl(String path, ParentModel parent, String displayType, Map<String, Object> properties, double opacity) {
-    super(path, parent, displayType, properties, opacity);
+  LayoutModelImpl(String path, ParentModel parent, String displayType, Map<String, Object> properties, double opacity,
+      boolean contentVisibility) {
+    super(path, parent, displayType, properties, opacity, contentVisibility);
   }
 
   @Override

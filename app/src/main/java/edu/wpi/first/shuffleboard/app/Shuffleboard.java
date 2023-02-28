@@ -178,7 +178,7 @@ public class Shuffleboard extends Application {
             }
             else if (comp.getView().getParent().getParent() instanceof WidgetTile) {
               ((WidgetTile) comp.getView().getParent().getParent()).setupApiListeners();
-              // System.out.println("ReQueued " + comp.getTitle());
+              // System.out.println("ReQueued " + comp.getTitle() + " | " + ((WidgetTile) comp.getView().getParent().getParent()).getId());
             }
           }
         );

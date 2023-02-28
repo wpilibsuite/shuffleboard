@@ -131,13 +131,4 @@ public abstract class AbstractWidget implements Widget {
     this.model = model;
   }
 
-  @Override
-  public double getOpacity() {
-    return opacity;
-  }
-
-  @Override
-  public void setOpacity(double value) {
-    this.opacity = value;
-  }
 }

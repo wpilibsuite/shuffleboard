@@ -89,13 +89,4 @@ public final class MockLayout implements Layout {
     this.model = model;
   }
 
-  @Override
-  public void setOpacity(double value) {
-    this.opacity = value;
-  }
-
-  @Override
-  public double getOpacity() {
-    return opacity;
-  }
 }

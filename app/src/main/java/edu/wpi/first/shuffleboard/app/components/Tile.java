@@ -2,6 +2,7 @@ package edu.wpi.first.shuffleboard.app.components;
 
 import edu.wpi.first.shuffleboard.api.appPlatter;
 import edu.wpi.first.shuffleboard.api.components.EditableLabel;
+import edu.wpi.first.shuffleboard.api.properties.AsyncProperty;
 import edu.wpi.first.shuffleboard.api.util.PropertyUtils;
 import edu.wpi.first.shuffleboard.api.util.PseudoClassProperty;
 import edu.wpi.first.shuffleboard.api.widget.Component;
@@ -35,7 +36,7 @@ import javafx.scene.layout.Pane;
  */
 public class Tile<T extends Component> extends BorderPane {
 
-  private final Property<T> content = new SimpleObjectProperty<>(this, "content", null);
+  private final AsyncProperty<T> content = new AsyncProperty<T>(this, "content", null);
   private final MonadicBinding<Pane> contentView = EasyBind.monadic(content).map(Component::getView); // NOPMD
 
   private final Property<TileSize> size = new SimpleObjectProperty<>(this, "size", null);
@@ -156,20 +157,18 @@ public class Tile<T extends Component> extends BorderPane {
       if (getContent() instanceof Widget) {
         Widget oldWidget = ((Widget) getContent());
         Optional<Widget> widget = Components.getDefault().createWidget(compName, oldWidget.getSources());
-        if (widget.isPresent()) {
+        if (widget.isPresent() && getContent() instanceof Widget) {
           widget.get().setTitle(oldWidget.getTitle());
           widget.get().setModel(oldWidget.getModel());
           oldWidget.setModel(null);
-          Platform.runLater(() -> {
-            //sometimes just gets lost in the ether 🤷‍♀️
-            //TODO: make this more reliable if it will be included in release
-            setContent((T) widget.get());
-            System.out.println("Setting widget to " + widget.get());
-          });
+          System.out.println("pre set");
+          setContent((T) widget.get());
+          System.out.println("Setting widget to " + widget.get());
         }
       }
     });
     platter.addOpacityListener(this, (opacity) -> this.setOpacity(opacity));
+    platter.addVisibilityListener(this, (visibility) -> this.getContent().getView().setVisible(visibility));
   }
 
   /**

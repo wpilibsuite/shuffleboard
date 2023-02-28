@@ -153,7 +153,7 @@ public class Components extends Registry<ComponentType> {
   public Optional<Widget> createWidget(String name, Collection<DataSource> sources) throws IncompatibleSourceException {
     Optional<Widget> widget = createWidget(name);
     widget.ifPresent(w -> sources.forEach(w::addSource));
-    widget.ifPresent(this::setId);
+    // widget.ifPresent(this::setId);
     return widget;
   }
 
@@ -341,12 +341,11 @@ public class Components extends Registry<ComponentType> {
     return componentNamesForType(source.getDataType());
   }
 
-  public Optional<Widget> getWidget(ComponentModel model) {
+  public Stream<Widget> getWidgets(ComponentModel model) {
     return this.getActiveWidgets()
         .stream()
         .filter(widget -> widget.hasModel())
-        .filter(widget -> widget.getModel().equals(model))
-        .findFirst();
+        .filter(widget -> widget.getModel().equals(model));
   }
 
   /**

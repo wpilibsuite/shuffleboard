@@ -61,16 +61,6 @@ public interface Component extends SettingsHolder {
   String getName();
 
   /**
-   * The opacity of this component, from 0 to 1.
-   */
-  void setOpacity(double value);
-
-  /**
-   * Gets the opacity of this component, from 0 to 1.
-   */
-  double getOpacity();
-
-  /**
    * Checks if this component has a model.
    */
   boolean hasModel();

@@ -579,6 +579,8 @@ public class WidgetPaneController {
               name,
               name.equals(widget.getName()) ? new Label("✓") : null,
               () -> {
+                System.out.println("Changing widget " + tile.getId());
+                
                 // no need to change it if it's already the same type
                 if (!name.equals(widget.getName())) {
                   Components.getDefault()
@@ -587,6 +589,7 @@ public class WidgetPaneController {
                         newWidget.setTitle(widget.getTitle());
                         newWidget.setModel(widget.getModel());
                         widget.setModel(null);
+                        System.out.println("  to " + newWidget);
                         tile.setContent(newWidget);
                       });
                 }

@@ -14,8 +14,9 @@ class WidgetModelImpl extends ComponentModelImpl implements WidgetModel {
                   Supplier<? extends DataSource<?>> sourceSupplier,
                   String displayType,
                   Map<String, Object> properties,
-                  double opacity) {
-    super(path, parent, displayType, properties, opacity);
+                  double opacity,
+                  boolean contentVisibility) {
+    super(path, parent, displayType, properties, opacity, contentVisibility);
     this.sourceSupplier = sourceSupplier;
   }
 
