@@ -206,16 +206,12 @@ final class TabGenerator {
           .takeWhile(s -> !s.contains("/."))
           .collect(Collectors.toList());
       if (tables.size() >= 3) {
-        updateFrom(tables);
+        updateStructure(tables);
+        tabs.dirty();
       }
       return;
     }
-    updateFrom(hierarchy);
-  }
-
-  private void updateFrom(List<String> tables) {
-    updateStructure(tables);
-    tabs.dirty();
+    updateStructure(hierarchy);
   }
 
   private void updateStructure(List<String> hierarchy) {
