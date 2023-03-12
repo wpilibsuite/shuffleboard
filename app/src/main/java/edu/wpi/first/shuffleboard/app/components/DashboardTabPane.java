@@ -45,7 +45,7 @@ public class DashboardTabPane extends TabPane {
       for (TabModel model : tabs.getTabs().values()) {
         var tab = realTabs.computeIfAbsent(model, m -> new ProcedurallyDefinedTab(m, PropertyParsers.getDefault()));
         if (!getTabs().contains(tab)) {
-          getTabs().add(getTabs().size() - 1, tab);
+          getTabs().add(tab);
         }
         tab.populate();
       }
