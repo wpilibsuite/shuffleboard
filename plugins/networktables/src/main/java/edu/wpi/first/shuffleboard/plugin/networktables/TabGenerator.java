@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.plugin.networktables;
 
+import edu.wpi.first.shuffleboard.api.appPlatter;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
 import edu.wpi.first.shuffleboard.api.tab.model.ComponentModel;
@@ -11,9 +12,12 @@ import edu.wpi.first.shuffleboard.api.tab.model.WidgetModel;
 import edu.wpi.first.shuffleboard.api.util.GridPoint;
 import edu.wpi.first.shuffleboard.api.util.function.MappableSupplier;
 import edu.wpi.first.shuffleboard.api.widget.Components;
+import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.TileSize;
+import edu.wpi.first.shuffleboard.api.widget.Widget;
 import edu.wpi.first.shuffleboard.plugin.networktables.sources.NetworkTableSource;
-
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEvent;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -47,6 +51,8 @@ final class TabGenerator {
   public static final String POSITION_ENTRY_NAME = "Position";
   public static final String SIZE_ENTRY_NAME = "Size";
   public static final String SELECTED_ENTRY_NAME = "Selected";
+  public static final String VISIBILE_ENTRY_NAME = "ContentVisible";
+  public static final String OPACITY_ENTRY_NAME = "Opacity";
 
   public static final String TAB_TYPE = "ShuffleboardTab";
   public static final String LAYOUT_TYPE = "ShuffleboardLayout";
@@ -58,10 +64,18 @@ final class TabGenerator {
   private int metadataListener;
   private int dataListener;
   private final Components componentRegistry;
+  private final BooleanProperty isDynamic;
+
+  TabGenerator(NetworkTableInstance inst, Components componentRegistry, BooleanProperty isDynamic) {
+    this.inst = inst;
+    this.componentRegistry = componentRegistry;
+    this.isDynamic = isDynamic;
+  }
 
   TabGenerator(NetworkTableInstance inst, Components componentRegistry) {
     this.inst = inst;
     this.componentRegistry = componentRegistry;
+    this.isDynamic = new SimpleBooleanProperty(false);
   }
 
   /**
@@ -72,19 +86,19 @@ final class TabGenerator {
     NetworkTable rootMetaTable = inst.getTable(METADATA_TABLE_NAME);
     tabsSubscriber = rootMetaTable.getStringArrayTopic(TABS_ENTRY_KEY).subscribe(new String[] {});
     tabsListener = inst.addListener(tabsSubscriber,
-      EnumSet.of(NetworkTableEvent.Kind.kValueAll, NetworkTableEvent.Kind.kImmediate), event -> {
-        for (String tabName : event.valueData.value.getStringArray()) {
-          tabs.getTab(tabName);
-        }
-        tabs.dirty();
-      });
+        EnumSet.of(NetworkTableEvent.Kind.kValueAll, NetworkTableEvent.Kind.kImmediate), event -> {
+          for (String tabName : event.valueData.value.getStringArray()) {
+            tabs.getTab(tabName);
+          }
+          tabs.dirty();
+        });
 
     metadataListener = inst.addListener(
-        new String[] {METADATA_TABLE_NAME + "/"},
+        new String[] { METADATA_TABLE_NAME + "/" },
         EnumSet.of(NetworkTableEvent.Kind.kValueAll, NetworkTableEvent.Kind.kImmediate),
         this::metadataChanged);
     dataListener = inst.addListener(
-        new String[] {ROOT_TABLE_NAME + "/"},
+        new String[] { ROOT_TABLE_NAME + "/" },
         EnumSet.of(NetworkTableEvent.Kind.kValueAll, NetworkTableEvent.Kind.kImmediate),
         this::dataChanged);
   }
@@ -111,7 +125,8 @@ final class TabGenerator {
 
     // Special case for global metadata, not tab or widget data
     if (name.equals("/Shuffleboard/.metadata/Selected")) {
-      // If the value can be parsed as an int, assume it's the tab index, otherwise assume tab title.
+      // If the value can be parsed as an int, assume it's the tab index, otherwise
+      // assume tab title.
       String str = event.valueData.value.getString();
       try {
         tabs.setSelectedTab(Integer.parseInt(str));
@@ -123,7 +138,7 @@ final class TabGenerator {
 
     List<String> metaHierarchy = NetworkTable.getHierarchy(name);
     if (metaHierarchy.size() < 5) {
-      // Not metadata for a component or a tab, bail
+      // Data not nested deep enough, not metadata for a component or a tab, bail
       return;
     }
     List<String> realHierarchy = NetworkTable.getHierarchy(realPath(name));
@@ -135,7 +150,14 @@ final class TabGenerator {
       if (tab.getChild(real) == null) {
         return;
       }
-      tab.getChild(real).setDisplayType(event.valueData.value.getString());
+      ComponentModel model = tab.getChild(real);
+      model.setDisplayType(event.valueData.value.getString());
+      if (isDynamic.get()) {componentRegistry.getWidgets(model)
+          .forEach(widget -> {
+            var tile = widget.getView().getParent().getParent();
+            appPlatter.getInstance().notifyComponentListeners(tile, event.valueData.value.getString());
+          });
+        }
     }
 
     // Component size
@@ -147,7 +169,14 @@ final class TabGenerator {
       }
       double[] size = event.valueData.value.getDoubleArray();
       if (size.length == 2) {
-        tab.getChild(real).setPreferredSize(new TileSize((int) size[0], (int) size[1]));
+        ComponentModel model = tab.getChild(real);
+        model.setPreferredSize(new TileSize((int) size[0], (int) size[1]));
+        if (isDynamic.get()) {componentRegistry.getWidgets(model)
+            .forEach(widget -> {
+              var tile = widget.getView().getParent().getParent();
+              appPlatter.getInstance().notifySizeListeners(tile, new TileSize((int) size[0], (int) size[1]));
+            });
+          }
       }
     }
 
@@ -160,8 +189,51 @@ final class TabGenerator {
       }
       double[] pos = event.valueData.value.getDoubleArray();
       if (pos.length == 2) {
-        tab.getChild(real).setPreferredPosition(new GridPoint((int) pos[0], (int) pos[1]));
+        ComponentModel model = tab.getChild(real);
+        model.setPreferredPosition(new GridPoint((int) pos[0], (int) pos[1]));
+        if (isDynamic.get()) {componentRegistry.getWidgets(model)
+            .forEach(widget -> {
+              var tile = widget.getView().getParent().getParent();
+              appPlatter.getInstance().notifyPositionListeners(tile, new GridPoint((int) pos[0], (int) pos[1]));
+            });
+          }
       }
+    }
+
+    // Component opacity
+    if (name.endsWith("/" + OPACITY_ENTRY_NAME)) {
+      String real = realHierarchy.get(realHierarchy.size() - 2);
+      if (tab.getChild(real) == null) {
+        // No component yet
+        return;
+      }
+      ComponentModel model = tab.getChild(real);
+      double opacity = event.valueData.value.getDouble();
+      model.setOpacity(opacity);
+      if (isDynamic.get()) {componentRegistry.getWidgets(model)
+          .forEach(widget -> {
+            var tile = widget.getView().getParent().getParent();
+            appPlatter.getInstance().notifyOpacityListeners(tile, opacity);
+          });
+        }
+    }
+
+    // Component visibility
+    if (name.endsWith("/" + VISIBILE_ENTRY_NAME)) {
+      String real = realHierarchy.get(realHierarchy.size() - 2);
+      if (tab.getChild(real) == null) {
+        // No component yet
+        return;
+      }
+      ComponentModel model = tab.getChild(real);
+      boolean visible = event.valueData.value.getBoolean();
+      model.setContentVisibility(visible);
+      if (isDynamic.get())  {componentRegistry.getWidgets(model)
+          .forEach(widget -> {
+            var tile = widget.getView().getParent().getParent();
+            appPlatter.getInstance().notifyVisibilityListeners(tile, visible);
+          });
+        }
     }
 
     // Component (or tab) properties
@@ -176,7 +248,8 @@ final class TabGenerator {
         tab.setProperties(properties);
       } else {
         if (tab.getChild(real) == null) {
-          // No component yet to set the properties for. Its properties will be set once it appears
+          // No component yet to set the properties for. Its properties will be set once
+          // it appears
           return;
         }
         tab.getChild(real).setProperties(properties);
@@ -201,7 +274,8 @@ final class TabGenerator {
       return;
     }
     if (name.contains("/.")) {
-      // The entry is metadata, but may be the only entry in a table, so make sure it's updated correctly
+      // The entry is metadata, but may be the only entry in a table, so make sure
+      // it's updated correctly
       var tables = hierarchy.stream()
           .takeWhile(s -> !s.contains("/."))
           .collect(Collectors.toList());
@@ -240,7 +314,8 @@ final class TabGenerator {
           case LAYOUT_TYPE:
             String layoutType = preferredComponent(path, () -> null);
             if (layoutType == null) {
-              // No component specified for this layout - its children will be placed in its parent container
+              // No component specified for this layout - its children will be placed in its
+              // parent container
               continue;
             }
             LayoutModel layout = parent.getLayout(path, layoutType);
@@ -288,7 +363,8 @@ final class TabGenerator {
   /**
    * Gets the table containing the metadata for a component.
    *
-   * @param realPath the full path to the value to get the data for, eg "/Shuffleboard/Tab/LayoutX/FooData"
+   * @param realPath the full path to the value to get the data for, eg
+   *                 "/Shuffleboard/Tab/LayoutX/FooData"
    */
   private NetworkTable metaTable(String realPath) {
     return inst.getTable(realPath.replaceFirst("^/Shuffleboard/", "/Shuffleboard/.metadata/"));
@@ -307,7 +383,8 @@ final class TabGenerator {
    * Gets the preferred component for a component.
    *
    * @param realPath the path to the component
-   * @param fallback the fallback component type if no preferred component is specified in the metadata table
+   * @param fallback the fallback component type if no preferred component is
+   *                 specified in the metadata table
    */
   private String preferredComponent(String realPath, Supplier<String> fallback) {
     NetworkTableValue value = metaTable(realPath).getEntry(PREF_COMPONENT_ENTRY_NAME).getValue();
@@ -319,7 +396,8 @@ final class TabGenerator {
   }
 
   /**
-   * Gets the properties of a component, or an empty map if no properties are specified in the metadata table.
+   * Gets the properties of a component, or an empty map if no properties are
+   * specified in the metadata table.
    *
    * @param realPath the path to the component
    */
@@ -336,7 +414,8 @@ final class TabGenerator {
   }
 
   /**
-   * Updates the widget for the given path. If no such widget exists, one is created and added to the given parent.
+   * Updates the widget for the given path. If no such widget exists, one is
+   * created and added to the given parent.
    *
    * @param parent the parent to add a newly created widget to
    * @param path   the path to the widget
@@ -351,8 +430,7 @@ final class TabGenerator {
             sourceSupplier
                 .map(DataSource::getDataType)
                 .map(componentRegistry::defaultComponentNameFor)
-                .map(Optional::orElseThrow)
-        ),
+                .map(Optional::orElseThrow)),
         properties(path));
     setSizeAndPosition(path, widget);
   }

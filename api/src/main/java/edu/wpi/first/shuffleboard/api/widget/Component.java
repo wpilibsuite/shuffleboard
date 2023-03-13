@@ -7,6 +7,8 @@ import javafx.beans.property.Property;
 import javafx.scene.layout.Pane;
 import org.controlsfx.glyphfont.FontAwesome;
 
+import edu.wpi.first.shuffleboard.api.tab.model.ComponentModel;
+
 /**
  * A Component is base interface for any part of the dashboard that can be instantiated by the user. For example, a
  * static image, a camera widget, and a layout that has children in lists could all be components of different types.
@@ -58,4 +60,19 @@ public interface Component extends SettingsHolder {
    */
   String getName();
 
+  /**
+   * Checks if this component has a model.
+   */
+  boolean hasModel();
+
+  /**
+   * Gets the model for this component,
+   * if model is not set returns null
+   */
+  ComponentModel getModel();
+
+  /**
+   * Sets the model for this component.
+   */
+  void setModel(ComponentModel model);
 }

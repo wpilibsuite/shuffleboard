@@ -4,6 +4,7 @@ import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
 import edu.wpi.first.shuffleboard.api.prefs.Group;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
+import edu.wpi.first.shuffleboard.api.tab.model.ComponentModel;
 import edu.wpi.first.shuffleboard.api.widget.Component;
 import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.api.widget.Widget;
@@ -100,6 +101,9 @@ public class DashboardTabPaneSaverTest extends ApplicationTest {
 
   private static class DummyBooleanBox implements Widget {
 
+    protected ComponentModel model = null;
+    protected double opacity = 1.0;
+
     @Override
     public List<Group> getSettings() {
       return new ArrayList<>();
@@ -138,6 +142,21 @@ public class DashboardTabPaneSaverTest extends ApplicationTest {
     @Override
     public ObservableList<DataSource> getSources() {
       return FXCollections.observableArrayList();
+    }
+
+    @Override
+    public boolean hasModel() {
+      return model != null;
+    }
+  
+    @Override
+    public ComponentModel getModel() {
+      return model;
+    }
+  
+    @Override
+    public void setModel(ComponentModel model) {
+      this.model = model;
     }
   }
 

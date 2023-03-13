@@ -54,6 +54,7 @@ public final class GridLayout extends LayoutBase {
   private final Pane highlight = new Pane();
   private DoubleBinding placeholderWidth;
   private DoubleBinding placeholderHeight;
+  private double opacity = 1.0;
 
   @FXML
   private void initialize() {

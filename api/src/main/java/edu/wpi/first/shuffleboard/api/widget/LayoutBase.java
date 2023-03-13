@@ -3,6 +3,7 @@ package edu.wpi.first.shuffleboard.api.widget;
 import edu.wpi.first.shuffleboard.api.components.ActionList;
 import edu.wpi.first.shuffleboard.api.components.EditableLabel;
 import edu.wpi.first.shuffleboard.api.dnd.DataFormats;
+import edu.wpi.first.shuffleboard.api.tab.model.ComponentModel;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -38,6 +39,9 @@ public abstract class LayoutBase implements Layout {
   private final BooleanProperty showGlyph = new SimpleBooleanProperty(this, "showGlyph", false);
   private final Property<LabelPosition> labelPosition =
       new SimpleObjectProperty<>(this, "labelPosition", LabelPosition.BOTTOM);
+
+  protected ComponentModel model = null;
+  protected double opacity = 1.0;
 
   /**
    * Adds a component to this layout's view.
@@ -152,6 +156,8 @@ public abstract class LayoutBase implements Layout {
           .createWidget(name, widget.getSources())
           .ifPresent(replacement -> {
             replacement.setTitle(widget.getTitle());
+            replacement.setModel(widget.getModel());
+            widget.setModel(null);
             replaceInPlace(widget, replacement);
             getChildren().set(getChildren().indexOf(widget), replacement); // NOPMD - there's no enclosing class!
           });
@@ -336,6 +342,21 @@ public abstract class LayoutBase implements Layout {
     public void setChild(Component child) {
       this.child.setValue(child);
     }
+  }
+
+  @Override
+  public boolean hasModel() {
+    return model != null;
+  }
+
+  @Override
+  public ComponentModel getModel() {
+    return model;
+  }
+
+  @Override
+  public void setModel(ComponentModel model) {
+    this.model = model;
   }
 
 }

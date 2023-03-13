@@ -14,12 +14,17 @@ class ComponentModelImpl implements ComponentModel {
   private final Map<String, Object> properties = new HashMap<>();
   private GridPoint preferredPosition;
   private TileSize preferredSize;
+  private double opacity;
+  private boolean contentVisibility;
 
-  ComponentModelImpl(String path, ParentModel parent, String displayType, Map<String, Object> properties) {
+  ComponentModelImpl(String path, ParentModel parent, String displayType, Map<String, Object> properties,
+      double opacity, boolean contentVisibility) {
     this.path = path;
     this.parent = parent;
     this.displayType = displayType;
     setProperties(properties);
+    this.opacity = opacity;
+    this.contentVisibility = contentVisibility;
   }
 
   @Override
@@ -71,5 +76,25 @@ class ComponentModelImpl implements ComponentModel {
   @Override
   public final void setPreferredSize(TileSize preferredSize) {
     this.preferredSize = preferredSize;
+  }
+
+  @Override
+  public final double getOpacity() {
+    return opacity;
+  }
+
+  @Override
+  public final void setOpacity(double value) {
+    this.opacity = value;
+  }
+
+  @Override
+  public final boolean getContentVisibility() {
+    return contentVisibility;
+  }
+
+  @Override
+  public final void setContentVisibility(boolean value) {
+    this.contentVisibility = value;
   }
 }

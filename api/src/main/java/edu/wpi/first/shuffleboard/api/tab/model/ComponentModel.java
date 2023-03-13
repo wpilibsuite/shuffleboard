@@ -45,6 +45,16 @@ public interface ComponentModel extends PropertyHolder, Titled {
   void setPreferredPosition(GridPoint point);
 
   /**
+   * Sets the visibility of this component. If no visibilty is set it will default to shown
+   */
+  void setOpacity(double value);
+
+  /**
+   * Sets the content visibility of this component. If no visibilty is set it will default to shown
+   */
+  void setContentVisibility(boolean value);
+
+  /**
    * Gets the preferred position of this component, as specified by {@link #setPreferredPosition}.
    */
   GridPoint getPreferredPosition();
@@ -60,4 +70,13 @@ public interface ComponentModel extends PropertyHolder, Titled {
    */
   TileSize getPreferredSize();
 
+  /**
+   * Gets the visibility of this component, as specified by {@link #setOpacity}.
+   */
+  double getOpacity();
+
+  /**
+   * Gets the content visibility of this component, as specified by {@link #setContentVisibility}.
+   */
+  boolean getContentVisibility();
 }

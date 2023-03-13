@@ -226,6 +226,9 @@ public class WidgetPane extends TilePane implements ComponentContainer {
    */
   public WidgetTile addWidget(Widget widget, TileSize size) {
     WidgetTile tile = new WidgetTile(widget, size);
+    if (widget.hasModel()) {
+      tile.setOpacity(widget.getModel().getOpacity());
+    }
     tile.sizeProperty().addListener(__ -> setSize(tile, tile.getSize()));
     if (addTile(tile, size) != null) {
       // can't set the size if it wasn't actually added
@@ -276,6 +279,9 @@ public class WidgetPane extends TilePane implements ComponentContainer {
         return;
       }
       Tile<?> tile = addComponent(component, location, size);
+      if (component.hasModel()) {
+        tile.setOpacity(component.getModel().getOpacity());
+      }
       if (getChildren().contains(tile)) {
         // Can only set the size if the tile was actually added
         TileDragResizer.makeResizable(this, tile);
@@ -292,8 +298,12 @@ public class WidgetPane extends TilePane implements ComponentContainer {
       return null;
     }
     var component = optionalComponent.get();
+    component.setModel(componentModel);
     GridPoint position = componentModel.getPreferredPosition();
     TileSize size = componentModel.getPreferredSize();
+    if (component instanceof Widget) {
+      component.getView().setVisible(componentModel.getContentVisibility());
+    }
     if (position == null) {
       if (size == null) {
         addComponent(component);
@@ -320,6 +330,9 @@ public class WidgetPane extends TilePane implements ComponentContainer {
    */
   public <C extends Component> Tile<C> addComponent(C component, GridPoint location, TileSize size) {
     Tile<C> tile = Tile.tileFor(component, size);
+    if (component.hasModel()) {
+      tile.setOpacity(component.getModel().getOpacity());
+    }
     TileDragResizer.makeResizable(this, tile);
     tile.sizeProperty().addListener(__ -> setSize(tile, tile.getSize()));
     addTile(tile, location, size);

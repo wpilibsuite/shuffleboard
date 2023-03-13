@@ -391,6 +391,17 @@ public class WidgetPaneController {
           selector.deselectAll();
         });
       }
+
+      if (tile instanceof WidgetTile) {
+        String name = tile.isLocked() ? "Unlock" : "Lock";
+        widgetPaneActions.addAction(name, () -> {
+          if (tile.isLocked()) {
+            tile.unlockApiListeners();
+          } else {
+            tile.lockApiListeners();
+          }
+        });
+      }
       return widgetPaneActions;
     });
 
@@ -579,12 +590,17 @@ public class WidgetPaneController {
               name,
               name.equals(widget.getName()) ? new Label("✓") : null,
               () -> {
+                System.out.println("Changing widget " + tile.getId());
+                
                 // no need to change it if it's already the same type
                 if (!name.equals(widget.getName())) {
                   Components.getDefault()
                       .createWidget(name, widget.getSources())
                       .ifPresent(newWidget -> {
                         newWidget.setTitle(widget.getTitle());
+                        newWidget.setModel(widget.getModel());
+                        widget.setModel(null);
+                        System.out.println("  to " + newWidget);
                         tile.setContent(newWidget);
                       });
                 }
