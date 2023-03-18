@@ -20,6 +20,8 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.NetworkTableType;
 import edu.wpi.first.networktables.NetworkTableValue;
 import edu.wpi.first.networktables.StringArraySubscriber;
+import edu.wpi.first.networktables.StringSubscriber;
+import edu.wpi.first.networktables.PubSubOption;
 import edu.wpi.first.networktables.Topic;
 
 import java.util.EnumSet;
@@ -55,6 +57,8 @@ final class TabGenerator {
   private final NetworkTableInstance inst;
   private StringArraySubscriber tabsSubscriber;
   private int tabsListener;
+  private StringSubscriber tabSelectionSubscriber;
+  private int tabSelectionListener;
   private int metadataListener;
   private int dataListener;
   private final Components componentRegistry;
@@ -79,6 +83,21 @@ final class TabGenerator {
         tabs.dirty();
       });
 
+    tabSelectionSubscriber = rootMetaTable.getStringTopic(SELECTED_ENTRY_NAME)
+            .subscribe("", PubSubOption.keepDuplicates(true));
+    tabSelectionListener = inst.addListener(
+        tabSelectionSubscriber,
+        EnumSet.of(NetworkTableEvent.Kind.kValueAll, NetworkTableEvent.Kind.kImmediate),
+        event -> {
+            // If the value can be parsed as an int, assume it's the tab index, otherwise assume tab title.
+            String str = event.valueData.value.getString();
+            try {
+              tabs.setSelectedTab(Integer.parseInt(str));
+            } catch (NumberFormatException e) {
+              tabs.setSelectedTab(str);
+            }
+        });
+
     metadataListener = inst.addListener(
         new String[] {METADATA_TABLE_NAME + "/"},
         EnumSet.of(NetworkTableEvent.Kind.kValueAll, NetworkTableEvent.Kind.kImmediate),
@@ -95,6 +114,8 @@ final class TabGenerator {
   public void stop() {
     tabsSubscriber.close();
     inst.removeListener(tabsListener);
+    tabSelectionSubscriber.close();
+    inst.removeListener(tabSelectionListener);
     inst.removeListener(metadataListener);
     inst.removeListener(dataListener);
   }
@@ -108,18 +129,6 @@ final class TabGenerator {
 
   private void metadataChanged(NetworkTableEvent event) {
     String name = event.valueData.getTopic().getName();
-
-    // Special case for global metadata, not tab or widget data
-    if (name.equals("/Shuffleboard/.metadata/Selected")) {
-      // If the value can be parsed as an int, assume it's the tab index, otherwise assume tab title.
-      String str = event.valueData.value.getString();
-      try {
-        tabs.setSelectedTab(Integer.parseInt(str));
-      } catch (NumberFormatException e) {
-        tabs.setSelectedTab(str);
-      }
-      return;
-    }
 
     List<String> metaHierarchy = NetworkTable.getHierarchy(name);
     if (metaHierarchy.size() < 5) {
