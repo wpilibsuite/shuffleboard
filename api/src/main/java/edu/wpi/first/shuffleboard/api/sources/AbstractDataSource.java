@@ -6,6 +6,7 @@ import edu.wpi.first.shuffleboard.api.properties.AtomicBooleanProperty;
 import edu.wpi.first.shuffleboard.api.widget.Sourced;
 
 import java.util.Collections;
+import java.util.Objects;
 import java.util.Set;
 import java.util.WeakHashMap;
 
@@ -116,4 +117,8 @@ public abstract class AbstractDataSource<T> implements DataSource<T> {
     return !clients.isEmpty();
   }
 
+  @Override
+  public boolean equals(Object o) {
+    return o instanceof DataSource<?> && Objects.equals(((DataSource<?>) o).getId(), this.getId());
+  }
 }
