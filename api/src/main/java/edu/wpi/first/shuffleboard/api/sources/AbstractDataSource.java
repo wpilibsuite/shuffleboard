@@ -121,4 +121,9 @@ public abstract class AbstractDataSource<T> implements DataSource<T> {
   public boolean equals(Object o) {
     return o instanceof DataSource<?> && Objects.equals(((DataSource<?>) o).getId(), this.getId());
   }
+
+  @Override
+  public int hashCode() {
+    return getId().hashCode();
+  }
 }
