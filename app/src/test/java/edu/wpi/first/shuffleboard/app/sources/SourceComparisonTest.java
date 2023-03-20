@@ -14,7 +14,7 @@ class SourceComparisonTest {
     var dummySource = new DummySource<>(GyroType.Instance, GyroType.Instance.getDefaultValue());
     var destroyedSource = new DestroyedSource<>(dummySource);
     assertAll(() -> assertNotEquals(destroyedSource, dummySource, "destroyed in lhs"),
-            () -> assertNotEquals(dummySource, destroyedSource, "destroyed in rhs"));
+        () -> assertNotEquals(dummySource, destroyedSource, "destroyed in rhs"));
   }
 
   @Test
