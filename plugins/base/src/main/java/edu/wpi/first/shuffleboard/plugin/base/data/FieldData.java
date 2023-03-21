@@ -50,7 +50,7 @@ public class FieldData extends ComplexData<FieldData> {
 
   @SuppressWarnings("JavadocMethod")
   public FieldData(Map<String, Object> map) {
-    this.robot = new SimplePose2d((double[]) map.get("Robot"));
+    this.robot = new SimplePose2d((double[]) map.getOrDefault("Robot", new double[3]));
     this.objects = new HashMap<>();
 
     for (Map.Entry<String, Object> entry : map.entrySet()) {
