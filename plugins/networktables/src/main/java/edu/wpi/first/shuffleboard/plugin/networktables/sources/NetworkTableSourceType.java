@@ -127,6 +127,9 @@ public final class NetworkTableSourceType extends SourceType {
     final String fullKey = removeProtocol(recordedData.getSourceId());
     NetworkTableEntry entry = NetworkTableInstance.getDefault().getEntry(fullKey);
     entry.setValue(recordedData.getData());
+    if (!entry.getTopic().isRetained()) {
+      entry.getTopic().setRetained(true);
+    }
   }
 
   @Override

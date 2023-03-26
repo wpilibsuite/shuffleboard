@@ -7,6 +7,7 @@ import edu.wpi.first.shuffleboard.api.sources.Sources;
 import edu.wpi.first.shuffleboard.plugin.networktables.util.NetworkTableUtils;
 
 import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableEvent;
 import edu.wpi.first.networktables.NetworkTableInstance;
 
@@ -69,7 +70,11 @@ public class CompositeNetworkTableSource<D extends ComplexData<D>> extends Netwo
       backingMap.putAll(diff);
       if (isConnected()) {
         for (Map.Entry<String, Object> elem : diff.entrySet()) {
-          table.getEntry(elem.getKey()).setValue(elem.getValue());
+          NetworkTableEntry entry = table.getEntry(elem.getKey());
+          entry.setValue(elem.getValue());
+          if (!entry.getTopic().isRetained()) {
+            entry.getTopic().setRetained(true);
+          }
         }
       }
     });

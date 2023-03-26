@@ -68,6 +68,9 @@ public class SingleKeyNetworkTableSource<T> extends NetworkTableSource<T> {
 
       if (isActive()) {
         entry.setValue(newValue);
+        if (!entry.getTopic().isRetained()) {
+          entry.getTopic().setRetained(true);
+        }
       } else {
         throw new IllegalStateException("Source is not active");
       }
