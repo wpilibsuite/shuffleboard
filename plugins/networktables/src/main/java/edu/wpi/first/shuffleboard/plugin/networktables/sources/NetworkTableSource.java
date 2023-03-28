@@ -14,9 +14,9 @@ import edu.wpi.first.networktables.NetworkTableEvent;
 import edu.wpi.first.networktables.NetworkTableInstance;
 
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A source for data in network tables. Data can be a single value or a map of keys to values.
@@ -28,7 +28,7 @@ import java.util.Optional;
  */
 public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
 
-  private static final Map<String, NetworkTableSource> sources = new HashMap<>();
+  private static final Map<String, NetworkTableSource> sources = new ConcurrentHashMap<>();
 
   protected final String fullTableKey;
   private int listenerUid = -1;
