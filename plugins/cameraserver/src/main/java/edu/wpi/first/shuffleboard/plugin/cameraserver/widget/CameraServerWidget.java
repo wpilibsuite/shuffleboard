@@ -157,16 +157,17 @@ public class CameraServerWidget extends SimpleAnnotatedWidget<CameraServerData> 
     return root;
   }
 
-  @SuppressWarnings("UnnecessaryUnboxing")
   @FXML
   private void applySettings() {
     if (getSource() instanceof CameraServerSource) {
       CameraServerSource source = (CameraServerSource) getSource();
       int compression = (int) compressionSlider.getValue();
-      // Gson uses an internal subclass of Number that can't be implicitly cast to Integer
-      int fps = frameRateField.getNumber().intValue();
-      int width = this.width.getNumber().intValue();
-      int height = this.height.getNumber().intValue();
+      // Gson uses an internal subclass of Number that can't be implicitly cast to Integer,
+      // and Java *really* likes implicitly casting to Integer,
+      // so we need to explcitly cast to Number.
+      int fps = ((Number) frameRateField.getNumber()).intValue();
+      int width = ((Number) this.width.getNumber()).intValue();
+      int height = ((Number) this.height.getNumber()).intValue();
       boolean change = source.getTargetCompression() != compression
           || source.getTargetFps() != fps
           || source.getTargetResolution().isNotEqual(width, height);
