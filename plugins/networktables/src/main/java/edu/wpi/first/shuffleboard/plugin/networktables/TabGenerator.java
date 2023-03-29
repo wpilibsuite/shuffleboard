@@ -1,5 +1,7 @@
 package edu.wpi.first.shuffleboard.plugin.networktables;
 
+import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
 import edu.wpi.first.shuffleboard.api.tab.model.ComponentModel;
@@ -336,6 +338,26 @@ final class TabGenerator {
       for (String k : propsTable.getKeys()) {
         props.put(k, propsTable.getEntry(k).getValue().getValue());
       }
+    }
+    if (!inst.getTopic(realPath).exists()) {
+      var propsTable = inst.getTable(realPath);
+      for (String k : propsTable.getKeys()) {
+        props.put(k, propsTable.getEntry(k).getValue().getValue());
+      }
+    } else {
+      String metadata = inst.getTopic(realPath).getProperties();
+      JsonParser parser = new JsonParser();
+      var obj = parser.parse(metadata).getAsJsonObject();
+      obj.entrySet().forEach(entry -> {
+        JsonPrimitive primitive = entry.getValue().getAsJsonPrimitive();
+        if (primitive.isBoolean()) {
+          props.put(entry.getKey(), primitive.getAsBoolean());
+        } else if (primitive.isNumber()) {
+          props.put(entry.getKey(), primitive.getAsNumber());
+        } else {
+          props.put(entry.getKey(), primitive.getAsString());
+        }
+      });
     }
     return props;
   }
