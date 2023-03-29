@@ -103,6 +103,8 @@ public class CompositeNetworkTableSource<D extends ComplexData<D>> extends Netwo
   }
 
   private static Optional<String> loadWidgetFromWidgetEntry(NetworkTable table) {
-    return Optional.ofNullable(table.getValue(".widget")).filter(NetworkTableValue::isString).map(NetworkTableValue::getString);
+    return Optional.ofNullable(table.getValue(".widget"))
+            .filter(NetworkTableValue::isString)
+            .map(NetworkTableValue::getString);
   }
 }

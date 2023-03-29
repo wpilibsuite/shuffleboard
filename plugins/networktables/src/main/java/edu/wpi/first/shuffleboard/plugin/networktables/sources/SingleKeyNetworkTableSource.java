@@ -108,7 +108,8 @@ public class SingleKeyNetworkTableSource<T> extends NetworkTableSource<T> {
       JsonObject obj = parser.parse(metadata).getAsJsonObject();
       JsonElement widgetProp = obj.get("widget");
       if (widgetProp == null || !widgetProp.isJsonPrimitive()) {
-        System.err.println("Metadata widget field for topic `" + topic.getName() + "` doesn't exist or isn't primitive!");
+        System.err.println("Metadata widget field for topic `" + topic.getName()
+                           + "` doesn't exist or isn't primitive!");
         return Optional.empty();
       }
       return Optional.of(widgetProp.getAsString());
