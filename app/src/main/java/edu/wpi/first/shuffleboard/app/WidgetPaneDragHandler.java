@@ -140,7 +140,8 @@ final class WidgetPaneDragHandler implements EventHandler<DragEvent> {
     }
     SourceEntry entry = DeserializationHelper.sourceFromDrag(dragboard.getContent(DataFormats.source));
     DataSource source = entry.get();
-    Optional<String> componentName = Components.getDefault().pickComponentNameFor(source.getDataType());
+    Optional<String> componentName = source.preferredWidget()
+            .or(() -> Components.getDefault().pickComponentNameFor(source.getDataType()));
     Optional<DataSource<?>> dummySource = DummySource.forTypes(source.getDataType());
     if (componentName.isPresent() && dummySource.isPresent()) {
       if (tilePreviewSize == null) {
@@ -290,7 +291,8 @@ final class WidgetPaneDragHandler implements EventHandler<DragEvent> {
    * @param point  the point to place the widget for the source
    */
   private void dropSource(DataSource<?> source, GridPoint point) {
-    Components.getDefault().pickComponentNameFor(source.getDataType())
+    source.preferredWidget()
+            .or(() -> Components.getDefault().pickComponentNameFor(source.getDataType()))
         .flatMap(name -> Components.getDefault().createComponent(name, source))
         .filter(widget -> pane.isOpen(point, pane.sizeOfWidget(widget), n -> widget.getView() == n))
         .map(pane::addComponentToTile)

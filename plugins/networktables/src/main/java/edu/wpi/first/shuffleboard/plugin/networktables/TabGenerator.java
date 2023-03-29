@@ -354,8 +354,9 @@ final class TabGenerator {
         preferredComponent(
             path,
             sourceSupplier
-                .map(DataSource::getDataType)
-                .map(componentRegistry::defaultComponentNameFor)
+                .map(source -> source.preferredWidget()
+                                .or(() -> componentRegistry.defaultComponentNameFor(source.getDataType()))
+                )
                 .map(Optional::orElseThrow)
         ),
         properties(path));
