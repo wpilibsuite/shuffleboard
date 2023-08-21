@@ -12,13 +12,13 @@ subprojects {
         def sourceJar = tasks.register("sourceJar", Jar) {
             description = "Creates a JAR that contains the source code."
             from(project.sourceSets["main"].allSource)
-            classifier = "sources"
+            archiveClassifier = "sources"
         }
         def javadocJar = tasks.register("javadocJar", Jar) {
             dependsOn("javadoc")
             description = "Creates a JAR that contains the javadocs."
             from(tasks.named("javadoc"))
-            classifier = "javadoc"
+            archiveClassifier = "javadoc"
         }
         if (System.getenv()['RUN_AZURE_ARTIFACTORY_RELEASE'] != null) {
             artifactory {
