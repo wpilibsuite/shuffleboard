@@ -9,7 +9,7 @@ import org.opencv.core.Mat;
 
 import edu.wpi.first.cscore.VideoMode.PixelFormat;
 import edu.wpi.first.cscore.CameraServerJNI;
-import edu.wpi.first.cscore.raw.RawFrame;
+import edu.wpi.first.util.RawFrame;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
