@@ -44,12 +44,6 @@ ext.addTaskToCopyAllOutputs = { task ->
     copyAllOutputs.from task.archivePath
 }
 
-//TODO: Remove when we upgrade to Java 12
-final JAVADOC_FIX_SEARCH_STR = '\n\n' +
-        'getURLPrefix = function(ui) {\n' +
-        '    return \'\';\n' +
-        '};\n'
-
 allprojects {
     apply plugin: 'java'
     apply plugin: 'maven-publish'
@@ -208,12 +202,6 @@ allprojects {
                 'implSpec:a:Implementation Requirements:',
                 'implNote:a:Implementation Note:'
         )
-
-        doLast {
-            // Append the fix to the file
-            def searchScript = new File(destinationDir.getAbsolutePath() + '/search.js')
-            searchScript.append JAVADOC_FIX_SEARCH_STR
-        }
     }
 
     tasks.withType(GenerateModuleMetadata) {
@@ -287,12 +275,6 @@ allprojects {
                 'implSpec:a:Implementation Requirements:',
                 'implNote:a:Implementation Note:'
         )
-
-        doLast {
-            // Append the fix to the file
-            def searchScript = new File(destinationDir.getAbsolutePath() + '/search.js')
-            searchScript.append JAVADOC_FIX_SEARCH_STR
-        }
     }
 }
 
