@@ -2,13 +2,12 @@ package edu.wpi.first.shuffleboard.plugin.cameraserver;
 
 import java.nio.ByteBuffer;
 
-import edu.wpi.first.cscore.VideoMode;
 import edu.wpi.first.cscore.ImageSink;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 
-import edu.wpi.first.cscore.VideoMode.PixelFormat;
 import edu.wpi.first.cscore.CameraServerJNI;
+import edu.wpi.first.util.PixelFormat;
 import edu.wpi.first.util.RawFrame;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -20,8 +19,7 @@ public class JavaCvSink extends ImageSink {
   private ByteBuffer origByteBuffer;
   private int width;
   private int height;
-  private int pixelFormat;
-  private final int bgrValue = PixelFormat.kBGR.getValue();
+  private PixelFormat pixelFormat;
 
   private int getCVFormat(PixelFormat pixelFormat) {
     int type = 0;
@@ -80,22 +78,25 @@ public class JavaCvSink extends ImageSink {
    *         message); the frame time is in 1 us increments.
    */
   public long grabFrame(Mat image, double timeout) {
-    frame.setWidth(0);
-    frame.setHeight(0);
-    frame.setPixelFormat(bgrValue);
-    long rv = CameraServerJNI.grabSinkFrameTimeout(m_handle, frame, timeout);
+    frame.setInfo(0, 0, 0, PixelFormat.kBGR);
+    long rv = CameraServerJNI.grabRawSinkFrameTimeout(m_handle, frame, frame.getNativeObj(), timeout);
     if (rv <= 0) {
       return rv;
     }
 
-    if (frame.getDataByteBuffer() != origByteBuffer || width != frame.getWidth() || height != frame.getHeight()
+    if (frame.getData() != origByteBuffer || width != frame.getWidth() || height != frame.getHeight()
         || pixelFormat != frame.getPixelFormat()) {
-      origByteBuffer = frame.getDataByteBuffer();
+      origByteBuffer = frame.getData();
       height = frame.getHeight();
       width = frame.getWidth();
       pixelFormat = frame.getPixelFormat();
-      tmpMat = new Mat(frame.getHeight(), frame.getWidth(), getCVFormat(VideoMode.getPixelFormatFromInt(pixelFormat)),
-                       origByteBuffer);
+      if (frame.getStride() == 0) {
+        tmpMat = new Mat(frame.getHeight(), frame.getWidth(), getCVFormat(pixelFormat),
+                         origByteBuffer);
+      } else {
+        tmpMat = new Mat(frame.getHeight(), frame.getWidth(), getCVFormat(pixelFormat),
+                         origByteBuffer, frame.getStride());
+      }
     }
     tmpMat.copyTo(image);
     return rv;
@@ -110,22 +111,25 @@ public class JavaCvSink extends ImageSink {
    *         message); the frame time is in 1 us increments.
    */
   public long grabFrameNoTimeout(Mat image) {
-    frame.setWidth(0);
-    frame.setHeight(0);
-    frame.setPixelFormat(bgrValue);
-    long rv = CameraServerJNI.grabSinkFrame(m_handle, frame);
+    frame.setInfo(0, 0, 0, PixelFormat.kBGR);
+    long rv = CameraServerJNI.grabRawSinkFrame(m_handle, frame, frame.getNativeObj());
     if (rv <= 0) {
       return rv;
     }
 
-    if (frame.getDataByteBuffer() != origByteBuffer || width != frame.getWidth() || height != frame.getHeight()
+    if (frame.getData() != origByteBuffer || width != frame.getWidth() || height != frame.getHeight()
         || pixelFormat != frame.getPixelFormat()) {
-      origByteBuffer = frame.getDataByteBuffer();
+      origByteBuffer = frame.getData();
       height = frame.getHeight();
       width = frame.getWidth();
       pixelFormat = frame.getPixelFormat();
-      tmpMat = new Mat(frame.getHeight(), frame.getWidth(), getCVFormat(VideoMode.getPixelFormatFromInt(pixelFormat)),
-                       origByteBuffer);
+      if (frame.getStride() == 0) {
+        tmpMat = new Mat(frame.getHeight(), frame.getWidth(), getCVFormat(pixelFormat),
+                         origByteBuffer);
+      } else {
+        tmpMat = new Mat(frame.getHeight(), frame.getWidth(), getCVFormat(pixelFormat),
+                         origByteBuffer, frame.getStride());
+      }
     }
     tmpMat.copyTo(image);
     return rv;
