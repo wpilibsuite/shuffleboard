@@ -2,7 +2,6 @@ package edu.wpi.first.shuffleboard.plugin.cameraserver;
 
 import java.nio.ByteBuffer;
 
-import edu.wpi.first.cscore.VideoMode;
 import edu.wpi.first.cscore.ImageSink;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
