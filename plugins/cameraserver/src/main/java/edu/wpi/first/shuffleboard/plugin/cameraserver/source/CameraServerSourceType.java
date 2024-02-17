@@ -26,7 +26,7 @@ import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 
 @UiHints(showConnectionIndicator = false) // same host as NetworkTables plugin, so no need to duplicate that information
-public final class CameraServerSourceType extends SourceType {
+public final class CameraServerSourceType extends SourceType implements AutoCloseable {
 
   public static final CameraServerSourceType INSTANCE = new CameraServerSourceType();
 
@@ -35,12 +35,13 @@ public final class CameraServerSourceType extends SourceType {
   private final ObservableMap<String, Object> availableSources = FXCollections.observableHashMap();
 
   private final MultiSubscriber subscriber;
+  private final int listener;
 
   private CameraServerSourceType() {
     super("CameraServer", true, "camera_server://", CameraServerSourceType::forName);
     NetworkTableInstance inst = NetworkTableInstance.getDefault();
     subscriber = new MultiSubscriber(inst, new String[] {"/CameraPublisher"}, PubSubOption.hidden(true));
-    inst.addListener(
+    listener = inst.addListener(
         subscriber,
         EnumSet.of(
           NetworkTableEvent.Kind.kUnpublish,
@@ -64,6 +65,12 @@ public final class CameraServerSourceType extends SourceType {
               availableSources.put(uri, new CameraServerData(name, null, 0, 0));
             }
           }));
+  }
+
+  @Override
+  public void close() {
+    subscriber.close();
+    NetworkTableInstance.getDefault().removeListener(listener);
   }
 
   public static CameraServerSource forName(String name) {
