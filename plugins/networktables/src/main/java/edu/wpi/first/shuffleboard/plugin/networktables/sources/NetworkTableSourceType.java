@@ -25,7 +25,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 
-public final class NetworkTableSourceType extends SourceType {
+public final class NetworkTableSourceType extends SourceType implements AutoCloseable {
 
   private static NetworkTableSourceType instance;
 
@@ -33,6 +33,7 @@ public final class NetworkTableSourceType extends SourceType {
   private final ObservableMap<String, Object> availableSources = FXCollections.observableHashMap();
   private final NetworkTablesPlugin plugin;
   private final MultiSubscriber subscriber;
+  private final int listener;
 
   @SuppressWarnings("JavadocMethod")
   public NetworkTableSourceType(NetworkTablesPlugin plugin) {
@@ -75,6 +76,12 @@ public final class NetworkTableSourceType extends SourceType {
             }
           });
         });
+  }
+
+  @Override
+  public void close() {
+    subscriber.close();
+    NetworkTableInstance.getDefault().removeListener(listener);
   }
 
   private void setConnectionStatus(String serverId, boolean connected) {
