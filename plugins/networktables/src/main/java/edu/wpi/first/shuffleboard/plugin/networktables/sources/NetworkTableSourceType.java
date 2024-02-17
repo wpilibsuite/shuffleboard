@@ -45,7 +45,7 @@ public final class NetworkTableSourceType extends SourceType implements AutoClos
     inst.addConnectionListener(true,
         event -> setConnectionStatus(plugin.getServerId(), event.is(NetworkTableEvent.Kind.kConnected)));
     subscriber = new MultiSubscriber(inst, new String[] {""}, PubSubOption.hidden(true));
-    inst.addListener(
+    listener = inst.addListener(
         subscriber,
         EnumSet.of(
           NetworkTableEvent.Kind.kImmediate,
