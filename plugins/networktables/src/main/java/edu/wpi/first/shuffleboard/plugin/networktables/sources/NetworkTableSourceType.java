@@ -8,15 +8,14 @@ import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.Sources;
 import edu.wpi.first.shuffleboard.api.sources.recording.TimestampedData;
 import edu.wpi.first.shuffleboard.api.util.AsyncUtils;
-import edu.wpi.first.shuffleboard.api.util.FxUtils;
 import edu.wpi.first.shuffleboard.plugin.networktables.NetworkTablesPlugin;
 import edu.wpi.first.shuffleboard.plugin.networktables.util.NetworkTableUtils;
-
+import edu.wpi.first.networktables.MultiSubscriber;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableEvent;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.Topic;
+import edu.wpi.first.networktables.PubSubOption;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -33,6 +32,7 @@ public final class NetworkTableSourceType extends SourceType {
   private final ObservableList<String> availableSourceIds = FXCollections.observableArrayList();
   private final ObservableMap<String, Object> availableSources = FXCollections.observableHashMap();
   private final NetworkTablesPlugin plugin;
+  private final MultiSubscriber subscriber;
 
   @SuppressWarnings("JavadocMethod")
   public NetworkTableSourceType(NetworkTablesPlugin plugin) {
@@ -43,30 +43,9 @@ public final class NetworkTableSourceType extends SourceType {
     plugin.serverIdProperty().addListener((__, old, serverId) -> setConnectionStatus(serverId, false));
     inst.addConnectionListener(true,
         event -> setConnectionStatus(plugin.getServerId(), event.is(NetworkTableEvent.Kind.kConnected)));
-    inst.addConnectionListener(false, event -> {
-      if (event.is(NetworkTableEvent.Kind.kDisconnected)) {
-        FxUtils.runOnFxThread(() -> {
-          availableSources.clear();
-          availableSourceIds.clear();
-          NetworkTableSource.removeAllCachedSources();
-          Sources.getDefault().forType(NetworkTableSourceType.instance).forEach(Sources.getDefault()::unregister);
-        });
-      } else if (event.is(NetworkTableEvent.Kind.kConnected)) {
-        FxUtils.runOnFxThread(() -> {
-          for (Topic topic : event.getInstance().getTopics()) {
-            String uri = toUri(topic.getName());
-            if (!availableSources.containsKey(uri)) {
-              availableSources.put(uri, topic.genericSubscribe().get().getValue());
-            }
-            if (!availableSourceIds.contains(uri)) {
-              availableSourceIds.add(uri);
-            }
-          }
-        });
-      }
-    });
+    subscriber = new MultiSubscriber(inst, new String[] {""}, PubSubOption.hidden(true));
     inst.addListener(
-        new String[] {""},
+        subscriber,
         EnumSet.of(
           NetworkTableEvent.Kind.kImmediate,
           NetworkTableEvent.Kind.kTopic,

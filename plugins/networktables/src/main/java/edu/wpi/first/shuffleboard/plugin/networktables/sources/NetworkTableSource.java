@@ -8,10 +8,12 @@ import edu.wpi.first.shuffleboard.api.sources.SourceType;
 import edu.wpi.first.shuffleboard.api.sources.Sources;
 import edu.wpi.first.shuffleboard.api.util.AsyncUtils;
 import edu.wpi.first.shuffleboard.plugin.networktables.util.NetworkTableUtils;
-
+import edu.wpi.first.networktables.GenericSubscriber;
+import edu.wpi.first.networktables.MultiSubscriber;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEvent;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.PubSubOption;
 
 import java.util.EnumSet;
 import java.util.Map;
@@ -31,6 +33,8 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
   private static final Map<String, NetworkTableSource> sources = new ConcurrentHashMap<>();
 
   protected final String fullTableKey;
+  private MultiSubscriber multiSub;
+  private GenericSubscriber singleSub;
   private int listenerUid = -1;
   private volatile boolean ntUpdate = false;
 
@@ -56,24 +60,46 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
    */
   protected final void setTableListener(TableListener listener) {
     NetworkTableInstance inst = NetworkTableInstance.getDefault();
-    inst.removeListener(listenerUid);
+    if (listenerUid != -1) {
+      inst.removeListener(listenerUid);
+    }
+    if (multiSub != null) {
+      multiSub.close();
+    }
+    if (singleSub != null) {
+      singleSub.close();
+    }
     setConnected(true);
-    listenerUid = inst.addListener(
-        new String[] {fullTableKey},
+    if (isSingular()) {
+      singleSub = inst.getTopic(fullTableKey).genericSubscribe(PubSubOption.hidden(true));
+      listenerUid = inst.addListener(
+        singleSub,
+        EnumSet.of(
+          NetworkTableEvent.Kind.kImmediate,
+          NetworkTableEvent.Kind.kTopic,
+          NetworkTableEvent.Kind.kValueAll),
+        event -> {
+          if (isConnected()) {
+            AsyncUtils.runAsync(() -> {
+              try {
+                ntUpdate = true;
+                listener.onChange(fullTableKey, event);
+              } finally {
+                ntUpdate = false;
+              }
+            });
+          }
+        });
+    } else {
+      multiSub = new MultiSubscriber(inst, new String[] {fullTableKey}, PubSubOption.hidden(true));
+      listenerUid = inst.addListener(
+        multiSub,
         EnumSet.of(
           NetworkTableEvent.Kind.kImmediate,
           NetworkTableEvent.Kind.kTopic,
           NetworkTableEvent.Kind.kValueAll),
         event -> {
           String name = NetworkTableUtils.topicNameForEvent(event);
-          if (isSingular() && !name.equals(fullTableKey)) {
-            // Since NetworkTableInstance.addEntryListener() will fire on anything that starts with the key,
-            // a singular source will be notified for an unrelated entry.
-            // For example, a singular source for the entry "/S" will also be fired for any changing entry that
-            // starts with "/S", such as "/SmartDashboard/<anything>" or "/SomeUnrelatedEntry".
-            // This check prevents the source from being erroneously updated for an unrelated entry.
-            return;
-          }
           if (isConnected()) {
             AsyncUtils.runAsync(() -> {
               try {
@@ -85,6 +111,7 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
             });
           }
         });
+    }
   }
 
   /**
@@ -117,6 +144,12 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
     setActive(false);
     setConnected(false);
     NetworkTableInstance.getDefault().removeListener(listenerUid);
+    if (multiSub != null) {
+      multiSub.close();
+    }
+    if (singleSub != null) {
+      singleSub.close();
+    }
     Sources.getDefault().unregister(this);
     sources.remove(getId());
   }

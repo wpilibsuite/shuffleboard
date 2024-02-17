@@ -13,7 +13,7 @@ import edu.wpi.first.shuffleboard.api.util.function.MappableSupplier;
 import edu.wpi.first.shuffleboard.api.widget.Components;
 import edu.wpi.first.shuffleboard.api.widget.TileSize;
 import edu.wpi.first.shuffleboard.plugin.networktables.sources.NetworkTableSource;
-
+import edu.wpi.first.networktables.MultiSubscriber;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEvent;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -59,7 +59,9 @@ final class TabGenerator {
   private int tabsListener;
   private StringSubscriber tabSelectionSubscriber;
   private int tabSelectionListener;
+  private MultiSubscriber metadataSubscriber;
   private int metadataListener;
+  private MultiSubscriber dataSubscriber;
   private int dataListener;
   private final Components componentRegistry;
 
@@ -74,7 +76,7 @@ final class TabGenerator {
   public void start() {
     // Make sure all tabs exist if they're defined, even if they're empty
     NetworkTable rootMetaTable = inst.getTable(METADATA_TABLE_NAME);
-    tabsSubscriber = rootMetaTable.getStringArrayTopic(TABS_ENTRY_KEY).subscribe(new String[] {});
+    tabsSubscriber = rootMetaTable.getStringArrayTopic(TABS_ENTRY_KEY).subscribe(new String[] {}, PubSubOption.hidden(true));
     tabsListener = inst.addListener(tabsSubscriber,
       EnumSet.of(NetworkTableEvent.Kind.kValueAll, NetworkTableEvent.Kind.kImmediate), event -> {
         for (String tabName : event.valueData.value.getStringArray()) {
@@ -84,7 +86,7 @@ final class TabGenerator {
       });
 
     tabSelectionSubscriber = rootMetaTable.getStringTopic(SELECTED_ENTRY_NAME)
-            .subscribe("", PubSubOption.keepDuplicates(true));
+            .subscribe("", PubSubOption.keepDuplicates(true), PubSubOption.hidden(true));
     tabSelectionListener = inst.addListener(
         tabSelectionSubscriber,
         EnumSet.of(NetworkTableEvent.Kind.kValueAll, NetworkTableEvent.Kind.kImmediate),
@@ -98,12 +100,14 @@ final class TabGenerator {
             }
         });
 
+    metadataSubscriber = new MultiSubscriber(inst, new String[] {METADATA_TABLE_NAME + "/"}, PubSubOption.hidden(true));
     metadataListener = inst.addListener(
-        new String[] {METADATA_TABLE_NAME + "/"},
+        metadataSubscriber,
         EnumSet.of(NetworkTableEvent.Kind.kValueAll, NetworkTableEvent.Kind.kImmediate),
         this::metadataChanged);
+    dataSubscriber = new MultiSubscriber(inst, new String[] {ROOT_TABLE_NAME + "/"}, PubSubOption.hidden(true));
     dataListener = inst.addListener(
-        new String[] {ROOT_TABLE_NAME + "/"},
+        dataSubscriber,
         EnumSet.of(NetworkTableEvent.Kind.kValueAll, NetworkTableEvent.Kind.kImmediate),
         this::dataChanged);
   }
@@ -116,7 +120,9 @@ final class TabGenerator {
     inst.removeListener(tabsListener);
     tabSelectionSubscriber.close();
     inst.removeListener(tabSelectionListener);
+    metadataSubscriber.close();
     inst.removeListener(metadataListener);
+    dataSubscriber.close();
     inst.removeListener(dataListener);
   }
 
