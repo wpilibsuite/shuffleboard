@@ -39,6 +39,13 @@ public final class NetworkTableUtils {
     }
   }
 
+  /**
+   * Gets the data type associated with the given network table type string.
+   *
+   * @param typeString the network table type string to get the data type for
+   *
+   * @return the data type most closely associated with the given type string
+   */
   public static DataType dataTypeForTypeString(String typeString) {
     if ("boolean".equals(typeString)) {
       return DataTypes.Boolean;
@@ -46,7 +53,7 @@ public final class NetworkTableUtils {
       return DataTypes.Number;
     } else if ("string".equals(typeString) || "json".equals(typeString)) {
       return DataTypes.String;
-    } else if ("raw".equals(typeString)) {
+    } else if ("raw".equals(typeString) || "msgpack".equals(typeString) || "protobuf".equals(typeString)) {
       return DataTypes.ByteArray;
     } else if ("boolean[]".equals(typeString)) {
       return DataTypes.BooleanArray;

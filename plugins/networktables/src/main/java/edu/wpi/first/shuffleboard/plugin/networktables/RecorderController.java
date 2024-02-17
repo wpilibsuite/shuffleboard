@@ -57,8 +57,8 @@ public final class RecorderController {
                             String fileNameFormatKey,
                             Recorder recorder) {
     startStopControlSub = ntInstance.getBooleanTopic(startStopKey).subscribe(false, PubSubOption.hidden(true));
-    fileNameFormatSub =
-        ntInstance.getStringTopic(fileNameFormatKey).subscribe(Recorder.DEFAULT_RECORDING_FILE_NAME_FORMAT, PubSubOption.hidden(true));
+    fileNameFormatSub = ntInstance.getStringTopic(fileNameFormatKey)
+        .subscribe(Recorder.DEFAULT_RECORDING_FILE_NAME_FORMAT, PubSubOption.hidden(true));
     this.recorder = recorder;
     this.markerGenerator = new MarkerGenerator(ntInstance, recorder);
   }

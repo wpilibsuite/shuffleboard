@@ -76,7 +76,8 @@ final class TabGenerator {
   public void start() {
     // Make sure all tabs exist if they're defined, even if they're empty
     NetworkTable rootMetaTable = inst.getTable(METADATA_TABLE_NAME);
-    tabsSubscriber = rootMetaTable.getStringArrayTopic(TABS_ENTRY_KEY).subscribe(new String[] {}, PubSubOption.hidden(true));
+    tabsSubscriber = rootMetaTable.getStringArrayTopic(TABS_ENTRY_KEY)
+        .subscribe(new String[] {}, PubSubOption.hidden(true));
     tabsListener = inst.addListener(tabsSubscriber,
       EnumSet.of(NetworkTableEvent.Kind.kValueAll, NetworkTableEvent.Kind.kImmediate), event -> {
         for (String tabName : event.valueData.value.getStringArray()) {
@@ -100,7 +101,8 @@ final class TabGenerator {
             }
         });
 
-    metadataSubscriber = new MultiSubscriber(inst, new String[] {METADATA_TABLE_NAME + "/"}, PubSubOption.hidden(true));
+    metadataSubscriber =
+        new MultiSubscriber(inst, new String[] {METADATA_TABLE_NAME + "/"}, PubSubOption.hidden(true));
     metadataListener = inst.addListener(
         metadataSubscriber,
         EnumSet.of(NetworkTableEvent.Kind.kValueAll, NetworkTableEvent.Kind.kImmediate),

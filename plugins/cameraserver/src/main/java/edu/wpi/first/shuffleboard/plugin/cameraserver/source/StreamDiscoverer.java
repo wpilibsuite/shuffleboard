@@ -34,7 +34,8 @@ public final class StreamDiscoverer implements AutoCloseable {
    * @param cameraName     the name of the camera to discover streams for
    */
   public StreamDiscoverer(NetworkTable publisherTable, String cameraName) {
-    streamsSub = publisherTable.getSubTable(cameraName).getStringArrayTopic(STREAMS_KEY).subscribe(emptyStringArray, PubSubOption.hidden(true));
+    streamsSub = publisherTable.getSubTable(cameraName).getStringArrayTopic(STREAMS_KEY)
+        .subscribe(emptyStringArray, PubSubOption.hidden(true));
     streamsListener = publisherTable.getInstance().addListener(
         streamsSub,
         EnumSet.of(
