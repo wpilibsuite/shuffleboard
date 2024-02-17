@@ -2,10 +2,11 @@ package edu.wpi.first.shuffleboard.plugin.networktables;
 
 import edu.wpi.first.shuffleboard.api.sources.recording.MarkerImportance;
 import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
-
+import edu.wpi.first.networktables.MultiSubscriber;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEvent;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.PubSubOption;
 
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -42,6 +43,7 @@ final class MarkerGenerator {
   private final NetworkTableInstance inst;
   private final Recorder recorder;
 
+  private MultiSubscriber subscriber;
   private int listenerHandle = 0;
 
   MarkerGenerator(NetworkTableInstance inst, Recorder recorder) {
@@ -50,12 +52,14 @@ final class MarkerGenerator {
   }
 
   public void start() {
-    listenerHandle = inst.addListener(new String[] {EVENT_TABLE_NAME},
+    subscriber = new MultiSubscriber(inst, new String[] {EVENT_TABLE_NAME}, PubSubOption.hidden(true));
+    listenerHandle = inst.addListener(subscriber,
         EnumSet.of(NetworkTableEvent.Kind.kValueAll, NetworkTableEvent.Kind.kImmediate), this::handleMarkerEvent);
   }
 
   public void stop() {
     inst.removeListener(listenerHandle);
+    subscriber.close();
   }
 
   private void handleMarkerEvent(NetworkTableEvent event) {

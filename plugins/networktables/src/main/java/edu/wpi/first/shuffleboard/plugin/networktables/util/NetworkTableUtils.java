@@ -40,6 +40,33 @@ public final class NetworkTableUtils {
   }
 
   /**
+   * Gets the data type associated with the given network table type string.
+   *
+   * @param typeString the network table type string to get the data type for
+   *
+   * @return the data type most closely associated with the given type string
+   */
+  public static DataType dataTypeForTypeString(String typeString) {
+    if ("boolean".equals(typeString)) {
+      return DataTypes.Boolean;
+    } else if ("double".equals(typeString) || "int".equals(typeString) || "float".equals(typeString)) {
+      return DataTypes.Number;
+    } else if ("string".equals(typeString) || "json".equals(typeString)) {
+      return DataTypes.String;
+    } else if ("raw".equals(typeString) || "msgpack".equals(typeString) || "protobuf".equals(typeString)) {
+      return DataTypes.ByteArray;
+    } else if ("boolean[]".equals(typeString)) {
+      return DataTypes.BooleanArray;
+    } else if ("double[]".equals(typeString) || "int[]".equals(typeString) || "float[]".equals(typeString)) {
+      return DataTypes.NumberArray;
+    } else if ("string[]".equals(typeString)) {
+      return DataTypes.StringArray;
+    } else {
+      return DataTypes.Unknown;
+    }
+  }
+
+  /**
    * Gets the data type most closely associated with the value of the given network table key.
    *
    * @param key the network table key to get the data type for
@@ -52,16 +79,18 @@ public final class NetworkTableUtils {
       return DataTypes.Map;
     }
     if (rootTable.containsKey(normalKey)) {
-      var ntValue = rootTable.getEntry(normalKey).getValue();
-      if (ntValue.isValid()) {
-        return DataTypes.getDefault().forJavaType(ntValue.getValue().getClass()).get();
-      } else {
-        return null;
-      }
+      return dataTypeForTypeString(rootTable.getTopic(normalKey).getTypeString());
     }
     if (rootTable.containsSubTable(normalKey)) {
       NetworkTable table = rootTable.getSubTable(normalKey);
-      String type = table.getEntry("~TYPE~").getString(table.getEntry(".type").getString(null));
+      String type;
+      if (table.containsKey("~TYPE~")) {
+        type = table.getEntry("~TYPE~").getString(null);
+      } else if (table.containsKey(".type")) {
+        type = table.getEntry(".type").getString(null);
+      } else {
+        return DataTypes.Map;
+      }
       if (type == null) {
         return DataTypes.Map;
       } else {

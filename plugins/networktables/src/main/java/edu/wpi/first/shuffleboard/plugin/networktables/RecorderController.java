@@ -8,6 +8,7 @@ import java.util.EnumSet;
 import edu.wpi.first.networktables.BooleanSubscriber;
 import edu.wpi.first.networktables.NetworkTableEvent;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.PubSubOption;
 import edu.wpi.first.networktables.StringSubscriber;
 
 /**
@@ -55,9 +56,9 @@ public final class RecorderController {
                             String startStopKey,
                             String fileNameFormatKey,
                             Recorder recorder) {
-    startStopControlSub = ntInstance.getBooleanTopic(startStopKey).subscribe(false);
-    fileNameFormatSub =
-        ntInstance.getStringTopic(fileNameFormatKey).subscribe(Recorder.DEFAULT_RECORDING_FILE_NAME_FORMAT);
+    startStopControlSub = ntInstance.getBooleanTopic(startStopKey).subscribe(false, PubSubOption.hidden(true));
+    fileNameFormatSub = ntInstance.getStringTopic(fileNameFormatKey)
+        .subscribe(Recorder.DEFAULT_RECORDING_FILE_NAME_FORMAT, PubSubOption.hidden(true));
     this.recorder = recorder;
     this.markerGenerator = new MarkerGenerator(ntInstance, recorder);
   }

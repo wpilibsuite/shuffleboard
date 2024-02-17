@@ -7,6 +7,7 @@ import com.google.common.annotations.VisibleForTesting;
 
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEvent;
+import edu.wpi.first.networktables.PubSubOption;
 import edu.wpi.first.networktables.StringArraySubscriber;
 
 import java.util.EnumSet;
@@ -33,7 +34,8 @@ public final class StreamDiscoverer implements AutoCloseable {
    * @param cameraName     the name of the camera to discover streams for
    */
   public StreamDiscoverer(NetworkTable publisherTable, String cameraName) {
-    streamsSub = publisherTable.getSubTable(cameraName).getStringArrayTopic(STREAMS_KEY).subscribe(emptyStringArray);
+    streamsSub = publisherTable.getSubTable(cameraName).getStringArrayTopic(STREAMS_KEY)
+        .subscribe(emptyStringArray, PubSubOption.hidden(true));
     streamsListener = publisherTable.getInstance().addListener(
         streamsSub,
         EnumSet.of(
