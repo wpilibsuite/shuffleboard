@@ -36,11 +36,11 @@ jobs:
     name: "Build - ${{ matrix.artifact-name }}"
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-java@v3
+      - uses: actions/setup-java@v4
         with:
           java-version: 11
           distribution: 'zulu'
@@ -75,7 +75,7 @@ jobs:
         run: ./gradlew copyAllOutputs -PArchOverride=${{ matrix.arch-override }} -PbuildServer -PreleaseMode -PdeveloperID=${{ secrets.APPLE_DEVELOPER_ID }}
         if: ${{ (matrix.arch-override != 'none') && (github.repository_owner == 'wpilibsuite' && startsWith(github.ref, 'refs/tags/v')) }}
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact-name }}
           path: build/allOutputs
@@ -85,16 +85,16 @@ jobs:
     needs: build
     name: "Combine"
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-java@v3
+      - uses: actions/setup-java@v4
         with:
           java-version: 11
           distribution: 'zulu'
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           path: build/allOutputs
 
@@ -125,7 +125,7 @@ jobs:
           ARTIFACTORY_PUBLISH_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
           ARTIFACTORY_PUBLISH_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: "Maven"
           path: ~/releases
