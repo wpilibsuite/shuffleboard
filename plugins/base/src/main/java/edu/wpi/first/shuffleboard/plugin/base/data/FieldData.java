@@ -6,6 +6,7 @@ import edu.wpi.first.shuffleboard.api.data.ComplexData;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
 public class FieldData extends ComplexData<FieldData> {
   private final SimplePose2d robot;
@@ -60,8 +61,13 @@ public class FieldData extends ComplexData<FieldData> {
       }
 
       double[] doubles;
-      if (entry.getValue() instanceof byte[]) {
-        byte[] data = (byte[]) entry.getValue();
+      Object value = entry.getValue();
+      if (value instanceof double[]) {
+        // Intended flow
+        doubles = (double[]) value;
+      } else if (entry.getValue() instanceof byte[]) {
+        // double[] encoded as byte[] is supported too (for some reason)
+        byte[] data = (byte[]) value;
         doubles = new double[data.length / Double.BYTES];
         for (int i = 0; i < doubles.length; i++) {
           doubles[i] = ByteBuffer.allocate(Double.BYTES)
@@ -70,7 +76,13 @@ public class FieldData extends ComplexData<FieldData> {
                   .getDouble();
         }
       } else {
-        doubles = (double[]) map.get(key);
+        // Some other type (might be an externally-published topic under the same table)
+        // Warn and drop, but don't raise an exception
+        doubles = new double[0];
+        Logger.getLogger(FieldData.class.getName())
+                .warning(() -> String.format(
+                        "Failed to parse entry %s of type %s: %s",
+                        key, value.getClass(), value));
       }
 
       SimplePose2d[] poses = new SimplePose2d[doubles.length / 3];
