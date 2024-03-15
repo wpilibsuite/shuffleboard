@@ -104,6 +104,8 @@ public class FieldData extends ComplexData<FieldData> {
 
   @Override
   public Map<String, Object> asMap() {
-    return ImmutableMap.of("Robot", robot);
+    HashMap<String, SimplePose2d[]> tmp = new HashMap<>(getObjects());
+    tmp.put("Robot", new SimplePose2d[]{getRobot()});
+    return ImmutableMap.copyOf(tmp);
   }
 }
