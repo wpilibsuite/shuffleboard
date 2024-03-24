@@ -65,7 +65,7 @@ public class FieldData extends ComplexData<FieldData> {
       if (value instanceof double[]) {
         // Intended flow
         doubles = (double[]) value;
-      } else if (entry.getValue() instanceof byte[]) {
+      } else if (value instanceof byte[]) {
         // double[] encoded as byte[] is supported too (for some reason)
         byte[] data = (byte[]) value;
         doubles = new double[data.length / Double.BYTES];
