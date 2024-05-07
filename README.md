@@ -16,8 +16,8 @@ It can also be run manually by running the shuffleboard.vbs in `c:\Users\public\
 shuffleboard.py in `~/wpilib/<year>/tools` (Linux or Mac).
 
 ### Requirements
-- [JRE 11](https://adoptopenjdk.net/). Java 11 is required.
-No other version of Java is supported. Java 11 is installed by the
+- [JRE 17](https://adoptium.net/temurin/releases/?version=17&package=jre). Java 17 is required.
+No other version of Java is supported. Java 17 is installed by the
 [WPILib installer](https://github.com/wpilibsuite/allwpilib/releases).
 
 ## Building
@@ -41,5 +41,5 @@ Only the listed platforms are supported
 To build _all_ platform-specific JARs at once, use the command `./gradlew :app:shadowJarAllPlatforms`
 
 ### Requirements
-- [JDK 11](https://adoptopenjdk.net/). JDK 11 is required.
+- [JDK 17](https://adoptium.net/temurin/releases/?version=17). JDK 17 is required.
 No other version of Java is supported.
