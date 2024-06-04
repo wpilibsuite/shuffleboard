@@ -1,8 +1,8 @@
 package edu.wpi.first.shuffleboard.plugin.base.widget;
 
 import com.google.common.collect.ImmutableList;
-import edu.wpi.fields.FieldConfig;
-import edu.wpi.fields.Fields;
+import edu.wpi.first.fields.FieldConfig;
+import edu.wpi.first.fields.Fields;
 import edu.wpi.first.shuffleboard.api.prefs.Group;
 import edu.wpi.first.shuffleboard.api.prefs.Setting;
 import edu.wpi.first.shuffleboard.api.widget.Description;
