@@ -90,7 +90,7 @@ public final class AlertsWidget extends SimpleAnnotatedWidget<AlertsData> {
     return root;
   }
 
-  public class NoSelectionModel<T> extends MultipleSelectionModel<T> {
+  private static class NoSelectionModel<T> extends MultipleSelectionModel<T> {
 
     @Override
     public ObservableList<Integer> getSelectedIndices() {
