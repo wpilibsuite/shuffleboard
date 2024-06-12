@@ -68,6 +68,8 @@ public final class AlertsWidget extends SimpleAnnotatedWidget<AlertsData> {
               case INFO:
                 imageView.setImage(infoIcon);
                 break;
+              default:
+                break;
             }
             imageView.setFitHeight(20);
             imageView.setFitWidth(20);
