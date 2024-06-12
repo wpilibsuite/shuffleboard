@@ -11,13 +11,16 @@ import com.google.common.collect.ImmutableList;
 import java.util.List;
 
 import org.fxmisc.easybind.EasyBind;
+import javafx.beans.property.Property;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleObjectProperty;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Slider;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
+import javafx.geometry.Orientation;
 
 @Description(
     name = "Number Slider",
@@ -33,6 +36,8 @@ public class NumberSliderWidget extends SimpleAnnotatedWidget<Number> {
   private Label text;
 
   private final BooleanProperty showText = new SimpleBooleanProperty(this, "showText", true);
+  private final Property<Orientation> orientation =
+      new SimpleObjectProperty<>(this, "orientation", Orientation.HORIZONTAL);
 
   @FXML
   private void initialize() {
@@ -43,6 +48,7 @@ public class NumberSliderWidget extends SimpleAnnotatedWidget<Number> {
               .divide(4));
     slider.valueProperty().bindBidirectional(dataProperty());
     text.textProperty().bind(EasyBind.map(dataOrDefault, n -> String.format("%.2f", n.doubleValue())));
+    slider.orientationProperty().bind(orientation);
   }
 
   @Override
@@ -59,7 +65,8 @@ public class NumberSliderWidget extends SimpleAnnotatedWidget<Number> {
             Setting.of("Block increment", slider.blockIncrementProperty(), Double.class)
         ),
         Group.of("Visuals",
-            Setting.of("Display value", showText, Boolean.class)
+            Setting.of("Display value", showText, Boolean.class),
+            Setting.of("Orientation", orientation, Orientation.class)
         )
     );
   }
