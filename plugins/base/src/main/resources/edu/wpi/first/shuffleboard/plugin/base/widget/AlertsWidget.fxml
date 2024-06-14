@@ -9,6 +9,13 @@
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="edu.wpi.first.shuffleboard.plugin.base.widget.AlertsWidget"
-      fx:id="root">
-      <ListView fx:id="list"/>
+      fx:id="root"
+      stylesheets="@alerts-widget.css">
+      <ListView fx:id="list">
+            <placeholder>
+                  <GridPane fx:id="placeholder">
+                        <Label text="(Nothing to report)"/>
+                  </GridPane>
+            </placeholder>
+      </ListView>
 </VBox>

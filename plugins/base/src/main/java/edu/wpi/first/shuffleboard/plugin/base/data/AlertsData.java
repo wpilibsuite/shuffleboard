@@ -60,9 +60,6 @@ public final class AlertsData extends ComplexData<AlertsData> {
     for (String text : infos) {
       collection.add(new AlertItem(AlertType.INFO, text));
     }
-    if (collection.size() == 0) {
-      collection.add(new AlertItem(AlertType.LOCAL, "(Nothing to report)"));
-    }
     return collection;
   }
 
@@ -88,6 +85,6 @@ public final class AlertsData extends ComplexData<AlertsData> {
   }
 
   public static enum AlertType {
-    ERROR, WARNING, INFO, LOCAL
+    ERROR, WARNING, INFO
   }
 }

@@ -5,15 +5,16 @@ import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 import edu.wpi.first.shuffleboard.api.widget.SimpleAnnotatedWidget;
 import edu.wpi.first.shuffleboard.plugin.base.data.AlertsData;
 import edu.wpi.first.shuffleboard.plugin.base.data.AlertsData.AlertItem;
-import edu.wpi.first.shuffleboard.plugin.base.data.AlertsData.AlertType;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.geometry.Pos;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MultipleSelectionModel;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.text.TextAlignment;
 
@@ -32,7 +33,9 @@ public final class AlertsWidget extends SimpleAnnotatedWidget<AlertsData> {
   private ListView<AlertItem> list;
 
   @FXML
-  @SuppressWarnings("incomplete-switch")
+  private GridPane placeholder;
+
+  @FXML
   private void initialize() {
     list.setCellFactory(param -> new ListCell<AlertItem>() {
       @Override
@@ -48,41 +51,34 @@ public final class AlertsWidget extends SimpleAnnotatedWidget<AlertsData> {
 
           setWrapText(true);
           setText(item.text);
+          setTextAlignment(TextAlignment.LEFT);
 
-          if (item.type == AlertType.LOCAL) {
-            setTextAlignment(TextAlignment.CENTER);
-            setStyle("-fx-alignment: center;");
-            setGraphic(null);
-          } else {
-            setTextAlignment(TextAlignment.LEFT);
-            setStyle("-fx-alignment: left;");
-
-            ImageView imageView = new ImageView();
-            switch (item.type) {
-              case ERROR:
-                imageView.setImage(errorIcon);
-                break;
-              case WARNING:
-                imageView.setImage(warningIcon);
-                break;
-              case INFO:
-                imageView.setImage(infoIcon);
-                break;
-              default:
-                break;
-            }
-            imageView.setFitHeight(20);
-            imageView.setFitWidth(20);
-            imageView.setTranslateX(-3);
-            imageView.setSmooth(true);
-            setGraphic(imageView);
+          ImageView imageView = new ImageView();
+          switch (item.type) {
+            case ERROR:
+              imageView.setImage(errorIcon);
+              break;
+            case WARNING:
+              imageView.setImage(warningIcon);
+              break;
+            case INFO:
+              imageView.setImage(infoIcon);
+              break;
+            default:
+              break;
           }
+          imageView.setFitHeight(20);
+          imageView.setFitWidth(20);
+          imageView.setTranslateX(-3);
+          imageView.setSmooth(true);
+          setGraphic(imageView);
         }
       }
     });
 
     list.setSelectionModel(new NoSelectionModel<AlertItem>());
     list.itemsProperty().bind(dataOrDefault.map(AlertsData::getCollection));
+    placeholder.setAlignment(Pos.TOP_CENTER);
   }
 
   @Override
