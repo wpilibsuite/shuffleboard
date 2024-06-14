@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.app;
 
+import com.google.common.base.Stopwatch;
 import edu.wpi.first.shuffleboard.api.plugin.Plugin;
 import edu.wpi.first.shuffleboard.api.prefs.Category;
 import edu.wpi.first.shuffleboard.api.sources.recording.Recorder;
@@ -21,6 +22,7 @@ import edu.wpi.first.shuffleboard.app.prefs.SettingsDialog;
 import edu.wpi.first.shuffleboard.app.sources.recording.Playback;
 import edu.wpi.first.shuffleboard.app.tab.TabInfoRegistry;
 
+import java.util.concurrent.TimeUnit;
 import org.fxmisc.easybind.EasyBind;
 
 import java.awt.Desktop;
@@ -251,7 +253,9 @@ public class MainWindowController {
    * @throws IOException if the file could not be read from
    */
   public void load(File saveFile) throws IOException {
+    var timer = Stopwatch.createStarted();
     setDashboard(saveFileHandler.load(saveFile));
+    log.info("Loaded save file " + saveFile.getAbsolutePath() + " in " + timer.elapsed(TimeUnit.MILLISECONDS) + " milliseconds");
   }
 
   @FXML
