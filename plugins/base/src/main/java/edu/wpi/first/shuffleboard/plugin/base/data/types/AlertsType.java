@@ -1,6 +1,7 @@
 package edu.wpi.first.shuffleboard.plugin.base.data.types;
 
 import edu.wpi.first.shuffleboard.api.data.ComplexDataType;
+import edu.wpi.first.shuffleboard.api.util.Maps;
 import edu.wpi.first.shuffleboard.plugin.base.data.AlertsData;
 
 import java.util.Map;
@@ -29,9 +30,11 @@ public final class AlertsType extends ComplexDataType<AlertsData> {
 
   @Override
   public Function<Map<String, Object>, AlertsData> fromMap() {
-    return map -> new AlertsData((String[]) map.getOrDefault("errors", new String[] {}),
-        (String[]) map.getOrDefault("warnings", new String[] {}),
-        (String[]) map.getOrDefault("infos", new String[] {}));
+    return map -> new AlertsData(
+      Maps.getOrDefault(map, "errors", new String[0]),
+      Maps.getOrDefault(map, "warnings", new String[0]),
+      Maps.getOrDefault(map, "infos", new String[0])
+    );
   }
 
   @Override
