@@ -1,6 +1,5 @@
 package edu.wpi.first.shuffleboard.plugin.networktables.sources;
 
-import edu.wpi.first.networktables.Topic;
 import edu.wpi.first.networktables.TopicInfo;
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
@@ -36,7 +35,6 @@ public final class NetworkTableSourceType extends SourceType implements AutoClos
 
   private final ObservableList<String> availableSourceIds = FXCollections.observableArrayList();
   private final ObservableMap<String, Object> availableSources = FXCollections.observableHashMap();
-  private final Map<Topic, Integer> subs = new HashMap<>();
   /** Maps source URIs to the last known data type. */
   private final Map<String, DataType> availableDataTypes = new HashMap<>();
   private final NetworkTablesPlugin plugin;
@@ -59,33 +57,23 @@ public final class NetworkTableSourceType extends SourceType implements AutoClos
           NetworkTableEvent.Kind.kImmediate,
           NetworkTableEvent.Kind.kTopic),
         event -> {
-          TopicInfo topicInfo = event.topicInfo;
-          if (topicInfo.name.endsWith("/.type")) {
-            // Type metadata for composite data
-            var sourceId = toUri(topicInfo.name.substring(0, topicInfo.name.length() - 6));
-            var topic = topicInfo.getTopic();
-            int listener = inst.addListener(
-                topic,
-                EnumSet.of(
-                    NetworkTableEvent.Kind.kImmediate,
-                    NetworkTableEvent.Kind.kValueAll,
-                    NetworkTableEvent.Kind.kUnpublish),
-                e -> {
-                  if (e.is(NetworkTableEvent.Kind.kUnpublish)) {
-                    // Deleted
-                    availableDataTypes.remove(sourceId);
-                  } else if (!availableDataTypes.containsKey(sourceId)) {
-                    // Add the data type to the known set
-                    DataTypes.getDefault().forName(e.valueData.value.getString())
-                        .ifPresent(dataType -> availableDataTypes.put(sourceId, dataType));
-                  }
-                });
-
-            subs.put(topic, listener);
-          }
-
           AsyncUtils.runAsync(() -> {
             final boolean delete = event.is(NetworkTableEvent.Kind.kUnpublish);
+            final TopicInfo topicInfo = event.topicInfo;
+            if (topicInfo.name.endsWith("/.type") && !delete) {
+              // Got type metadata for composite data
+              var compositeSourceId = toUri(topicInfo.name.substring(0, topicInfo.name.length() - 6));
+              var topic = topicInfo.getTopic();
+              var typeName = topic.getProperty("SmartDashboard");
+              if ("null".equals(typeName)) {
+                // Metadata property hasn't been set, fall back to use the generic map data type
+                availableDataTypes.put(compositeSourceId, DataTypes.Map);
+              } else {
+                var dataType = DataTypes.getDefault().forName(typeName).orElse(DataTypes.Map);
+                availableDataTypes.put(compositeSourceId, dataType);
+              }
+            }
+
             final String name = NetworkTableUtils.topicNameForEvent(event);
             List<String> hierarchy = NetworkTable.getHierarchy(name);
             for (int i = 0; i < hierarchy.size(); i++) {
@@ -94,6 +82,7 @@ public final class NetworkTableSourceType extends SourceType implements AutoClos
                 // The full key
                 if (delete) {
                   availableSources.remove(uri);
+                  availableDataTypes.remove(uri);
                   Sources sources = Sources.getDefault();
                   sources.get(uri).ifPresent(sources::unregister);
                   NetworkTableSource.removeCachedSource(uri);
@@ -117,8 +106,10 @@ public final class NetworkTableSourceType extends SourceType implements AutoClos
   @Override
   public void close() {
     subscriber.close();
-    subs.clear();
     NetworkTableInstance.getDefault().removeListener(topicListener);
+    availableSources.clear();
+    availableDataTypes.clear();
+    availableSourceIds.clear();
   }
 
   private void setConnectionStatus(String serverId, boolean connected) {
