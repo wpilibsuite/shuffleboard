@@ -255,7 +255,13 @@ public class MainWindowController {
   public void load(File saveFile) throws IOException {
     var timer = Stopwatch.createStarted();
     setDashboard(saveFileHandler.load(saveFile));
-    log.info("Loaded save file " + saveFile.getAbsolutePath() + " in " + timer.elapsed(TimeUnit.MILLISECONDS) + " milliseconds");
+    log.info(
+        "Loaded save file "
+            + saveFile.getAbsolutePath()
+            + " in "
+            + timer.elapsed(TimeUnit.MILLISECONDS)
+            + " milliseconds"
+    );
   }
 
   @FXML

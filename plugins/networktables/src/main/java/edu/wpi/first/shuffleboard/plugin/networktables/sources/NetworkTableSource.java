@@ -92,7 +92,12 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
           }
         });
     } else {
-      multiSub = new MultiSubscriber(inst, new String[] {fullTableKey}, PubSubOption.hidden(false), PubSubOption.sendAll(true));
+      multiSub = new MultiSubscriber(
+          inst,
+          new String[] {fullTableKey},
+          PubSubOption.hidden(false),
+          PubSubOption.sendAll(true)
+      );
       listenerUid = inst.addListener(
         multiSub,
         EnumSet.of(
