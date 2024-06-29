@@ -1,0 +1,23 @@
+---
+name: bump
+
+on: [repository_dispatch]
+
+jobs:
+  bump:
+    if: github.event_name == 'repository_dispatch' && github.event.action == 'tag'
+    runs-on: ubuntu-latest
+    steps:
+    - name: Information
+      run: |
+        echo "Version update for ${{ github.event.client_payload.package_name }} -> ${{ github.event.client_payload.package_version }} requested"
+    - uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.TOOL_REPO_ACCESS_TOKEN }}
+        fetch-depth: 0
+
+    - name: Tag and push
+      shell: bash
+      run: |
+        git tag ${{ github.event.client_payload.package_version }}
+        git push origin ${{ github.event.client_payload.package_version }}
