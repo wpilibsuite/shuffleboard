@@ -17,6 +17,7 @@ import edu.wpi.first.shuffleboard.api.widget.ComponentType;
 import edu.wpi.first.shuffleboard.api.widget.LayoutClass;
 import edu.wpi.first.shuffleboard.api.widget.WidgetType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.AccelerometerType;
+import edu.wpi.first.shuffleboard.plugin.base.data.types.AlertsType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.AnalogInputType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.BasicSubsystemType;
 import edu.wpi.first.shuffleboard.plugin.base.data.types.CommandType;
@@ -43,6 +44,7 @@ import edu.wpi.first.shuffleboard.plugin.base.layout.GridLayoutSaver;
 import edu.wpi.first.shuffleboard.plugin.base.layout.ListLayout;
 import edu.wpi.first.shuffleboard.plugin.base.layout.SubsystemLayout;
 import edu.wpi.first.shuffleboard.plugin.base.widget.AccelerometerWidget;
+import edu.wpi.first.shuffleboard.plugin.base.widget.AlertsWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.BasicFmsInfoWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.BasicSubsystemWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.BooleanBoxWidget;
@@ -81,7 +83,7 @@ import java.util.prefs.Preferences;
 @Description(
     group = "edu.wpi.first.shuffleboard",
     name = "Base",
-    version = "1.3.6",
+    version = "1.3.7",
     summary = "Defines all the WPILib data types and stock widgets"
 )
 @SuppressWarnings("PMD.CouplingBetweenObjects")
@@ -129,7 +131,8 @@ public class BasePlugin extends Plugin {
         DifferentialDriveType.Instance,
         FmsInfoType.Instance,
         UltrasonicType.Instance,
-        FieldType.Instance
+        FieldType.Instance,
+        AlertsType.Instance
     );
   }
 
@@ -165,6 +168,7 @@ public class BasePlugin extends Plugin {
         WidgetType.forAnnotatedWidget(BasicFmsInfoWidget.class),
         WidgetType.forAnnotatedWidget(UltrasonicWidget.class),
         WidgetType.forAnnotatedWidget(FieldWidget.class),
+        WidgetType.forAnnotatedWidget(AlertsWidget.class),
         new LayoutClass<>("List Layout", ListLayout.class),
         new LayoutClass<>("Grid Layout", GridLayout.class),
         createSubsystemLayoutType()
@@ -198,6 +202,7 @@ public class BasePlugin extends Plugin {
         .put(UltrasonicType.Instance, WidgetType.forAnnotatedWidget(UltrasonicWidget.class))
         .put(BasicSubsystemType.Instance, WidgetType.forAnnotatedWidget(BasicSubsystemWidget.class))
         .put(FieldType.Instance, WidgetType.forAnnotatedWidget(FieldWidget.class))
+        .put(AlertsType.Instance, WidgetType.forAnnotatedWidget(AlertsWidget.class))
         .put(SubsystemType.Instance, createSubsystemLayoutType())
         .build();
   }
