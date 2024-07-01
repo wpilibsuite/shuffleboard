@@ -86,7 +86,7 @@ public class SourceTreeTableTest extends ApplicationTest {
     }
 
     @Override
-    public Object getValueView() {
+    public Object getInfo() {
       return uri;
     }
 
