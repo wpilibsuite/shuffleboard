@@ -6,6 +6,7 @@ import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.collections.ListChangeListener;
 
 /**
  * A partial implementation of {@code Widget} that only has a single source.
@@ -13,6 +14,31 @@ import javafx.beans.property.SimpleObjectProperty;
 public abstract class SingleSourceWidget extends AbstractWidget {
 
   protected final ObjectProperty<DataSource> source = new SimpleObjectProperty<>(this, "source", DataSource.none());
+
+  public SingleSourceWidget() {
+    // Bidirectional binding to make the sources list act like a single-element wrapper around
+    // the source property
+    source.addListener((__, oldSource, newSource) -> sources.setAll(newSource));
+
+    sources.addListener(new ListChangeListener<DataSource>() {
+      @Override
+      public void onChanged(Change<? extends DataSource> c) {
+        while (c.next()) {
+          if (c.wasAdded()) {
+            var added = c.getAddedSubList();
+            if (!added.isEmpty()) {
+              var s = added.get(0);
+              if (s != source.get()) {
+                source.set(s);
+              }
+            }
+          } else if (c.wasRemoved()) {
+            source.set(DataSource.none());
+          }
+        }
+      }
+    });
+  }
 
   @Override
   public final void addSource(DataSource source) throws IncompatibleSourceException {
