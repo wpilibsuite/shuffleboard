@@ -84,7 +84,7 @@ public final class NetworkTableSourceEntry implements SourceEntry {
   }
 
   @Override
-  public String getValueView() {
+  public String getInfo() {
     return displayString;
   }
 

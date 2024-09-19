@@ -2,6 +2,7 @@ package edu.wpi.first.shuffleboard.plugin.networktables.sources;
 
 import edu.wpi.first.shuffleboard.api.data.ComplexDataType;
 import edu.wpi.first.shuffleboard.api.data.DataType;
+import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.sources.AbstractDataSource;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.sources.SourceType;
@@ -71,7 +72,7 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
     }
     setConnected(true);
     if (isSingular()) {
-      singleSub = inst.getTopic(fullTableKey).genericSubscribe(PubSubOption.hidden(true));
+      singleSub = inst.getTopic(fullTableKey).genericSubscribe(PubSubOption.hidden(false), PubSubOption.sendAll(true));
       listenerUid = inst.addListener(
         singleSub,
         EnumSet.of(
@@ -91,7 +92,12 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
           }
         });
     } else {
-      multiSub = new MultiSubscriber(inst, new String[] {fullTableKey}, PubSubOption.hidden(true));
+      multiSub = new MultiSubscriber(
+          inst,
+          new String[] {fullTableKey},
+          PubSubOption.hidden(false),
+          PubSubOption.sendAll(true)
+      );
       listenerUid = inst.addListener(
         multiSub,
         EnumSet.of(
@@ -200,8 +206,14 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
     }
     if (NetworkTableUtils.rootTable.containsSubTable(key) || key.isEmpty()) {
       // Composite
-      return sources.computeIfAbsent(uri, __ ->
-          new CompositeNetworkTableSource(key, (ComplexDataType) NetworkTableUtils.dataTypeForEntry(key)));
+      return sources.computeIfAbsent(uri, __ -> {
+        DataType<?> lookup = NetworkTableUtils.dataTypeForEntry(key);
+        if (lookup == DataTypes.Unknown) {
+          // No known data type, fall back to generic map data
+          lookup = DataTypes.Map;
+        }
+        return new CompositeNetworkTableSource<>(key, (ComplexDataType<?>) lookup);
+      });
     }
     return DataSource.none();
   }

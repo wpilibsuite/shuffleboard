@@ -90,9 +90,6 @@ final class WidgetPaneDragHandler implements EventHandler<DragEvent> {
     if (dragboard.hasContent(DataFormats.source) && !previewSource(point, dragboard)) {
       return;
     }
-    if (dragboard.hasContent(DataFormats.widgetType) && !previewGalleryWidget(point, dragboard)) {
-      return;
-    }
     if (dragboard.hasContent(DataFormats.tilelessComponent) && !previewTilelessComponent(point, dragboard)) {
       return;
     }
@@ -110,22 +107,6 @@ final class WidgetPaneDragHandler implements EventHandler<DragEvent> {
         .getByUuid(((TilelessComponentData) dragboard.getContent(DataFormats.tilelessComponent)).getComponentId());
     if (tilePreviewSize == null) {
       component.map(pane::sizeOfWidget)
-          .ifPresent(size -> tilePreviewSize = size);
-    }
-    highlightPoint(point);
-    return true;
-  }
-
-  private boolean previewGalleryWidget(GridPoint point, Dragboard dragboard) {
-    if (!pane.isOpen(point, new TileSize(1, 1), n -> false)) {
-      // Dragged a widget onto a tile, can't drop
-      pane.setHighlight(false);
-      return false;
-    }
-    String componentType = (String) dragboard.getContent(DataFormats.widgetType);
-    if (tilePreviewSize == null) {
-      Components.getDefault().createComponent(componentType)
-          .map(pane::sizeOfWidget)
           .ifPresent(size -> tilePreviewSize = size);
     }
     highlightPoint(point);
@@ -267,11 +248,6 @@ final class WidgetPaneDragHandler implements EventHandler<DragEvent> {
       dropManyTiles((DataFormats.MultipleTileData) dragboard.getContent(DataFormats.multipleTiles), point);
     }
 
-    // Dropping a widget from the gallery
-    if (dragboard.hasContent(DataFormats.widgetType)) {
-      dropGalleryWidget((String) dragboard.getContent(DataFormats.widgetType), point);
-    }
-
     // Dragging a component out of a layout
     if (dragboard.hasContent(DataFormats.tilelessComponent)) {
       dropTilelessComponent((TilelessComponentData) dragboard.getContent(DataFormats.tilelessComponent), point);
@@ -331,17 +307,6 @@ final class WidgetPaneDragHandler implements EventHandler<DragEvent> {
     return origin.getCol() + dx >= 0
         && origin.getRow() + dy >= 0
         && pane.isOpen(origin.add(dx, dy), size, this::ignoreIfDragArtifact);
-  }
-
-  private void dropGalleryWidget(String componentType, GridPoint point) {
-    Components.getDefault().createComponent(componentType).ifPresent(c -> {
-      TileSize size = pane.sizeOfWidget(c);
-      if (pane.isOpen(point, size, __ -> false)) {
-        c.setTitle(componentType);
-        Tile<?> tile = pane.addComponentToTile(c);
-        moveTile(tile, point);
-      }
-    });
   }
 
   private void dropTilelessComponent(TilelessComponentData data, GridPoint point) {

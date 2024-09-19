@@ -2,11 +2,8 @@ package edu.wpi.first.shuffleboard.api.sources.recording;
 
 import edu.wpi.first.shuffleboard.api.DashboardMode;
 import edu.wpi.first.shuffleboard.api.data.DataType;
-import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.properties.AtomicBooleanProperty;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
-import edu.wpi.first.shuffleboard.api.sources.SourceType;
-import edu.wpi.first.shuffleboard.api.sources.SourceTypes;
 import edu.wpi.first.shuffleboard.api.sources.recording.serialization.Serializer;
 import edu.wpi.first.shuffleboard.api.sources.recording.serialization.Serializers;
 import edu.wpi.first.shuffleboard.api.util.ShutdownHooks;
@@ -135,14 +132,6 @@ public final class Recorder {
       startTime = Instant.now();
       firstSave = true;
       recording = new Recording();
-      // Record initial conditions
-      SourceTypes.getDefault().getItems().stream()
-          .map(SourceType::getAvailableSources)
-          .forEach(sources -> sources.forEach((id, value) -> {
-            DataTypes.getDefault().forJavaType(value.getClass())
-                .map(t -> new TimestampedData(id, t, value, 0L))
-                .ifPresent(recording::append);
-          }));
     }
     setRunning(true);
   }
