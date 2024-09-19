@@ -2,7 +2,6 @@ package edu.wpi.first.shuffleboard.api.widget;
 
 import edu.wpi.first.shuffleboard.api.data.IncompatibleSourceException;
 import edu.wpi.first.shuffleboard.api.sources.DataSource;
-
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleObjectProperty;
@@ -15,6 +14,11 @@ public abstract class SingleSourceWidget extends AbstractWidget {
 
   protected final ObjectProperty<DataSource> source = new SimpleObjectProperty<>(this, "source", DataSource.none());
 
+  /**
+   * Instantiates a new single source widget. This automatically registers listeners to make the
+   * {@link #source} and {@link #sources} properties stay in sync such that both properties will
+   * have the same, single data source object.
+   */
   public SingleSourceWidget() {
     // Bidirectional binding to make the sources list act like a single-element wrapper around
     // the source property
@@ -27,9 +31,9 @@ public abstract class SingleSourceWidget extends AbstractWidget {
           if (c.wasAdded()) {
             var added = c.getAddedSubList();
             if (!added.isEmpty()) {
-              var s = added.get(0);
-              if (s != source.get()) {
-                source.set(s);
+              var addedSource = added.get(0);
+              if (addedSource != source.get()) {
+                source.set(addedSource);
               }
             }
           } else if (c.wasRemoved()) {
