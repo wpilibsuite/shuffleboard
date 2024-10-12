@@ -20,4 +20,4 @@ jobs:
       shell: bash
       run: |
         git tag -f ${{ github.event.client_payload.package_version }}
-        git push origin ${{ github.event.client_payload.package_version }}
+        git push -f origin ${{ github.event.client_payload.package_version }}
