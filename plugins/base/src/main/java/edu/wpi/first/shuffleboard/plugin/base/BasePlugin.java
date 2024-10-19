@@ -54,7 +54,7 @@ import java.util.prefs.Preferences;
 @Description(
     group = "edu.wpi.first.shuffleboard",
     name = "Base",
-    version = "1.3.7",
+    version = "1.4.0",
     summary = "Defines all the WPILib data types and stock widgets"
 )
 @SuppressWarnings("PMD.CouplingBetweenObjects")
