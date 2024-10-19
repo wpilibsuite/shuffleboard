@@ -7,22 +7,23 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 
 @Description(
-        name = "String Array",
-        dataTypes = String[].class,
-        summary = "Displays an array of strings"
+    name = "String Array",
+    dataTypes = String[].class,
+    summary = "Displays an array of strings"
 )
 public final class StringArrayWidget extends SimpleAnnotatedWidget<String[]> {
-    private final StackPane pane = new StackPane();
-    private final ArrayTableView<String> table = new ArrayTableView<>();
+  private final StackPane pane = new StackPane();
+  private final ArrayTableView<String> table = new ArrayTableView<>();
 
-    public StringArrayWidget() {
-        pane.getChildren().add(table);
+  @SuppressWarnings("JavadocMethod")
+  public StringArrayWidget() {
+    pane.getChildren().add(table);
 
-        dataOrDefault.addListener((observableValue, oldStrings, newStrings) -> table.setItems(newStrings));
-    }
+    dataOrDefault.addListener((observableValue, oldStrings, newStrings) -> table.setItems(newStrings));
+  }
 
-    @Override
-    public Pane getView() {
-        return pane;
-    }
+  @Override
+  public Pane getView() {
+    return pane;
+  }
 }
