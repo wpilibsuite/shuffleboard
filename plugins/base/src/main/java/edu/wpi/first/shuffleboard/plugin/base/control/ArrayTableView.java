@@ -11,6 +11,8 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.util.Callback;
 
+import java.util.ArrayList;
+
 /**
  * A table view that displays an array {@code T[]} as a table with an index and a value column.
  * @param <T> the type of each item in the array (e.g. {@code Boolean} for {@code Boolean[]})
@@ -48,14 +50,15 @@ public class ArrayTableView<T> extends TableView<ArrayTableView.ArrayTableEntry<
   }
 
   /**
-   * Convenience method to set the table's items.
+   * Convenience method to set the table's items directly, instead of using an {@link ObservableList}.
    */
   public void setItems(T[] items) {
-    final var entries = new ArrayTableEntry[items.length];
+    final var entries = new ArrayList<ArrayTableEntry<T>>();
+
     for (int i = 0; i < items.length; i++) {
-      entries[i] = new ArrayTableEntry<>(i, items[i]);
+      entries.add(new ArrayTableEntry<>(i, items[i]));
     }
-    //noinspection unchecked
+
     list.setAll(entries);
   }
 
