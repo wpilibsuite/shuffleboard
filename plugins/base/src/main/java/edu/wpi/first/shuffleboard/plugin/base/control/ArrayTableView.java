@@ -11,6 +11,10 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.util.Callback;
 
+/**
+ * A table view that displays an array {@code T[]} as a table with an index and a value column.
+ * @param <T> the type of each item in the array (e.g. {@code Boolean} for {@code Boolean[]})
+ */
 public class ArrayTableView<T> extends TableView<ArrayTableView.ArrayTableEntry<T>> {
   private final TableColumn<ArrayTableEntry<T>, String> indexCol = new TableColumn<>("Index");
   private final TableColumn<ArrayTableEntry<T>, T> valueCol = new TableColumn<>("Value");
