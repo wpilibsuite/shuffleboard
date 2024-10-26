@@ -44,7 +44,7 @@ public final class FxUtils {
   private static final Object FX_CONTROLLER_KEY = new Object();
 
   private static final ScheduledExecutorService laterScheduler =
-          Executors.newSingleThreadScheduledExecutor((runnable) -> {
+          Executors.newSingleThreadScheduledExecutor(runnable -> {
             var thread = new Thread(runnable);
             thread.setDaemon(true);
             thread.setName("Shuffleboard Run Later Scheduler");

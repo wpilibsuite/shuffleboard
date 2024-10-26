@@ -17,7 +17,6 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.PubSubOption;
 
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.Optional;
