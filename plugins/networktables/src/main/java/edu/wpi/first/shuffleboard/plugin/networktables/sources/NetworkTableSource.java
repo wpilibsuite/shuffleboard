@@ -16,6 +16,7 @@ import edu.wpi.first.networktables.NetworkTableEvent;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.PubSubOption;
 
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.Optional;
@@ -198,24 +199,19 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
   public static DataSource<?> forKey(String fullTableKey) {
     String key = NetworkTable.normalizeKey(fullTableKey, false);
     final String uri = NetworkTableSourceType.getInstance().toUri(key);
-    if (NetworkTableUtils.rootTable.containsKey(key)) {
-      // Key-value pair
-      return sources.computeIfAbsent(uri, __ ->
-          new SingleKeyNetworkTableSource<>(NetworkTableUtils.rootTable, key,
-              NetworkTableUtils.dataTypeForEntry(key)));
-    }
-    if (NetworkTableUtils.rootTable.containsSubTable(key) || key.isEmpty()) {
-      // Composite
-      return sources.computeIfAbsent(uri, __ -> {
-        DataType<?> lookup = NetworkTableUtils.dataTypeForEntry(key);
-        if (lookup == DataTypes.Unknown) {
-          // No known data type, fall back to generic map data
-          lookup = DataTypes.Map;
-        }
+    return sources.computeIfAbsent(uri, __ -> {
+      DataType<?> lookup = NetworkTableUtils.dataTypeForEntry(key);
+      if (lookup == DataTypes.Unknown) {
+        // No known data type, fall back to generic map data
+        lookup = DataTypes.Map;
+      }
+      if (lookup.isComplex()) {
         return new CompositeNetworkTableSource<>(key, (ComplexDataType<?>) lookup);
-      });
-    }
-    return DataSource.none();
+      } else {
+        return new SingleKeyNetworkTableSource<>(NetworkTableUtils.rootTable, key,
+                NetworkTableUtils.dataTypeForEntry(key));
+      }
+    });
   }
 
   /**
