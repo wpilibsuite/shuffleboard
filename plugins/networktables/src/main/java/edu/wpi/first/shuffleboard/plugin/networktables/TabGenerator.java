@@ -102,7 +102,7 @@ final class TabGenerator {
         });
 
     metadataSubscriber =
-        new MultiSubscriber(inst, new String[] {METADATA_TABLE_NAME + "/"}, PubSubOption.sendAll(true));
+        new MultiSubscriber(inst, new String[] {METADATA_TABLE_NAME + "/"});
     metadataListener = inst.addListener(
         metadataSubscriber,
         EnumSet.of(NetworkTableEvent.Kind.kValueAll, NetworkTableEvent.Kind.kImmediate),
