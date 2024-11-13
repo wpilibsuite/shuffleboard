@@ -23,10 +23,6 @@ wpilibTools.deps.wpilibVersion = "2025.+"
 
 nativeConfig.dependencies.add wpilibTools.deps.wpilib('ntcore')
 
-nativeTasks.extractConfiguration.configure {
-    it.skipWindowsHelperLibrary = true
-}
-
 dependencies {
     api wpilibTools.deps.wpilibJava("ntcore")
     api wpilibTools.deps.wpilibJava("wpiutil")
