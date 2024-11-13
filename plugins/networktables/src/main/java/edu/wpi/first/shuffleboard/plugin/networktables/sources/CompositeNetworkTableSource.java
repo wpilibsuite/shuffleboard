@@ -47,7 +47,7 @@ public class CompositeNetworkTableSource<D extends ComplexData<D>> extends Netwo
     setData(dataType.getDefaultValue());
 
     setTableListener((key, event) -> {
-      String relativeKey = NetworkTable.normalizeKey(key.substring(path.length() + 1), false);
+      String relativeKey = NetworkTable.basenameKey(key);
       if (event.is(NetworkTableEvent.Kind.kUnpublish)) {
         backingMap.remove(relativeKey);
       } else if (event.valueData != null) {

@@ -4,9 +4,14 @@ import edu.wpi.first.shuffleboard.api.sources.DataSource;
 import edu.wpi.first.shuffleboard.api.widget.ParametrizedController;
 
 import java.io.IOException;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 import javafx.application.Platform;
@@ -38,6 +43,14 @@ public final class FxUtils {
 
   private static final Object FX_CONTROLLER_KEY = new Object();
 
+  private static final ScheduledExecutorService laterScheduler =
+          Executors.newSingleThreadScheduledExecutor(runnable -> {
+            var thread = new Thread(runnable);
+            thread.setDaemon(true);
+            thread.setName("Shuffleboard Run Later Scheduler");
+            return thread;
+          });
+
   private FxUtils() {
     throw new UnsupportedOperationException("This is a utility class!");
   }
@@ -66,6 +79,15 @@ public final class FxUtils {
       });
     }
     return future;
+  }
+
+  /**
+   * Runs a task on the platform thread at some point in the future.
+   * @param task the task to run
+   * @param delay how far in the future the task should run
+   */
+  public static void runLater(Runnable task, Duration delay) {
+    laterScheduler.schedule(() -> runOnFxThread(task), delay.get(ChronoUnit.NANOS), TimeUnit.NANOSECONDS);
   }
 
   /**

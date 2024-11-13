@@ -16,6 +16,7 @@ import edu.wpi.first.networktables.NetworkTableEvent;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.PubSubOption;
 
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.Optional;
@@ -72,7 +73,19 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
     }
     setConnected(true);
     if (isSingular()) {
-      singleSub = inst.getTopic(fullTableKey).genericSubscribe(PubSubOption.hidden(false), PubSubOption.sendAll(true));
+      // Handle leading slashes. Topic names are exact and do no normalization
+      String topicName;
+      if (Arrays.stream(inst.getTopicInfo()).anyMatch(t -> t.name.equals(fullTableKey))) {
+        topicName = fullTableKey;
+      } else {
+        if (fullTableKey.startsWith("/")) {
+          topicName = NetworkTable.normalizeKey(fullTableKey, false);
+        } else {
+          topicName = NetworkTable.normalizeKey(fullTableKey, true);
+        }
+      }
+
+      singleSub = inst.getTopic(topicName).genericSubscribe(PubSubOption.hidden(false), PubSubOption.sendAll(true));
       listenerUid = inst.addListener(
         singleSub,
         EnumSet.of(
@@ -196,26 +209,21 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
    */
   @SuppressWarnings("unchecked")
   public static DataSource<?> forKey(String fullTableKey) {
-    String key = NetworkTable.normalizeKey(fullTableKey, false);
+    String key = fullTableKey;
     final String uri = NetworkTableSourceType.getInstance().toUri(key);
-    if (NetworkTableUtils.rootTable.containsKey(key)) {
-      // Key-value pair
-      return sources.computeIfAbsent(uri, __ ->
-          new SingleKeyNetworkTableSource<>(NetworkTableUtils.rootTable, key,
-              NetworkTableUtils.dataTypeForEntry(key)));
-    }
-    if (NetworkTableUtils.rootTable.containsSubTable(key) || key.isEmpty()) {
-      // Composite
-      return sources.computeIfAbsent(uri, __ -> {
-        DataType<?> lookup = NetworkTableUtils.dataTypeForEntry(key);
-        if (lookup == DataTypes.Unknown) {
-          // No known data type, fall back to generic map data
-          lookup = DataTypes.Map;
-        }
+    return sources.computeIfAbsent(uri, __ -> {
+      DataType<?> lookup = NetworkTableUtils.dataTypeForEntry(key);
+      if (lookup == DataTypes.Unknown) {
+        // No known data type, fall back to generic map data
+        lookup = DataTypes.Map;
+      }
+      if (lookup.isComplex()) {
         return new CompositeNetworkTableSource<>(key, (ComplexDataType<?>) lookup);
-      });
-    }
-    return DataSource.none();
+      } else {
+        return new SingleKeyNetworkTableSource<>(NetworkTableUtils.rootTable, key,
+                NetworkTableUtils.dataTypeForEntry(key));
+      }
+    });
   }
 
   /**
