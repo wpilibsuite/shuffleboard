@@ -7,6 +7,8 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.Property;
 import javafx.beans.property.StringProperty;
 
+import java.util.Optional;
+
 /**
  * A data source provides some kind of data that widgets can display and manipulate. It can be
  * active or inactive; active sources may update at any time, while inactive sources are guaranteed
@@ -161,4 +163,12 @@ public interface DataSource<T> {
    */
   void removeClient(Sourced client);
 
+  /**
+   * Preferred widget for the source.
+   *
+   * @return optionally a string identifier of the preferred widget type.
+   */
+  default Optional<String> preferredWidget() {
+    return Optional.empty();
+  }
 }
