@@ -19,5 +19,5 @@ jobs:
     - name: Tag and push
       shell: bash
       run: |
-        git tag -f ${{ github.event.client_payload.package_version }}
+        git tag -a -f ${{ github.event.client_payload.package_version }} -m "${{ github.event.client_payload.package_version }}"
         git push -f origin ${{ github.event.client_payload.package_version }}
