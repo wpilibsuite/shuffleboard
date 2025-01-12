@@ -209,7 +209,7 @@ public abstract class NetworkTableSource<T> extends AbstractDataSource<T> {
    */
   @SuppressWarnings("unchecked")
   public static DataSource<?> forKey(String fullTableKey) {
-    String key = fullTableKey;
+    String key = NetworkTable.normalizeKey(fullTableKey, false);
     final String uri = NetworkTableSourceType.getInstance().toUri(key);
     return sources.computeIfAbsent(uri, __ -> {
       DataType<?> lookup = NetworkTableUtils.dataTypeForEntry(key);
