@@ -19,5 +19,7 @@ jobs:
     - name: Tag and push
       shell: bash
       run: |
+        git config user.name github-actions
+        git config user.email github-actions@github.com
         git tag -a -f ${{ github.event.client_payload.package_version }} -m "${{ github.event.client_payload.package_version }}"
         git push -f origin ${{ github.event.client_payload.package_version }}
