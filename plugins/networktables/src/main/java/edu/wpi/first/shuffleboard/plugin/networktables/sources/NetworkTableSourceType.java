@@ -26,7 +26,6 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 
-import java.time.Duration;
 import java.util.Map;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -82,10 +81,7 @@ public final class NetworkTableSourceType extends SourceType implements AutoClos
                     topic.getInfo(),
                     null,
                     null,
-                    null
-                ),
-                true
-            );
+                    null));
           }
         }
       });
@@ -97,7 +93,7 @@ public final class NetworkTableSourceType extends SourceType implements AutoClos
         EnumSet.of(
           NetworkTableEvent.Kind.kImmediate,
           NetworkTableEvent.Kind.kTopic),
-        event -> AsyncUtils.runAsync(() -> handleEvent(event, true)));
+        event -> AsyncUtils.runAsync(() -> handleEvent(event)));
   }
 
   @Override
@@ -195,16 +191,9 @@ public final class NetworkTableSourceType extends SourceType implements AutoClos
     return super.toUri(NetworkTable.normalizeKey(sourceName));
   }
 
-  private void handleEvent(NetworkTableEvent event, boolean allowDeferral) {
+  private void handleEvent(NetworkTableEvent event) {
     final boolean delete = event.is(NetworkTableEvent.Kind.kUnpublish);
     final TopicInfo topicInfo = event.topicInfo;
-
-    if (!topicInfo.name.endsWith("/.type") && allowDeferral) {
-      // Defer later to avoid race conditions where type metadata is not received first
-      FxUtils.runLater(() -> handleEvent(event, false), Duration.ofMillis(50));
-      return;
-    }
-
     if (topicInfo.name.endsWith("/.type") && !delete) {
       // Got type metadata for composite data
       // Remove trailing "/.type"
