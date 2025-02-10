@@ -34,6 +34,11 @@ public final class DataFormats {
   public static final DataFormat source = new DataFormat(APP_PREFIX + "/data-source");
 
   /**
+   * The data format for widget type names (string).
+   */
+  public static final DataFormat widgetType = new DataFormat(APP_PREFIX + "/widget-type");
+
+  /**
    * The data format for components that do not exist inside a tile.
    */
   public static final DataFormat tilelessComponent = new DataFormat(APP_PREFIX + "/tileless-component");

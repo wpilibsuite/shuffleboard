@@ -71,6 +71,16 @@ final class TileDropHandler implements EventHandler<DragEvent> {
       event.consume();
     }
 
+    // Dragging a widget from the gallery
+    if (dragboard.hasContent(DataFormats.widgetType) && tile instanceof LayoutTile) {
+      String widgetType = (String) dragboard.getContent(DataFormats.widgetType);
+
+      dropGalleryWidgetOntoLayout(widgetType, eventPos);
+      event.consume();
+
+      return;
+    }
+
     // Dragging a source from the sources tree
     if (dragboard.hasContent(DataFormats.source) && tile instanceof LayoutTile) {
       SourceEntry entry = DeserializationHelper.sourceFromDrag(dragboard.getContent(DataFormats.source));
@@ -124,6 +134,18 @@ final class TileDropHandler implements EventHandler<DragEvent> {
     Components.getDefault().pickComponentNameFor(entry.get().getDataType())
         .flatMap(name -> Components.getDefault().createWidget(name, source))
         .ifPresent(w -> add(layout, w, screenPos));
+  }
+
+  /**
+   * Drops a widget from the gallery onto the tile, if it contains a layout.
+   *
+   * @param widgetType the type of the widget that is being dragged
+   * @param screenPos  the screen coordinates where the widget was dropped
+   */
+  private void dropGalleryWidgetOntoLayout(String widgetType, Point2D screenPos) {
+    Components.getDefault().createWidget(widgetType).ifPresent(widget -> {
+      add((Layout) tile.getContent(), widget, screenPos);
+    });
   }
 
   /**

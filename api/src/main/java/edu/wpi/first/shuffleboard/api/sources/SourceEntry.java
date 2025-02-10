@@ -30,9 +30,9 @@ public interface SourceEntry extends Serializable, Supplier<DataSource> {
   Object getValue();
 
   /**
-   * Gets an object used to display information about the source. Implementers are encouraged to
+   * Gets an object used to display the value of the source this entry represents. Implementers are encouraged to
    * sharpen the return type
    */
-  Object getInfo();
+  Object getValueView();
 
 }

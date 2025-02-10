@@ -44,23 +44,23 @@ public class SourceTreeTable<S extends SourceEntry, V> extends TreeTableView<S> 
   private final ObjectProperty<SourceType> sourceType = new SimpleObjectProperty<>(this, "sourceType", null);
 
   private final TreeTableColumn<S, String> keyColumn = new TreeTableColumn<>("Name");
-  private final TreeTableColumn<S, V> infoColumn = new TreeTableColumn<>("Info");
+  private final TreeTableColumn<S, V> valueColumn = new TreeTableColumn<>("Value");
 
   /**
    * Creates a new source tree table. It comes pre-populated with a key and a value column.
    */
   public SourceTreeTable() {
     keyColumn.prefWidthProperty().bind(widthProperty().divide(2).subtract(2));
-    infoColumn.prefWidthProperty().bind(widthProperty().divide(2).subtract(2));
+    valueColumn.prefWidthProperty().bind(widthProperty().divide(2).subtract(2));
 
     keyColumn.setCellValueFactory(
         f -> new ReadOnlyStringWrapper(getEntryForCellData(f).getViewName()));
-    infoColumn.setCellValueFactory(
-        f -> new ReadOnlyObjectWrapper(getEntryForCellData(f).getInfo()));
+    valueColumn.setCellValueFactory(
+        f -> new ReadOnlyObjectWrapper(getEntryForCellData(f).getValueView()));
     Label placeholder = new Label("No data available");
     setPlaceholder(placeholder);
 
-    getColumns().addAll(keyColumn, infoColumn);
+    getColumns().addAll(keyColumn, valueColumn);
   }
 
   /**

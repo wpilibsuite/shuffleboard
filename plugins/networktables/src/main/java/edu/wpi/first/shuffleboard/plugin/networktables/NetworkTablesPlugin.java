@@ -42,7 +42,7 @@ import javafx.beans.value.ChangeListener;
 @Description(
     group = "edu.wpi.first.shuffleboard",
     name = "NetworkTables",
-    version = "2.4.0",
+    version = "2.3.2",
     summary = "Provides sources and widgets for NetworkTables"
 )
 public class NetworkTablesPlugin extends Plugin {
@@ -59,7 +59,6 @@ public class NetworkTablesPlugin extends Plugin {
   private final RecorderController recorderController;
 
   private final ChangeListener<DashboardMode> dashboardModeChangeListener;
-  private final ChangeListener<Boolean> recorderChangeListener;
 
   private final HostParser hostParser = new HostParser();
 
@@ -105,34 +104,6 @@ public class NetworkTablesPlugin extends Plugin {
       }
     };
 
-    recorderChangeListener = (__, was, isRecording) -> {
-      if (isRecording) {
-        // Automatically capture and record changes in network tables
-        // This is done here because each key under N subtables would have N+1 copies
-        // in the recording (eg "/a/b/c" has 2 tables and 3 copies: "/a", "/a/b", and "/a/b/c")
-        // This significantly reduces the size of recording files.
-        // We only run this listener while recording to avoid unnecessary network traffic
-        recorderUid = inst.addListener(
-            new String[]{""},
-            EnumSet.of(NetworkTableEvent.Kind.kImmediate, NetworkTableEvent.Kind.kValueAll),
-            event -> {
-              Object value = event.valueData.value.getValue();
-              String name = NetworkTableUtils.topicNameForEvent(event);
-              DataTypes.getDefault().forJavaType(value.getClass())
-                  .ifPresent(type -> {
-                    Recorder.getInstance().record(
-                        NetworkTableSourceType.getInstance().toUri(name),
-                        type,
-                        value
-                    );
-                  });
-            });
-      } else {
-        // No longer running, remove the NT listener
-        inst.removeListener(recorderUid);
-      }
-    };
-
     serverChangeListener = (observable, oldValue, newValue) -> {
       var hostInfoOpt = hostParser.parse(newValue);
 
@@ -160,7 +131,25 @@ public class NetworkTablesPlugin extends Plugin {
     PreferencesUtils.read(serverId, preferences);
     serverId.addListener(serverSaver);
 
-    Recorder.getInstance().runningProperty().addListener(recorderChangeListener);
+    // Automatically capture and record changes in network tables
+    // This is done here because each key under N subtables would have N+1 copies
+    // in the recording (eg "/a/b/c" has 2 tables and 3 copies: "/a", "/a/b", and "/a/b/c")
+    // This significantly reduces the size of recording files.
+    recorderUid = inst.addListener(
+        new String[] {""},
+        EnumSet.of(NetworkTableEvent.Kind.kImmediate, NetworkTableEvent.Kind.kValueAll),
+        event -> {
+          Object value = event.valueData.value.getValue();
+          String name = NetworkTableUtils.topicNameForEvent(event);
+          DataTypes.getDefault().forJavaType(value.getClass())
+              .ifPresent(type -> {
+                Recorder.getInstance().record(
+                    NetworkTableSourceType.getInstance().toUri(name),
+                    type,
+                    value
+                );
+              });
+        });
 
     DashboardMode.currentModeProperty().addListener(dashboardModeChangeListener);
     recorderController.start();
@@ -172,7 +161,6 @@ public class NetworkTablesPlugin extends Plugin {
 
   @Override
   public void onUnload() {
-    Recorder.getInstance().runningProperty().removeListener(recorderChangeListener);
     DashboardMode.currentModeProperty().removeListener(dashboardModeChangeListener);
     recorderController.stop();
     tabGenerator.stop();
