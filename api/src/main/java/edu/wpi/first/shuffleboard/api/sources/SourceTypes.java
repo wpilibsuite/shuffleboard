@@ -3,13 +3,15 @@ package edu.wpi.first.shuffleboard.api.sources;
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 import edu.wpi.first.shuffleboard.api.sources.recording.TimestampedData;
+import edu.wpi.first.shuffleboard.api.util.PropertyUtils;
 import edu.wpi.first.shuffleboard.api.util.Registry;
 
-import javafx.collections.ListChangeListener;
+import org.fxmisc.easybind.EasyBind;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 import javafx.beans.InvalidationListener;
 import javafx.collections.FXCollections;
@@ -47,25 +49,11 @@ public final class SourceTypes extends Registry<SourceType> {
     register(Static);
 
     typeNames.addListener((InvalidationListener) __ -> {
-      typeNames
-          .stream()
+      Optional<ObservableList<String>> names = typeNames.stream()
           .map(this::forName)
           .map(SourceType::getAvailableSourceUris)
-          .forEach(observableUriList -> {
-            observableUriList.addListener((ListChangeListener<? super String>) c -> {
-              while (c.next()) {
-                if (c.wasAdded()) {
-                  for (String uri : c.getAddedSubList()) {
-                    if (!allUris.contains(uri)) {
-                      allUris.add(uri);
-                    }
-                  }
-                } else if (c.wasRemoved()) {
-                  allUris.removeAll(c.getRemoved());
-                }
-              }
-            });
-          });
+          .reduce(PropertyUtils::combineLists);
+      names.ifPresent(l -> EasyBind.listBind(allUris, l));
     });
   }
 

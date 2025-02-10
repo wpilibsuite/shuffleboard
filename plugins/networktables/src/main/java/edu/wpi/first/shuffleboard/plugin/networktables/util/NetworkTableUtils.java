@@ -1,15 +1,11 @@
 package edu.wpi.first.shuffleboard.plugin.networktables.util;
 
-import edu.wpi.first.networktables.GenericEntry;
-import edu.wpi.first.networktables.PubSubOption;
 import edu.wpi.first.shuffleboard.api.data.DataType;
 import edu.wpi.first.shuffleboard.api.data.DataTypes;
 
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEvent;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.shuffleboard.api.util.StringUtils;
-import edu.wpi.first.shuffleboard.plugin.networktables.sources.NetworkTableSourceType;
 
 /**
  * Utility class for working with network tables.
@@ -78,8 +74,31 @@ public final class NetworkTableUtils {
    * @return the data type most closely associated with the given key
    */
   public static DataType dataTypeForEntry(String key) {
-    var networkTableSourceType = NetworkTableSourceType.getInstance();
-    return networkTableSourceType.dataTypeForSource(DataTypes.getDefault(), networkTableSourceType.toUri(key));
+    String normalKey = NetworkTable.normalizeKey(key, false);
+    if (normalKey.isEmpty() || "/".equals(normalKey)) {
+      return DataTypes.Map;
+    }
+    if (rootTable.containsKey(normalKey)) {
+      return dataTypeForTypeString(rootTable.getTopic(normalKey).getTypeString());
+    }
+    if (rootTable.containsSubTable(normalKey)) {
+      NetworkTable table = rootTable.getSubTable(normalKey);
+      String type;
+      if (table.containsKey("~TYPE~")) {
+        type = table.getEntry("~TYPE~").getString(null);
+      } else if (table.containsKey(".type")) {
+        type = table.getEntry(".type").getString(null);
+      } else {
+        return DataTypes.Map;
+      }
+      if (type == null) {
+        return DataTypes.Map;
+      } else {
+        return DataTypes.getDefault().forName(type)
+            .orElse(DataTypes.Map);
+      }
+    }
+    return null;
   }
 
   /**

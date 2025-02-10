@@ -42,8 +42,7 @@
             <MenuItem text="Documentation" onAction="#openDocsInBrowser" accelerator="F2"/>
         </Menu>
     </MenuBar>
-    <!-- Set the pref height very large to fill the available height of the window -->
-    <StackPane fx:id="contentRoot" prefHeight="8192">
+    <StackPane fx:id="contentRoot">
         <DashboardTabPane fx:id="dashboard"/>
         <fx:include source="LeftDrawer.fxml" fx:id="leftDrawer" maxWidth="-Infinity" StackPane.alignment="CENTER_LEFT">
             <StackPane.margin>

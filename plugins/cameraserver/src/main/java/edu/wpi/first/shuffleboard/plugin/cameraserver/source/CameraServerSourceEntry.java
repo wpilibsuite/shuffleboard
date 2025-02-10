@@ -26,7 +26,7 @@ public class CameraServerSourceEntry implements SourceEntry {
   }
 
   @Override
-  public Object getInfo() {
+  public Object getValueView() {
     return null;
   }
 
