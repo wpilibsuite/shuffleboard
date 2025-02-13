@@ -1,5 +1,6 @@
 package edu.wpi.first.shuffleboard.plugin.networktables.sources;
 
+import edu.wpi.first.networktables.NetworkTableValue;
 import edu.wpi.first.shuffleboard.api.data.ComplexData;
 import edu.wpi.first.shuffleboard.api.data.ComplexDataType;
 import edu.wpi.first.shuffleboard.api.data.IncompleteDataException;
@@ -14,6 +15,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -27,6 +29,8 @@ import java.util.logging.Logger;
 public class CompositeNetworkTableSource<D extends ComplexData<D>> extends NetworkTableSource<D> {
 
   private static final Logger log = Logger.getLogger(CompositeNetworkTableSource.class.getName());
+
+  private Optional<String> preferredWidget;
 
   private final Map<String, Object> backingMap = new HashMap<>();
   private final ComplexDataType<D> dataType;
@@ -44,6 +48,7 @@ public class CompositeNetworkTableSource<D extends ComplexData<D>> extends Netwo
     this.dataType = dataType;
     String path = NetworkTable.normalizeKey(tableName, false);
     NetworkTable table = NetworkTableInstance.getDefault().getTable(path);
+    preferredWidget = loadWidgetFromWidgetEntry(table);
     setData(dataType.getDefaultValue());
 
     setTableListener((key, event) -> {
@@ -90,5 +95,16 @@ public class CompositeNetworkTableSource<D extends ComplexData<D>> extends Netwo
   @Override
   protected boolean isSingular() {
     return false;
+  }
+
+  @Override
+  public Optional<String> preferredWidget() {
+    return preferredWidget;
+  }
+
+  private static Optional<String> loadWidgetFromWidgetEntry(NetworkTable table) {
+    return Optional.ofNullable(table.getValue(".widget"))
+            .filter(NetworkTableValue::isString)
+            .map(NetworkTableValue::getString);
   }
 }
