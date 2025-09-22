@@ -55,7 +55,9 @@
         <padding>
             <Insets topRightBottomLeft="4"/>
         </padding>
-        <left><Text text="Warning: Shuffleboard is deprecated" fill="red"/></left>
+        <left>
+            <Text text="Warning: Shuffleboard is deprecated" fill="red" underline="true" onMouseClicked="#openDocsInBrowser"/>
+        </left>
         <center>
             <fx:include source="PlaybackControls.fxml"/>
         </center>
