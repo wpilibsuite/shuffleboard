@@ -7,8 +7,10 @@
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.SeparatorMenuItem?>
 <?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.text.Text ?>
 <VBox fx:id="root" maxHeight="Infinity" maxWidth="Infinity"
       xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="edu.wpi.first.shuffleboard.app.MainWindowController">
@@ -60,5 +62,15 @@
         <right>
             <fx:include source="ConnectionIndicators.fxml"/>
         </right>
+    </BorderPane>
+    <BorderPane styleClass="footer">
+        <center>
+            <HBox alignment="CENTER">
+                <children>
+                    <Text text="Warning: Shuffleboard is deprecated and will be removed for the 2027 season. " fill="red"/>
+                    <Text text="See frc-docs for alternatives." fill="red" underline="true" onMouseClicked="#openDocsInBrowser"/>
+                </children>
+            </HBox>
+        </center>
     </BorderPane>
 </VBox>
