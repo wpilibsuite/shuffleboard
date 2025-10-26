@@ -9,7 +9,7 @@ plugins {
     id 'maven-publish'
 }
 
-apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: 'com.gradleup.shadow'
 
 description = 'All of the application specific code that makes shuffleboard run.'
 
