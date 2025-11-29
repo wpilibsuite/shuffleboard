@@ -2,6 +2,7 @@
 
 # Shuffleboard
 
+Shuffleboard is deprecated and will not be updated after the 2026 FRC season due to its lack of a maintainer and resource utilization issues. Users can find [additional modern dashboard options here](https://docs.wpilib.org/en/stable/docs/software/dashboards/dashboard-intro.html)
 
 ## Structure
 
