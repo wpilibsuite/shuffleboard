@@ -4,6 +4,8 @@ plugins {
 
 description = "Base shuffleboard plugin that provides the default data types and widgets."
 
+wpilibTools.deps.wpilibVersion = "2026.+"
+
 dependencies {
     api "de.gsi.chart:chartfx-chart:11.1.5"
     api wpilibTools.deps.wpilibJava("fieldImages")
