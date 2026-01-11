@@ -47,6 +47,7 @@ import edu.wpi.first.shuffleboard.plugin.base.widget.AccelerometerWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.AlertsWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.BasicFmsInfoWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.BasicSubsystemWidget;
+import edu.wpi.first.shuffleboard.plugin.base.widget.BooleanArrayWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.BooleanBoxWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.ComboBoxChooserWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.CommandWidget;
@@ -56,17 +57,19 @@ import edu.wpi.first.shuffleboard.plugin.base.widget.FieldWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.GraphWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.GyroWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.MecanumDriveWidget;
+import edu.wpi.first.shuffleboard.plugin.base.widget.NumberArrayWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.NumberBarWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.NumberSliderWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.PIDCommandWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.PIDControllerWidget;
-import edu.wpi.first.shuffleboard.plugin.base.widget.ProfiledPIDControllerWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.PowerDistributionPanelWidget;
+import edu.wpi.first.shuffleboard.plugin.base.widget.ProfiledPIDControllerWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.RelayWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.RobotPreferencesWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.SimpleDialWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.SpeedControllerWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.SplitButtonChooserWidget;
+import edu.wpi.first.shuffleboard.plugin.base.widget.StringArrayWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.TextViewWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.ThreeAxisAccelerometerWidget;
 import edu.wpi.first.shuffleboard.plugin.base.widget.ToggleButtonWidget;
@@ -83,7 +86,7 @@ import java.util.prefs.Preferences;
 @Description(
     group = "edu.wpi.first.shuffleboard",
     name = "Base",
-    version = "1.3.7",
+    version = "1.4.0",
     summary = "Defines all the WPILib data types and stock widgets"
 )
 @SuppressWarnings("PMD.CouplingBetweenObjects")
@@ -169,6 +172,9 @@ public class BasePlugin extends Plugin {
         WidgetType.forAnnotatedWidget(UltrasonicWidget.class),
         WidgetType.forAnnotatedWidget(FieldWidget.class),
         WidgetType.forAnnotatedWidget(AlertsWidget.class),
+        WidgetType.forAnnotatedWidget(BooleanArrayWidget.class),
+        WidgetType.forAnnotatedWidget(NumberArrayWidget.class),
+        WidgetType.forAnnotatedWidget(StringArrayWidget.class),
         new LayoutClass<>("List Layout", ListLayout.class),
         new LayoutClass<>("Grid Layout", GridLayout.class),
         createSubsystemLayoutType()
@@ -204,6 +210,9 @@ public class BasePlugin extends Plugin {
         .put(FieldType.Instance, WidgetType.forAnnotatedWidget(FieldWidget.class))
         .put(AlertsType.Instance, WidgetType.forAnnotatedWidget(AlertsWidget.class))
         .put(SubsystemType.Instance, createSubsystemLayoutType())
+        .put(DataTypes.BooleanArray, WidgetType.forAnnotatedWidget(BooleanArrayWidget.class))
+        .put(DataTypes.NumberArray, WidgetType.forAnnotatedWidget(NumberArrayWidget.class))
+        .put(DataTypes.StringArray, WidgetType.forAnnotatedWidget(StringArrayWidget.class))
         .build();
   }
 
